@@ -1,0 +1,63 @@
+package pubs
+
+import (
+	"strconv"
+
+	h "github.com/alexkalak/qrmenu/src/controllers/httpv1/httphelpers"
+	"github.com/alexkalak/qrmenu/src/controllers/httpv1/input/entities"
+	"github.com/alexkalak/qrmenu/src/errors/httperrors"
+	"github.com/gofiber/fiber/v2"
+)
+
+type getPubByIDOutput struct {
+	Ok  bool               `json:"ok" example:"true"`
+	Pub entities.PubOutput `json:"pub"`
+}
+
+// @Summary      Get pub
+// @Description  get pub
+// @Tags         pub
+// @Param companyID path int true "company id"
+// @Param pubID path int true "pub id"
+// @Accept       json
+// @Produce      json
+// @Success      200  {object}  getPubByIDOutput
+// @Router       /company/{companyID}/pubs/{pubID} [GET]
+// @Security ApiKeyAuth
+// @Param access_token header string  true "access_token"
+func (c *pubController) GetPubByID(ctx *fiber.Ctx) error {
+	userID, userSignificance, err := h.GetUserIDAndSignificanceFromLocals(ctx)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	companyID, err := strconv.Atoi(ctx.Params("companyID"))
+	if err != nil {
+		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	err = h.CheckAccess(userID, companyID, userSignificance)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	pubID, err := strconv.Atoi(ctx.Params("pubID"))
+	if err != nil {
+		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	pub, err := c.PubService.GetPubById(pubID)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	output := entities.PubOutput{}
+	output.ConvertFromModel(pub)
+
+	return h.SendSuccess(
+		ctx,
+		fiber.Map{
+			"pub": output,
+		},
+		fiber.StatusOK)
+}

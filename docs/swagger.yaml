@@ -1,0 +1,1623 @@
+definitions:
+  auth.loginInput:
+    properties:
+      as:
+        example: company
+        type: string
+      email:
+        example: alex@alex.alex
+        type: string
+      password:
+        example: "123123123"
+        type: string
+    required:
+    - as
+    - email
+    - password
+    type: object
+  auth.loginOutput:
+    properties:
+      access_token:
+        type: string
+      ok:
+        example: true
+        type: boolean
+    type: object
+  categories.createCategoryOutput:
+    properties:
+      category:
+        $ref: '#/definitions/entities.CategoryOutput'
+      ok:
+        example: true
+        type: boolean
+    type: object
+  categories.deleteCategoryOutput:
+    properties:
+      ok:
+        example: true
+        type: boolean
+    type: object
+  categories.fileUploadOutput:
+    properties:
+      file_name:
+        type: string
+      ok:
+        example: true
+        type: boolean
+    type: object
+  categories.getAllCategoriesOutput:
+    properties:
+      categories:
+        items:
+          $ref: '#/definitions/entities.CategoryOutput'
+        type: array
+      ok:
+        example: true
+        type: boolean
+    type: object
+  categories.getCategoryOutput:
+    properties:
+      category:
+        $ref: '#/definitions/entities.CategoryOutput'
+      ok:
+        example: true
+        type: boolean
+    type: object
+  categories.updateCategoryOutput:
+    properties:
+      category:
+        $ref: '#/definitions/entities.CategoryOutput'
+      ok:
+        example: true
+        type: boolean
+    type: object
+  companies.createCompanyOutput:
+    properties:
+      access_token:
+        type: string
+      company:
+        $ref: '#/definitions/entities.CompanyOutput'
+      ok:
+        example: true
+        type: boolean
+    type: object
+  companies.getCompanyOutput:
+    properties:
+      company:
+        $ref: '#/definitions/entities.CompanyOutput'
+      ok:
+        example: true
+        type: boolean
+    type: object
+  dishes.createDishOutput:
+    properties:
+      dish:
+        $ref: '#/definitions/entities.DishOutput'
+      ok:
+        example: true
+        type: boolean
+    type: object
+  dishes.deleteDishOutput:
+    properties:
+      ok:
+        example: true
+        type: boolean
+    type: object
+  dishes.fileUploadOutput:
+    properties:
+      file_name:
+        type: string
+      ok:
+        example: true
+        type: boolean
+    type: object
+  dishes.getAllDishesOutput:
+    properties:
+      dishes:
+        items:
+          $ref: '#/definitions/entities.DishOutput'
+        type: array
+      ok:
+        example: true
+        type: boolean
+    type: object
+  dishes.getDishByIDOutput:
+    properties:
+      dish:
+        $ref: '#/definitions/entities.DishOutput'
+      ok:
+        example: true
+        type: boolean
+    type: object
+  dishes.updateDishOutput:
+    properties:
+      dish:
+        $ref: '#/definitions/entities.DishOutput'
+      ok:
+        example: true
+        type: boolean
+    type: object
+  entities.CategoryInput:
+    properties:
+      name:
+        example: My category name
+        minLength: 2
+        type: string
+      place:
+        example: 1
+        type: integer
+      visible:
+        example: true
+        type: boolean
+    required:
+    - name
+    - place
+    - visible
+    type: object
+  entities.CategoryOutput:
+    properties:
+      id:
+        example: 1
+        type: integer
+      menu_id:
+        example: 1
+        type: integer
+      name:
+        example: My category name
+        type: string
+      place:
+        example: 1
+        type: integer
+      visible:
+        example: true
+        type: boolean
+    type: object
+  entities.CompanyInput:
+    properties:
+      email:
+        example: example@gmail.com
+        type: string
+      name:
+        example: My company name
+        minLength: 2
+        type: string
+      password:
+        example: securepassword
+        minLength: 8
+        type: string
+      phone:
+        example: "37377777777"
+        minLength: 7
+        type: string
+    required:
+    - name
+    - password
+    - phone
+    type: object
+  entities.CompanyOutput:
+    properties:
+      email:
+        example: example@gmail.com
+        type: string
+      id:
+        example: 1
+        type: integer
+      name:
+        example: My company name
+        type: string
+      phone:
+        example: "37377777777"
+        type: string
+    type: object
+  entities.CreatePubInput:
+    properties:
+      name:
+        example: My pub name
+        minLength: 2
+        type: string
+      url_name:
+        example: my-pub-name
+        minLength: 2
+        type: string
+    required:
+    - name
+    - url_name
+    type: object
+  entities.DishInput:
+    properties:
+      category_id:
+        example: 1
+        type: integer
+      ingriedients:
+        example: My dish ingriedients
+        type: string
+      name:
+        example: My dish name
+        minLength: 2
+        type: string
+      place:
+        example: 1
+        type: integer
+      price:
+        example: 1.99
+        type: number
+      visible:
+        example: true
+        type: boolean
+    required:
+    - category_id
+    - ingriedients
+    - name
+    - place
+    - price
+    - visible
+    type: object
+  entities.DishOutput:
+    properties:
+      category_id:
+        example: 1
+        type: integer
+      id:
+        example: 1
+        type: integer
+      image_file_name:
+        example: my-dish-image.jpg
+        type: string
+      ingriedients:
+        example: My dish ingriedients
+        type: string
+      name:
+        example: My dish name
+        type: string
+      place:
+        example: 1
+        type: integer
+      price:
+        example: 1.99
+        type: number
+      visible:
+        example: true
+        type: boolean
+    type: object
+  entities.MenuInput:
+    properties:
+      name:
+        example: My menu name
+        minLength: 2
+        type: string
+      pub_id:
+        example: 2
+        type: integer
+      visible:
+        example: true
+        type: boolean
+    required:
+    - name
+    - pub_id
+    - visible
+    type: object
+  entities.MenuOutput:
+    properties:
+      id:
+        example: 1
+        type: integer
+      name:
+        example: My menu name
+        type: string
+      pub_id:
+        example: 2
+        type: integer
+      visible:
+        example: true
+        type: boolean
+    type: object
+  entities.PubOutput:
+    properties:
+      additional_info:
+        example: My pub additional info
+        type: string
+      address:
+        example: My pub address
+        type: string
+      bg_image_file_name:
+        example: my-pub-name-bg.png
+        type: string
+      color:
+        example: '#ffffff'
+        type: string
+      color_theme:
+        example: light
+        type: string
+      company_id:
+        type: integer
+      currency_id:
+        type: integer
+      id:
+        example: 1
+        type: integer
+      logo_file_name:
+        example: my-pub-name-logo.png
+        type: string
+      name:
+        example: My pub name
+        type: string
+      qr_code_file_name:
+        example: my-pub-name.png
+        type: string
+      url_name:
+        example: my-pub-name
+        type: string
+      wifi_password:
+        example: "12345678"
+        type: string
+    type: object
+  entities.UpdatePubInput:
+    properties:
+      additional_info:
+        example: My pub additional info
+        minLength: 2
+        type: string
+      address:
+        example: My pub address
+        minLength: 2
+        type: string
+      color:
+        example: '#ffffff'
+        minLength: 2
+        type: string
+      color_theme:
+        example: light
+        minLength: 2
+        type: string
+      company_id:
+        example: 1
+        type: integer
+      currency_id:
+        example: 22
+        type: integer
+      name:
+        example: My pub name
+        minLength: 2
+        type: string
+      url_name:
+        example: my-pub-name
+        minLength: 2
+        type: string
+      wifi_password:
+        example: "12345678"
+        minLength: 2
+        type: string
+    required:
+    - additional_info
+    - address
+    - color
+    - color_theme
+    - name
+    - url_name
+    - wifi_password
+    type: object
+  menus.createMenuOutput:
+    properties:
+      menu:
+        $ref: '#/definitions/entities.MenuOutput'
+      ok:
+        example: true
+        type: boolean
+    type: object
+  menus.delteMenuOutput:
+    properties:
+      ok:
+        example: true
+        type: boolean
+    type: object
+  menus.getMenuOutput:
+    properties:
+      menu:
+        $ref: '#/definitions/entities.MenuOutput'
+      ok:
+        example: true
+        type: boolean
+    type: object
+  menus.updateMenuOutput:
+    properties:
+      menu:
+        $ref: '#/definitions/entities.MenuOutput'
+      ok:
+        example: true
+        type: boolean
+    type: object
+  pubs.cratePubOutput:
+    properties:
+      ok:
+        example: true
+        type: boolean
+      pub:
+        $ref: '#/definitions/entities.PubOutput'
+    type: object
+  pubs.deltePubOutput:
+    properties:
+      ok:
+        example: true
+        type: boolean
+    type: object
+  pubs.fileUploadOutput:
+    properties:
+      file_name:
+        type: string
+      ok:
+        example: true
+        type: boolean
+    type: object
+  pubs.getAllPubsForCompanyOutput:
+    properties:
+      ok:
+        example: true
+        type: boolean
+      pubs:
+        items:
+          $ref: '#/definitions/entities.PubOutput'
+        type: array
+    type: object
+  pubs.getPubByIDOutput:
+    properties:
+      ok:
+        example: true
+        type: boolean
+      pub:
+        $ref: '#/definitions/entities.PubOutput'
+    type: object
+  pubs.updatePubOutput:
+    properties:
+      ok:
+        example: true
+        type: boolean
+      pub:
+        $ref: '#/definitions/entities.PubOutput'
+    type: object
+info:
+  contact: {}
+  description: simple description
+  title: QrMenuApi
+  version: "1.0"
+paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: returns acces_token and writes refresh_token in httpOnly cookie
+      operationId: login
+      parameters:
+      - description: login input
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/auth.loginInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth.loginOutput'
+      summary: Login
+      tags:
+      - auth
+  /company/:
+    post:
+      consumes:
+      - application/json
+      description: Creates company
+      parameters:
+      - description: company params
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/entities.CompanyInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/companies.createCompanyOutput'
+      summary: Create company
+      tags:
+      - company
+  /company/{companyID}/pubs:
+    get:
+      consumes:
+      - application/json
+      description: get all pubs for company
+      parameters:
+      - description: company id
+        in: path
+        name: companyID
+        required: true
+        type: integer
+      - description: access_token
+        in: header
+        name: access_token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pubs.getAllPubsForCompanyOutput'
+      security:
+      - ApiKeyAuth: []
+      summary: Get all pubs
+      tags:
+      - pub
+  /company/{companyID}/pubs/:
+    post:
+      consumes:
+      - application/json
+      description: Creates pub
+      parameters:
+      - description: company id
+        in: path
+        name: companyID
+        required: true
+        type: integer
+      - description: pub params
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/entities.CreatePubInput'
+      - description: access_token
+        in: header
+        name: access_token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/pubs.cratePubOutput'
+      security:
+      - ApiKeyAuth: []
+      summary: Create pub
+      tags:
+      - pub
+  /company/{companyID}/pubs/{pubID}:
+    delete:
+      description: Deletes pub
+      parameters:
+      - description: company id
+        in: path
+        name: companyID
+        required: true
+        type: integer
+      - description: pub id
+        in: path
+        name: pubID
+        required: true
+        type: integer
+      - description: access_token
+        in: header
+        name: access_token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pubs.deltePubOutput'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete pub
+      tags:
+      - pub
+    get:
+      consumes:
+      - application/json
+      description: get pub
+      parameters:
+      - description: company id
+        in: path
+        name: companyID
+        required: true
+        type: integer
+      - description: pub id
+        in: path
+        name: pubID
+        required: true
+        type: integer
+      - description: access_token
+        in: header
+        name: access_token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pubs.getPubByIDOutput'
+      security:
+      - ApiKeyAuth: []
+      summary: Get pub
+      tags:
+      - pub
+    put:
+      consumes:
+      - application/json
+      description: Updates pub
+      parameters:
+      - description: company id
+        in: path
+        name: companyID
+        required: true
+        type: integer
+      - description: pub id
+        in: path
+        name: pubID
+        required: true
+        type: integer
+      - description: pub params
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/entities.UpdatePubInput'
+      - description: access_token
+        in: header
+        name: access_token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pubs.updatePubOutput'
+      security:
+      - ApiKeyAuth: []
+      summary: Update pub
+      tags:
+      - pub
+  /company/{companyID}/pubs/{pubID}/bg:
+    get:
+      description: get pub bg
+      parameters:
+      - description: company id
+        in: path
+        name: companyID
+        required: true
+        type: integer
+      - description: pub id
+        in: path
+        name: pubID
+        required: true
+        type: integer
+      produces:
+      - multipart/form-data
+      responses: {}
+      summary: Get pub bg
+      tags:
+      - pub
+    patch:
+      consumes:
+      - multipart/form-data
+      description: Uploads pub bg(png)
+      parameters:
+      - description: company id
+        in: path
+        name: companyID
+        required: true
+        type: integer
+      - description: pub id
+        in: path
+        name: pubID
+        required: true
+        type: integer
+      - description: bg
+        in: formData
+        name: bg
+        required: true
+        type: file
+      - description: access_token
+        in: header
+        name: access_token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pubs.fileUploadOutput'
+      security:
+      - ApiKeyAuth: []
+      summary: Upload bg
+      tags:
+      - pub
+  /company/{companyID}/pubs/{pubID}/logo:
+    get:
+      description: get pub logo
+      parameters:
+      - description: company id
+        in: path
+        name: companyID
+        required: true
+        type: integer
+      - description: pub id
+        in: path
+        name: pubID
+        required: true
+        type: integer
+      produces:
+      - multipart/form-data
+      responses: {}
+      summary: Get pub logo
+      tags:
+      - pub
+    patch:
+      consumes:
+      - multipart/form-data
+      description: Uploads pub logo(png)
+      parameters:
+      - description: company id
+        in: path
+        name: companyID
+        required: true
+        type: integer
+      - description: pub id
+        in: path
+        name: pubID
+        required: true
+        type: integer
+      - description: logo
+        in: formData
+        name: logo
+        required: true
+        type: file
+      - description: access_token
+        in: header
+        name: access_token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pubs.fileUploadOutput'
+      security:
+      - ApiKeyAuth: []
+      summary: Upload logo
+      tags:
+      - pub
+  /company/{companyID}/pubs/{pubID}/menus/:
+    get:
+      description: Gets all menus for pub
+      parameters:
+      - description: company id
+        in: path
+        name: companyID
+        required: true
+        type: integer
+      - description: pub id
+        in: path
+        name: pubID
+        required: true
+        type: integer
+      - description: access_token
+        in: header
+        name: access_token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/menus.createMenuOutput'
+      security:
+      - ApiKeyAuth: []
+      summary: Get all menu
+      tags:
+      - menu
+    post:
+      consumes:
+      - application/json
+      description: Creates menu
+      parameters:
+      - description: company id
+        in: path
+        name: companyID
+        required: true
+        type: integer
+      - description: pub id
+        in: path
+        name: pubID
+        required: true
+        type: integer
+      - description: menu params
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/entities.MenuInput'
+      - description: access_token
+        in: header
+        name: access_token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/menus.createMenuOutput'
+      security:
+      - ApiKeyAuth: []
+      summary: Create menu
+      tags:
+      - menu
+  /company/{companyID}/pubs/{pubID}/menus/{menuID}:
+    delete:
+      description: Deletes menu
+      parameters:
+      - description: company id
+        in: path
+        name: companyID
+        required: true
+        type: integer
+      - description: pub id
+        in: path
+        name: pubID
+        required: true
+        type: integer
+      - description: menu id
+        in: path
+        name: menuID
+        required: true
+        type: integer
+      - description: access_token
+        in: header
+        name: access_token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/menus.delteMenuOutput'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete menu
+      tags:
+      - menu
+    get:
+      description: Gets info about menu
+      parameters:
+      - description: company id
+        in: path
+        name: companyID
+        required: true
+        type: integer
+      - description: pub id
+        in: path
+        name: pubID
+        required: true
+        type: integer
+      - description: menu id
+        in: path
+        name: menuID
+        required: true
+        type: integer
+      - description: access_token
+        in: header
+        name: access_token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/menus.getMenuOutput'
+      security:
+      - ApiKeyAuth: []
+      summary: Get menu
+      tags:
+      - menu
+    put:
+      consumes:
+      - application/json
+      description: Updates menu
+      parameters:
+      - description: company id
+        in: path
+        name: companyID
+        required: true
+        type: integer
+      - description: pub id
+        in: path
+        name: pubID
+        required: true
+        type: integer
+      - description: menu id
+        in: path
+        name: menuID
+        required: true
+        type: integer
+      - description: menu params
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/entities.MenuInput'
+      - description: access_token
+        in: header
+        name: access_token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/menus.updateMenuOutput'
+      security:
+      - ApiKeyAuth: []
+      summary: Update menu
+      tags:
+      - menu
+  /company/{companyID}/pubs/{pubID}/menus/{menuID}/categories:
+    get:
+      description: Get info of category
+      parameters:
+      - description: company id
+        in: path
+        name: companyID
+        required: true
+        type: integer
+      - description: pub id
+        in: path
+        name: pubID
+        required: true
+        type: integer
+      - description: menu id
+        in: path
+        name: menuID
+        required: true
+        type: integer
+      - description: access_token
+        in: header
+        name: access_token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/categories.getAllCategoriesOutput'
+      security:
+      - ApiKeyAuth: []
+      summary: Get category
+      tags:
+      - category
+  /company/{companyID}/pubs/{pubID}/menus/{menuID}/categories/:
+    post:
+      consumes:
+      - application/json
+      description: Creates category
+      parameters:
+      - description: company id
+        in: path
+        name: companyID
+        required: true
+        type: integer
+      - description: pub id
+        in: path
+        name: pubID
+        required: true
+        type: integer
+      - description: menu id
+        in: path
+        name: menuID
+        required: true
+        type: integer
+      - description: category params
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/entities.CategoryInput'
+      - description: access_token
+        in: header
+        name: access_token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/categories.createCategoryOutput'
+      security:
+      - ApiKeyAuth: []
+      summary: Create category
+      tags:
+      - category
+  /company/{companyID}/pubs/{pubID}/menus/{menuID}/categories/{categoryID}:
+    delete:
+      description: Deletes category
+      parameters:
+      - description: company id
+        in: path
+        name: companyID
+        required: true
+        type: integer
+      - description: pub id
+        in: path
+        name: pubID
+        required: true
+        type: integer
+      - description: menu id
+        in: path
+        name: menuID
+        required: true
+        type: integer
+      - description: category id
+        in: path
+        name: categoryID
+        required: true
+        type: integer
+      - description: access_token
+        in: header
+        name: access_token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/categories.deleteCategoryOutput'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete category
+      tags:
+      - category
+    get:
+      description: Get info of category
+      parameters:
+      - description: company id
+        in: path
+        name: companyID
+        required: true
+        type: integer
+      - description: pub id
+        in: path
+        name: pubID
+        required: true
+        type: integer
+      - description: menu id
+        in: path
+        name: menuID
+        required: true
+        type: integer
+      - description: category id
+        in: path
+        name: categoryID
+        required: true
+        type: integer
+      - description: access_token
+        in: header
+        name: access_token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/categories.getCategoryOutput'
+      security:
+      - ApiKeyAuth: []
+      summary: Get category
+      tags:
+      - category
+    put:
+      consumes:
+      - application/json
+      description: Update category
+      parameters:
+      - description: company id
+        in: path
+        name: companyID
+        required: true
+        type: integer
+      - description: pub id
+        in: path
+        name: pubID
+        required: true
+        type: integer
+      - description: menu id
+        in: path
+        name: menuID
+        required: true
+        type: integer
+      - description: category id
+        in: path
+        name: categoryID
+        required: true
+        type: integer
+      - description: category params
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/entities.CategoryInput'
+      - description: access_token
+        in: header
+        name: access_token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/categories.updateCategoryOutput'
+      security:
+      - ApiKeyAuth: []
+      summary: Update category
+      tags:
+      - category
+  /company/{companyID}/pubs/{pubID}/menus/{menuID}/categories/{categoryID}/dishes:
+    get:
+      description: Get info of dishes in category
+      parameters:
+      - description: company id
+        in: path
+        name: companyID
+        required: true
+        type: integer
+      - description: pub id
+        in: path
+        name: pubID
+        required: true
+        type: integer
+      - description: menu id
+        in: path
+        name: menuID
+        required: true
+        type: integer
+      - description: category id
+        in: path
+        name: categoryID
+        required: true
+        type: integer
+      - description: access_token
+        in: header
+        name: access_token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dishes.getAllDishesOutput'
+      security:
+      - ApiKeyAuth: []
+      summary: Get dish
+      tags:
+      - dish
+  /company/{companyID}/pubs/{pubID}/menus/{menuID}/categories/{categoryID}/dishes/:
+    post:
+      consumes:
+      - application/json
+      description: Creates dish
+      parameters:
+      - description: company id
+        in: path
+        name: companyID
+        required: true
+        type: integer
+      - description: pub id
+        in: path
+        name: pubID
+        required: true
+        type: integer
+      - description: menu id
+        in: path
+        name: menuID
+        required: true
+        type: integer
+      - description: category id
+        in: path
+        name: categoryID
+        required: true
+        type: integer
+      - description: menu params
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/entities.DishInput'
+      - description: access_token
+        in: header
+        name: access_token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dishes.createDishOutput'
+      security:
+      - ApiKeyAuth: []
+      summary: Create dish
+      tags:
+      - dish
+  /company/{companyID}/pubs/{pubID}/menus/{menuID}/categories/{categoryID}/dishes/{dishID}:
+    delete:
+      description: Deletes dish
+      parameters:
+      - description: company id
+        in: path
+        name: companyID
+        required: true
+        type: integer
+      - description: pub id
+        in: path
+        name: pubID
+        required: true
+        type: integer
+      - description: menu id
+        in: path
+        name: menuID
+        required: true
+        type: integer
+      - description: category id
+        in: path
+        name: categoryID
+        required: true
+        type: integer
+      - description: dish id
+        in: path
+        name: dishID
+        required: true
+        type: integer
+      - description: access_token
+        in: header
+        name: access_token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dishes.deleteDishOutput'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete dish
+      tags:
+      - dish
+    get:
+      description: Get info of dish
+      parameters:
+      - description: company id
+        in: path
+        name: companyID
+        required: true
+        type: integer
+      - description: pub id
+        in: path
+        name: pubID
+        required: true
+        type: integer
+      - description: menu id
+        in: path
+        name: menuID
+        required: true
+        type: integer
+      - description: category id
+        in: path
+        name: categoryID
+        required: true
+        type: integer
+      - description: dish id
+        in: path
+        name: dishID
+        required: true
+        type: integer
+      - description: access_token
+        in: header
+        name: access_token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dishes.getDishByIDOutput'
+      security:
+      - ApiKeyAuth: []
+      summary: Get dish
+      tags:
+      - dish
+    put:
+      consumes:
+      - application/json
+      description: Updates dish
+      parameters:
+      - description: company id
+        in: path
+        name: companyID
+        required: true
+        type: integer
+      - description: pub id
+        in: path
+        name: pubID
+        required: true
+        type: integer
+      - description: menu id
+        in: path
+        name: menuID
+        required: true
+        type: integer
+      - description: category id
+        in: path
+        name: categoryID
+        required: true
+        type: integer
+      - description: dish id
+        in: path
+        name: dishID
+        required: true
+        type: integer
+      - description: dish params
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/entities.DishInput'
+      - description: access_token
+        in: header
+        name: access_token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dishes.updateDishOutput'
+      security:
+      - ApiKeyAuth: []
+      summary: Update dish
+      tags:
+      - dish
+  /company/{companyID}/pubs/{pubID}/menus/{menuID}/categories/{categoryID}/dishes/{dishID}/image:
+    get:
+      description: get dish image
+      parameters:
+      - description: company id
+        in: path
+        name: companyID
+        required: true
+        type: integer
+      - description: pub id
+        in: path
+        name: pubID
+        required: true
+        type: integer
+      - description: menu id
+        in: path
+        name: menuID
+        required: true
+        type: integer
+      - description: category id
+        in: path
+        name: categoryID
+        required: true
+        type: integer
+      - description: dish id
+        in: path
+        name: dishID
+        required: true
+        type: integer
+      produces:
+      - multipart/form-data
+      responses: {}
+      summary: Get dish image
+      tags:
+      - dish
+    patch:
+      consumes:
+      - multipart/form-data
+      description: Uploads dish image(png)
+      parameters:
+      - description: company id
+        in: path
+        name: companyID
+        required: true
+        type: integer
+      - description: pub id
+        in: path
+        name: pubID
+        required: true
+        type: integer
+      - description: menu id
+        in: path
+        name: menuID
+        required: true
+        type: integer
+      - description: category id
+        in: path
+        name: categoryID
+        required: true
+        type: integer
+      - description: dish id
+        in: path
+        name: dishID
+        required: true
+        type: integer
+      - description: image
+        in: formData
+        name: image
+        required: true
+        type: file
+      - description: access_token
+        in: header
+        name: access_token
+        required: true
+        type: string
+      produces:
+      - multipart/form-data
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dishes.fileUploadOutput'
+      security:
+      - ApiKeyAuth: []
+      summary: Upload image
+      tags:
+      - dish
+  /company/{companyID}/pubs/{pubID}/menus/{menuID}/categories/{categoryID}/image:
+    get:
+      description: get category image
+      parameters:
+      - description: company id
+        in: path
+        name: companyID
+        required: true
+        type: integer
+      - description: pub id
+        in: path
+        name: pubID
+        required: true
+        type: integer
+      - description: menu id
+        in: path
+        name: menuID
+        required: true
+        type: integer
+      - description: category id
+        in: path
+        name: categoryID
+        required: true
+        type: integer
+      produces:
+      - multipart/form-data
+      responses: {}
+      summary: Get category image
+      tags:
+      - category
+    patch:
+      consumes:
+      - multipart/form-data
+      description: Uploads category image(png)
+      parameters:
+      - description: company id
+        in: path
+        name: companyID
+        required: true
+        type: integer
+      - description: pub id
+        in: path
+        name: pubID
+        required: true
+        type: integer
+      - description: menu id
+        in: path
+        name: menuID
+        required: true
+        type: integer
+      - description: category id
+        in: path
+        name: categoryID
+        required: true
+        type: integer
+      - description: image
+        in: formData
+        name: image
+        required: true
+        type: file
+      - description: access_token
+        in: header
+        name: access_token
+        required: true
+        type: string
+      produces:
+      - multipart/form-data
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/categories.fileUploadOutput'
+      security:
+      - ApiKeyAuth: []
+      summary: Upload image
+      tags:
+      - category
+  /company/{id}:
+    get:
+      consumes:
+      - application/json
+      description: returns company info
+      parameters:
+      - description: company id
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: access_token
+        in: header
+        name: access_token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/companies.getCompanyOutput'
+      security:
+      - ApiKeyAuth: []
+      summary: Get company info
+      tags:
+      - company
+swagger: "2.0"

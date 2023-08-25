@@ -1,0 +1,135 @@
+package auth
+
+import (
+	"errors"
+
+	h "github.com/alexkalak/qrmenu/src/controllers/httpv1/httphelpers"
+	"github.com/alexkalak/qrmenu/src/controllers/httpv1/input"
+	"github.com/alexkalak/qrmenu/src/errors/jwterrors"
+	"github.com/alexkalak/qrmenu/src/errors/servererrors"
+	"github.com/alexkalak/qrmenu/src/models"
+	"github.com/alexkalak/qrmenu/src/services/companyservice"
+	"github.com/alexkalak/qrmenu/src/services/jwtservice"
+	"github.com/alexkalak/qrmenu/src/services/roleservice"
+	"github.com/gofiber/fiber/v2"
+)
+
+type authController struct {
+	JwtService     jwtservice.JwtService
+	CompanyService companyservice.CompanyService
+	RoleService    roleservice.RoleService
+}
+
+func New() *authController {
+	return &authController{
+		JwtService:     jwtservice.New(),
+		CompanyService: companyservice.New(),
+		RoleService:    roleservice.New(),
+	}
+}
+
+func (c *authController) UnauthorizedRouter(router fiber.Router) {
+	router.Post("/login", c.Login)
+	router.Post("/refresh-token", c.RefreshToken)
+}
+
+type loginInput struct {
+	Email    string `json:"email" validate:"required,email" example:"alex@alex.alex"`
+	Password string `json:"password" validate:"required" example:"123123123"`
+	As       string `json:"as" validate:"required" example:"company"`
+}
+
+type loginOutput struct {
+	Ok          bool   `json:"ok" example:"true"`
+	AccessToken string `json:"access_token"`
+}
+
+// @Summary      Login
+// @Description  returns acces_token and writes refresh_token in httpOnly cookie
+// @Tags         auth
+// @id login
+// @Accept       json
+// @Param input body loginInput true "login input"
+// @Produce      json
+// @Success      200  {object}  loginOutput
+// @Router       /auth/login [post]
+func (c *authController) Login(ctx *fiber.Ctx) error {
+	loginInput, validationErrors, err := input.ParseRequestBody[loginInput](ctx)
+	if err != nil {
+		return h.SendError(ctx, servererrors.ErrInternalServerError, h.AUTOMATIC_STATUS_CODE)
+	}
+	if len(validationErrors) > 0 {
+		return h.SendValidationErrors(ctx, validationErrors)
+	}
+
+	if loginInput.As == "company" {
+		return c.loginAsCompany(ctx, loginInput.Email, loginInput.Password)
+	}
+
+	return h.SendError(ctx, errors.New("not valid role id"), fiber.StatusBadRequest)
+}
+
+func (c *authController) loginAsCompany(ctx *fiber.Ctx, email string, password string) error {
+	company, err := c.CompanyService.Login(email, password)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	role, err := c.RoleService.GetRoleByName(models.COMPANY_ROLE_NAME)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	err = h.SendRefreshTokenInHttpOnlyCookies(ctx, int(company.ID), role.SignificanceNumber)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	accessToken, err := c.JwtService.GetAccessTokenString(
+		int(company.ID),
+		role.SignificanceNumber,
+		jwtservice.STANDARD_ACCESS_LIFE_TIME)
+
+	if err != nil {
+		return h.SendError(ctx, servererrors.ErrInternalServerError, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	return h.SendSuccess(
+		ctx,
+		fiber.Map{
+			"access_token": accessToken,
+		},
+		fiber.StatusOK,
+	)
+}
+
+func (c *authController) RefreshToken(ctx *fiber.Ctx) error {
+	refreshToken := ctx.Cookies("refresh_token")
+	if refreshToken == "" {
+		return h.SendError(ctx, jwterrors.ErrEmptyRefreshToken, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	userClaims, valid, err := c.JwtService.ParseJwtTokenString(refreshToken)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+	if !valid {
+		return h.SendError(ctx, jwterrors.ErrNotValidSignature, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	accessToken, err := c.JwtService.GetAccessTokenString(
+		userClaims.ID,
+		userClaims.Significance,
+		jwtservice.STANDARD_ACCESS_LIFE_TIME)
+
+	if err != nil {
+		return h.SendError(ctx, servererrors.ErrInternalServerError, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	return h.SendSuccess(
+		ctx,
+		fiber.Map{
+			"access_token": accessToken,
+		},
+		fiber.StatusOK)
+}

@@ -1,0 +1,2404 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "simple description",
+        "title": "QrMenuApi",
+        "contact": {},
+        "version": "1.0"
+    },
+    "paths": {
+        "/auth/login": {
+            "post": {
+                "description": "returns acces_token and writes refresh_token in httpOnly cookie",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Login",
+                "operationId": "login",
+                "parameters": [
+                    {
+                        "description": "login input",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/auth.loginInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/auth.loginOutput"
+                        }
+                    }
+                }
+            }
+        },
+        "/company/": {
+            "post": {
+                "description": "Creates company",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "company"
+                ],
+                "summary": "Create company",
+                "parameters": [
+                    {
+                        "description": "company params",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/entities.CompanyInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/companies.createCompanyOutput"
+                        }
+                    }
+                }
+            }
+        },
+        "/company/{companyID}/pubs": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "get all pubs for company",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "pub"
+                ],
+                "summary": "Get all pubs",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "company id",
+                        "name": "companyID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "access_token",
+                        "name": "access_token",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/pubs.getAllPubsForCompanyOutput"
+                        }
+                    }
+                }
+            }
+        },
+        "/company/{companyID}/pubs/": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Creates pub",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "pub"
+                ],
+                "summary": "Create pub",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "company id",
+                        "name": "companyID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "pub params",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/entities.CreatePubInput"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "access_token",
+                        "name": "access_token",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/pubs.cratePubOutput"
+                        }
+                    }
+                }
+            }
+        },
+        "/company/{companyID}/pubs/{pubID}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "get pub",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "pub"
+                ],
+                "summary": "Get pub",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "company id",
+                        "name": "companyID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "pub id",
+                        "name": "pubID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "access_token",
+                        "name": "access_token",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/pubs.getPubByIDOutput"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Updates pub",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "pub"
+                ],
+                "summary": "Update pub",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "company id",
+                        "name": "companyID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "pub id",
+                        "name": "pubID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "pub params",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/entities.UpdatePubInput"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "access_token",
+                        "name": "access_token",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/pubs.updatePubOutput"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Deletes pub",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "pub"
+                ],
+                "summary": "Delete pub",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "company id",
+                        "name": "companyID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "pub id",
+                        "name": "pubID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "access_token",
+                        "name": "access_token",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/pubs.deltePubOutput"
+                        }
+                    }
+                }
+            }
+        },
+        "/company/{companyID}/pubs/{pubID}/bg": {
+            "get": {
+                "description": "get pub bg",
+                "produces": [
+                    "multipart/form-data"
+                ],
+                "tags": [
+                    "pub"
+                ],
+                "summary": "Get pub bg",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "company id",
+                        "name": "companyID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "pub id",
+                        "name": "pubID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            },
+            "patch": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Uploads pub bg(png)",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "pub"
+                ],
+                "summary": "Upload bg",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "company id",
+                        "name": "companyID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "pub id",
+                        "name": "pubID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "bg",
+                        "name": "bg",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "access_token",
+                        "name": "access_token",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/pubs.fileUploadOutput"
+                        }
+                    }
+                }
+            }
+        },
+        "/company/{companyID}/pubs/{pubID}/logo": {
+            "get": {
+                "description": "get pub logo",
+                "produces": [
+                    "multipart/form-data"
+                ],
+                "tags": [
+                    "pub"
+                ],
+                "summary": "Get pub logo",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "company id",
+                        "name": "companyID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "pub id",
+                        "name": "pubID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            },
+            "patch": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Uploads pub logo(png)",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "pub"
+                ],
+                "summary": "Upload logo",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "company id",
+                        "name": "companyID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "pub id",
+                        "name": "pubID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "logo",
+                        "name": "logo",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "access_token",
+                        "name": "access_token",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/pubs.fileUploadOutput"
+                        }
+                    }
+                }
+            }
+        },
+        "/company/{companyID}/pubs/{pubID}/menus/": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Gets all menus for pub",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "menu"
+                ],
+                "summary": "Get all menu",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "company id",
+                        "name": "companyID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "pub id",
+                        "name": "pubID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "access_token",
+                        "name": "access_token",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/menus.createMenuOutput"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Creates menu",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "menu"
+                ],
+                "summary": "Create menu",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "company id",
+                        "name": "companyID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "pub id",
+                        "name": "pubID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "menu params",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/entities.MenuInput"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "access_token",
+                        "name": "access_token",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/menus.createMenuOutput"
+                        }
+                    }
+                }
+            }
+        },
+        "/company/{companyID}/pubs/{pubID}/menus/{menuID}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Gets info about menu",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "menu"
+                ],
+                "summary": "Get menu",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "company id",
+                        "name": "companyID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "pub id",
+                        "name": "pubID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "menu id",
+                        "name": "menuID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "access_token",
+                        "name": "access_token",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/menus.getMenuOutput"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Updates menu",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "menu"
+                ],
+                "summary": "Update menu",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "company id",
+                        "name": "companyID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "pub id",
+                        "name": "pubID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "menu id",
+                        "name": "menuID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "menu params",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/entities.MenuInput"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "access_token",
+                        "name": "access_token",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/menus.updateMenuOutput"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Deletes menu",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "menu"
+                ],
+                "summary": "Delete menu",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "company id",
+                        "name": "companyID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "pub id",
+                        "name": "pubID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "menu id",
+                        "name": "menuID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "access_token",
+                        "name": "access_token",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/menus.delteMenuOutput"
+                        }
+                    }
+                }
+            }
+        },
+        "/company/{companyID}/pubs/{pubID}/menus/{menuID}/categories": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get info of category",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "category"
+                ],
+                "summary": "Get category",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "company id",
+                        "name": "companyID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "pub id",
+                        "name": "pubID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "menu id",
+                        "name": "menuID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "access_token",
+                        "name": "access_token",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/categories.getAllCategoriesOutput"
+                        }
+                    }
+                }
+            }
+        },
+        "/company/{companyID}/pubs/{pubID}/menus/{menuID}/categories/": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Creates category",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "category"
+                ],
+                "summary": "Create category",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "company id",
+                        "name": "companyID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "pub id",
+                        "name": "pubID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "menu id",
+                        "name": "menuID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "category params",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/entities.CategoryInput"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "access_token",
+                        "name": "access_token",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/categories.createCategoryOutput"
+                        }
+                    }
+                }
+            }
+        },
+        "/company/{companyID}/pubs/{pubID}/menus/{menuID}/categories/{categoryID}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get info of category",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "category"
+                ],
+                "summary": "Get category",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "company id",
+                        "name": "companyID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "pub id",
+                        "name": "pubID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "menu id",
+                        "name": "menuID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "category id",
+                        "name": "categoryID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "access_token",
+                        "name": "access_token",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/categories.getCategoryOutput"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Update category",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "category"
+                ],
+                "summary": "Update category",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "company id",
+                        "name": "companyID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "pub id",
+                        "name": "pubID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "menu id",
+                        "name": "menuID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "category id",
+                        "name": "categoryID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "category params",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/entities.CategoryInput"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "access_token",
+                        "name": "access_token",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/categories.updateCategoryOutput"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Deletes category",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "category"
+                ],
+                "summary": "Delete category",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "company id",
+                        "name": "companyID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "pub id",
+                        "name": "pubID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "menu id",
+                        "name": "menuID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "category id",
+                        "name": "categoryID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "access_token",
+                        "name": "access_token",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/categories.deleteCategoryOutput"
+                        }
+                    }
+                }
+            }
+        },
+        "/company/{companyID}/pubs/{pubID}/menus/{menuID}/categories/{categoryID}/dishes": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get info of dishes in category",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "dish"
+                ],
+                "summary": "Get dish",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "company id",
+                        "name": "companyID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "pub id",
+                        "name": "pubID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "menu id",
+                        "name": "menuID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "category id",
+                        "name": "categoryID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "access_token",
+                        "name": "access_token",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dishes.getAllDishesOutput"
+                        }
+                    }
+                }
+            }
+        },
+        "/company/{companyID}/pubs/{pubID}/menus/{menuID}/categories/{categoryID}/dishes/": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Creates dish",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "dish"
+                ],
+                "summary": "Create dish",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "company id",
+                        "name": "companyID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "pub id",
+                        "name": "pubID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "menu id",
+                        "name": "menuID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "category id",
+                        "name": "categoryID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "menu params",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/entities.DishInput"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "access_token",
+                        "name": "access_token",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/dishes.createDishOutput"
+                        }
+                    }
+                }
+            }
+        },
+        "/company/{companyID}/pubs/{pubID}/menus/{menuID}/categories/{categoryID}/dishes/{dishID}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get info of dish",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "dish"
+                ],
+                "summary": "Get dish",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "company id",
+                        "name": "companyID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "pub id",
+                        "name": "pubID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "menu id",
+                        "name": "menuID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "category id",
+                        "name": "categoryID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "dish id",
+                        "name": "dishID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "access_token",
+                        "name": "access_token",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dishes.getDishByIDOutput"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Updates dish",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "dish"
+                ],
+                "summary": "Update dish",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "company id",
+                        "name": "companyID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "pub id",
+                        "name": "pubID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "menu id",
+                        "name": "menuID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "category id",
+                        "name": "categoryID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "dish id",
+                        "name": "dishID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "dish params",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/entities.DishInput"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "access_token",
+                        "name": "access_token",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dishes.updateDishOutput"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Deletes dish",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "dish"
+                ],
+                "summary": "Delete dish",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "company id",
+                        "name": "companyID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "pub id",
+                        "name": "pubID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "menu id",
+                        "name": "menuID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "category id",
+                        "name": "categoryID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "dish id",
+                        "name": "dishID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "access_token",
+                        "name": "access_token",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dishes.deleteDishOutput"
+                        }
+                    }
+                }
+            }
+        },
+        "/company/{companyID}/pubs/{pubID}/menus/{menuID}/categories/{categoryID}/dishes/{dishID}/image": {
+            "get": {
+                "description": "get dish image",
+                "produces": [
+                    "multipart/form-data"
+                ],
+                "tags": [
+                    "dish"
+                ],
+                "summary": "Get dish image",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "company id",
+                        "name": "companyID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "pub id",
+                        "name": "pubID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "menu id",
+                        "name": "menuID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "category id",
+                        "name": "categoryID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "dish id",
+                        "name": "dishID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            },
+            "patch": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Uploads dish image(png)",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "multipart/form-data"
+                ],
+                "tags": [
+                    "dish"
+                ],
+                "summary": "Upload image",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "company id",
+                        "name": "companyID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "pub id",
+                        "name": "pubID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "menu id",
+                        "name": "menuID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "category id",
+                        "name": "categoryID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "dish id",
+                        "name": "dishID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "image",
+                        "name": "image",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "access_token",
+                        "name": "access_token",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dishes.fileUploadOutput"
+                        }
+                    }
+                }
+            }
+        },
+        "/company/{companyID}/pubs/{pubID}/menus/{menuID}/categories/{categoryID}/image": {
+            "get": {
+                "description": "get category image",
+                "produces": [
+                    "multipart/form-data"
+                ],
+                "tags": [
+                    "category"
+                ],
+                "summary": "Get category image",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "company id",
+                        "name": "companyID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "pub id",
+                        "name": "pubID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "menu id",
+                        "name": "menuID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "category id",
+                        "name": "categoryID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            },
+            "patch": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Uploads category image(png)",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "multipart/form-data"
+                ],
+                "tags": [
+                    "category"
+                ],
+                "summary": "Upload image",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "company id",
+                        "name": "companyID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "pub id",
+                        "name": "pubID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "menu id",
+                        "name": "menuID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "category id",
+                        "name": "categoryID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "image",
+                        "name": "image",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "access_token",
+                        "name": "access_token",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/categories.fileUploadOutput"
+                        }
+                    }
+                }
+            }
+        },
+        "/company/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "returns company info",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "company"
+                ],
+                "summary": "Get company info",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "company id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "access_token",
+                        "name": "access_token",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/companies.getCompanyOutput"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "auth.loginInput": {
+            "type": "object",
+            "required": [
+                "as",
+                "email",
+                "password"
+            ],
+            "properties": {
+                "as": {
+                    "type": "string",
+                    "example": "company"
+                },
+                "email": {
+                    "type": "string",
+                    "example": "alex@alex.alex"
+                },
+                "password": {
+                    "type": "string",
+                    "example": "123123123"
+                }
+            }
+        },
+        "auth.loginOutput": {
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "type": "string"
+                },
+                "ok": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "categories.createCategoryOutput": {
+            "type": "object",
+            "properties": {
+                "category": {
+                    "$ref": "#/definitions/entities.CategoryOutput"
+                },
+                "ok": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "categories.deleteCategoryOutput": {
+            "type": "object",
+            "properties": {
+                "ok": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "categories.fileUploadOutput": {
+            "type": "object",
+            "properties": {
+                "file_name": {
+                    "type": "string"
+                },
+                "ok": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "categories.getAllCategoriesOutput": {
+            "type": "object",
+            "properties": {
+                "categories": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entities.CategoryOutput"
+                    }
+                },
+                "ok": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "categories.getCategoryOutput": {
+            "type": "object",
+            "properties": {
+                "category": {
+                    "$ref": "#/definitions/entities.CategoryOutput"
+                },
+                "ok": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "categories.updateCategoryOutput": {
+            "type": "object",
+            "properties": {
+                "category": {
+                    "$ref": "#/definitions/entities.CategoryOutput"
+                },
+                "ok": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "companies.createCompanyOutput": {
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "type": "string"
+                },
+                "company": {
+                    "$ref": "#/definitions/entities.CompanyOutput"
+                },
+                "ok": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "companies.getCompanyOutput": {
+            "type": "object",
+            "properties": {
+                "company": {
+                    "$ref": "#/definitions/entities.CompanyOutput"
+                },
+                "ok": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "dishes.createDishOutput": {
+            "type": "object",
+            "properties": {
+                "dish": {
+                    "$ref": "#/definitions/entities.DishOutput"
+                },
+                "ok": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "dishes.deleteDishOutput": {
+            "type": "object",
+            "properties": {
+                "ok": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "dishes.fileUploadOutput": {
+            "type": "object",
+            "properties": {
+                "file_name": {
+                    "type": "string"
+                },
+                "ok": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "dishes.getAllDishesOutput": {
+            "type": "object",
+            "properties": {
+                "dishes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entities.DishOutput"
+                    }
+                },
+                "ok": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "dishes.getDishByIDOutput": {
+            "type": "object",
+            "properties": {
+                "dish": {
+                    "$ref": "#/definitions/entities.DishOutput"
+                },
+                "ok": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "dishes.updateDishOutput": {
+            "type": "object",
+            "properties": {
+                "dish": {
+                    "$ref": "#/definitions/entities.DishOutput"
+                },
+                "ok": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "entities.CategoryInput": {
+            "type": "object",
+            "required": [
+                "name",
+                "place",
+                "visible"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "minLength": 2,
+                    "example": "My category name"
+                },
+                "place": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "visible": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "entities.CategoryOutput": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "menu_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "name": {
+                    "type": "string",
+                    "example": "My category name"
+                },
+                "place": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "visible": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "entities.CompanyInput": {
+            "type": "object",
+            "required": [
+                "name",
+                "password",
+                "phone"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "example": "example@gmail.com"
+                },
+                "name": {
+                    "type": "string",
+                    "minLength": 2,
+                    "example": "My company name"
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 8,
+                    "example": "securepassword"
+                },
+                "phone": {
+                    "type": "string",
+                    "minLength": 7,
+                    "example": "37377777777"
+                }
+            }
+        },
+        "entities.CompanyOutput": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "example": "example@gmail.com"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "name": {
+                    "type": "string",
+                    "example": "My company name"
+                },
+                "phone": {
+                    "type": "string",
+                    "example": "37377777777"
+                }
+            }
+        },
+        "entities.CreatePubInput": {
+            "type": "object",
+            "required": [
+                "name",
+                "url_name"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "minLength": 2,
+                    "example": "My pub name"
+                },
+                "url_name": {
+                    "type": "string",
+                    "minLength": 2,
+                    "example": "my-pub-name"
+                }
+            }
+        },
+        "entities.DishInput": {
+            "type": "object",
+            "required": [
+                "category_id",
+                "ingriedients",
+                "name",
+                "place",
+                "price",
+                "visible"
+            ],
+            "properties": {
+                "category_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "ingriedients": {
+                    "type": "string",
+                    "example": "My dish ingriedients"
+                },
+                "name": {
+                    "type": "string",
+                    "minLength": 2,
+                    "example": "My dish name"
+                },
+                "place": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "price": {
+                    "type": "number",
+                    "example": 1.99
+                },
+                "visible": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "entities.DishOutput": {
+            "type": "object",
+            "properties": {
+                "category_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "image_file_name": {
+                    "type": "string",
+                    "example": "my-dish-image.jpg"
+                },
+                "ingriedients": {
+                    "type": "string",
+                    "example": "My dish ingriedients"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "My dish name"
+                },
+                "place": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "price": {
+                    "type": "number",
+                    "example": 1.99
+                },
+                "visible": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "entities.MenuInput": {
+            "type": "object",
+            "required": [
+                "name",
+                "pub_id",
+                "visible"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "minLength": 2,
+                    "example": "My menu name"
+                },
+                "pub_id": {
+                    "type": "integer",
+                    "example": 2
+                },
+                "visible": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "entities.MenuOutput": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "name": {
+                    "type": "string",
+                    "example": "My menu name"
+                },
+                "pub_id": {
+                    "type": "integer",
+                    "example": 2
+                },
+                "visible": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "entities.PubOutput": {
+            "type": "object",
+            "properties": {
+                "additional_info": {
+                    "type": "string",
+                    "example": "My pub additional info"
+                },
+                "address": {
+                    "type": "string",
+                    "example": "My pub address"
+                },
+                "bg_image_file_name": {
+                    "type": "string",
+                    "example": "my-pub-name-bg.png"
+                },
+                "color": {
+                    "type": "string",
+                    "example": "#ffffff"
+                },
+                "color_theme": {
+                    "type": "string",
+                    "example": "light"
+                },
+                "company_id": {
+                    "type": "integer"
+                },
+                "currency_id": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "logo_file_name": {
+                    "type": "string",
+                    "example": "my-pub-name-logo.png"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "My pub name"
+                },
+                "qr_code_file_name": {
+                    "type": "string",
+                    "example": "my-pub-name.png"
+                },
+                "url_name": {
+                    "type": "string",
+                    "example": "my-pub-name"
+                },
+                "wifi_password": {
+                    "type": "string",
+                    "example": "12345678"
+                }
+            }
+        },
+        "entities.UpdatePubInput": {
+            "type": "object",
+            "required": [
+                "additional_info",
+                "address",
+                "color",
+                "color_theme",
+                "name",
+                "url_name",
+                "wifi_password"
+            ],
+            "properties": {
+                "additional_info": {
+                    "type": "string",
+                    "minLength": 2,
+                    "example": "My pub additional info"
+                },
+                "address": {
+                    "type": "string",
+                    "minLength": 2,
+                    "example": "My pub address"
+                },
+                "color": {
+                    "type": "string",
+                    "minLength": 2,
+                    "example": "#ffffff"
+                },
+                "color_theme": {
+                    "type": "string",
+                    "minLength": 2,
+                    "example": "light"
+                },
+                "company_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "currency_id": {
+                    "type": "integer",
+                    "example": 22
+                },
+                "name": {
+                    "type": "string",
+                    "minLength": 2,
+                    "example": "My pub name"
+                },
+                "url_name": {
+                    "type": "string",
+                    "minLength": 2,
+                    "example": "my-pub-name"
+                },
+                "wifi_password": {
+                    "type": "string",
+                    "minLength": 2,
+                    "example": "12345678"
+                }
+            }
+        },
+        "menus.createMenuOutput": {
+            "type": "object",
+            "properties": {
+                "menu": {
+                    "$ref": "#/definitions/entities.MenuOutput"
+                },
+                "ok": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "menus.delteMenuOutput": {
+            "type": "object",
+            "properties": {
+                "ok": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "menus.getMenuOutput": {
+            "type": "object",
+            "properties": {
+                "menu": {
+                    "$ref": "#/definitions/entities.MenuOutput"
+                },
+                "ok": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "menus.updateMenuOutput": {
+            "type": "object",
+            "properties": {
+                "menu": {
+                    "$ref": "#/definitions/entities.MenuOutput"
+                },
+                "ok": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "pubs.cratePubOutput": {
+            "type": "object",
+            "properties": {
+                "ok": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "pub": {
+                    "$ref": "#/definitions/entities.PubOutput"
+                }
+            }
+        },
+        "pubs.deltePubOutput": {
+            "type": "object",
+            "properties": {
+                "ok": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "pubs.fileUploadOutput": {
+            "type": "object",
+            "properties": {
+                "file_name": {
+                    "type": "string"
+                },
+                "ok": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "pubs.getAllPubsForCompanyOutput": {
+            "type": "object",
+            "properties": {
+                "ok": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "pubs": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entities.PubOutput"
+                    }
+                }
+            }
+        },
+        "pubs.getPubByIDOutput": {
+            "type": "object",
+            "properties": {
+                "ok": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "pub": {
+                    "$ref": "#/definitions/entities.PubOutput"
+                }
+            }
+        },
+        "pubs.updatePubOutput": {
+            "type": "object",
+            "properties": {
+                "ok": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "pub": {
+                    "$ref": "#/definitions/entities.PubOutput"
+                }
+            }
+        }
+    }
+}
