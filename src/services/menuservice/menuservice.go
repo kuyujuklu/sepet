@@ -14,6 +14,8 @@ type MenuService interface {
 	CreateMenu(menu models.Menu) (models.Menu, error)
 	UpdateMenu(id int, menu models.Menu) (models.Menu, error)
 	DeleteMenu(id int) error
+	MoveMenuLeft(pubID int, menuID int) (int, error)
+	MoveMenuRight(pubID int, menuID int) (int, error)
 }
 
 type menuService struct {
@@ -91,4 +93,49 @@ func (s *menuService) UpdateMenu(id int, menu models.Menu) (models.Menu, error) 
 
 func (s *menuService) DeleteMenu(id int) error {
 	return s.MenuRepo.DeleteMenu(id)
+}
+
+func (s *menuService) MoveMenuLeft(pubID int, menuID int) (int, error) {
+	_, err := s.PubService.GetPubById(pubID)
+	if err != nil {
+		return 0, err
+	}
+
+	menu, err := s.MenuRepo.GetMenuById(menuID)
+	if err != nil {
+		return 0, err
+	}
+
+	if menu.Place == 1 {
+		return 1, nil
+	}
+
+	return s.MenuRepo.SetMenuPlace(pubID, menuID, menu.Place-1)
+}
+
+func (s *menuService) MoveMenuRight(pubID int, menuID int) (int, error) {
+	_, err := s.PubService.GetPubById(pubID)
+	if err != nil {
+		return 0, err
+	}
+
+	menu, err := s.MenuRepo.GetMenuById(menuID)
+	if err != nil {
+		return 0, err
+	}
+
+	maxPlace, err := s.MenuRepo.GetMenuMaxPlace(pubID)
+	if err != nil {
+		return 0, err
+	}
+
+	if menu.Place == maxPlace {
+		return 0, nil
+	}
+
+	if menu.Place > maxPlace {
+		return s.MenuRepo.SetMenuPlace(pubID, menuID, maxPlace)
+	}
+
+	return s.MenuRepo.SetMenuPlace(pubID, menuID, menu.Place+1)
 }

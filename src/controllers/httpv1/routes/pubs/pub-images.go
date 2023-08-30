@@ -56,7 +56,7 @@ func (c *pubController) UploadPubLogo(ctx *fiber.Ctx) error {
 
 	fileNameSplitted := strings.Split(file.Filename, ".")
 	fileExtension := fileNameSplitted[len(fileNameSplitted)-1]
-	if fileExtension != "png" {
+	if fileExtension != "png" && fileExtension != "jpg" && fileExtension != "jpeg" {
 		return h.SendError(ctx, httperrors.ErrInvalidFileExtension, h.AUTOMATIC_STATUS_CODE)
 	}
 
@@ -113,7 +113,7 @@ func (c *pubController) UploadPubBG(ctx *fiber.Ctx) error {
 
 	fileNameSplitted := strings.Split(file.Filename, ".")
 	fileExtension := fileNameSplitted[len(fileNameSplitted)-1]
-	if fileExtension != "png" {
+	if fileExtension != "png" && fileExtension != "jpg" && fileExtension != "jpeg" {
 		return h.SendError(ctx, httperrors.ErrInvalidFileExtension, h.AUTOMATIC_STATUS_CODE)
 	}
 

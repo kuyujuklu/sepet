@@ -38,6 +38,8 @@ type CategoryRepo interface {
 	UploadCategoryImage(categoryID int, fileHeader *multipart.FileHeader) (string, error)
 	DeleteCategoryImage(categoryID int) error
 	GetImageFileName(id int) (string, error)
+	SetCategoryPlace(menuID int, categoryID int, place int) (int, error)
+	GetCategoryMaxPlace(menuID int) (int, error)
 }
 
 type categoryRepo struct {
@@ -113,7 +115,7 @@ func (r *categoryRepo) DeleteCategory(id int) error {
 
 func (r *categoryRepo) GetAllDishesForCategory(categoryID int) ([]models.Dish, error) {
 	var dishes []models.Dish
-	res := r.Database.Find(&dishes)
+	res := r.Database.Find(&dishes, "category_id = ?", categoryID)
 
 	if res.Error != nil {
 		return nil, disheserrors.ErrUnableToGetDish
@@ -157,12 +159,16 @@ func (s *categoryRepo) UploadCategoryImage(categoryID int, fileHeader *multipart
 }
 
 func (s *categoryRepo) DeleteCategoryImage(categoryID int) error {
-	pub, err := s.GetCategoryById(categoryID)
+	category, err := s.GetCategoryById(categoryID)
 	if err != nil {
 		return err
 	}
 
-	err = os.Remove(CATEGORY_IMAGES_PATH + pub.ImageFileName)
+	if category.ImageFileName == "" {
+		return nil
+	}
+
+	err = os.Remove(CATEGORY_IMAGES_PATH + category.ImageFileName)
 
 	if err != nil {
 		exists := !errors.Is(err, os.ErrNotExist)
@@ -189,4 +195,53 @@ func (r *categoryRepo) GetImageFileName(id int) (string, error) {
 	}
 
 	return category.ImageFileName, nil
+}
+
+func (r *categoryRepo) GetCategoryMaxPlace(menuID int) (int, error) {
+	var category models.Category
+	result := r.Database.Where("menu_id = ?", menuID).Order("place desc").First(&category)
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return 0, nil
+		}
+		return 0, categoryerrors.ErrUnableToGetCategory
+	}
+
+	return category.Place, nil
+}
+
+func (r *categoryRepo) SetCategoryPlace(menuID int, categoryID int, place int) (int, error) {
+	currentCategoryWithPlace := models.Category{}
+	result := r.Database.Find(&currentCategoryWithPlace, "menu_id = ? AND place = ?", menuID, place)
+	if result.Error != nil {
+		return 0, categoryerrors.ErrUnableToFreePlaceForCategory
+	}
+
+	category, err := r.GetCategoryById(categoryID)
+	if err != nil {
+		return 0, err
+	}
+
+	if currentCategoryWithPlace.ID == category.ID {
+		return category.Place, nil
+	}
+
+	currentCategoryWithPlace.Place = category.Place
+	category.Place = place
+
+	result = r.Database.Save(&category)
+	if result.Error != nil {
+		return 0, categoryerrors.ErrUnableToUpdateCategory
+	}
+
+	if currentCategoryWithPlace.ID == 0 {
+		return place, nil
+	}
+
+	result = r.Database.Save(&currentCategoryWithPlace)
+	if result.Error != nil {
+		return 0, categoryerrors.ErrUnableToUpdateCategory
+	}
+
+	return place, nil
 }

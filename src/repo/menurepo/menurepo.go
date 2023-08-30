@@ -1,6 +1,7 @@
 package menurepo
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/alexkalak/qrmenu/src/db/postgresql"
@@ -22,6 +23,8 @@ type MenuRepo interface {
 	FreePlaceForMenu(pubID int, place int) error
 	UpdateMenu(id int, menu models.Menu) (models.Menu, error)
 	DeleteMenu(id int) error
+	SetMenuPlace(pubID int, menuID int, place int) (int, error)
+	GetMenuMaxPlace(pubID int) (int, error)
 }
 
 type menuRepo struct {
@@ -74,6 +77,55 @@ func (r *menuRepo) FreePlaceForMenu(pubID int, place int) error {
 	}
 
 	return nil
+}
+
+func (r *menuRepo) GetMenuMaxPlace(pubID int) (int, error) {
+	var menu models.Menu
+	result := r.Database.Where("pub_id = ?", pubID).Order("place desc").First(&menu)
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return 0, nil
+		}
+		return 0, menuerrors.ErrUnableToGetMenu
+	}
+
+	return menu.Place, nil
+}
+
+func (r *menuRepo) SetMenuPlace(pubID int, menuID int, place int) (int, error) {
+	currentMenuWithPlace := models.Menu{}
+	result := r.Database.Find(&currentMenuWithPlace, "pub_id = ? AND place = ?", pubID, place)
+	if result.Error != nil {
+		return 0, menuerrors.ErrUnableToFreePlaceForMenu
+	}
+
+	menu, err := r.GetMenuById(menuID)
+	if err != nil {
+		return 0, err
+	}
+
+	if currentMenuWithPlace.ID == menu.ID {
+		return menu.Place, nil
+	}
+
+	currentMenuWithPlace.Place = menu.Place
+	menu.Place = place
+
+	result = r.Database.Save(&menu)
+	if result.Error != nil {
+		return 0, menuerrors.ErrUnableToUpdateMenu
+	}
+
+	if currentMenuWithPlace.ID == 0 {
+		return place, nil
+	}
+
+	result = r.Database.Save(&currentMenuWithPlace)
+	if result.Error != nil {
+		return 0, menuerrors.ErrUnableToUpdateMenu
+	}
+
+	return place, nil
 }
 
 func (r *menuRepo) CreateMenu(menu models.Menu) (models.Menu, error) {

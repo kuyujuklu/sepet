@@ -31,4 +31,7 @@ func (c *categoryController) AuthorizedRouter(router fiber.Router) {
 	router.Put("/:categoryID<int>", c.UpdateCategory)
 	router.Delete("/:categoryID<int>", c.DeleteCategory)
 	router.Patch("/:categoryID<int>/image", c.UploadCategoryImage)
+	router.Post("/:categoryID<int>/move-left", c.MoveCategoryLeft)
+	router.Post("/:categoryID<int>/move-right", c.MoveCategoryRight)
+
 }

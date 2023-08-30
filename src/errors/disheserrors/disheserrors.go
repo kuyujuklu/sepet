@@ -13,3 +13,5 @@ var ErrUnableToDeleteDish = errors.New("unable to delete dish")
 var ErrDishNotFound = errors.New("dish not found")
 
 var ErrDishHasNoImage = errors.New("dish has no image")
+
+var ErrUnableToFreeSpaceForDish = errors.New("unable to free space for dish")

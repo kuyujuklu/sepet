@@ -52,6 +52,48 @@ const docTemplate = `{
             }
         },
         "/company/": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "returns company info",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "company"
+                ],
+                "summary": "Get company info",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "company id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "access_token",
+                        "name": "access_token",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/companies.getCompanyOutput"
+                        }
+                    }
+                }
+            },
             "post": {
                 "description": "Creates company",
                 "consumes": [
@@ -1693,6 +1735,61 @@ const docTemplate = `{
                 }
             }
         },
+        "/company/{companyID}/pubs/{pubID}/menus/{menuID}/move-left": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Moves menu left",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "menu"
+                ],
+                "summary": "Move menu lft",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "company id",
+                        "name": "companyID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "pub id",
+                        "name": "pubID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "menu id",
+                        "name": "menuID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "access_token",
+                        "name": "access_token",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/menus.moveMenuOutput"
+                        }
+                    }
+                }
+            }
+        },
         "/company/{id}": {
             "get": {
                 "security": [
@@ -1949,7 +2046,7 @@ const docTemplate = `{
             "required": [
                 "name",
                 "place",
-                "visible"
+                "text_color"
             ],
             "properties": {
                 "name": {
@@ -1960,6 +2057,10 @@ const docTemplate = `{
                 "place": {
                     "type": "integer",
                     "example": 1
+                },
+                "text_color": {
+                    "type": "string",
+                    "example": "#ffffff"
                 },
                 "visible": {
                     "type": "boolean",
@@ -1974,6 +2075,10 @@ const docTemplate = `{
                     "type": "integer",
                     "example": 1
                 },
+                "image_file_name": {
+                    "type": "string",
+                    "example": "41e480e5-340b-4f1a-94e2-7ed25a6b8d3c.green_circle_checkmark.png"
+                },
                 "menu_id": {
                     "type": "integer",
                     "example": 1
@@ -1985,6 +2090,10 @@ const docTemplate = `{
                 "place": {
                     "type": "integer",
                     "example": 1
+                },
+                "text_color": {
+                    "type": "string",
+                    "example": "#ffffff"
                 },
                 "visible": {
                     "type": "boolean",
@@ -2045,19 +2154,13 @@ const docTemplate = `{
         "entities.CreatePubInput": {
             "type": "object",
             "required": [
-                "name",
-                "url_name"
+                "name"
             ],
             "properties": {
                 "name": {
                     "type": "string",
                     "minLength": 2,
                     "example": "My pub name"
-                },
-                "url_name": {
-                    "type": "string",
-                    "minLength": 2,
-                    "example": "my-pub-name"
                 }
             }
         },
@@ -2068,8 +2171,7 @@ const docTemplate = `{
                 "ingriedients",
                 "name",
                 "place",
-                "price",
-                "visible"
+                "price"
             ],
             "properties": {
                 "category_id": {
@@ -2139,15 +2241,17 @@ const docTemplate = `{
         "entities.MenuInput": {
             "type": "object",
             "required": [
-                "name",
-                "pub_id",
-                "visible"
+                "name"
             ],
             "properties": {
                 "name": {
                     "type": "string",
                     "minLength": 2,
                     "example": "My menu name"
+                },
+                "place": {
+                    "type": "integer",
+                    "example": 1
                 },
                 "pub_id": {
                     "type": "integer",
@@ -2169,6 +2273,10 @@ const docTemplate = `{
                 "name": {
                     "type": "string",
                     "example": "My menu name"
+                },
+                "place": {
+                    "type": "integer",
+                    "example": 1
                 },
                 "pub_id": {
                     "type": "integer",
@@ -2225,10 +2333,6 @@ const docTemplate = `{
                     "type": "string",
                     "example": "my-pub-name.png"
                 },
-                "url_name": {
-                    "type": "string",
-                    "example": "my-pub-name"
-                },
                 "wifi_password": {
                     "type": "string",
                     "example": "12345678"
@@ -2238,33 +2342,23 @@ const docTemplate = `{
         "entities.UpdatePubInput": {
             "type": "object",
             "required": [
-                "additional_info",
-                "address",
-                "color",
-                "color_theme",
-                "name",
-                "url_name",
-                "wifi_password"
+                "name"
             ],
             "properties": {
                 "additional_info": {
                     "type": "string",
-                    "minLength": 2,
                     "example": "My pub additional info"
                 },
                 "address": {
                     "type": "string",
-                    "minLength": 2,
                     "example": "My pub address"
                 },
                 "color": {
                     "type": "string",
-                    "minLength": 2,
                     "example": "#ffffff"
                 },
                 "color_theme": {
                     "type": "string",
-                    "minLength": 2,
                     "example": "light"
                 },
                 "company_id": {
@@ -2280,14 +2374,8 @@ const docTemplate = `{
                     "minLength": 2,
                     "example": "My pub name"
                 },
-                "url_name": {
-                    "type": "string",
-                    "minLength": 2,
-                    "example": "my-pub-name"
-                },
                 "wifi_password": {
                     "type": "string",
-                    "minLength": 2,
                     "example": "12345678"
                 }
             }
@@ -2322,6 +2410,18 @@ const docTemplate = `{
                 "ok": {
                     "type": "boolean",
                     "example": true
+                }
+            }
+        },
+        "menus.moveMenuOutput": {
+            "type": "object",
+            "properties": {
+                "ok": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "place": {
+                    "type": "integer"
                 }
             }
         },

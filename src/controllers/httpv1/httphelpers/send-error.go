@@ -52,20 +52,22 @@ var errors = map[error]int{
 	menuerrors.ErrUnableToFreePlaceForMenu: fiber.StatusInternalServerError,
 
 	//Category errors
-	categoryerrors.ErrUnableToGetCategory:    fiber.StatusInternalServerError,
-	categoryerrors.ErrUnableToCreateCategory: fiber.StatusInternalServerError,
-	categoryerrors.ErrUnableToUpdateCategory: fiber.StatusInternalServerError,
-	categoryerrors.ErrUnableToUpdateCategory: fiber.StatusInternalServerError,
-	categoryerrors.ErrUnableToDeleteCategory: fiber.StatusInternalServerError,
-	categoryerrors.ErrCategoryHaveNoImage:    fiber.StatusNotFound,
+	categoryerrors.ErrUnableToGetCategory:          fiber.StatusInternalServerError,
+	categoryerrors.ErrUnableToCreateCategory:       fiber.StatusInternalServerError,
+	categoryerrors.ErrUnableToUpdateCategory:       fiber.StatusInternalServerError,
+	categoryerrors.ErrUnableToUpdateCategory:       fiber.StatusInternalServerError,
+	categoryerrors.ErrUnableToDeleteCategory:       fiber.StatusInternalServerError,
+	categoryerrors.ErrCategoryHaveNoImage:          fiber.StatusNotFound,
+	categoryerrors.ErrUnableToFreePlaceForCategory: fiber.StatusInternalServerError,
 
 	//Dish errors
-	disheserrors.ErrDishNotFound:       fiber.StatusNotFound,
-	disheserrors.ErrUnableToGetDish:    fiber.StatusInternalServerError,
-	disheserrors.ErrUnableToCreateDish: fiber.StatusInternalServerError,
-	disheserrors.ErrUnableToUpdateDish: fiber.StatusInternalServerError,
-	disheserrors.ErrUnableToDeleteDish: fiber.StatusInternalServerError,
-	disheserrors.ErrDishHasNoImage:     fiber.StatusNotFound,
+	disheserrors.ErrDishNotFound:             fiber.StatusNotFound,
+	disheserrors.ErrUnableToGetDish:          fiber.StatusInternalServerError,
+	disheserrors.ErrUnableToCreateDish:       fiber.StatusInternalServerError,
+	disheserrors.ErrUnableToUpdateDish:       fiber.StatusInternalServerError,
+	disheserrors.ErrUnableToDeleteDish:       fiber.StatusInternalServerError,
+	disheserrors.ErrDishHasNoImage:           fiber.StatusNotFound,
+	disheserrors.ErrUnableToFreeSpaceForDish: fiber.StatusInternalServerError,
 
 	//Currency errors
 	currencyerrors.ErrCurrencyNotFound: fiber.StatusNotFound,

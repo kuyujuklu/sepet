@@ -13,3 +13,5 @@ var ErrUnableToDeleteCategory = errors.New("unable to delete category")
 var ErrCategoryNotFound = errors.New("category not found")
 
 var ErrCategoryHaveNoImage = errors.New("category does not have image")
+
+var ErrUnableToFreePlaceForCategory = errors.New("unable to free place for category")

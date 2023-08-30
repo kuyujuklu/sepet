@@ -197,6 +197,10 @@ func (s *pubsRepo) DeletePubLogo(pubID int) error {
 		return err
 	}
 
+	if pub.LogoFileName == "" {
+		return nil
+	}
+
 	err = os.Remove(PUB_LOGO_FILE_PATH + pub.LogoFileName)
 	if err != nil {
 		exists := !errors.Is(err, os.ErrNotExist)
@@ -218,6 +222,10 @@ func (s *pubsRepo) DeletePubBG(pubID int) error {
 	pub, err := s.GetPubById(pubID)
 	if err != nil {
 		return err
+	}
+
+	if pub.BgImageFileName == "" {
+		return nil
 	}
 
 	err = os.Remove(PUB_BACKGROUND_FILE_PATH + pub.BgImageFileName)

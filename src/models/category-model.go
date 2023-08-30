@@ -10,4 +10,5 @@ type Category struct {
 	Visible       bool
 	Dishes        []Dish
 	MenuID        uint
+	TextColor     string
 }

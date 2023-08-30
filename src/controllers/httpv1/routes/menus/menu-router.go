@@ -28,4 +28,6 @@ func (c *menuController) AuthorizedRouter(router fiber.Router) {
 	router.Get("/:menuID<int>", c.GetMenuByID)
 	router.Put("/:menuID<int>", c.UpdateMenu)
 	router.Delete("/:menuID<int>", c.DeleteMenu)
+	router.Post("/:menuID<int>/move-left", c.MoveMenuLeft)
+	router.Post("/:menuID<int>/move-right", c.MoveMenuRight)
 }

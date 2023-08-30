@@ -17,6 +17,8 @@ type CategoryService interface {
 	DeleteCategory(id int) error
 	UploadCategoryImage(id int, fileHeader *multipart.FileHeader) (string, error)
 	GetImageFileName(id int) (string, error)
+	MoveCategoryLeft(menuID int, categoryID int) (int, error)
+	MoveCategoryRight(menuID int, categoryID int) (int, error)
 }
 
 type categoryService struct {
@@ -54,6 +56,13 @@ func (s *categoryService) CreateCategory(category models.Category, menuID int) (
 		return models.Category{}, err
 	}
 
+	maxPlace, err := s.CategoryRepo.GetCategoryMaxPlace(menuID)
+	if err != nil {
+		return models.Category{}, err
+	}
+
+	category.Place = maxPlace + 1
+
 	return s.CategoryRepo.CreateCategory(category)
 }
 
@@ -71,6 +80,7 @@ func (s *categoryService) UpdateCategory(id int, category models.Category, menuI
 	category.MenuID = categoryFromDB.MenuID
 	category.CreatedAt = categoryFromDB.CreatedAt
 	category.ImageFileName = categoryFromDB.ImageFileName
+	category.Place = categoryFromDB.Place
 
 	return s.CategoryRepo.UpdateCategory(id, category)
 }
@@ -80,9 +90,59 @@ func (s *categoryService) DeleteCategory(id int) error {
 }
 
 func (s *categoryService) UploadCategoryImage(id int, fileHeader *multipart.FileHeader) (string, error) {
+	err := s.CategoryRepo.DeleteCategoryImage(id)
+	if err != nil {
+		return "", err
+	}
+
 	return s.CategoryRepo.UploadCategoryImage(id, fileHeader)
 }
 
 func (s *categoryService) GetImageFileName(id int) (string, error) {
 	return s.CategoryRepo.GetImageFileName(id)
+}
+
+func (s *categoryService) MoveCategoryLeft(menuID int, categoryID int) (int, error) {
+	_, err := s.MenuService.GetMenuById(menuID)
+	if err != nil {
+		return 0, err
+	}
+
+	category, err := s.CategoryRepo.GetCategoryById(categoryID)
+	if err != nil {
+		return 0, err
+	}
+
+	if category.Place == 1 {
+		return 1, nil
+	}
+
+	return s.CategoryRepo.SetCategoryPlace(menuID, categoryID, category.Place-1)
+}
+
+func (s *categoryService) MoveCategoryRight(menuID int, categoryID int) (int, error) {
+	_, err := s.MenuService.GetMenuById(menuID)
+	if err != nil {
+		return 0, err
+	}
+
+	category, err := s.CategoryRepo.GetCategoryById(categoryID)
+	if err != nil {
+		return 0, err
+	}
+
+	maxPlace, err := s.CategoryRepo.GetCategoryMaxPlace(menuID)
+	if err != nil {
+		return 0, err
+	}
+
+	if category.Place == maxPlace {
+		return 0, nil
+	}
+
+	if category.Place > maxPlace {
+		return s.CategoryRepo.SetCategoryPlace(menuID, categoryID, maxPlace)
+	}
+
+	return s.CategoryRepo.SetCategoryPlace(menuID, categoryID, category.Place+1)
 }

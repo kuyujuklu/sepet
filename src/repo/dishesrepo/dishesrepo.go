@@ -2,6 +2,7 @@ package dishesrepo
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"mime/multipart"
 	"os"
@@ -36,6 +37,8 @@ type DishesRepo interface {
 	UploadDishImage(dishID int, fileHeader *multipart.FileHeader) (string, error)
 	DeleteDishImage(dishID int) error
 	GetImageFileName(dishID int) (string, error)
+	GetDishMaxPlace(categoryID int) (int, error)
+	SetDishPlace(categoryID int, dishID int, place int) (int, error)
 }
 
 type dishesRepo struct {
@@ -140,14 +143,19 @@ func (s *dishesRepo) UploadDishImage(dishID int, fileHeader *multipart.FileHeade
 }
 
 func (s *dishesRepo) DeleteDishImage(dishID int) error {
-	pub, err := s.GetDishById(dishID)
+	category, err := s.GetDishById(dishID)
 	if err != nil {
 		return err
 	}
 
-	err = os.Remove(DISHES_IMAGES_PATH + pub.ImageFileName)
+	if category.ImageFileName == "" {
+		return nil
+	}
+
+	err = os.Remove(DISHES_IMAGES_PATH + category.ImageFileName)
 
 	if err != nil {
+		fmt.Println("error: ", err)
 		exists := !errors.Is(err, os.ErrNotExist)
 		if exists {
 			logs.Error("unable to delete dish image ", err)
@@ -176,4 +184,53 @@ func (r *dishesRepo) GetImageFileName(dishID int) (string, error) {
 	}
 
 	return dish.ImageFileName, nil
+}
+
+func (r *dishesRepo) GetDishMaxPlace(categoryID int) (int, error) {
+	var dish models.Dish
+	result := r.Database.Where("category_id = ?", categoryID).Order("place desc").First(&dish)
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return 0, nil
+		}
+		return 0, disheserrors.ErrUnableToGetDish
+	}
+
+	return dish.Place, nil
+}
+
+func (r *dishesRepo) SetDishPlace(categoryID int, dishID int, place int) (int, error) {
+	currentDishWithPlace := models.Dish{}
+	result := r.Database.Find(&currentDishWithPlace, "category_id = ? AND place = ?", categoryID, place)
+	if result.Error != nil {
+		return 0, disheserrors.ErrUnableToFreeSpaceForDish
+	}
+
+	dish, err := r.GetDishById(dishID)
+	if err != nil {
+		return 0, err
+	}
+
+	if currentDishWithPlace.ID == dish.ID {
+		return dish.Place, nil
+	}
+
+	currentDishWithPlace.Place = dish.Place
+	dish.Place = place
+
+	result = r.Database.Save(&dish)
+	if result.Error != nil {
+		return 0, disheserrors.ErrUnableToUpdateDish
+	}
+
+	if currentDishWithPlace.ID == 0 {
+		return place, nil
+	}
+
+	result = r.Database.Save(&currentDishWithPlace)
+	if result.Error != nil {
+		return 0, disheserrors.ErrUnableToUpdateDish
+	}
+
+	return place, nil
 }

@@ -6,7 +6,7 @@ type MenuInput struct {
 	Name    string `json:"name" validate:"required,min=2" example:"My menu name"`
 	PubID   int    `json:"pub_id" example:"2"`
 	Place   int    `json:"place" example:"1"`
-	Visible bool   `json:"visible" validate:"required" example:"true"`
+	Visible bool   `json:"visible" validate:"" example:"true"`
 }
 
 func (c *MenuInput) ConvertToModel(pubID int) models.Menu {

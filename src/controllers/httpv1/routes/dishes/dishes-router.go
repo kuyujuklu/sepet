@@ -31,4 +31,6 @@ func (c *dishesController) AuthorizedRouter(router fiber.Router) {
 	router.Put("/:dishID<int>", c.UpdateDish)
 	router.Delete("/:dishID<int>", c.DeleteDish)
 	router.Patch("/:dishID<int>/image", c.UploadDishImage)
+	router.Post("/:dishID<int>/move-left", c.MoveDishLeft)
+	router.Post("/:dishID<int>/move-right", c.MoveDishRight)
 }

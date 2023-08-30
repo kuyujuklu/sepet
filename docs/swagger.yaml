@@ -146,19 +146,25 @@ definitions:
       place:
         example: 1
         type: integer
+      text_color:
+        example: '#ffffff'
+        type: string
       visible:
         example: true
         type: boolean
     required:
     - name
     - place
-    - visible
+    - text_color
     type: object
   entities.CategoryOutput:
     properties:
       id:
         example: 1
         type: integer
+      image_file_name:
+        example: 41e480e5-340b-4f1a-94e2-7ed25a6b8d3c.green_circle_checkmark.png
+        type: string
       menu_id:
         example: 1
         type: integer
@@ -168,6 +174,9 @@ definitions:
       place:
         example: 1
         type: integer
+      text_color:
+        example: '#ffffff'
+        type: string
       visible:
         example: true
         type: boolean
@@ -215,13 +224,8 @@ definitions:
         example: My pub name
         minLength: 2
         type: string
-      url_name:
-        example: my-pub-name
-        minLength: 2
-        type: string
     required:
     - name
-    - url_name
     type: object
   entities.DishInput:
     properties:
@@ -250,7 +254,6 @@ definitions:
     - name
     - place
     - price
-    - visible
     type: object
   entities.DishOutput:
     properties:
@@ -285,6 +288,9 @@ definitions:
         example: My menu name
         minLength: 2
         type: string
+      place:
+        example: 1
+        type: integer
       pub_id:
         example: 2
         type: integer
@@ -293,8 +299,6 @@ definitions:
         type: boolean
     required:
     - name
-    - pub_id
-    - visible
     type: object
   entities.MenuOutput:
     properties:
@@ -304,6 +308,9 @@ definitions:
       name:
         example: My menu name
         type: string
+      place:
+        example: 1
+        type: integer
       pub_id:
         example: 2
         type: integer
@@ -344,9 +351,6 @@ definitions:
       qr_code_file_name:
         example: my-pub-name.png
         type: string
-      url_name:
-        example: my-pub-name
-        type: string
       wifi_password:
         example: "12345678"
         type: string
@@ -355,19 +359,15 @@ definitions:
     properties:
       additional_info:
         example: My pub additional info
-        minLength: 2
         type: string
       address:
         example: My pub address
-        minLength: 2
         type: string
       color:
         example: '#ffffff'
-        minLength: 2
         type: string
       color_theme:
         example: light
-        minLength: 2
         type: string
       company_id:
         example: 1
@@ -379,22 +379,11 @@ definitions:
         example: My pub name
         minLength: 2
         type: string
-      url_name:
-        example: my-pub-name
-        minLength: 2
-        type: string
       wifi_password:
         example: "12345678"
-        minLength: 2
         type: string
     required:
-    - additional_info
-    - address
-    - color
-    - color_theme
     - name
-    - url_name
-    - wifi_password
     type: object
   menus.createMenuOutput:
     properties:
@@ -417,6 +406,14 @@ definitions:
       ok:
         example: true
         type: boolean
+    type: object
+  menus.moveMenuOutput:
+    properties:
+      ok:
+        example: true
+        type: boolean
+      place:
+        type: integer
     type: object
   menus.updateMenuOutput:
     properties:
@@ -504,6 +501,33 @@ paths:
       tags:
       - auth
   /company/:
+    get:
+      consumes:
+      - application/json
+      description: returns company info
+      parameters:
+      - description: company id
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: access_token
+        in: header
+        name: access_token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/companies.getCompanyOutput'
+      security:
+      - ApiKeyAuth: []
+      summary: Get company info
+      tags:
+      - company
     post:
       consumes:
       - application/json
@@ -1592,6 +1616,42 @@ paths:
       summary: Upload image
       tags:
       - category
+  /company/{companyID}/pubs/{pubID}/menus/{menuID}/move-left:
+    post:
+      description: Moves menu left
+      parameters:
+      - description: company id
+        in: path
+        name: companyID
+        required: true
+        type: integer
+      - description: pub id
+        in: path
+        name: pubID
+        required: true
+        type: integer
+      - description: menu id
+        in: path
+        name: menuID
+        required: true
+        type: integer
+      - description: access_token
+        in: header
+        name: access_token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/menus.moveMenuOutput'
+      security:
+      - ApiKeyAuth: []
+      summary: Move menu lft
+      tags:
+      - menu
   /company/{id}:
     get:
       consumes:

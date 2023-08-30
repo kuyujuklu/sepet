@@ -10,7 +10,8 @@ func (c *CreatePubInput) ConvertToModel(companyID int) models.Pub {
 	pub := models.Pub{
 		CompanyID:  uint(companyID),
 		Name:       c.Name,
-		Color:      "#000000",
+		Color:      "#dc4444",
+		ColorTheme: "dark",
 		CurrencyID: 1,
 	}
 
