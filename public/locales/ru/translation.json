@@ -1,8 +1,15 @@
 {
-    "client": {
-        
+    "errors": {
+        "something_went_wrong": "Что-то пошло не так. Попробуйте позже."
     },
+    "client": {},
     "admin": {
+        "language": "Язык",
+        "images": {
+            "upload": "Загрузить",
+            "update": "Обновить",
+            "image": "фото"
+        },
         "validation_errors": {
             "company": {
                 "company_name": {
@@ -39,6 +46,133 @@
                     "min": "Пароль должен быть не менее 8 символов.",
                     "max": "Пароль должен быть не более 255 символов."
                 }
+            }
+        },
+        "authentication": {
+            "headline": "Авторизуйтесь",
+            "your_email": "Ваш Email",
+            "password": "Пароль",
+            "login": "Войти в аккаунт",
+            "link_to_registration": "Нет аккаунта? Зарегистрироваться"
+        },
+        "registration": {
+            "headline": "Зарегистрироваться",
+            "your_email": "Ваш Email",
+            "your_name": "Ваше имя",
+            "your_phone": "Ваше телефон",
+            "password": "Пароль",
+            "registrate_button": "Создать аккаунт",
+            "link_to_authentication": "Уже есть аккаунт? Войти"
+        },
+        "company": {
+            "pubs": "Заведения",
+            "pub": {
+                "address": "Адрес",
+                "edit_menu_button": "Редактировать меню"
+            }
+        },
+        "pub": {},
+        "categories": {
+            "add_category_button": "Добавить категорию"
+        },
+        "dishes": {
+            "add_dish_button": "Добавить блюдо",
+            "upper": {
+                "return_back": "Вернуться назад"
+            }
+        },
+        "popups": {
+            "create_pub_popup": {
+                "headline": "Добаить заведение",
+                "name": "Название заведения",
+                "create_button": "Добаить"
+            },
+            "update_pub_popup": {
+                "headline": "Редактировать заведение",
+                "name": "Название заведения",
+                "wifi_password": "Пароль от Wi-Fi",
+                "currency": "Валюта",
+                "favorite_color": "Предпочитаемый цвет",
+                "theme": {
+                    "title": "Тема",
+                    "light": "Светлая",
+                    "dark": "Темная"
+                },
+                "address": "Адрес",
+                "additional_info": "Дополнительная информация",
+                "save_button": "Сохранить"
+            },
+            "delete_pub_popup": {
+                "headline": "Удалить заведение",
+                "text": "Вы уверены, что хотите удалить заведение?",
+                "warning": "После удаления нельзя будет восстановить данные.",
+                "delete_button": "Удалить"
+            },
+            "create_category_popup": {
+                "headline": "Добавить категорию",
+                "name": "Название категории",
+                "text_color": "Цвет текста",
+                "visible": "Видимость",
+                "create_button": "Добавить"
+            },
+            "update_category_popup": {
+                "headline": "Редактировать категорию",
+                "name": "Название категории",
+                "text_color": "Цвет текста",
+                "visible": "Видимость",
+                "save_button": "Сохранить"
+            },
+            "delete_category_popup": {
+                "headline": "Удалить категорию",
+                "text": "Вы уверены, что хотите удалить категорию?",
+                "warning": "После удаления нельзя будет восстановить данные.",
+                "delete_button": "Удалить"
+            },
+            "create_menu_popup": {
+                "headline": "Добавить меню",
+                "name": "Название меню",
+                "visible": "Видимость",
+                "create_button": "Добавить"
+            },
+            "update_menu_popup": {
+                "headline": "Редактировать меню",
+                "name": "Название меню",
+                "visible": "Видимость",
+                "save_button": "Сохранить"
+            },
+            "delete_menu_popup": {
+                "headline": "Удалить меню",
+                "text": "Вы уверены, что хотите удалить меню?",
+                "warning": "После удаления нельзя будет восстановить данные.",
+                "delete_button": "Удалить"
+            },
+            "create_dish_popup": {
+                "headline": "Добавить блюдо",
+                "name": "Название блюда",
+                "description": "Описание",
+                "ingridients": "Ингридиенты",
+                "text_color": "Цвет текста",
+                "price": "Цена",
+                "visible": "Видимость",
+                "category": "Категория",
+                "create_button": "Добавить"
+            },
+            "update_dish_popup": {
+                "headline": "Редактировать блюдо",
+                "name": "Название блюда",
+                "description": "Описание",
+                "ingridients": "Ингридиенты",
+                "text_color": "Цвет текста",
+                "price": "Цена",
+                "visible": "Видимость",
+                "category": "Категория",
+                "save_button": "Сохранить"
+            },
+            "delete_dish_popup": {
+                "headline": "Удалить блюдо",
+                "text": "Вы уверены, что хотите удалить блюдо?",
+                "warning": "После удаления нельзя будет восстановить данные.",
+                "delete_button": "Удалить"
             }
         }
     }

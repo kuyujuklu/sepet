@@ -5,8 +5,12 @@ import { useCallback, useEffect } from "react";
 import { Button } from "@mui/material";
 import WhiteSpinner from "../../components/loaders/WhiteSpinner";
 import { useDeletePubMutation } from "../../api/pub/pub";
+import { requireAuthentication } from "../auth/authSlice";
+import { appErrors } from "../../errors/errors";
+import { useTranslation } from "react-i18next";
 
 const DeletePubPopup = () => {
+    const { t } = useTranslation();
     const dispatch = useDispatch();
     const popupState = useSelector(selectDeletePubPopupState);
 
@@ -23,10 +27,10 @@ const DeletePubPopup = () => {
     }, [closePopup, data]);
 
     useEffect(() => {
-        if (error) {
-            //TODO: handle error
+        if (error && error.text === appErrors.unauthorized) {
+            dispatch(requireAuthentication());
         }
-    }, [closePopup, data, error]);
+    }, [data, dispatch, error]);
 
     const handleButtonClick = () => {
         let companyID = popupState?.companyID;
@@ -36,9 +40,9 @@ const DeletePubPopup = () => {
             return;
         }
 
-        deletePopup({ 
-            companyID, 
-            pubID
+        deletePopup({
+            companyID,
+            pubID,
         });
     };
 
@@ -47,14 +51,14 @@ const DeletePubPopup = () => {
             <div className="py-4">
                 <header>
                     <h1 className="font-bold text-center text-xl mb-10">
-                        Удалить заведение
+                        {t("admin.pub.delete_pub_popup.headline")}
                     </h1>
                 </header>
                 <main className="mb-10">
                     <p className="text-center">
-                        Вы уверены, что хотите удалить заведение?
+                        {t("admin.pub.delete_pub_popup.text")}
                         <br />
-                        После удаления нельзя будет восстановить данные.
+                        {t("admin.pub.delete_pub_popup.warning")}
                     </p>
                 </main>
                 <footer className="text-center">
@@ -74,7 +78,11 @@ const DeletePubPopup = () => {
                         }}
                         onClick={handleButtonClick}
                     >
-                        {isLoading ? <WhiteSpinner /> : "Удалить"}
+                        {isLoading ? (
+                            <WhiteSpinner />
+                        ) : (
+                            t("admin.pub.delete_pub_popup.delete_button")
+                        )}
                     </Button>
                 </footer>
             </div>

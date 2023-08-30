@@ -1,5 +1,5 @@
 export const appErrors = {
-    something_went_wrong: "errors.somthing_went_wrong",
+    something_went_wrong: "errors.something_went_wrong",
     unknown_error: "errors.unknown_error",
     unauthorized: "errors.unauthorized",
 

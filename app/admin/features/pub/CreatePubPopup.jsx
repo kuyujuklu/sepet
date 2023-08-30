@@ -7,12 +7,17 @@ import InputWithLabel from "../../components/Inputs/InputWithLabel";
 import { Button } from "@mui/material";
 import WhiteSpinner from "../../components/loaders/WhiteSpinner";
 import { useCreatePubMutation } from "../../api/pub/pub";
+import { appErrors } from "../../errors/errors";
+import { requireAuthentication } from "../auth/authSlice";
+import { useTranslation } from "react-i18next";
 
 const CreatePubPopup = () => {
+    const { t } = useTranslation();
+
     const dispatch = useDispatch();
     const popupState = useSelector(selectCreatePubPopupState);
 
-	const [createPub, {data, error, isLoading}] = useCreatePubMutation()
+    const [createPub, { data, error, isLoading }] = useCreatePubMutation();
 
     const closePopup = useCallback(() => {
         dispatch(closeCreatePubPopup());
@@ -29,42 +34,44 @@ const CreatePubPopup = () => {
     }, [closePopup, data]);
 
     useEffect(() => {
-        if (error) {
-            //TODO: handle error
+        if (error && error.text === appErrors.unauthorized) {
+            dispatch(requireAuthentication());
         }
-    }, [closePopup, data, error]);
+    }, [data, dispatch, error]);
 
-	const handleButtonClick = () => {
-		const pub = {
+    const handleButtonClick = () => {
+        const pub = {
             name,
             currencyID: 1,
             languageID: 1,
-        }
+        };
 
-        let validationErrors = ValidatePub(pub)
+        let validationErrors = ValidatePub(pub);
         if (validationErrors.length > 0) {
-            return
+            return;
         }
 
-        if(!popupState.companyID) {
-            return
+        if (!popupState.companyID) {
+            return;
         }
 
-        createPub({data: pub, companyID: popupState.companyID})
-	}
+        createPub({ data: pub, companyID: popupState.companyID });
+    };
 
     return (
         <Popup opened={popupState.opened} closeCallback={closePopup}>
             <div className="py-4">
                 <header>
                     <h1 className="font-bold text-center text-xl mb-10">
-                        Добавить заведение
+                        {t("admin.popups.create_pub_popup.headline")}
                     </h1>
                 </header>
                 <main className="flex flex-col gap-6 mb-6">
                     <InputWithLabel
-                        label={"Название заведения"}
-                        labelClassName={"text-xs sm:text-base text-gray-500 font-medium"}
+                        label={t("admin.popups.create_pub_popup.name")}
+                        labelClassName={
+                            "text-xs sm:text-base text-gray-500 font-medium"
+                        }
                         labelStyle={{
                             marginBottom: ".1rem",
                         }}
@@ -90,7 +97,11 @@ const CreatePubPopup = () => {
                         }}
                         onClick={handleButtonClick}
                     >
-                        {isLoading ? <WhiteSpinner /> : "Добавить"}
+                        {isLoading ? (
+                            <WhiteSpinner />
+                        ) : (
+                            t("admin.popups.create_pub_popup.create_button")
+                        )}
                     </Button>
                 </footer>
             </div>

@@ -1,24 +1,32 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect } from "react";
 import { ThemeContext } from "../PubPage";
 import Image from "next/image";
 import { selectCompanyID } from "../../company/companySlice";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { selectMenuID } from "../Menus/menuSlice";
 import { selectPubID } from "../pubSlice";
 import { useUploadCategoryImageMutation } from "@/app/admin/api/categories/category";
 import WhiteSpinner from "@/app/admin/components/loaders/WhiteSpinner";
+import CategoryTools from "./CategoryTools";
+import { NavLink } from "react-router-dom";
+import { requireAuthentication } from "../../auth/authSlice";
+import { useTranslation } from "react-i18next";
 
 const Category = ({ category }) => {
+    const {t} = useTranslation();
+    const dispatch = useDispatch();
     const companyID = useSelector(selectCompanyID);
     const pubID = useSelector(selectPubID);
     const menuID = useSelector(selectMenuID);
 
-    const [uploadImage, {isLoading, error }] = useUploadCategoryImageMutation();
+    const [uploadImage, { isLoading, error }] =
+        useUploadCategoryImageMutation();
+
     useEffect(() => {
-        if (error) {
-            //TODO: handle error
+        if (error && error.text === error.unauthorized) {
+            dispatch(requireAuthentication());
         }
-    }, [error]);
+    }, [dispatch, error]);
 
     const themeContext = useContext(ThemeContext);
 
@@ -42,62 +50,83 @@ const Category = ({ category }) => {
     return (
         <div
             style={{
-                minHeight: "160px",
+                height: "160px",
                 width: "100%",
                 border: "1px solid " + themeContext.textColor,
-                backgroundColor: category.image_file_name ? "transparent" : "rgb(17 24 39)",
+                background: "rgb(17 24 39)",
+                color: category.text_color ?? "#ffffff",
             }}
             className="rounded-2xl relative overflow-hidden"
         >
-            {category.image_file_name && (
-                <Image
-                    src={`/api-static/images/categories/${category.image_file_name}`}
-                    alt="category"
-                    fill
-                    style={{
-                        objectFit:"cover",
-                    }}
-                />
-            )}
+            <NavLink
+                style={{ display: "block", height: "160px", width: "100%" }}
+                to={`/admin/company/pub/${pubID}/menu/${menuID}/category/${category.id}`}
+            >
+                {category.image_file_name && (
+                    <Image
+                        src={`/api-static/images/categories/${category.image_file_name}`}
+                        alt="category"
+                        fill
+                        style={{
+                            objectFit: "cover",
+                        }}
+                    />
+                )}
+            </NavLink>
 
+            {/* category center content*/}
+            <div
+                style={{ zIndex: 20 }}
+                className="absolute m-auto inset-0 text-center h-fit w-fit flex flex-col items-center"
+            >
+                <div className="p-4 text-2xl font-medium w-fit m-auto">
+                    {category.name}
+                </div>
+                {/* if has no image */}
+                {/* uploading image */}
+                {isLoading ? (
+                    <WhiteSpinner />
+                ) : (
+                    <label
+                        htmlFor={`category-image-input-${category.id}`}
+                        className="w-fit flex gap-2 items-center border rounded-3xl py-2 px-4 cursor-pointer"
+                        style={{
+                            background: themeContext.bgColor,
+                            color: themeContext.textColor,
+                        }}
+                    >
+                        <Image
+                            src={
+                                themeContext.theme === "dark"
+                                    ? "/images/svg/plus-white.svg"
+                                    : "/images/svg/plus-black.svg"
+                            }
+                            alt="plus"
+                            width={17}
+                            height={17}
+                        />
+                        <span>
+                            {category.image_file_name
+                                ? t("admin.images.update")
+                                : t("admin.images.upload")}{" "}
+                            {t("admin.images.image")}
+                        </span>
+                        <input
+                            id={`category-image-input-${category.id}`}
+                            type="file"
+                            onInput={handleFileChange}
+                            className="hidden"
+                        />
+                    </label>
+                )}
+            </div>
+
+            {/* tools */}
             <div
                 style={{ zIndex: 20, color: "#ffffff" }}
-                className="absolute m-auto inset-0 text-center h-fit w-fit flex flex-col"
+                className="absolute top-2 right-2 text-center h-fit w-fit flex flex-col"
             >
-                <div className="text-3xl font-medium">{category.name}</div>
-                {/* if has no image */}
-                {!category.image_file_name &&
-                    <>
-                    {
-                        isLoading ? (
-                            WhiteSpinner
-                        ) : (
-                            <label
-                                htmlFor="category-image-input"
-                                className="flex gap-2 items-center border rounded-3xl py-2 px-4 cursor-pointer"
-                            >
-                                <Image
-                                    src={
-                                        themeContext.theme === "dark"
-                                            ? "/images/svg/plus-white.svg"
-                                            : "/images/svg/plus-black.svg"
-                                    }
-                                    alt="plus"
-                                    width={17}
-                                    height={17}
-                                />
-                                <span>Загрузить фото</span>
-                                <input
-                                    id="category-image-input"
-                                    type="file"
-                                    onInput={handleFileChange}
-                                    className="hidden"
-                                />
-                            </label>
-                        )
-                    }
-                    </>
-                }
+                <CategoryTools category={category} />
             </div>
         </div>
     );

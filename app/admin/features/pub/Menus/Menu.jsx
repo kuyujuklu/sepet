@@ -1,10 +1,12 @@
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import { PubColorContext, ThemeContext } from "../PubPage";
 import { useDispatch, useSelector } from "react-redux";
 import { openDeleteMenuPopup, openUpdateMenuPopup, selectMenuID, setMenuID } from "./menuSlice";
 import Image from "next/image";
 import { selectPubID } from "../pubSlice";
 import { selectCompanyID } from "../../company/companySlice";
+import { useMoveMenuLeftMutation, useMoveMenuRightMutation } from "@/app/admin/api/menu/menu";
+import { requireAuthentication } from "../../auth/authSlice";
 
 const Menu = ({ menu }) => {
     const dispatch = useDispatch();
@@ -13,6 +15,20 @@ const Menu = ({ menu }) => {
 
     const selectedMenuID = useSelector(selectMenuID);
     const selected = selectedMenuID === menu.id;
+
+    const [moveLeft, {error: moveLeftError}] = useMoveMenuLeftMutation();
+    useEffect(() => {
+        if (moveLeftError && moveLeftError.text === moveLeftError.unauthorized) {
+            dispatch(requireAuthentication())
+        }
+    }, [dispatch, moveLeftError]);
+
+    const [moveRight, {error: moveRightError}] = useMoveMenuRightMutation();
+    useEffect(() => {
+        if (moveRightError && moveRightError.text === moveRightError.unauthorized) {
+            dispatch(requireAuthentication())
+        }
+    }, [dispatch, moveRightError]);
 
     const themeContext = useContext(ThemeContext);
     const pubColorContext = useContext(PubColorContext);
@@ -36,6 +52,13 @@ const Menu = ({ menu }) => {
         dispatch(openDeleteMenuPopup({ companyID, pubID, menuID: menu.id }));
     }
 
+    const moveMenuLeft = () => {
+        moveLeft({companyID, pubID, menuID: menu.id});
+    }
+    const moveMenuRight = () => {
+        moveRight({companyID, pubID, menuID: menu.id});
+    }
+
     return (
         <div className="flex flex-col items-center gap-2">
             {/* Menu name */}
@@ -45,7 +68,7 @@ const Menu = ({ menu }) => {
                 style={{
                     color: color,
                     borderColor: pubColorContext,
-                    backgroundColor: bgColor,
+                    background: bgColor,
                     wordBreak: "break-word",
                 }}
             >
@@ -77,12 +100,24 @@ const Menu = ({ menu }) => {
                         height={20}
                     />
                 </div>
-                <div className="cursor-pointer">
+                <div className="cursor-pointer" onClick={moveMenuLeft}>
                     <Image
                         src={
                             themeContext.theme === "dark"
-                                ? "/images/svg/settings-white.svg"
-                                : "/images/svg/settings-black.svg"
+                                ? "/images/svg/arrow-left-white.svg"
+                                : "/images/svg/arrow-left-black.svg"
+                        }
+                        alt="settings"
+                        width={20}
+                        height={20}
+                    />
+                </div>
+                <div className="cursor-pointer" onClick={moveMenuRight}>
+                    <Image
+                        src={
+                            themeContext.theme === "dark"
+                                ? "/images/svg/arrow-right-white.svg"
+                                : "/images/svg/arrow-right-black.svg"
                         }
                         alt="settings"
                         width={20}

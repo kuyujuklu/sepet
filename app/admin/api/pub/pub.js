@@ -59,8 +59,16 @@ export const pub = createApi({
             }),
             providesTags: ['Pub']
         }),
+        uploadPubBG: builder.mutation({
+            query: ({ companyID, pubID, data }) => ({
+                url: `/api/company/${companyID}/pubs/${pubID}/bg`,
+                method: "PATCH",
+                body: data,
+            }),
+            invalidatesTags: ["Pub"],
+        }),
     }),
     
 })
 
-export const { useGetPubsQuery, useCreatePubMutation, useUpdatePubMutation, useDeletePubMutation, useGetPubQuery } = pub;
+export const { useGetPubsQuery, useCreatePubMutation, useUpdatePubMutation, useDeletePubMutation, useGetPubQuery, useUploadPubBGMutation } = pub;

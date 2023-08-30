@@ -5,31 +5,43 @@ import InputWithLabel from "@/app/admin/components/Inputs/InputWithLabel";
 import Popup from "@/app/admin/components/Popup/Popup";
 import WhiteSpinner from "@/app/admin/components/loaders/WhiteSpinner";
 import {
-    closeCreateCategoryPopup,
-    selectCreateCategoryPopupState,
+    closeUpdateCategoryPopup,
+    selectUpdateCategoryPopupState,
 } from "./categorySlice";
-import { useCreateCategoryMutation } from "@/app/admin/api/categories/category";
+import { useUpdateCategoryMutation } from "@/app/admin/api/categories/category";
 import { HexColorPicker } from "react-colorful";
 import CheckboxWithLabel from "@/app/admin/components/Inputs/CheckboxWithLabel";
 import { requireAuthentication } from "../../auth/authSlice";
 import { useTranslation } from "react-i18next";
 
-const CreateCategoryPopup = () => {
+const UpdateCategoryPopup = () => {
     const { t } = useTranslation();
     const dispatch = useDispatch();
-    const popupState = useSelector(selectCreateCategoryPopupState);
+    const popupState = useSelector(selectUpdateCategoryPopupState);
 
-    const [createCategory, { data, error, isLoading }] =
-        useCreateCategoryMutation();
+    const [updateCategory, { data, error, isLoading }] =
+        useUpdateCategoryMutation();
 
     const closePopup = useCallback(() => {
-        dispatch(closeCreateCategoryPopup());
+        dispatch(closeUpdateCategoryPopup());
     }, [dispatch]);
 
     const [name, setName] = useState("");
     const [visible, setVisible] = useState(true);
     const [textColor, setTextColor] = useState("#ffffff");
     const [colorPickerOpened, setColorPickerOpened] = useState(true);
+
+    useEffect(() => {
+        if (popupState.initialCategory) {
+            setName(popupState.initialCategory.name ?? "");
+            setVisible(popupState.initialCategory.visible);
+            setTextColor(
+                popupState.initialCategory.text_color
+                    ? popupState.initialCategory.text_color
+                    : "#ffffff"
+            );
+        }
+    }, [popupState.initialCategory]);
 
     useEffect(() => {
         if (data) {
@@ -48,23 +60,23 @@ const CreateCategoryPopup = () => {
             name,
             visible,
             textColor,
-            place: popupState.place ?? 1,
         };
 
         if (
             !popupState.companyID ||
             !popupState.pubID ||
             !popupState.menuID ||
-            !popupState.place
+            !popupState.categoryID
         ) {
             return;
         }
 
-        createCategory({
+        updateCategory({
             data: pub,
             companyID: popupState.companyID,
             pubID: popupState.pubID,
             menuID: popupState.menuID,
+            categoryID: popupState.categoryID,
         });
     };
 
@@ -73,12 +85,12 @@ const CreateCategoryPopup = () => {
             <div className="py-4">
                 <header>
                     <h1 className="font-bold text-center text-xl mb-10">
-                        {t("admin.popups.create_category_popup.headline")}
+                        {t("admin.popups.update_category_popup.headline")}
                     </h1>
                 </header>
                 <main className="flex flex-col gap-6 mb-6">
                     <InputWithLabel
-                        label={t("admin.popups.create_category_popup.name")}
+                        label={t("admin.popups.update_category_popup.name")}
                         labelClassName={
                             "text-xs sm:text-base text-gray-500 font-medium"
                         }
@@ -93,7 +105,7 @@ const CreateCategoryPopup = () => {
                         <div className="flex items-center gap-10">
                             <span className="ml-2 text-xs sm:text-base text-gray-500 font-medium">
                                 {t(
-                                    "admin.popups.create_category_popup.text_color"
+                                    "admin.popups.update_category_popup.text_color"
                                 )}{" "}
                             </span>
                             <div
@@ -120,7 +132,7 @@ const CreateCategoryPopup = () => {
                     <CheckboxWithLabel
                         value={visible}
                         setValue={setVisible}
-                        label={t("admin.popups.create_category_popup.visible")}
+                        label={t("admin.popups.update_category_popup.visible")}
                         labelClass={
                             "mr-2 text-xs sm:text-base text-gray-500 font-medium"
                         }
@@ -148,9 +160,7 @@ const CreateCategoryPopup = () => {
                         {isLoading ? (
                             <WhiteSpinner />
                         ) : (
-                            t(
-                                "admin.popups.create_category_popup.create_button"
-                            )
+                            t("admin.popups.update_category_popup.save_button")
                         )}
                     </Button>
                 </footer>
@@ -159,4 +169,4 @@ const CreateCategoryPopup = () => {
     );
 };
 
-export default CreateCategoryPopup;
+export default UpdateCategoryPopup;

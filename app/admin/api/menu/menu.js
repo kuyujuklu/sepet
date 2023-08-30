@@ -2,62 +2,83 @@ import { createApi } from "@reduxjs/toolkit/dist/query/react";
 import { authenticationBasedQuery } from "../auth/authBasedQuery";
 
 export const menu = createApi({
-    reducerPath: 'menuQuery',
+    reducerPath: "menuQuery",
     baseQuery: authenticationBasedQuery,
-    tagTypes: ['Menu'],
+    tagTypes: ["Menu"],
     endpoints: (builder) => ({
         createMenu: builder.mutation({
-            query: ({companyID, pubID, data}) => ({
+            query: ({ companyID, pubID, data }) => ({
                 url: `/api/company/${companyID}/pubs/${pubID}/menus/`,
-                method: 'POST',
+                method: "POST",
                 body: {
                     name: data.name,
                     visible: data.visible,
                     place: data.place,
                 },
                 headers: {
-                    'Content-Type': 'application/json'
-                }
+                    "Content-Type": "application/json",
+                },
             }),
-            invalidatesTags: ['Menu']
+            invalidatesTags: ["Menu"],
         }),
         updateMenu: builder.mutation({
-            query: ({companyID, data, pubID, menuID}) => ({
+            query: ({ companyID, data, pubID, menuID }) => ({
                 url: `/api/company/${companyID}/pubs/${pubID}/menus/${menuID}/`,
-                method: 'PUT',
+                method: "PUT",
                 body: {
                     name: data.name,
                     visible: data.visible,
                 },
                 headers: {
-                    'Content-Type': 'application/json'
-                }
+                    "Content-Type": "application/json",
+                },
             }),
-            invalidatesTags: ['Menu']
+            invalidatesTags: ["Menu"],
         }),
         deleteMenu: builder.mutation({
-            query: ({companyID, pubID, menuID}) => ({
+            query: ({ companyID, pubID, menuID }) => ({
                 url: `/api/company/${companyID}/pubs/${pubID}/menus/${menuID}/`,
-                method: 'Delete',
+                method: "Delete",
             }),
-            invalidatesTags: ['Menu']
+            invalidatesTags: ["Menu"],
+        }),
+        moveMenuLeft: builder.mutation({
+            query: ({ companyID, pubID, menuID }) => ({
+                url: `/api/company/${companyID}/pubs/${pubID}/menus/${menuID}/move-left`,
+                method: "Post",
+            }),
+            invalidatesTags: ["Menu"],
+        }),
+        moveMenuRight: builder.mutation({
+            query: ({ companyID, pubID, menuID }) => ({
+                url: `/api/company/${companyID}/pubs/${pubID}/menus/${menuID}/move-right`,
+                method: "Post",
+            }),
+            invalidatesTags: ["Menu"],
         }),
         getMenus: builder.query({
-            query: ({companyID, pubID}) => ({
+            query: ({ companyID, pubID }) => ({
                 url: `/api/company/${companyID}/pubs/${pubID}/menus/`,
-                method: 'GET',
+                method: "GET",
             }),
-            providesTags: ['Menu']
+            providesTags: ["Menu"],
         }),
         getMenu: builder.query({
-            query: ({companyID, pubID, menuID}) => ({
+            query: ({ companyID, pubID, menuID }) => ({
                 url: `/api/company/${companyID}/pubs/${pubID}/menus/${menuID}/`,
-                method: 'GET',
+                method: "GET",
             }),
-            providesTags: ['Menu']
+            providesTags: ["Menu"],
         }),
     }),
-    
-})
+});
 
-export const { useCreateMenuMutation, useUpdateMenuMutation, useDeleteMenuMutation, useGetMenuQuery, useGetMenusQuery } = menu;
+export const {
+    useCreateMenuMutation,
+    useUpdateMenuMutation,
+    useDeleteMenuMutation,
+    useGetMenuQuery,
+    useGetMenusQuery,
+    useMoveMenuLeftMutation,
+    useMoveMenuRightMutation,
+} = menu;

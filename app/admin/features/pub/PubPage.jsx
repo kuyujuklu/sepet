@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { Route, Routes, useParams } from "react-router-dom";
 import { useGetPubQuery } from "../../api/pub/pub";
 import { createContext, useEffect, useMemo, useState } from "react";
 import { useGetCompanyQuery } from "../../api/company/company";
@@ -9,6 +9,9 @@ import { useDispatch } from "react-redux";
 import { setPubID } from "./pubSlice";
 import { setCompanyID } from "../company/companySlice";
 import Categories from "./Categories/Categories";
+import Dishes from "./Dishes/Dishes";
+import { appErrors } from "../../errors/errors";
+import { requireAuthentication } from "../auth/authSlice";
 
 export const ThemeContext = createContext({
     theme: "light",
@@ -40,10 +43,10 @@ const PubPage = () => {
     } = useGetCompanyQuery();
 
     useEffect(() => {
-        if (companyError) {
-            //TODO: handle error
+        if (companyError && companyError.text === appErrors.unauthorized) {
+            dispatch(requireAuthentication())
         }
-    }, [companyError]);
+    }, [companyError, dispatch]);
 
     const pubID = useParams().pubID;
     const {
@@ -75,10 +78,10 @@ const PubPage = () => {
     }, [companyData?.company?.id, dispatch, pubData]);
 
     useEffect(() => {
-        if (pubError) {
-            //TODO: handle error
+        if (pubError && pubError.text === pubError.unauthorized) {
+            dispatch(requireAuthentication())
         }
-    }, [pubError]);
+    }, [dispatch, pubError]);
 
     return (
         <ThemeContext.Provider value={value}>
@@ -89,11 +92,16 @@ const PubPage = () => {
                             maxWidth: "600px",
                             margin: "auto",
                             height: "100%",
-                            backgroundColor: theme.bgColor,
+                            background: theme.bgColor,
+                            minHeight: "200px",
                         }}
                         className={"relative rounded-3xl h-full"}
                     >
-                        <PubPageUpper />
+                        <PubPageUpper
+                            imageFileName={pubData.pub.bg_image_file_name}
+                            companyID={companyData.company.id}
+                            pubID={pubData.pub.id}
+                        />
                         <div
                             style={{
                                 display: "block",
@@ -101,7 +109,7 @@ const PubPage = () => {
                                 top: "160px",
                                 padding: "20px",
                                 zIndex: 10,
-                                backgroundColor: theme.bgColor,
+                                background: theme.bgColor,
                             }}
                             className="rounded-2xl p-5"
                         >
@@ -110,8 +118,21 @@ const PubPage = () => {
                                 companyID={companyData.company.id}
                                 pubID={pubData.pub.id}
                             />
-                            <PubPageMain />
-                            <Categories />
+                            <Routes>
+                                <Route
+                                    path="/"
+                                    element={
+                                        <div>
+                                            <PubPageMain />
+                                            <Categories />
+                                        </div>
+                                    }
+                                />
+                                <Route
+                                    path="/menu/:menuID/category/:categoryID"
+                                    element={<Dishes />}
+                                />
+                            </Routes>
                         </div>
                     </div>
                 )}

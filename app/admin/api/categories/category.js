@@ -2,70 +2,97 @@ import { createApi } from "@reduxjs/toolkit/dist/query/react";
 import { authenticationBasedQuery } from "../auth/authBasedQuery";
 
 export const category = createApi({
-    reducerPath: 'categoryQuery',
+    reducerPath: "categoryQuery",
     baseQuery: authenticationBasedQuery,
-    tagTypes: ['Category'],
+    tagTypes: ["Category"],
     endpoints: (builder) => ({
         createCategory: builder.mutation({
-            query: ({companyID, pubID, menuID, data}) => ({
+            query: ({ companyID, pubID, menuID, data }) => ({
                 url: `/api/company/${companyID}/pubs/${pubID}/menus/${menuID}/categories/`,
-                method: 'POST',
+                method: "POST",
                 body: {
                     name: data.name,
                     visible: data.visible,
                     place: data.place,
+                    text_color: data.textColor,
                 },
                 headers: {
-                    'Content-Type': 'application/json'
-                }
+                    "Content-Type": "application/json",
+                },
             }),
-            invalidatesTags: ['Category']
+            invalidatesTags: ["Category"],
         }),
         updateCategory: builder.mutation({
-            query: ({companyID, data, pubID, menuID, categoryID}) => ({
+            query: ({ companyID, data, pubID, menuID, categoryID }) => ({
                 url: `/api/company/${companyID}/pubs/${pubID}/menus/${menuID}/categories/${categoryID}/`,
-                method: 'PUT',
+                method: "PUT",
                 body: {
                     name: data.name,
                     visible: data.visible,
+                    text_color: data.textColor,
+                    place: 1,
                 },
                 headers: {
-                    'Content-Type': 'application/json'
-                }
+                    "Content-Type": "application/json",
+                },
             }),
-            invalidatesTags: ['Category']
+            invalidatesTags: ["Category"],
         }),
         deleteCategory: builder.mutation({
-            query: ({companyID, pubID, menuID, categoryID}) => ({
+            query: ({ companyID, pubID, menuID, categoryID }) => ({
                 url: `/api/company/${companyID}/pubs/${pubID}/menus/${menuID}/categories/${categoryID}/`,
-                method: 'Delete',
+                method: "Delete",
             }),
-            invalidatesTags: ['Category']
+            invalidatesTags: ["Category"],
         }),
         getCategories: builder.query({
-            query: ({companyID, pubID, menuID}) => ({
+            query: ({ companyID, pubID, menuID }) => ({
                 url: `/api/company/${companyID}/pubs/${pubID}/menus/${menuID}/categories/`,
-                method: 'GET',
+                method: "GET",
             }),
-            providesTags: ['Category']
+            providesTags: ["Category"],
         }),
         getCategory: builder.query({
-            query: ({companyID, pubID, menuID, categoryID}) => ({
+            query: ({ companyID, pubID, menuID, categoryID }) => ({
                 url: `/api/company/${companyID}/pubs/${pubID}/menus/${menuID}/categories/${categoryID}/`,
-                method: 'GET',
+                method: "GET",
             }),
-            providesTags: ['Category']
+            providesTags: ["Category"],
         }),
         uploadCategoryImage: builder.mutation({
-            query: ({companyID, pubID, menuID, categoryID, data}) => ({
+            query: ({ companyID, pubID, menuID, categoryID, data }) => ({
                 url: `/api/company/${companyID}/pubs/${pubID}/menus/${menuID}/categories/${categoryID}/image`,
-                method: 'PATCH',
+                method: "PATCH",
                 body: data,
             }),
-            invalidatesTags: ['Category']
-        })
+            invalidatesTags: ["Category"],
+        }),
+        moveCategoryLeft: builder.mutation({
+            query: ({ companyID, pubID, menuID, categoryID, data }) => ({
+                url: `/api/company/${companyID}/pubs/${pubID}/menus/${menuID}/categories/${categoryID}/move-left`,
+                method: "Post",
+                body: data,
+            }),
+            invalidatesTags: ["Category"],
+        }),
+        moveCategoryRight: builder.mutation({
+            query: ({ companyID, pubID, menuID, categoryID, data }) => ({
+                url: `/api/company/${companyID}/pubs/${pubID}/menus/${menuID}/categories/${categoryID}/move-right`,
+                method: "Post",
+                body: data,
+            }),
+            invalidatesTags: ["Category"],
+        }),
     }),
-    
-})
+});
 
-export const { useCreateCategoryMutation, useUpdateCategoryMutation, useDeleteCategoryMutation, useGetCategoryQuery, useGetCategoriesQuery, useUploadCategoryImageMutation } = category;
+export const {
+    useCreateCategoryMutation,
+    useUpdateCategoryMutation,
+    useDeleteCategoryMutation,
+    useGetCategoryQuery,
+    useGetCategoriesQuery,
+    useUploadCategoryImageMutation,
+    useMoveCategoryLeftMutation,
+    useMoveCategoryRightMutation,
+} = category;

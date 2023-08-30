@@ -1,20 +1,20 @@
 import { useEffect } from "react"
-import { useSelector } from "react-redux"
+import { useDispatch, useSelector } from "react-redux"
 import { useNavigate } from "react-router-dom"
-import { selectAuthenticated } from "./authSlice"
+import {selectIsRequiringAuthentication, setRequireAuthenticationToFalse } from "./authSlice"
 
 const AuthWatcher = () => {
     const navigate = useNavigate()
+    const dispatch = useDispatch()
 
-    const authenticated = useSelector(selectAuthenticated)
+    const isRequiringAuthentication = useSelector(selectIsRequiringAuthentication)
 
     useEffect(() => {
-        if (authenticated) {
-            navigate("/admin/company")
-        } else {
-            navigate("/admin/auth/authentication")
+        if (isRequiringAuthentication) {
+            dispatch(setRequireAuthenticationToFalse())
+            navigate("/auth/authentication")
         }
-    }, [authenticated])
+    }, [dispatch, isRequiringAuthentication, navigate])
 
     return (
         <></>

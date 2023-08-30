@@ -3,22 +3,26 @@ import Image from "next/image";
 import { openDeletePubPopup, openUpdatePubPopup } from "../pub/pubSlice";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 const CompanyPub = ({ pub }) => {
-	const dispatch = useDispatch();
+    const { t } = useTranslation();
+    const dispatch = useDispatch();
     const navigate = useNavigate();
 
-	const handleEditClick = () => {
-		dispatch(openUpdatePubPopup(pub));
-	}
+    const handleEditClick = () => {
+        dispatch(openUpdatePubPopup(pub));
+    };
 
-	const handleDeleteClick = () => {
-		dispatch(openDeletePubPopup({companyID: pub.company_id, pubID: pub.id}));
-	}
+    const handleDeleteClick = () => {
+        dispatch(
+            openDeletePubPopup({ companyID: pub.company_id, pubID: pub.id })
+        );
+    };
 
     const goToPub = () => {
         navigate(`/admin/company/pub/${pub.id}`);
-    }
+    };
 
     return (
         <div
@@ -38,30 +42,24 @@ const CompanyPub = ({ pub }) => {
                         height={25}
                     />
                 </div>
-				<div className="flex gap-2">
-					<div 
-						className="cursor-pointer"
-						onClick={handleEditClick}
-					>
-						<Image
-							src="/images/svg/settings-black.svg"
-							alt="settings"
-							width={25}
-							height={25}
-						/>
-					</div>
-					<div 
-						className="cursor-pointer"
-						onClick={handleDeleteClick}
-					>
-						<Image
-							src="/images/svg/trash-can-black.svg"
-							alt="trash-can"
-							width={25}
-							height={25}
-						/>
-					</div>
-				</div>
+                <div className="flex gap-2">
+                    <div className="cursor-pointer" onClick={handleEditClick}>
+                        <Image
+                            src="/images/svg/settings-black.svg"
+                            alt="settings"
+                            width={25}
+                            height={25}
+                        />
+                    </div>
+                    <div className="cursor-pointer" onClick={handleDeleteClick}>
+                        <Image
+                            src="/images/svg/trash-can-black.svg"
+                            alt="trash-can"
+                            width={25}
+                            height={25}
+                        />
+                    </div>
+                </div>
             </header>
             <main className="block mb-2">
                 <div className="mb-4 text-2xs text-gray-700">
@@ -69,7 +67,7 @@ const CompanyPub = ({ pub }) => {
                 </div>
                 <div className="mb text-base font-bold">{pub.name}</div>
                 <div className="mb text-xs text-gray-700 break-words">
-                Адрес: {pub.address}
+                    {t("admin.company.pub.address")}: {pub.address}
                 </div>
             </main>
             <footer className="flex flex-col text-center mt-6">
@@ -90,7 +88,7 @@ const CompanyPub = ({ pub }) => {
                     }}
                     onClick={goToPub}
                 >
-                    Редактировать меню
+                    {t("admin.company.pub.edit_menu_button")}
                 </Button>
             </footer>
         </div>

@@ -1,22 +1,25 @@
 import { useDispatch, useSelector } from "react-redux";
 import { useCallback, useEffect } from "react";
 import { Button } from "@mui/material";
-import { useDeleteMenuMutation } from "@/app/admin/api/menu/menu";
-import { closeDeleteMenuPopup, selectDeleteMenuPopupState } from "./menuSlice";
 import Popup from "@/app/admin/components/Popup/Popup";
 import WhiteSpinner from "@/app/admin/components/loaders/WhiteSpinner";
+import {
+    closeDeleteDishPopup,
+    selectDeleteDishPopupState,
+} from "./dishesSlice";
+import { useDeleteDishMutation } from "@/app/admin/api/dish/dish";
 import { requireAuthentication } from "../../auth/authSlice";
 import { useTranslation } from "react-i18next";
 
-const DeleteMenuPopup = () => {
+const DeleteDishPopup = () => {
     const { t } = useTranslation();
     const dispatch = useDispatch();
-    const popupState = useSelector(selectDeleteMenuPopupState);
+    const popupState = useSelector(selectDeleteDishPopupState);
 
-    const [deleteMenu, { data, error, isLoading }] = useDeleteMenuMutation();
+    const [deleteDish, { data, error, isLoading }] = useDeleteDishMutation();
 
     const closePopup = useCallback(() => {
-        dispatch(closeDeleteMenuPopup());
+        dispatch(closeDeleteDishPopup());
     }, [dispatch]);
 
     useEffect(() => {
@@ -27,7 +30,7 @@ const DeleteMenuPopup = () => {
 
     useEffect(() => {
         if (error && error.text === error.unauthorized) {
-            dispatch(requireAuthentication())
+            dispatch(requireAuthentication());
         }
     }, [dispatch, error]);
 
@@ -35,15 +38,19 @@ const DeleteMenuPopup = () => {
         let companyID = popupState?.companyID;
         let pubID = popupState?.pubID;
         let menuID = popupState?.menuID;
+        let categoryID = popupState?.categoryID;
+        let dishID = popupState?.dishID;
 
-        if (!companyID || !pubID || !menuID) {
+        if (!companyID || !pubID || !menuID || !categoryID || !dishID) {
             return;
         }
 
-        deleteMenu({ 
-            companyID, 
+        deleteDish({
+            companyID,
             pubID,
-            menuID
+            menuID,
+            categoryID,
+            dishID,
         });
     };
 
@@ -52,14 +59,14 @@ const DeleteMenuPopup = () => {
             <div className="py-4">
                 <header>
                     <h1 className="font-bold text-center text-xl mb-10">
-                        {t("admin.popups.delete_menu_popup.headline")}
+                        {t("admin.popups.delete_dish_popup.headline")}
                     </h1>
                 </header>
                 <main className="mb-10">
                     <p className="text-center">
-                        {t("admin.popups.delete_menu_popup.text")}
+                        {t("admin.popups.delete_dish_popup.text")}
                         <br />
-                        {t("admin.popups.delete_menu_popup.warning")}
+                        {t("admin.popups.delete_dish_popup.warning")}
                     </p>
                 </main>
                 <footer className="text-center">
@@ -79,7 +86,11 @@ const DeleteMenuPopup = () => {
                         }}
                         onClick={handleButtonClick}
                     >
-                        {isLoading ? <WhiteSpinner /> : t("admin.popups.delete_menu_popup.delete_button")}
+                        {isLoading ? (
+                            <WhiteSpinner />
+                        ) : (
+                            t("admin.popups.delete_dish_popup.delete_button")
+                        )}
                     </Button>
                 </footer>
             </div>
@@ -87,4 +98,4 @@ const DeleteMenuPopup = () => {
     );
 };
 
-export default DeleteMenuPopup;
+export default DeleteDishPopup;

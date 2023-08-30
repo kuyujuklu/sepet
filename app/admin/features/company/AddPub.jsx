@@ -19,6 +19,7 @@ const AddPub = () => {
     <div
         onClick={handleClick}
         style={{
+            minHeight: "220px",
             width: "100%",
             maxWidth: "200px",
             transition: "all .2s ease-in-out",

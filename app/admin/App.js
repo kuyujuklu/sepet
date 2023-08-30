@@ -12,6 +12,12 @@ import CreateMenuPopup from "./features/pub/Menus/CreateMenuPopup";
 import UpdateMenuPopup from "./features/pub/Menus/UpdateMenuPopup";
 import DeleteMenuPopup from "./features/pub/Menus/DeleteMenuPopup";
 import CreateCategoryPopup from "./features/pub/Categories/CreateCategoryPopup";
+import UpdateCategoryPopup from "./features/pub/Categories/UpdateCategoryPopup";
+import DeleteCategoryPopup from "./features/pub/Categories/DeleteCategoryPopup";
+import CreateDishPopup from "./features/pub/Dishes/CreateDishPopup";
+import UpdateDishPopup from "./features/pub/Dishes/UpdateDishPopup";
+import DeleteDishPopup from "./features/pub/Dishes/DeleteDishPopup";
+import { useEffect } from "react";
 
 const App = () => {
   return (
@@ -26,8 +32,12 @@ const App = () => {
 const AppInner = () => {
 
   const navigate = useNavigate()
-  if(window.location.pathname === "/admin") navigate("/admin/profile")
 
+  useEffect(() => {
+    if (window.location.pathname === "/admin") {
+      navigate("/admin/company")
+    }
+  }, [navigate])
   return (
     <div 
       style={{
@@ -42,9 +52,9 @@ const AppInner = () => {
         <Route path="/auth/registration" element={<Registration />} />
         <Route path="/auth/authentication" element={<Authentication />} />
         <Route path="/company" element={<CompanyPage />} />
-        <Route path="/company/pub/:pubID" element={<PubPage />} />
+        <Route path="/company/pub/:pubID/*" element={<PubPage />} />
       </Routes>
-      {/* <AuthWatcher /> */}
+      <AuthWatcher />
       <Popups />
     </div>
   )
@@ -62,6 +72,12 @@ const Popups =() => {
       <DeleteMenuPopup />
       
       <CreateCategoryPopup />
+      <UpdateCategoryPopup />
+      <DeleteCategoryPopup />
+
+      <CreateDishPopup />
+      <UpdateDishPopup />
+      <DeleteDishPopup />
     </>
   )
 }

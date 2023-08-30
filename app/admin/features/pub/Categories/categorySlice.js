@@ -76,6 +76,7 @@ const categorySlice = createSlice({
             state.deletePopup.companyID = action.payload.companyID;
             state.deletePopup.pubID = action.payload.pubID;
             state.deletePopup.menuID = action.payload.menuID;
+            state.deletePopup.categoryID = action.payload.categoryID;
             state.deletePopup.opened = true;
         },
         closeDeleteCategoryPopup(state) {

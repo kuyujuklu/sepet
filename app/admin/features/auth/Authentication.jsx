@@ -1,52 +1,60 @@
-'use client'
-import { useEffect, useState } from "react"
-import Input from "../../components/Inputs/Input"
-import { Button } from "@mui/material"
-import { ValidatePassword, validateCompanyEmail } from "../../validation/validateCompany"
-import { useLazyAuthenticateQuery } from "../../api/auth/authQuery"
-import { setAccessToken } from "../../api/auth/authBasedQuery"
-import WhiteSpinner from "../../components/loaders/WhiteSpinner"
-import { useDispatch } from "react-redux"
-import { setAuthenticated } from "./authSlice"
-import { company } from "../../api/company/company"
-import { NavLink, useNavigate } from "react-router-dom"
+"use client";
+import { useEffect, useState } from "react";
+import Input from "../../components/Inputs/Input";
+import { Button } from "@mui/material";
+import {
+    ValidatePassword,
+    validateCompanyEmail,
+} from "../../validation/validateCompany";
+import { useLazyAuthenticateQuery } from "../../api/auth/authQuery";
+import { setAccessToken } from "../../api/auth/authBasedQuery";
+import WhiteSpinner from "../../components/loaders/WhiteSpinner";
+import { useDispatch } from "react-redux";
+import { setAuthenticated } from "./authSlice";
+import { company } from "../../api/company/company";
+import { NavLink, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 const Authentication = () => {
-    const navigate = useNavigate()
-    const [authenticateQuery, {data, error, isLoading}] = useLazyAuthenticateQuery()
-    const [email, setEmail] = useState("")
-    const [password, setPassword] = useState("")
-    const dispatch = useDispatch()
+    const { t } = useTranslation();
+
+    const navigate = useNavigate();
+    const [authenticateQuery, { data, error, isLoading }] =
+        useLazyAuthenticateQuery();
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const dispatch = useDispatch();
 
     useEffect(() => {
-        if(data?.ok && data?.access_token) {
-            setAccessToken(data.access_token)
-            dispatch(company.util.resetApiState())
-            dispatch(setAuthenticated(true))
+        if (data?.ok && data?.access_token) {
+            setAccessToken(data.access_token);
+            dispatch(company.util.resetApiState());
+            navigate("/admin/company/");
         }
-    }, [data, dispatch])
+    }, [data, dispatch, navigate]);
 
+    useEffect(() => {
+        if (!error) return;
 
-      useEffect(() => {
-        if(!error) return;
-    
-        if(error?.data?.validationErrors) {
-          console.log("errors", error.data.validationErrors)
+        if (error?.data?.validationErrors) {
+            console.log("errors", error.data.validationErrors);
         }
-    
-        dispatch(setAuthenticated(false))
-      }, [dispatch, error])
+
+        dispatch(setAuthenticated(false));
+    }, [dispatch, error]);
 
     const handleButtonClick = () => {
-        authenticateQuery({data: {
-            email,
-            password,
-        }})
-    }
+        authenticateQuery({
+            data: {
+                email,
+                password,
+            },
+        });
+    };
 
     return (
         <div className="flex w-full h-full border border-gray">
-            <div 
+            <div
                 style={{
                     minHeight: "600px",
                     maxWidth: "500px",
@@ -54,39 +62,42 @@ const Authentication = () => {
                 }}
                 className="flex flex-col gap-y-4 p-10 w-full m-auto shadow-2xl"
             >
-                <h1 className="text-2xl font-bold text-gray-700">Авторизуйтесь</h1>
+                <h1 className="text-2xl font-bold text-gray-700">
+                    {t("admin.authentication.headline")}
+                </h1>
                 <div className="flex flex-col gap-6">
                     <div>
-                        <div className="text-sm font-medium">Ваш Email</div>
-                        <Input 
-                            value={email} 
-                            setValue={setEmail} 
+                        <div className="text-sm font-medium">
+                            {t("admin.authentication.your_email")}
+                        </div>
+                        <Input
+                            type={"email"}
+                            value={email}
+                            setValue={setEmail}
                             style={{
                                 marginTop: "10px",
                                 minHeight: "40px",
                                 fontSize: "16px",
                                 maxWidth: "600px",
-                            }} 
-                            validators={[
-                                validateCompanyEmail,
-                            ]}
+                            }}
+                            validators={[validateCompanyEmail]}
                         />
                     </div>
                     <div>
-                        <div className="text-sm font-medium">Пароль</div>
-                        <Input 
+                        <div className="text-sm font-medium">
+                            {t("admin.authentication.password")}
+                        </div>
+                        <Input
                             type="password"
-                            value={password} 
-                            setValue={setPassword} 
+                            value={password}
+                            setValue={setPassword}
                             style={{
                                 marginTop: "10px",
                                 minHeight: "40px",
                                 fontSize: "16px",
                                 maxWidth: "600px",
-                            }} 
-                            validators={[
-                                ValidatePassword,
-                            ]}
+                            }}
+                            validators={[ValidatePassword]}
                         />
                     </div>
 
@@ -106,18 +117,24 @@ const Authentication = () => {
                                 },
                             }}
                             onClick={handleButtonClick}
-                        >{isLoading ? <WhiteSpinner /> : "Войти в аккаунт"}</Button>
+                        >
+                            {isLoading ? (
+                                <WhiteSpinner />
+                            ) : (
+                                t("admin.authentication.login")
+                            )}
+                        </Button>
                     </div>
                 </div>
                 <NavLink
                     to="/admin/auth/registration"
                     className="mt-4 text-center text-sm text-gray-600 cursor-pointer"
                 >
-                    Нет аккаунта? Зарегистрироваться
+                    {t("admin.authentication.link_to_registration")}
                 </NavLink>
             </div>
         </div>
-  )
-}
+    );
+};
 
-export default Authentication
+export default Authentication;

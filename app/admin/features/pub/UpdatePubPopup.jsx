@@ -2,11 +2,7 @@ import { useDispatch, useSelector } from "react-redux";
 import Popup from "../../components/Popup/Popup";
 import { closeUpdatePubPopup, selectUpdatePubPopupState } from "./pubSlice";
 import { useCallback, useEffect, useState } from "react";
-import {
-    ValidatePub,
-    ValidatePubName,
-    ValidatePubUrl,
-} from "../../validation/validatePub";
+import { ValidatePub, ValidatePubName } from "../../validation/validatePub";
 import InputWithLabel from "../../components/Inputs/InputWithLabel";
 import { Button } from "@mui/material";
 import WhiteSpinner from "../../components/loaders/WhiteSpinner";
@@ -14,8 +10,12 @@ import { useUpdatePubMutation } from "../../api/pub/pub";
 import SelectWithLabel from "../../components/Inputs/SelectWithLabel";
 import { HexColorPicker } from "react-colorful";
 import Textarea from "../../components/Inputs/Textarea";
+import { currencies } from "../../static-data/data";
+import { requireAuthentication } from "../auth/authSlice";
+import { useTranslation } from "react-i18next";
 
 const UpdatePubPopup = () => {
+    const { t } = useTranslation();
     const dispatch = useDispatch();
     const popupState = useSelector(selectUpdatePubPopupState);
 
@@ -31,18 +31,19 @@ const UpdatePubPopup = () => {
     const [wifiPassword, setWifiPassword] = useState("");
     const [address, setAddress] = useState("");
     const [additionalInfo, setAdditionalInfo] = useState("");
-    // const [currencyID, setCurrencyID] = useState(1);
+    const [currencyID, setCurrencyID] = useState(1);
 
-    const [colorPickerOpened, setColorPickerOpened] = useState(false);
+    const [colorPickerOpened, setColorPickerOpened] = useState(true);
 
-    useEffect(() => { 
-        setName(popupState?.initialPub?.name ?? "")
-        setColorTheme(popupState?.initialPub?.color_theme ?? "")
-        setColor(popupState?.initialPub?.color ?? "")
-        setWifiPassword(popupState?.initialPub?.wifi_password ?? "")
-        setAddress(popupState?.initialPub?.address ?? "")
-        setAdditionalInfo(popupState?.initialPub?.additional_info ?? "")
-    }, [popupState.initialPub])
+    useEffect(() => {
+        setName(popupState?.initialPub?.name ?? "");
+        setColorTheme(popupState?.initialPub?.color_theme ?? "");
+        setColor(popupState?.initialPub?.color ?? "");
+        setWifiPassword(popupState?.initialPub?.wifi_password ?? "");
+        setAddress(popupState?.initialPub?.address ?? "");
+        setAdditionalInfo(popupState?.initialPub?.additional_info ?? "");
+        setCurrencyID(popupState?.initialPub?.currency_id ?? 1);
+    }, [popupState.initialPub]);
 
     useEffect(() => {
         if (data) {
@@ -51,10 +52,10 @@ const UpdatePubPopup = () => {
     }, [closePopup, data]);
 
     useEffect(() => {
-        if (error) {
-            //TODO: handle error
+        if (error && error.text === error.unauthorized) {
+            dispatch(requireAuthentication());
         }
-    }, [closePopup, data, error]);
+    }, [dispatch, error]);
 
     const handleButtonClick = () => {
         const pub = {
@@ -64,13 +65,13 @@ const UpdatePubPopup = () => {
             wifiPassword,
             address,
             additionalInfo,
-            currencyID: 1,
+            currencyID: +currencyID,
             languageID: 1,
         };
 
         let validationErrors = ValidatePub(pub);
         if (validationErrors.length > 0) {
-            console.log('validationErrors', validationErrors)
+            console.log("validationErrors", validationErrors);
             return;
         }
 
@@ -81,10 +82,10 @@ const UpdatePubPopup = () => {
             return;
         }
 
-        updatePub({ 
-            data: pub, 
-            companyID, 
-            pubID
+        updatePub({
+            data: pub,
+            companyID,
+            pubID,
         });
     };
 
@@ -93,12 +94,12 @@ const UpdatePubPopup = () => {
             <div className="py-4">
                 <header>
                     <h1 className="font-bold text-center text-xl mb-10">
-                        Редактировать заведение
+                        {t("admin.popups.update_pub_popup.headline")}
                     </h1>
                 </header>
                 <main className="flex flex-col gap-6 mb-6">
                     <InputWithLabel
-                        label={"Название заведения"}
+                        label={t("admin.popups.update_pub_popup.name")}
                         labelClassName={
                             "text-xs sm:text-base text-gray-500 font-medium"
                         }
@@ -110,7 +111,7 @@ const UpdatePubPopup = () => {
                         validators={[ValidatePubName]}
                     />
                     <InputWithLabel
-                        label="Пароль от wifi"
+                        label={t("admin.popups.update_pub_popup.wifi_password")}
                         labelClassName={
                             "text-xs sm:text-base text-gray-500 font-medium"
                         }
@@ -118,17 +119,36 @@ const UpdatePubPopup = () => {
                         setValue={setWifiPassword}
                     />
 
+                    <SelectWithLabel
+                        wrapperClass="flex items-center gap-4"
+                        label={t("admin.popups.update_pub_popup.currency")}
+                        labelClassName={
+                            "text-sm sm:text-base text-gray-500 font-medium"
+                        }
+                        selectClassName={"text-xs sm:text-sm"}
+                        value={currencyID}
+                        setValue={setCurrencyID}
+                        values={currencies.map((currency) => ({
+                            value: currency.id,
+                            text: currency.name + " " + currency.symbol,
+                        }))}
+                    />
+
                     {/* Pick color */}
                     <div>
                         <div className="flex items-center gap-10">
-                            <span className="ml-2 text-xs sm:text-base text-gray-500 font-medium">Предпочитаемый цвет </span>
+                            <span className="ml-2 text-xs sm:text-base text-gray-500 font-medium">
+                                {t(
+                                    "admin.popups.update_pub_popup.favorite_color"
+                                )}
+                            </span>
                             <div
                                 style={{
                                     width: "60px",
                                     height: "30px",
-                                    backgroundColor: color,
+                                    background: color,
                                 }}
-                                className="cursor-pointer border rounded-lg"
+                                className="cursor-pointer border-4 rounded-lg "
                                 onClick={() =>
                                     setColorPickerOpened(!colorPickerOpened)
                                 }
@@ -146,7 +166,7 @@ const UpdatePubPopup = () => {
 
                     <SelectWithLabel
                         wrapperClass="flex items-center gap-4"
-                        label={"Тема"}
+                        label={t("admin.popups.update_pub_popup.theme.title")}
                         labelClassName={
                             "text-sm sm:text-base text-gray-500 font-medium"
                         }
@@ -156,16 +176,20 @@ const UpdatePubPopup = () => {
                         values={[
                             {
                                 value: "light",
-                                text: "Светлая",
+                                text: t(
+                                    "admin.popups.update_pub_popup.theme.light"
+                                ),
                             },
                             {
                                 value: "dark",
-                                text: "Темная",
+                                text: t(
+                                    "admin.popups.update_pub_popup.theme.dark"
+                                ),
                             },
                         ]}
                     />
                     <InputWithLabel
-                        label="Адрес"
+                        label={t("admin.popups.update_pub_popup.address")}
                         labelClassName={
                             "text-xs sm:text-base text-gray-500 font-medium"
                         }
@@ -174,8 +198,13 @@ const UpdatePubPopup = () => {
                     />
                     {/* additional info */}
                     <div className="flex flex-col">
-                        <span className="ml-2 text-xs sm:text-base text-gray-500 font-medium">Дополнительная информация </span>
-                        <Textarea value={additionalInfo} setValue={setAdditionalInfo}/>
+                        <span className="ml-2 text-xs sm:text-base text-gray-500 font-medium">
+                            {t("admin.popups.update_pub_popup.additional_info")}
+                        </span>
+                        <Textarea
+                            value={additionalInfo}
+                            setValue={setAdditionalInfo}
+                        />
                     </div>
                 </main>
                 <footer className="text-center">
@@ -195,7 +224,11 @@ const UpdatePubPopup = () => {
                         }}
                         onClick={handleButtonClick}
                     >
-                        {isLoading ? <WhiteSpinner /> : "Сохранить"}
+                        {isLoading ? (
+                            <WhiteSpinner />
+                        ) : (
+                            t("admin.popups.update_pub_popup.save_button")
+                        )}
                     </Button>
                 </footer>
             </div>

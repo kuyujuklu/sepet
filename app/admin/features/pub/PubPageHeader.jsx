@@ -5,6 +5,7 @@ import { useContext, useEffect } from "react";
 import { openUpdatePubPopup } from "./pubSlice";
 import { NavLink } from "react-router-dom";
 import { ThemeContext } from "./PubPage";
+import { requireAuthentication } from "../auth/authSlice";
 
 const PubPageHeader = ({ pubName, companyID, pubID }) => {
 	const themeContext = useContext(ThemeContext);
@@ -15,10 +16,10 @@ const PubPageHeader = ({ pubName, companyID, pubID }) => {
         pubID: pubID,
     });
     useEffect(() => {
-        if (error) {
-            //TODO: handle error
+        if (error && error.text === error.unauthorized) {
+            dispatch(requireAuthentication())
         }
-    }, [error]);
+    }, [dispatch, error]);
 
     const handleEditClick = () => {
         dispatch(openUpdatePubPopup(data.pub ?? {}));

@@ -5,30 +5,32 @@ import InputWithLabel from "@/app/admin/components/Inputs/InputWithLabel";
 import Popup from "@/app/admin/components/Popup/Popup";
 import WhiteSpinner from "@/app/admin/components/loaders/WhiteSpinner";
 import {
-    closeCreateCategoryPopup,
-    selectCreateCategoryPopupState,
-} from "./categorySlice";
-import { useCreateCategoryMutation } from "@/app/admin/api/categories/category";
+    closeCreateDishPopup,
+    selectCreateDishPopupState,
+} from "./dishesSlice";
 import { HexColorPicker } from "react-colorful";
 import CheckboxWithLabel from "@/app/admin/components/Inputs/CheckboxWithLabel";
+import { useCreateDishMutation } from "@/app/admin/api/dish/dish";
 import { requireAuthentication } from "../../auth/authSlice";
 import { useTranslation } from "react-i18next";
 
-const CreateCategoryPopup = () => {
+const CreateDishPopup = () => {
     const { t } = useTranslation();
     const dispatch = useDispatch();
-    const popupState = useSelector(selectCreateCategoryPopupState);
+    const popupState = useSelector(selectCreateDishPopupState);
 
-    const [createCategory, { data, error, isLoading }] =
-        useCreateCategoryMutation();
+    const [createDish, { data, error, isLoading }] = useCreateDishMutation();
 
     const closePopup = useCallback(() => {
-        dispatch(closeCreateCategoryPopup());
+        dispatch(closeCreateDishPopup());
     }, [dispatch]);
 
     const [name, setName] = useState("");
-    const [visible, setVisible] = useState(true);
+    const [price, setPrice] = useState(0);
+    const [ingridients, setIngridients] = useState("");
     const [textColor, setTextColor] = useState("#ffffff");
+    const [visible, setVisible] = useState(true);
+
     const [colorPickerOpened, setColorPickerOpened] = useState(true);
 
     useEffect(() => {
@@ -44,8 +46,10 @@ const CreateCategoryPopup = () => {
     }, [dispatch, error]);
 
     const handleButtonClick = () => {
-        const pub = {
+        const dish = {
             name,
+            price: Number(price),
+            ingridients,
             visible,
             textColor,
             place: popupState.place ?? 1,
@@ -55,16 +59,18 @@ const CreateCategoryPopup = () => {
             !popupState.companyID ||
             !popupState.pubID ||
             !popupState.menuID ||
+            !popupState.categoryID ||
             !popupState.place
         ) {
             return;
         }
 
-        createCategory({
-            data: pub,
+        createDish({
+            data: dish,
             companyID: popupState.companyID,
             pubID: popupState.pubID,
             menuID: popupState.menuID,
+            categoryID: popupState.categoryID,
         });
     };
 
@@ -73,12 +79,12 @@ const CreateCategoryPopup = () => {
             <div className="py-4">
                 <header>
                     <h1 className="font-bold text-center text-xl mb-10">
-                        {t("admin.popups.create_category_popup.headline")}
+                        {t("admin.popups.create_dish_popup.headline")}
                     </h1>
                 </header>
                 <main className="flex flex-col gap-6 mb-6">
                     <InputWithLabel
-                        label={t("admin.popups.create_category_popup.name")}
+                        label={t("admin.popups.create_dish_popup.name")}
                         labelClassName={
                             "text-xs sm:text-base text-gray-500 font-medium"
                         }
@@ -88,13 +94,33 @@ const CreateCategoryPopup = () => {
                         value={name}
                         setValue={setName}
                     />
+                    <InputWithLabel
+                        label={t("admin.popups.create_dish_popup.price")}
+                        labelClassName={
+                            "text-xs sm:text-base text-gray-500 font-medium"
+                        }
+                        labelStyle={{
+                            marginBottom: ".1rem",
+                        }}
+                        value={price}
+                        setValue={setPrice}
+                    />
+                    <InputWithLabel
+                        label={t("admin.popups.create_dish_popup.ingridients")}
+                        labelClassName={
+                            "text-xs sm:text-base text-gray-500 font-medium"
+                        }
+                        labelStyle={{
+                            marginBottom: ".1rem",
+                        }}
+                        value={ingridients}
+                        setValue={setIngridients}
+                    />
                     {/* Pick color */}
                     <div>
                         <div className="flex items-center gap-10">
                             <span className="ml-2 text-xs sm:text-base text-gray-500 font-medium">
-                                {t(
-                                    "admin.popups.create_category_popup.text_color"
-                                )}{" "}
+                                {t("admin.popups.create_dish_popup.text_color")}{" "}
                             </span>
                             <div
                                 style={{
@@ -120,7 +146,7 @@ const CreateCategoryPopup = () => {
                     <CheckboxWithLabel
                         value={visible}
                         setValue={setVisible}
-                        label={t("admin.popups.create_category_popup.visible")}
+                        label={t("admin.popups.create_dish_popup.visible")}
                         labelClass={
                             "mr-2 text-xs sm:text-base text-gray-500 font-medium"
                         }
@@ -148,9 +174,7 @@ const CreateCategoryPopup = () => {
                         {isLoading ? (
                             <WhiteSpinner />
                         ) : (
-                            t(
-                                "admin.popups.create_category_popup.create_button"
-                            )
+                            t("admin.popups.create_dish_popup.create_button")
                         )}
                     </Button>
                 </footer>
@@ -159,4 +183,4 @@ const CreateCategoryPopup = () => {
     );
 };
 
-export default CreateCategoryPopup;
+export default CreateDishPopup;

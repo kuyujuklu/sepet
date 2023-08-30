@@ -6,8 +6,12 @@ import { useUpdateMenuMutation } from "@/app/admin/api/menu/menu";
 import InputWithLabel from "@/app/admin/components/Inputs/InputWithLabel";
 import Popup from "@/app/admin/components/Popup/Popup";
 import WhiteSpinner from "@/app/admin/components/loaders/WhiteSpinner";
+import CheckboxWithLabel from "@/app/admin/components/Inputs/CheckboxWithLabel";
+import { requireAuthentication } from "../../auth/authSlice";
+import { useTranslation } from "react-i18next";
 
 const UpdateMenuPopup = () => {
+    const {t} = useTranslation()
     const dispatch = useDispatch();
     const popupState = useSelector(selectUpdateMenuPopupState);
 
@@ -27,10 +31,10 @@ const UpdateMenuPopup = () => {
     }, [closePopup, data]);
 
     useEffect(() => {
-        if (error) {
-            //TODO: handle error
+        if (error && error.text === error.unauthorized) {
+            dispatch(requireAuthentication())
         }
-    }, [closePopup, data, error]);
+    }, [dispatch, error]);
 
     useEffect(() => {
         if (popupState.initialMenu) {
@@ -57,18 +61,29 @@ const UpdateMenuPopup = () => {
             <div className="py-4">
                 <header>
                     <h1 className="font-bold text-center text-xl mb-10">
-                        Редактировать меню
+                        {t("admin.popups.update_menu_popup.headline")}
                     </h1>
                 </header>
                 <main className="flex flex-col gap-6 mb-6">
                     <InputWithLabel
-                        label={"Название меню"}
+                        label={t("admin.popups.update_menu_popup.name")}
                         labelClassName={"text-xs sm:text-base text-gray-500 font-medium"}
                         labelStyle={{
                             marginBottom: ".1rem",
                         }}
                         value={name}
                         setValue={setName}
+                    />
+
+                    <CheckboxWithLabel
+                        value={visible}
+                        setValue={setVisible}
+                        label={t("admin.popups.update_menu_popup.visible")}
+                        labelClass={
+                            "mr-2 text-xs sm:text-base text-gray-500 font-medium"
+                        }
+                        inputStyle={{ padding: 0 }}
+                        inputClass={"border-gray-500"}
                     />
                 </main>
                 <footer className="text-center">
@@ -88,7 +103,7 @@ const UpdateMenuPopup = () => {
                         }}
                         onClick={handleButtonClick}
                     >
-                        {isLoading ? <WhiteSpinner /> : "Сохранить"}
+                        {isLoading ? <WhiteSpinner /> : t("admin.popups.update_menu_popup.save_button")}
                     </Button>
                 </footer>
             </div>

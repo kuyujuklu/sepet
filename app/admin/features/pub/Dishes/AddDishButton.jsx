@@ -1,27 +1,31 @@
-import { Button } from "@mui/material";
-import { useContext } from "react";
-import { PubColorContext, ThemeContext } from "../PubPage";
 import { useDispatch, useSelector } from "react-redux";
-import { openCreateCategoryPopup } from "./categorySlice";
 import { selectPubID } from "../pubSlice";
 import { selectCompanyID } from "../../company/companySlice";
-import { selectMenuID } from "../Menus/menuSlice";
+import { useContext } from "react";
+import { PubColorContext, ThemeContext } from "../PubPage";
+import { openCreateDishPopup } from "./dishesSlice";
+import { Button } from "@mui/material";
 import { useTranslation } from "react-i18next";
 
-const AddCategoryButton = () => {
+const AddDishButton = ({ categoryID, menuID }) => {
     const { t } = useTranslation();
     const dispatch = useDispatch();
 
     const pubID = useSelector(selectPubID);
     const companyID = useSelector(selectCompanyID);
-    const menuID = useSelector(selectMenuID);
 
     const themeContext = useContext(ThemeContext);
     const pubColor = useContext(PubColorContext);
 
     const handleButtonClick = () => {
         dispatch(
-            openCreateCategoryPopup({ pubID, companyID, menuID, place: 1 })
+            openCreateDishPopup({
+                pubID,
+                companyID,
+                menuID,
+                categoryID,
+                place: 1,
+            })
         );
     };
 
@@ -46,10 +50,10 @@ const AddCategoryButton = () => {
                 }}
                 onClick={handleButtonClick}
             >
-                {t("admin.categories.add_category_button")}
+                {t("admin.dishes.add_dish_button")}
             </Button>
         </div>
     );
 };
 
-export default AddCategoryButton;
+export default AddDishButton;

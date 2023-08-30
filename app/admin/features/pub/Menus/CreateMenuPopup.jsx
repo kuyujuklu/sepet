@@ -6,12 +6,16 @@ import { useCreateMenuMutation } from "@/app/admin/api/menu/menu";
 import InputWithLabel from "@/app/admin/components/Inputs/InputWithLabel";
 import Popup from "@/app/admin/components/Popup/Popup";
 import WhiteSpinner from "@/app/admin/components/loaders/WhiteSpinner";
+import CheckboxWithLabel from "@/app/admin/components/Inputs/CheckboxWithLabel";
+import { requireAuthentication } from "../../auth/authSlice";
+import { useTranslation } from "react-i18next";
 
 const CreateMenuPopup = () => {
+    const {t} = useTranslation()
     const dispatch = useDispatch();
     const popupState = useSelector(selectCreateMenuPopupState);
 
-	const [createMenu, {data, error, isLoading}] = useCreateMenuMutation()
+    const [createMenu, { data, error, isLoading }] = useCreateMenuMutation();
 
     const closePopup = useCallback(() => {
         dispatch(closeCreateMenuPopup());
@@ -27,42 +31,59 @@ const CreateMenuPopup = () => {
     }, [closePopup, data]);
 
     useEffect(() => {
-        if (error) {
-            //TODO: handle error
+        if (error && error.text === error.unauthorized) {
+            dispatch(requireAuthentication())
         }
-    }, [closePopup, data, error]);
+    }, [dispatch, error]);
 
-	const handleButtonClick = () => {
-		const pub = {
+    const handleButtonClick = () => {
+        const pub = {
             name,
             visible,
             place: popupState.place ?? 1,
+        };
+
+        if (!popupState.companyID || !popupState.pubID || !popupState.place) {
+            return;
         }
 
-        if(!popupState.companyID || !popupState.pubID || !popupState.place) {
-            return
-        }
-
-        createMenu({data: pub, companyID: popupState.companyID, pubID : popupState.pubID})
-	}
+        createMenu({
+            data: pub,
+            companyID: popupState.companyID,
+            pubID: popupState.pubID,
+        });
+    };
 
     return (
         <Popup opened={popupState.opened} closeCallback={closePopup}>
             <div className="py-4">
                 <header>
                     <h1 className="font-bold text-center text-xl mb-10">
-                        Добавить меню
+                        {t("admin.popups.create_menu_popup.headline")}
                     </h1>
                 </header>
                 <main className="flex flex-col gap-6 mb-6">
                     <InputWithLabel
-                        label={"Название меню"}
-                        labelClassName={"text-xs sm:text-base text-gray-500 font-medium"}
+                        label={t("admin.popups.create_menu_popup.name")}
+                        labelClassName={
+                            "text-xs sm:text-base text-gray-500 font-medium"
+                        }
                         labelStyle={{
                             marginBottom: ".1rem",
                         }}
                         value={name}
                         setValue={setName}
+                    />
+
+                    <CheckboxWithLabel
+                        value={visible}
+                        setValue={setVisible}
+                        label={t("admin.popups.create_menu_popup.visible")}
+                        labelClass={
+                            "mr-2 text-xs sm:text-base text-gray-500 font-medium"
+                        }
+                        inputStyle={{ padding: 0 }}
+                        inputClass={"border-gray-500"}
                     />
                 </main>
                 <footer className="text-center">
@@ -82,7 +103,7 @@ const CreateMenuPopup = () => {
                         }}
                         onClick={handleButtonClick}
                     >
-                        {isLoading ? <WhiteSpinner /> : "Добавить"}
+                        {isLoading ? <WhiteSpinner /> : t("admin.popups.create_menu_popup.create_button")}
                     </Button>
                 </footer>
             </div>

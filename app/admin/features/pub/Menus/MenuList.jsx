@@ -6,6 +6,7 @@ import { useGetMenusQuery } from "@/app/admin/api/menu/menu";
 import { selectCompanyID } from "../../company/companySlice";
 import { selectPubID } from "../pubSlice";
 import { selectMenuID, setMenuID } from "./menuSlice";
+import { requireAuthentication } from "../../auth/authSlice";
 
 const MenuList = () => {
     const dispatch = useDispatch();
@@ -19,8 +20,10 @@ const MenuList = () => {
     } = useGetMenusQuery({ pubID, companyID });
 
     useEffect(() => {
-        //TODO: handle error
-    }, [error]);
+        if (error && error.text === error.unauthorized) {
+            dispatch(requireAuthentication())
+        }
+    }, [dispatch, error]);
 
     useEffect(() => {
         if(!menuData?.menus || menuData?.menus?.length === 0) {

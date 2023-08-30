@@ -9,7 +9,7 @@ i18next
     .use(I18NextHttpBackend)
     .init(
         {
-            fallbackLng: 'ru',
+            fallbackLng: 'ro',
             backend: {
                 loadPath: '/locales/{{lng}}/translation.json',
                 requestOptions: {
