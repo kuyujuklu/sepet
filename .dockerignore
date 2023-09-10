@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 node_modules
 
 tmp
@@ -8,4 +9,16 @@ tmp
 
 .env
 
+=======
+node_modules
+
+tmp
+
+.git
+
+.gitignore
+
+.env
+
+>>>>>>> 1d18306046dd5c5bb4871564ed6292260e43b3f8
 Dockerfile
