@@ -5,7 +5,7 @@ import "gorm.io/gorm"
 type Pub struct {
 	gorm.Model
 	Name            string
-	QrCode          string
+	QrCodeFileName  string
 	ColorTheme      string
 	Color           string
 	BgImageFileName string

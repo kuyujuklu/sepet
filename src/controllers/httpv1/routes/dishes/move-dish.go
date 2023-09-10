@@ -74,7 +74,7 @@ func (c *dishesController) MoveDishLeft(ctx *fiber.Ctx) error {
 // @Param categoryID path int true "category id"
 // @Param dishID path int true "dish id"
 // @Produce      json
-// @Success      200  {object}  moveMenuOutput
+// @Success      200  {object}  moveDishOutput
 // @Router       /company/{companyID}/pubs/{pubID}/menus/{menuID}/categories/{categoryID}/dishes/{dishID}/move-right [POST]
 // @Security ApiKeyAuth
 // @Param access_token header string  true "access_token"

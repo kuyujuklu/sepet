@@ -19,3 +19,5 @@ var ErrPubHasBadCompanyID = errors.New("pub has bad company ID")
 var ErrPubHasNoLogo = errors.New("pub has no logo")
 
 var ErrPubHasNoBG = errors.New("pub has no BG")
+
+var ErrUnableToCreateQrCode = errors.New("unable to create QR code")

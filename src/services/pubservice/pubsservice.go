@@ -15,6 +15,8 @@ type PubService interface {
 	GetAllPubs() ([]models.Pub, error)
 	GetPubById(id int) (models.Pub, error)
 	GetAllMenusForPub(id int) ([]models.Menu, error)
+	GetAllCategoriesForPub(id int) ([]models.Category, error)
+	GetAllDishesForPub(id int) ([]models.Dish, error)
 	CreatePub(pub models.Pub) (models.Pub, error)
 	UpdatePub(id int, pub models.Pub) (models.Pub, error)
 	DeletePub(id int) error
@@ -58,6 +60,22 @@ func (s *pubsService) GetAllMenusForPub(id int) ([]models.Menu, error) {
 	}
 
 	return s.PubsRepo.GetAllMenusForPub(id)
+}
+func (s *pubsService) GetAllCategoriesForPub(id int) ([]models.Category, error) {
+	_, err := s.GetPubById(id)
+	if err != nil {
+		return nil, err
+	}
+
+	return s.PubsRepo.GetAllCategoriesForPub(id)
+}
+func (s *pubsService) GetAllDishesForPub(id int) ([]models.Dish, error) {
+	_, err := s.GetPubById(id)
+	if err != nil {
+		return nil, err
+	}
+
+	return s.PubsRepo.GetAllDishesForPub(id)
 }
 
 func (s *pubsService) CreatePub(pub models.Pub) (models.Pub, error) {
