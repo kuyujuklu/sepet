@@ -63,6 +63,14 @@ definitions:
         example: true
         type: boolean
     type: object
+  categories.moveMenuOutput:
+    properties:
+      ok:
+        example: true
+        type: boolean
+      place:
+        type: integer
+    type: object
   categories.updateCategoryOutput:
     properties:
       category:
@@ -70,6 +78,26 @@ definitions:
       ok:
         example: true
         type: boolean
+    type: object
+  client.getPubInfoOutput:
+    properties:
+      categories:
+        items:
+          $ref: '#/definitions/entities.CategoryOutput'
+        type: array
+      dishes:
+        items:
+          $ref: '#/definitions/entities.DishOutput'
+        type: array
+      menus:
+        items:
+          $ref: '#/definitions/entities.MenuOutput'
+        type: array
+      ok:
+        example: true
+        type: boolean
+      pub:
+        $ref: '#/definitions/entities.PubOutput'
     type: object
   companies.createCompanyOutput:
     properties:
@@ -128,6 +156,14 @@ definitions:
       ok:
         example: true
         type: boolean
+    type: object
+  dishes.moveDishOutput:
+    properties:
+      ok:
+        example: true
+        type: boolean
+      place:
+        type: integer
     type: object
   dishes.updateDishOutput:
     properties:
@@ -229,11 +265,8 @@ definitions:
     type: object
   entities.DishInput:
     properties:
-      category_id:
-        example: 1
-        type: integer
-      ingriedients:
-        example: My dish ingriedients
+      ingredients:
+        example: My dish ingredients
         type: string
       name:
         example: My dish name
@@ -245,15 +278,15 @@ definitions:
       price:
         example: 1.99
         type: number
+      text_color:
+        example: '#000000'
+        type: string
       visible:
         example: true
         type: boolean
     required:
-    - category_id
-    - ingriedients
     - name
     - place
-    - price
     type: object
   entities.DishOutput:
     properties:
@@ -266,8 +299,8 @@ definitions:
       image_file_name:
         example: my-dish-image.jpg
         type: string
-      ingriedients:
-        example: My dish ingriedients
+      ingredients:
+        example: My dish ingredients
         type: string
       name:
         example: My dish name
@@ -278,6 +311,9 @@ definitions:
       price:
         example: 1.99
         type: number
+      text_color:
+        example: '#000000'
+        type: string
       visible:
         example: true
         type: boolean
@@ -500,6 +536,25 @@ paths:
       summary: Login
       tags:
       - auth
+  /client/pub/{id}:
+    get:
+      description: return all pub info includes menus categories and dishes
+      parameters:
+      - description: pub id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/client.getPubInfoOutput'
+      summary: Get all pub info
+      tags:
+      - client
   /company/:
     get:
       consumes:
@@ -1539,6 +1594,98 @@ paths:
       summary: Upload image
       tags:
       - dish
+  /company/{companyID}/pubs/{pubID}/menus/{menuID}/categories/{categoryID}/dishes/{dishID}/move-left:
+    post:
+      description: Moves dish left
+      parameters:
+      - description: company id
+        in: path
+        name: companyID
+        required: true
+        type: integer
+      - description: pub id
+        in: path
+        name: pubID
+        required: true
+        type: integer
+      - description: menu id
+        in: path
+        name: menuID
+        required: true
+        type: integer
+      - description: category id
+        in: path
+        name: categoryID
+        required: true
+        type: integer
+      - description: dish id
+        in: path
+        name: dishID
+        required: true
+        type: integer
+      - description: access_token
+        in: header
+        name: access_token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dishes.moveDishOutput'
+      security:
+      - ApiKeyAuth: []
+      summary: Move dish lft
+      tags:
+      - dish
+  /company/{companyID}/pubs/{pubID}/menus/{menuID}/categories/{categoryID}/dishes/{dishID}/move-right:
+    post:
+      description: Moves dish right
+      parameters:
+      - description: company id
+        in: path
+        name: companyID
+        required: true
+        type: integer
+      - description: pub id
+        in: path
+        name: pubID
+        required: true
+        type: integer
+      - description: menu id
+        in: path
+        name: menuID
+        required: true
+        type: integer
+      - description: category id
+        in: path
+        name: categoryID
+        required: true
+        type: integer
+      - description: dish id
+        in: path
+        name: dishID
+        required: true
+        type: integer
+      - description: access_token
+        in: header
+        name: access_token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dishes.moveDishOutput'
+      security:
+      - ApiKeyAuth: []
+      summary: Move dish right
+      tags:
+      - dish
   /company/{companyID}/pubs/{pubID}/menus/{menuID}/categories/{categoryID}/image:
     get:
       description: get category image
@@ -1616,6 +1763,88 @@ paths:
       summary: Upload image
       tags:
       - category
+  /company/{companyID}/pubs/{pubID}/menus/{menuID}/categories/{categoryID}/move-left:
+    post:
+      description: Moves category left
+      parameters:
+      - description: company id
+        in: path
+        name: companyID
+        required: true
+        type: integer
+      - description: pub id
+        in: path
+        name: pubID
+        required: true
+        type: integer
+      - description: menu id
+        in: path
+        name: menuID
+        required: true
+        type: integer
+      - description: category id
+        in: path
+        name: categoryID
+        required: true
+        type: integer
+      - description: access_token
+        in: header
+        name: access_token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/categories.moveMenuOutput'
+      security:
+      - ApiKeyAuth: []
+      summary: Move cateogory lft
+      tags:
+      - category
+  /company/{companyID}/pubs/{pubID}/menus/{menuID}/categories/{categoryID}/move-right:
+    post:
+      description: Moves category right
+      parameters:
+      - description: company id
+        in: path
+        name: companyID
+        required: true
+        type: integer
+      - description: pub id
+        in: path
+        name: pubID
+        required: true
+        type: integer
+      - description: menu id
+        in: path
+        name: menuID
+        required: true
+        type: integer
+      - description: category id
+        in: path
+        name: categoryID
+        required: true
+        type: integer
+      - description: access_token
+        in: header
+        name: access_token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/categories.moveMenuOutput'
+      security:
+      - ApiKeyAuth: []
+      summary: Move cateogory right
+      tags:
+      - category
   /company/{companyID}/pubs/{pubID}/menus/{menuID}/move-left:
     post:
       description: Moves menu left
@@ -1650,6 +1879,42 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Move menu lft
+      tags:
+      - menu
+  /company/{companyID}/pubs/{pubID}/menus/{menuID}/move-right:
+    post:
+      description: Moves menu right
+      parameters:
+      - description: company id
+        in: path
+        name: companyID
+        required: true
+        type: integer
+      - description: pub id
+        in: path
+        name: pubID
+        required: true
+        type: integer
+      - description: menu id
+        in: path
+        name: menuID
+        required: true
+        type: integer
+      - description: access_token
+        in: header
+        name: access_token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/menus.moveMenuOutput'
+      security:
+      - ApiKeyAuth: []
+      summary: Move menu right
       tags:
       - menu
   /company/{id}:

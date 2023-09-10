@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"time"
 
 	httpv1 "github.com/alexkalak/qrmenu/src/controllers/httpv1/routes"
 	"github.com/alexkalak/qrmenu/src/db/postgresql"
@@ -34,9 +35,7 @@ func main() {
 }
 
 func loadEnv() {
-	if err := godotenv.Load(); err != nil {
-		panic("No .env file found")
-	}
+	godotenv.Load()
 }
 
 func configure() {
@@ -49,7 +48,11 @@ func configureSWAG(app *fiber.App) {
 }
 
 func initiatePostgresDB() {
-	postgresql.Init()
+	if db := postgresql.Init(); db == nil {
+		log.Fatal("Failed to connect to database")
+		time.Sleep(2 * time.Second)
+		initiatePostgresDB()
+	}
 }
 
 func configureLogs() {
@@ -78,7 +81,7 @@ func getPort() string {
 	port := os.Getenv("PORT")
 
 	if port == "" {
-		return "9999"
+		return "80"
 	}
 
 	return port
@@ -97,5 +100,5 @@ func createApp() *fiber.App {
 }
 
 func setupRoutes(app *fiber.App) {
-	app.Route("/", httpv1.Router)
+	app.Route("/api", httpv1.Router)
 }

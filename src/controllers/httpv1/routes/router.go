@@ -3,6 +3,7 @@ package v1
 import (
 	"github.com/alexkalak/qrmenu/src/controllers/httpv1/routes/auth"
 	"github.com/alexkalak/qrmenu/src/controllers/httpv1/routes/categories"
+	"github.com/alexkalak/qrmenu/src/controllers/httpv1/routes/client"
 	"github.com/alexkalak/qrmenu/src/controllers/httpv1/routes/companies"
 	"github.com/alexkalak/qrmenu/src/controllers/httpv1/routes/dishes"
 	"github.com/alexkalak/qrmenu/src/controllers/httpv1/routes/menus"
@@ -21,6 +22,7 @@ func Router(router fiber.Router) {
 	menusRouter := menus.New()
 	categoriesRouter := categories.New()
 	dishesRouter := dishes.New()
+	clientRouter := client.New()
 
 	//Without authorization
 	router.Route("/auth", authRouter.UnauthorizedRouter)
@@ -29,6 +31,7 @@ func Router(router fiber.Router) {
 	router.Route("/company/:companyID<int>/pubs/:pubID<int>/menus", menusRouter.UnauthorizedRouter)
 	router.Route("/company/:companyID<int>/pubs/:pubID<int>/menus/:menuID<int>/categories", categoriesRouter.UnauthorizedRouter)
 	router.Route("/company/:companyID<int>/pubs/:pubID<int>/menus/:menuID<int>/categories/:categoryID<int>/dishes", dishesRouter.UnauthorizedRouter)
+	router.Route("/client/", clientRouter.UnauthorizedRouter)
 
 	//With authorization
 	router.Route("/company", companiesRouter.AuthorizedRouter)
@@ -36,4 +39,5 @@ func Router(router fiber.Router) {
 	router.Route("/company/:companyID<int>/pubs/:pubID<int>/menus", menusRouter.AuthorizedRouter)
 	router.Route("/company/:companyID<int>/pubs/:pubID<int>/menus/:menuID<int>/categories", categoriesRouter.AuthorizedRouter)
 	router.Route("/company/:companyID<int>/pubs/:pubID<int>/menus/:menuID<int>/categories/:categoryID<int>/dishes", dishesRouter.AuthorizedRouter)
+	router.Route("/client/", clientRouter.AuthorizedRouter)
 }

@@ -66,7 +66,7 @@ type PubOutput struct {
 func (c *PubOutput) ConvertFromModel(pub models.Pub) {
 	c.ID = int(pub.ID)
 	c.Name = pub.Name
-	c.QrCodeFileName = ""
+	c.QrCodeFileName = pub.QrCodeFileName
 	c.ColorTheme = pub.ColorTheme
 	c.Color = pub.Color
 	c.BgImageFileName = pub.BgImageFileName

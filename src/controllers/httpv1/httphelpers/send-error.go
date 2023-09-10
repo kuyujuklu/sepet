@@ -38,6 +38,7 @@ var errors = map[error]int{
 	puberrors.ErrUnableToCreatePub:       fiber.StatusInternalServerError,
 	puberrors.ErrUnableToUpdatePub:       fiber.StatusInternalServerError,
 	puberrors.ErrUnableToDeletePub:       fiber.StatusInternalServerError,
+	puberrors.ErrUnableToCreateQrCode:    fiber.StatusInternalServerError,
 	puberrors.ErrPubHasBadCompanyID:      fiber.StatusForbidden,
 	puberrors.ErrPubHasNoLogo:            fiber.StatusNotFound,
 	puberrors.ErrPubHasNoBG:              fiber.StatusNotFound,

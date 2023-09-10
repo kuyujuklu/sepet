@@ -2,11 +2,14 @@ package pubsrepo
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"mime/multipart"
 	"os"
 
 	"github.com/alexkalak/qrmenu/src/db/postgresql"
+	"github.com/alexkalak/qrmenu/src/errors/categoryerrors"
+	"github.com/alexkalak/qrmenu/src/errors/disheserrors"
 	"github.com/alexkalak/qrmenu/src/errors/menuerrors"
 	"github.com/alexkalak/qrmenu/src/errors/oserrors"
 	"github.com/alexkalak/qrmenu/src/errors/puberrors"
@@ -14,6 +17,7 @@ import (
 	"github.com/alexkalak/qrmenu/src/models"
 	"github.com/alexkalak/qrmenu/src/repo/menurepo"
 	"github.com/google/uuid"
+	qrcode "github.com/skip2/go-qrcode"
 	"gorm.io/gorm"
 )
 
@@ -26,17 +30,23 @@ func Configure() error {
 		return err
 	}
 
+	if err := os.MkdirAll(QR_CODES_FILE_PATH, os.ModePerm); err != nil {
+		return err
+	}
 	return nil
 }
 
 const (
 	PUB_LOGO_FILE_PATH       = "clientfiles/images/pubs/logos/"
 	PUB_BACKGROUND_FILE_PATH = "clientfiles/images/pubs/bgs/"
+	QR_CODES_FILE_PATH       = "clientfiles/images/pubs/qr/"
 )
 
 type PubsRepo interface {
 	GetAllPubs() ([]models.Pub, error)
 	GetAllMenusForPub(pubID int) ([]models.Menu, error)
+	GetAllCategoriesForPub(pubID int) ([]models.Category, error)
+	GetAllDishesForPub(pubID int) ([]models.Dish, error)
 	GetPubById(id int) (models.Pub, error)
 	CreatePub(pub models.Pub) (models.Pub, error)
 	UpdatePub(id int, pub models.Pub) (models.Pub, error)
@@ -50,13 +60,19 @@ type PubsRepo interface {
 }
 
 type pubsRepo struct {
-	Database *gorm.DB
-	MenuRepo menurepo.MenuRepo
+	Database   *gorm.DB
+	MenuRepo   menurepo.MenuRepo
+	HttpScheme string
+	HttpHost   string
+	Port       string
 }
 
 func New() PubsRepo {
 	return &pubsRepo{
-		Database: postgresql.GetDB(),
+		HttpHost:   os.Getenv("HTTP_HOST"),
+		HttpScheme: os.Getenv("HTTP_SCHEME"),
+		Port:       os.Getenv("PORT"),
+		Database:   postgresql.GetDB(),
 	}
 }
 
@@ -93,14 +109,99 @@ func (r *pubsRepo) GetAllMenusForPub(pubID int) ([]models.Menu, error) {
 	return menus, nil
 }
 
+func (r *pubsRepo) GetAllCategoriesForPub(pubID int) ([]models.Category, error) {
+	menus, err := r.GetAllMenusForPub(pubID)
+	if err != nil {
+		return nil, err
+	}
+	if len(menus) == 0 {
+		return nil, nil
+	}
+
+	condition := "menu_id in ("
+	for i, menu := range menus {
+		condition += fmt.Sprint(menu.ID)
+		if i != len(menus)-1 {
+			condition += ", "
+		}
+	}
+	condition += ")"
+
+	categories := make([]models.Category, 0)
+	result := r.Database.Where(condition).Find(&categories)
+
+	if result.Error != nil {
+		fmt.Println("error: ", result.Error)
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return categories, nil
+		}
+		return nil, categoryerrors.ErrUnableToGetCategory
+	}
+
+	return categories, nil
+}
+
+func (r *pubsRepo) GetAllDishesForPub(pubID int) ([]models.Dish, error) {
+	categories, err := r.GetAllCategoriesForPub(pubID)
+	if err != nil {
+		return nil, err
+	}
+	if len(categories) == 0 {
+		return nil, nil
+	}
+
+	condition := "category_id in ("
+	for i, category := range categories {
+		condition += fmt.Sprint(category.ID)
+		if i != len(categories)-1 {
+			condition += ", "
+		}
+	}
+	condition += ")"
+
+	dishes := make([]models.Dish, 0)
+	result := r.Database.Where(condition).Find(&dishes)
+
+	if result.Error != nil {
+		fmt.Println("error: ", result.Error)
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return dishes, nil
+		}
+		return nil, disheserrors.ErrUnableToGetDish
+	}
+
+	return dishes, nil
+}
+
 func (r *pubsRepo) CreatePub(pub models.Pub) (models.Pub, error) {
 	result := r.Database.Create(&pub)
-
 	if result.Error != nil {
 		return models.Pub{}, puberrors.ErrUnableToCreatePub
 	}
 
+	fileID := uuid.New().String()
+
+	err := qrcode.WriteFile(r.getPubLink(int(pub.ID)), qrcode.Medium, 256, QR_CODES_FILE_PATH+fileID+".png")
+	if err != nil {
+		logs.Error("unable to create qr code for pub ", err, " pub id ", pub.ID)
+		return models.Pub{}, err
+	}
+
+	pub.QrCodeFileName = fileID + ".png"
+	result = r.Database.
+		Model(&models.Pub{}).
+		Where("id = ?", pub.ID).
+		UpdateColumn("qr_code_file_name", pub.QrCodeFileName)
+
+	if result.Error != nil {
+		logs.Error("unable to update pub qr code file name ", err, " pub id ", pub.ID)
+		return models.Pub{}, err
+	}
+
 	return pub, nil
+}
+func (r *pubsRepo) getPubLink(pubID int) string {
+	return fmt.Sprintf("%s://%s/pub/%d", r.HttpScheme, r.HttpHost, pubID)
 }
 
 func (r *pubsRepo) UpdatePub(id int, pub models.Pub) (models.Pub, error) {

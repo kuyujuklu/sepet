@@ -51,6 +51,35 @@ const docTemplate = `{
                 }
             }
         },
+        "/client/pub/{id}": {
+            "get": {
+                "description": "return all pub info includes menus categories and dishes",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "client"
+                ],
+                "summary": "Get all pub info",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "pub id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/client.getPubInfoOutput"
+                        }
+                    }
+                }
+            }
+        },
         "/company/": {
             "get": {
                 "security": [
@@ -1622,6 +1651,144 @@ const docTemplate = `{
                 }
             }
         },
+        "/company/{companyID}/pubs/{pubID}/menus/{menuID}/categories/{categoryID}/dishes/{dishID}/move-left": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Moves dish left",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "dish"
+                ],
+                "summary": "Move dish lft",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "company id",
+                        "name": "companyID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "pub id",
+                        "name": "pubID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "menu id",
+                        "name": "menuID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "category id",
+                        "name": "categoryID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "dish id",
+                        "name": "dishID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "access_token",
+                        "name": "access_token",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dishes.moveDishOutput"
+                        }
+                    }
+                }
+            }
+        },
+        "/company/{companyID}/pubs/{pubID}/menus/{menuID}/categories/{categoryID}/dishes/{dishID}/move-right": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Moves dish right",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "dish"
+                ],
+                "summary": "Move dish right",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "company id",
+                        "name": "companyID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "pub id",
+                        "name": "pubID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "menu id",
+                        "name": "menuID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "category id",
+                        "name": "categoryID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "dish id",
+                        "name": "dishID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "access_token",
+                        "name": "access_token",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dishes.moveDishOutput"
+                        }
+                    }
+                }
+            }
+        },
         "/company/{companyID}/pubs/{pubID}/menus/{menuID}/categories/{categoryID}/image": {
             "get": {
                 "description": "get category image",
@@ -1735,6 +1902,130 @@ const docTemplate = `{
                 }
             }
         },
+        "/company/{companyID}/pubs/{pubID}/menus/{menuID}/categories/{categoryID}/move-left": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Moves category left",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "category"
+                ],
+                "summary": "Move cateogory lft",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "company id",
+                        "name": "companyID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "pub id",
+                        "name": "pubID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "menu id",
+                        "name": "menuID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "category id",
+                        "name": "categoryID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "access_token",
+                        "name": "access_token",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/categories.moveMenuOutput"
+                        }
+                    }
+                }
+            }
+        },
+        "/company/{companyID}/pubs/{pubID}/menus/{menuID}/categories/{categoryID}/move-right": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Moves category right",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "category"
+                ],
+                "summary": "Move cateogory right",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "company id",
+                        "name": "companyID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "pub id",
+                        "name": "pubID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "menu id",
+                        "name": "menuID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "category id",
+                        "name": "categoryID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "access_token",
+                        "name": "access_token",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/categories.moveMenuOutput"
+                        }
+                    }
+                }
+            }
+        },
         "/company/{companyID}/pubs/{pubID}/menus/{menuID}/move-left": {
             "post": {
                 "security": [
@@ -1750,6 +2041,61 @@ const docTemplate = `{
                     "menu"
                 ],
                 "summary": "Move menu lft",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "company id",
+                        "name": "companyID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "pub id",
+                        "name": "pubID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "menu id",
+                        "name": "menuID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "access_token",
+                        "name": "access_token",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/menus.moveMenuOutput"
+                        }
+                    }
+                }
+            }
+        },
+        "/company/{companyID}/pubs/{pubID}/menus/{menuID}/move-right": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Moves menu right",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "menu"
+                ],
+                "summary": "Move menu right",
                 "parameters": [
                     {
                         "type": "integer",
@@ -1930,6 +2276,18 @@ const docTemplate = `{
                 }
             }
         },
+        "categories.moveMenuOutput": {
+            "type": "object",
+            "properties": {
+                "ok": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "place": {
+                    "type": "integer"
+                }
+            }
+        },
         "categories.updateCategoryOutput": {
             "type": "object",
             "properties": {
@@ -1939,6 +2297,36 @@ const docTemplate = `{
                 "ok": {
                     "type": "boolean",
                     "example": true
+                }
+            }
+        },
+        "client.getPubInfoOutput": {
+            "type": "object",
+            "properties": {
+                "categories": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entities.CategoryOutput"
+                    }
+                },
+                "dishes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entities.DishOutput"
+                    }
+                },
+                "menus": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entities.MenuOutput"
+                    }
+                },
+                "ok": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "pub": {
+                    "$ref": "#/definitions/entities.PubOutput"
                 }
             }
         },
@@ -2026,6 +2414,18 @@ const docTemplate = `{
                 "ok": {
                     "type": "boolean",
                     "example": true
+                }
+            }
+        },
+        "dishes.moveDishOutput": {
+            "type": "object",
+            "properties": {
+                "ok": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "place": {
+                    "type": "integer"
                 }
             }
         },
@@ -2167,20 +2567,13 @@ const docTemplate = `{
         "entities.DishInput": {
             "type": "object",
             "required": [
-                "category_id",
-                "ingriedients",
                 "name",
-                "place",
-                "price"
+                "place"
             ],
             "properties": {
-                "category_id": {
-                    "type": "integer",
-                    "example": 1
-                },
-                "ingriedients": {
+                "ingredients": {
                     "type": "string",
-                    "example": "My dish ingriedients"
+                    "example": "My dish ingredients"
                 },
                 "name": {
                     "type": "string",
@@ -2194,6 +2587,10 @@ const docTemplate = `{
                 "price": {
                     "type": "number",
                     "example": 1.99
+                },
+                "text_color": {
+                    "type": "string",
+                    "example": "#000000"
                 },
                 "visible": {
                     "type": "boolean",
@@ -2216,9 +2613,9 @@ const docTemplate = `{
                     "type": "string",
                     "example": "my-dish-image.jpg"
                 },
-                "ingriedients": {
+                "ingredients": {
                     "type": "string",
-                    "example": "My dish ingriedients"
+                    "example": "My dish ingredients"
                 },
                 "name": {
                     "type": "string",
@@ -2231,6 +2628,10 @@ const docTemplate = `{
                 "price": {
                     "type": "number",
                     "example": 1.99
+                },
+                "text_color": {
+                    "type": "string",
+                    "example": "#000000"
                 },
                 "visible": {
                     "type": "boolean",
