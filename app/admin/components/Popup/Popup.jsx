@@ -1,3 +1,4 @@
+"use client"
 import { closePopupAreaClickHandler } from "../../eventHandlers/popupCloseAreaClickHandler";
 
 import style from "../../sass/components/popups/popup.module.scss";

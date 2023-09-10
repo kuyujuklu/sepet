@@ -1,3 +1,4 @@
+"use client"
 const WhiteSpinner = ({width, height}) => {
     return (
       <svg 

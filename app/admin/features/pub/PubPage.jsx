@@ -1,3 +1,4 @@
+"use client"
 import { Route, Routes, useParams } from "react-router-dom";
 import { useGetPubQuery } from "../../api/pub/pub";
 import { createContext, useEffect, useMemo, useState } from "react";
@@ -115,6 +116,7 @@ const PubPage = () => {
                         >
                             <PubPageHeader
                                 pubName={pubData.pub.name}
+                                pubImageFileName={pubData.pub.qr_code_file_name}
                                 companyID={companyData.company.id}
                                 pubID={pubData.pub.id}
                             />

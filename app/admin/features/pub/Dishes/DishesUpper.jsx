@@ -11,7 +11,7 @@ const DishesUpper = ({ categoryName, pubID }) => {
         <div className="flex items-center flex-wrap-reverse gap-6">
             <div
                 style={{ color: themeContext.textColor }}
-                className="text-2xl mb-4"
+                className="text-2xl"
             >
                 {categoryName}
             </div>

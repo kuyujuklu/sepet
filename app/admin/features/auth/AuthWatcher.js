@@ -12,7 +12,7 @@ const AuthWatcher = () => {
     useEffect(() => {
         if (isRequiringAuthentication) {
             dispatch(setRequireAuthenticationToFalse())
-            navigate("/auth/authentication")
+            navigate("/admin/auth/authentication")
         }
     }, [dispatch, isRequiringAuthentication, navigate])
 

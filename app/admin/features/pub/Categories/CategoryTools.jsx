@@ -1,3 +1,4 @@
+"use client"
 import Image from "next/image";
 import { useContext, useEffect } from "react";
 import { ThemeContext } from "../PubPage";

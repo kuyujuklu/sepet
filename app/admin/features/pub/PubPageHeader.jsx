@@ -1,13 +1,14 @@
+"use client"
 import Image from "next/image";
 import { useDispatch } from "react-redux";
 import { useGetPubQuery } from "../../api/pub/pub";
 import { useContext, useEffect } from "react";
-import { openUpdatePubPopup } from "./pubSlice";
+import { openQrCodePopup, openUpdatePubPopup } from "./pubSlice";
 import { NavLink } from "react-router-dom";
 import { ThemeContext } from "./PubPage";
 import { requireAuthentication } from "../auth/authSlice";
 
-const PubPageHeader = ({ pubName, companyID, pubID }) => {
+const PubPageHeader = ({ pubImageFileName, pubName, companyID, pubID }) => {
 	const themeContext = useContext(ThemeContext);
 	const dispatch = useDispatch();
 
@@ -15,6 +16,7 @@ const PubPageHeader = ({ pubName, companyID, pubID }) => {
         companyID: companyID,
         pubID: pubID,
     });
+
     useEffect(() => {
         if (error && error.text === error.unauthorized) {
             dispatch(requireAuthentication())
@@ -24,6 +26,11 @@ const PubPageHeader = ({ pubName, companyID, pubID }) => {
     const handleEditClick = () => {
         dispatch(openUpdatePubPopup(data.pub ?? {}));
     };
+
+    const handleOpenQrCode = () => {
+        dispatch(openQrCodePopup({imageFileName: pubImageFileName}));
+    }
+
 
 
     return (
@@ -40,7 +47,7 @@ const PubPageHeader = ({ pubName, companyID, pubID }) => {
             </h1>
 
             <div className="flex items-center gap-4">
-                <div className="cursor-pointer">
+                <div className="cursor-pointer" onClick={handleOpenQrCode}>
                     <Image
                         src={themeContext.theme === "dark" ? "/images/svg/qr-code-white.svg" : "/images/svg/qr-code-black.svg"} 
                         alt="qr-code"

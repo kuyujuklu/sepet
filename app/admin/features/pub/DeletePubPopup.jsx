@@ -1,3 +1,4 @@
+"use client"
 import { useDispatch, useSelector } from "react-redux";
 import Popup from "../../components/Popup/Popup";
 import { closeDeletePubPopup, selectDeletePubPopupState } from "./pubSlice";
@@ -51,14 +52,14 @@ const DeletePubPopup = () => {
             <div className="py-4">
                 <header>
                     <h1 className="font-bold text-center text-xl mb-10">
-                        {t("admin.pub.delete_pub_popup.headline")}
+                        {t("admin.popups.delete_pub_popup.headline")}
                     </h1>
                 </header>
                 <main className="mb-10">
                     <p className="text-center">
-                        {t("admin.pub.delete_pub_popup.text")}
+                        {t("admin.popups.delete_pub_popup.text")}
                         <br />
-                        {t("admin.pub.delete_pub_popup.warning")}
+                        {t("admin.popups.delete_pub_popup.warning")}
                     </p>
                 </main>
                 <footer className="text-center">
@@ -81,7 +82,7 @@ const DeletePubPopup = () => {
                         {isLoading ? (
                             <WhiteSpinner />
                         ) : (
-                            t("admin.pub.delete_pub_popup.delete_button")
+                            t("admin.popups.delete_pub_popup.delete_button")
                         )}
                     </Button>
                 </footer>

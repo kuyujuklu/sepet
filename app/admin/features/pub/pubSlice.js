@@ -15,6 +15,10 @@ const initialState = {
         pubID: null,
         companyID: null,
     },
+    qrCodePopup: {
+        opened: false,
+        imageFileName: null,
+    }
 };
 
 const pubSlice = createSlice({
@@ -61,12 +65,25 @@ const pubSlice = createSlice({
             state.deletePopup.companyID = null;
             state.deletePopup.pubID = null;
         },
+
+        openQrCodePopup(state, action) {
+            if (!action.payload) {
+                return;
+            }
+            state.qrCodePopup.imageFileName = action.payload.imageFileName;
+            state.qrCodePopup.opened = true;
+        },
+        closeQrCodePopup(state) {
+            state.qrCodePopup.opened = false;
+            state.qrCodePopup.imageFileName = null;
+        }
     },
 });
 export const selectPubID = (state) => state.pubSlice.pubID;
 export const selectCreatePubPopupState = (state) => state.pubSlice.createPopup;
 export const selectUpdatePubPopupState = (state) => state.pubSlice.updatePopup;
 export const selectDeletePubPopupState = (state) => state.pubSlice.deletePopup;
+export const selectQrCodePopupState = (state) => state.pubSlice.qrCodePopup;
 
 export const {
     openCreatePubPopup,
@@ -75,6 +92,8 @@ export const {
     closeUpdatePubPopup,
     openDeletePubPopup,
     closeDeletePubPopup,
+    openQrCodePopup,
+    closeQrCodePopup,
     setPubID,
 } = pubSlice.actions;
 

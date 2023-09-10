@@ -1,6 +1,7 @@
+"use client"
 import { Button } from "@mui/material";
 import Image from "next/image";
-import { openDeletePubPopup, openUpdatePubPopup } from "../pub/pubSlice";
+import { openDeletePubPopup, openQrCodePopup, openUpdatePubPopup } from "../pub/pubSlice";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -20,6 +21,10 @@ const CompanyPub = ({ pub }) => {
         );
     };
 
+    const handleOpenQrCode = () => {
+        dispatch(openQrCodePopup({imageFileName: pub.qr_code_file_name}));
+    }
+
     const goToPub = () => {
         navigate(`/admin/company/pub/${pub.id}`);
     };
@@ -36,6 +41,7 @@ const CompanyPub = ({ pub }) => {
             <header className="flex justify-between mb-2">
                 <div className="cursor-pointer">
                     <Image
+                        onClick={handleOpenQrCode}
                         src="/images/svg/qr-code-black.svg"
                         alt="qr-code"
                         width={25}

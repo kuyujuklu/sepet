@@ -1,3 +1,4 @@
+"use client"
 import { useDispatch, useSelector } from "react-redux";
 import { selectPubID } from "../pubSlice";
 import { selectCompanyID } from "../../company/companySlice";
@@ -65,6 +66,7 @@ const Dish = ({ dish, menuID, categoryID }) => {
                     border: "1px solid " + themeContext.textColor,
                     background: "rgb(17 24 39)",
                     color: dish.text_color ?? "#ffffff",
+                    opacity: dish.visible ? 1 : 0.5,
                 }}
                 className="rounded-2xl relative overflow-hidden"
             >
@@ -135,7 +137,10 @@ const Dish = ({ dish, menuID, categoryID }) => {
                 </div>
             </div>
             {/* dish price */}
-            <div>
+            <div className="flex items-center gap-2 justify-between px-4 py-2">
+                <div>
+                    <span className="text-gray-600 text-xl">{dish.ingredients}</span>
+                </div>
                 <div
                     style={{ color: themeContext.textColor }}
                     className="mt-2 text-xl font-medium"

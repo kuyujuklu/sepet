@@ -1,21 +1,19 @@
-'use client'
-'use client'
+"use client";
 import { Provider } from "react-redux";
 import App from "./App";
 import { store } from "./store/store";
 import { BrowserRouter } from "react-router-dom";
 
-import './i18n';
-
+import "./i18n";
 
 const Index = () => {
-  return (
-    <BrowserRouter>
+    return (
         <Provider store={store}>
-            <App />
+            <BrowserRouter>
+                <App />
+            </BrowserRouter>
         </Provider>
-    </BrowserRouter>
-  )
-}
+    );
+};
 
-export default Index
+export default Index;

@@ -1,3 +1,4 @@
+"use client"
 import { useDispatch, useSelector } from "react-redux";
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "@mui/material";
@@ -27,7 +28,7 @@ const CreateDishPopup = () => {
 
     const [name, setName] = useState("");
     const [price, setPrice] = useState(0);
-    const [ingridients, setIngridients] = useState("");
+    const [ingredients, setingredients] = useState("");
     const [textColor, setTextColor] = useState("#ffffff");
     const [visible, setVisible] = useState(true);
 
@@ -49,7 +50,7 @@ const CreateDishPopup = () => {
         const dish = {
             name,
             price: Number(price),
-            ingridients,
+            ingredients,
             visible,
             textColor,
             place: popupState.place ?? 1,
@@ -106,15 +107,15 @@ const CreateDishPopup = () => {
                         setValue={setPrice}
                     />
                     <InputWithLabel
-                        label={t("admin.popups.create_dish_popup.ingridients")}
+                        label={t("admin.popups.create_dish_popup.ingredients")}
                         labelClassName={
                             "text-xs sm:text-base text-gray-500 font-medium"
                         }
                         labelStyle={{
                             marginBottom: ".1rem",
                         }}
-                        value={ingridients}
-                        setValue={setIngridients}
+                        value={ingredients}
+                        setValue={setingredients}
                     />
                     {/* Pick color */}
                     <div>

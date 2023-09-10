@@ -1,3 +1,4 @@
+"use client"
 
 import { useState } from "react"
 import inputStyle from "../../sass/custom/inputs.module.scss"

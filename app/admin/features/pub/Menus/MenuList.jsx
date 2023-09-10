@@ -1,3 +1,5 @@
+"use client"
+
 import { useEffect } from "react";
 import Menu from "./Menu";
 import { useDispatch, useSelector } from "react-redux";

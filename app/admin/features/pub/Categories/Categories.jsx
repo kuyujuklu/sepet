@@ -1,3 +1,4 @@
+"use client"
 import { useDispatch, useSelector } from "react-redux"
 import { selectMenuID } from "../Menus/menuSlice";
 import { selectPubID } from "../pubSlice";

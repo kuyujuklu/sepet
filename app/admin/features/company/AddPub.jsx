@@ -1,3 +1,4 @@
+"use client"
 import Image from "next/image"
 import { useGetCompanyQuery } from "../../api/company/company"
 import { useDispatch } from "react-redux";

@@ -1,3 +1,4 @@
+"use client"
 import { useDispatch, useSelector } from "react-redux";
 import Popup from "../../components/Popup/Popup";
 import { closeCreatePubPopup, selectCreatePubPopupState } from "./pubSlice";

@@ -1,3 +1,4 @@
+"use client"
 import { useParams } from "react-router-dom"
 import DishesUpper from "./DishesUpper"
 import { useGetCategoryQuery } from "@/app/admin/api/categories/category"

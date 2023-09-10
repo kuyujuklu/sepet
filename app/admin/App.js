@@ -1,4 +1,4 @@
-'use client'
+"use client"
 import { Route, Routes, useNavigate } from "react-router-dom"
 import Registration from "./features/auth/Registration";
 import AuthWatcher from "./features/auth/AuthWatcher";
@@ -18,6 +18,7 @@ import CreateDishPopup from "./features/pub/Dishes/CreateDishPopup";
 import UpdateDishPopup from "./features/pub/Dishes/UpdateDishPopup";
 import DeleteDishPopup from "./features/pub/Dishes/DeleteDishPopup";
 import { useEffect } from "react";
+import QrCodePopup from "./features/pub/QrCodePopup";
 
 const App = () => {
   return (
@@ -78,6 +79,8 @@ const Popups =() => {
       <CreateDishPopup />
       <UpdateDishPopup />
       <DeleteDishPopup />
+
+      <QrCodePopup />
     </>
   )
 }

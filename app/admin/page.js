@@ -1,6 +1,8 @@
-'use client'
-import Index from ".";
+const page = () => {
+    return (
+        <div>
+        </div>
+    );
+};
 
-export default function Page() {
-    return <Index />
-}
+export default page;

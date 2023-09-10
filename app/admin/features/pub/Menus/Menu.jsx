@@ -1,3 +1,4 @@
+"use client"
 import { useContext, useEffect } from "react";
 import { PubColorContext, ThemeContext } from "../PubPage";
 import { useDispatch, useSelector } from "react-redux";
@@ -66,6 +67,7 @@ const Menu = ({ menu }) => {
                 onClick={selectMenu}
                 className={`border-2 cursor-pointer w-fit py-2 px-8 rounded-3xl text-lg font-medium break-words`}
                 style={{
+                    opacity: menu.visible ? 1 : 0.3,
                     color: color,
                     borderColor: pubColorContext,
                     background: bgColor,

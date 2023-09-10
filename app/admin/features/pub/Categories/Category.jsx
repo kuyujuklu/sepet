@@ -1,3 +1,4 @@
+"use client"
 import { useContext, useEffect } from "react";
 import { ThemeContext } from "../PubPage";
 import Image from "next/image";
@@ -46,15 +47,15 @@ const Category = ({ category }) => {
             data: formData,
         });
     };
-
+    
     return (
         <div
             style={{
                 height: "160px",
                 width: "100%",
-                border: "1px solid " + themeContext.textColor,
                 background: "rgb(17 24 39)",
                 color: category.text_color ?? "#ffffff",
+                opacity: category.visible ? 1 : 0.5,
             }}
             className="rounded-2xl relative overflow-hidden"
         >

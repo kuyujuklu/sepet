@@ -83,9 +83,9 @@
         },
         "popups": {
             "create_pub_popup": {
-                "headline": "Добаить заведение",
+                "headline": "Добавить заведение",
                 "name": "Название заведения",
-                "create_button": "Добаить"
+                "create_button": "Добавить"
             },
             "update_pub_popup": {
                 "headline": "Редактировать заведение",
@@ -150,7 +150,7 @@
                 "headline": "Добавить блюдо",
                 "name": "Название блюда",
                 "description": "Описание",
-                "ingridients": "Ингридиенты",
+                "ingredients": "Ингридиенты",
                 "text_color": "Цвет текста",
                 "price": "Цена",
                 "visible": "Видимость",
@@ -161,7 +161,7 @@
                 "headline": "Редактировать блюдо",
                 "name": "Название блюда",
                 "description": "Описание",
-                "ingridients": "Ингридиенты",
+                "ingredients": "Ингридиенты",
                 "text_color": "Цвет текста",
                 "price": "Цена",
                 "visible": "Видимость",

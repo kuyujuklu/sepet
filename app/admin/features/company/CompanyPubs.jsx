@@ -1,3 +1,4 @@
+"use client"
 import { useGetPubsQuery } from "../../api/pub/pub"
 import AddPub from "./AddPub"
 import CompanyPub from "./CompanyPub"

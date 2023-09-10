@@ -1,3 +1,4 @@
+"use client"
 import { useGetDishesQuery } from "@/app/admin/api/dish/dish"
 import { useEffect } from "react"
 import AddDishButton from "./AddDishButton"

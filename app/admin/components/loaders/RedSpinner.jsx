@@ -1,3 +1,4 @@
+"use client"
 const RedSpinner = ({width, height}) => {
   return (
     <svg 

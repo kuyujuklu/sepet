@@ -13,7 +13,7 @@ export const dish = createApi({
                 body: {
                     name: data.name,
                     price: data.price,
-                    ingridients: data.ingridients,
+                    ingredients: data.ingredients,
                     place: data.place,
                     visible: data.visible,
                     text_color: data.textColor,
@@ -31,7 +31,7 @@ export const dish = createApi({
                 body: {
                     name: data.name,
                     price: data.price,
-                    ingridients: data.ingridients,
+                    ingredients: data.ingredients,
                     place: data.place,
                     visible: data.visible,
                     text_color: data.textColor,

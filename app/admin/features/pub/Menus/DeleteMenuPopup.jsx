@@ -1,3 +1,4 @@
+"use client"
 import { useDispatch, useSelector } from "react-redux";
 import { useCallback, useEffect } from "react";
 import { Button } from "@mui/material";

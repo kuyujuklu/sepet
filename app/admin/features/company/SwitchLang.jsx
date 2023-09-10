@@ -1,3 +1,4 @@
+"use client"
 import { useTranslation } from "react-i18next";
 import { useEffect } from "react";
 import { Button } from "@mui/material";

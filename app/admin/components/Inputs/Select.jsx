@@ -1,4 +1,5 @@
-'use client'
+"use client"
+
 
 import inputStyle from "../../sass/custom/inputs.module.scss"
 

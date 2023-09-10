@@ -1,7 +1,5 @@
-import Index from './admin'
-
 export default function Home() {
   return (
-      <Index />
+    <div></div>
   )
 }

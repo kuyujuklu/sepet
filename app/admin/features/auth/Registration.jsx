@@ -16,13 +16,14 @@ import WhiteSpinner from "../../components/loaders/WhiteSpinner";
 import { useDispatch } from "react-redux";
 import { setAuthenticated } from "./authSlice";
 import { company } from "../../api/company/company";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 const Registration = () => {
     const { t } = useTranslation();
     const [registrateQuery, { data, error, isLoading }] =
         useLazyRegistrateQuery();
+        const navigate = useNavigate();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [name, setName] = useState("");
@@ -33,9 +34,9 @@ const Registration = () => {
         if (data?.ok && data?.access_token) {
             setAccessToken(data.access_token);
             dispatch(company.util.resetApiState());
-            dispatch(setAuthenticated(true));
+            navigate("/admin/company");
         }
-    }, [data, dispatch]);
+    }, [data, dispatch, navigate]);
 
     useEffect(() => {
         if (error?.data?.validationErrors) {

@@ -1,3 +1,4 @@
+"use client"
 const GreenSpinner = ({width, height}) => {
   return (
     <svg 

@@ -1,3 +1,4 @@
+"use client"
 import { Button } from "@mui/material";
 import { useContext } from "react";
 import { PubColorContext, ThemeContext } from "../PubPage";
