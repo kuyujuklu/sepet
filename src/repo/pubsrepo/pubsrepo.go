@@ -183,6 +183,7 @@ func (r *pubsRepo) CreatePub(pub models.Pub) (models.Pub, error) {
 
 	err := qrcode.WriteFile(r.getPubLink(int(pub.ID)), qrcode.Medium, 256, QR_CODES_FILE_PATH+fileID+".png")
 	if err != nil {
+		fmt.Println("unable to create qr code for pub ", err, " pub id ", pub.ID)
 		logs.Error("unable to create qr code for pub ", err, " pub id ", pub.ID)
 		return models.Pub{}, err
 	}
@@ -194,6 +195,7 @@ func (r *pubsRepo) CreatePub(pub models.Pub) (models.Pub, error) {
 		UpdateColumn("qr_code_file_name", pub.QrCodeFileName)
 
 	if result.Error != nil {
+		fmt.Println("unable to create qr code for pub ", err, " pub id ", pub.ID)
 		logs.Error("unable to update pub qr code file name ", err, " pub id ", pub.ID)
 		return models.Pub{}, err
 	}
