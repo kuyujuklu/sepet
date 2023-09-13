@@ -1,6 +1,5 @@
 "use client";
 import Link from "next/link";
-import Image from "next/image";
 
 const Category = ({ category, pubID }) => {
     return (
@@ -18,11 +17,13 @@ const Category = ({ category, pubID }) => {
                 className="rounded-2xl relative overflow-hidden"
             >
                 {category.image_file_name && (
-                    <Image
+                    <img
                         src={`/api-static/images/categories/${category.image_file_name}`}
                         alt="category"
-                        fill
                         style={{
+                            display: "block",
+                            width: "100%",
+                            height: "100%",
                             objectFit: "cover",
                         }}
                     />
@@ -33,7 +34,10 @@ const Category = ({ category, pubID }) => {
                     style={{ zIndex: 20 }}
                     className="absolute m-auto inset-0 text-center h-fit w-fit flex flex-col items-center"
                 >
-                    <div className="p-4 text-2xl font-medium w-fit m-auto">
+                    <div
+                        className="p-4 text-2xl font-medium w-fit m-auto"
+                        style={{ textShadow: "0px 0px 3px black" }}
+                    >
                         {category.name}
                     </div>
                 </div>

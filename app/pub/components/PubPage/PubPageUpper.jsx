@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { useContext } from "react";
 import { ThemeContext } from "./PubPage";
 
@@ -17,11 +16,13 @@ const PubPageUpper = ({ pub }) => {
             background={themeContext.bgColor}
         >
             {pub.bg_image_file_name && (
-                <Image
+                <img
                     src={`/api-static/images/pubs/bgs/${pub.bg_image_file_name}`}
                     alt="pub-cover"
-                    fill
                     style={{
+                        display: "block",
+                        width: "100%",
+                        height: "100%",
                         objectFit: "cover",
                     }}
                 />

@@ -2,7 +2,6 @@
 import { useDispatch, useSelector } from "react-redux";
 import { closeQrCodePopup, selectQrCodePopupState } from "./pubSlice";
 import Popup from "../../components/Popup/Popup";
-import Image from "next/image";
 
 const QrCodePopup = () => {
     const dispatch = useDispatch();
@@ -20,7 +19,7 @@ const QrCodePopup = () => {
                 </header>
                 <main className="flex flex-col gap-6 mb-6 p-6">
                     <div style={{maxHeight: 300, maxWidth: 300}} className="w-full relative m-auto aspect-square">
-                        <Image 
+                        <img 
                             src={"/api-static/images/pubs/qr/" + popupState.imageFileName}
                             alt="qr code"
                             fill

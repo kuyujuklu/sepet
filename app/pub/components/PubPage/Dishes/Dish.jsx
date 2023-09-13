@@ -32,7 +32,7 @@ const Dish = ({ dish, currencyID }) => {
             {/* dish innter */}
             <div
                 style={{
-                    minHeight: "160px",
+                    height: "160px",
                     width: "100%",
                     border: "1px solid " + themeContext.textColor,
                     background: "rgb(17 24 39)",
@@ -41,11 +41,13 @@ const Dish = ({ dish, currencyID }) => {
                 className="rounded-2xl relative overflow-hidden"
             >
                 {dish.image_file_name && (
-                    <Image
+                    <img
                         src={`/api-static/images/dishes/${dish.image_file_name}`}
                         alt="dish"
-                        fill
                         style={{
+                            display: "block",
+                            width: "100%",
+                            height: "100%",
                             objectFit: "cover",
                         }}
                     />
@@ -56,19 +58,24 @@ const Dish = ({ dish, currencyID }) => {
                     style={{ zIndex: 20 }}
                     className="absolute m-auto inset-0 text-center h-fit w-fit flex flex-col items-center"
                 >
-                    <div className="p-4 text-xl font-medium">{dish.name}</div>
+                    <div
+                        className="p-4 text-xl font-medium"
+                        style={{ textShadow: "0px 0px 3px black" }}
+                    >
+                        {dish.name}
+                    </div>
                 </div>
             </div>
             {/* dish price */}
-            <div className="flex items-center gap-2 justify-between px-4 py-2">
-                <div>
+            <div className="flex flex-col items-end justify-between px-4 py-2">
+                <div className="text-right">
                     <span className="text-gray-600 text-xl">
                         {dish.ingredients}
                     </span>
                 </div>
                 <div
                     style={{ color: themeContext.textColor }}
-                    className="mt-2 text-xl font-medium flex items-center gap-6"
+                    className="flex text-xl font-medium items-center gap-x-6"
                 >
                     <span>
                         {dish.price}{" "}
@@ -95,10 +102,7 @@ const Dish = ({ dish, currencyID }) => {
                             />
                         )}
                         {dishAmount > 0 && (
-                            <div
-                            
-                                className="text-gray-600 flex items-center justify-center p-2 text-xl"
-                            >
+                            <div className="text-gray-600 flex items-center justify-center p-2 text-xl">
                                 {dishAmount}
                             </div>
                         )}

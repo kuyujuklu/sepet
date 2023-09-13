@@ -5,14 +5,18 @@ import { store } from "./store/store";
 import { BrowserRouter } from "react-router-dom";
 
 import "./i18n";
+import NoSSR from "react-no-ssr";
+import FullPageSpinner from "./components/loaders/FullPageSpinner";
 
 const Index = () => {
     return (
-        <Provider store={store}>
-            <BrowserRouter>
-                <App />
-            </BrowserRouter>
-        </Provider>
+        <NoSSR onSSR={<FullPageSpinner />}>
+            <Provider store={store}>
+                <BrowserRouter>
+                    <App />
+                </BrowserRouter>
+            </Provider>
+        </NoSSR>
     );
 };
 

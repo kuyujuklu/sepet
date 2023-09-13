@@ -1,5 +1,4 @@
 "use client"
-import Image from "next/image";
 import { ThemeContext } from "./PubPage";
 import { useContext, useEffect } from "react";
 import { useUploadPubBGMutation } from "../../api/pub/pub";
@@ -45,11 +44,13 @@ const PubPageUpper = ({ imageFileName, companyID, pubID }) => {
             background={themeContext.bgColor}
         >
             {imageFileName && (
-                <Image
+                <img
                     src={`/api-static/images/pubs/bgs/${imageFileName}`}
                     alt="pub-cover"
-                    fill
                     style={{
+                        display: "block",
+                        width: "100%",
+                        height: "100%",
                         objectFit: "cover",
                     }}
                 />
@@ -66,7 +67,7 @@ const PubPageUpper = ({ imageFileName, companyID, pubID }) => {
                         color: themeContext.textColor,
                     }}
                 >
-                    <Image
+                    <img
                         src={
                             themeContext.theme === "dark"
                                 ? "/images/svg/plus-white.svg"

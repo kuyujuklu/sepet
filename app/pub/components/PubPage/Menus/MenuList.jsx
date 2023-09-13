@@ -18,9 +18,9 @@ const MenuList = ({menus}) => {
 
     const sortedShownMenus = menus.filter(menu => menu.visible)
     return (
-        <div className="flex flex-wrap gap-6 justify-center">
+        <div className="flex gap-6 justify-left overflow-scroll text-center">
             {sortedShownMenus?.map((menu) => (
-                <div key={menu.id} className="flex gap-4">
+                <div key={menu.id} className="flex shrink-0">
                     <Menu key={menu.id} menu={menu} />
                 </div>
             ))}

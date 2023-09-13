@@ -61,7 +61,7 @@ const Dish = ({ dish, menuID, categoryID }) => {
             {/* dish innter */}
             <div
                 style={{
-                    minHeight: "160px",
+                    height: "160px",
                     width: "100%",
                     border: "1px solid " + themeContext.textColor,
                     background: "rgb(17 24 39)",
@@ -71,22 +71,25 @@ const Dish = ({ dish, menuID, categoryID }) => {
                 className="rounded-2xl relative overflow-hidden"
             >
                 {dish.image_file_name && (
-                    <Image
+                    <img
                         src={`/api-static/images/dishes/${dish.image_file_name}`}
                         alt="dish"
-                        fill
                         style={{
+                            position: "absolute",
+                            display: "block",
+                            width: "100%",
+                            height: "100%",
                             objectFit: "cover",
                         }}
                     />
                 )}
 
-                {/* category center content*/}
+                {/* dish center content*/}
                 <div
                     style={{ zIndex: 20 }}
                     className="absolute m-auto inset-0 text-center h-fit w-fit flex flex-col items-center"
                 >
-                    <div className="p-4 text-xl font-medium">{dish.name}</div>
+                    <div className="p-4 text-xl font-medium" style={{textShadow: "0px 0px 3px black"}}>{dish.name}</div>
                     {isLoading ? (
                         <WhiteSpinner />
                     ) : (
@@ -137,13 +140,13 @@ const Dish = ({ dish, menuID, categoryID }) => {
                 </div>
             </div>
             {/* dish price */}
-            <div className="flex items-center gap-2 justify-between px-4 py-2">
+            <div className="flex flex-col justify-between px-4 py-2">
                 <div>
                     <span className="text-gray-600 text-xl">{dish.ingredients}</span>
                 </div>
                 <div
                     style={{ color: themeContext.textColor }}
-                    className="mt-2 text-xl font-medium"
+                    className="text-xl font-medium"
                 >
                     {dish.price} {" "}
                     <span>

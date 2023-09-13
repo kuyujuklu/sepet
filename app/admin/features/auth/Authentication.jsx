@@ -7,7 +7,7 @@ import {
     validateCompanyEmail,
 } from "../../validation/validateCompany";
 import { useLazyAuthenticateQuery } from "../../api/auth/authQuery";
-import { setAccessToken } from "../../api/auth/authBasedQuery";
+import { setaccesstoken } from "../../api/auth/authBasedQuery";
 import WhiteSpinner from "../../components/loaders/WhiteSpinner";
 import { useDispatch } from "react-redux";
 import { setAuthenticated } from "./authSlice";
@@ -26,8 +26,8 @@ const Authentication = () => {
     const dispatch = useDispatch();
 
     useEffect(() => {
-        if (data?.ok && data?.access_token) {
-            setAccessToken(data.access_token);
+        if (data?.ok && data?.accesstoken) {
+            setaccesstoken(data.accesstoken);
             dispatch(company.util.resetApiState());
             navigate("/admin/company/");
         }

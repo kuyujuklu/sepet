@@ -29,11 +29,11 @@ const Menu = ({ menu }) => {
     };
 
     return (
-        <div className="flex flex-col items-center gap-2">
+        <div className="w-full">
             {/* Menu name */}
             <div
                 onClick={selectMenu}
-                className={`border-2 cursor-pointer w-fit py-2 px-4 sm:px-8 rounded-3xl text-sm sm:text-lg font-medium break-words`}
+                className={`border-2 cursor-pointer w-full py-2 px-4 sm:px-8 rounded-3xl text-sm sm:text-lg font-medium break-words`}
                 style={{
                     color: color,
                     borderColor: pubColorContext,

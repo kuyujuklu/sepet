@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { useContext, useEffect } from "react";
 import { ThemeContext } from "../PubPage";
 import Image from "next/image";
@@ -14,7 +14,7 @@ import { requireAuthentication } from "../../auth/authSlice";
 import { useTranslation } from "react-i18next";
 
 const Category = ({ category }) => {
-    const {t} = useTranslation();
+    const { t } = useTranslation();
     const dispatch = useDispatch();
     const companyID = useSelector(selectCompanyID);
     const pubID = useSelector(selectPubID);
@@ -47,7 +47,7 @@ const Category = ({ category }) => {
             data: formData,
         });
     };
-    
+
     return (
         <div
             style={{
@@ -64,11 +64,13 @@ const Category = ({ category }) => {
                 to={`/admin/company/pub/${pubID}/menu/${menuID}/category/${category.id}`}
             >
                 {category.image_file_name && (
-                    <Image
+                    <img
                         src={`/api-static/images/categories/${category.image_file_name}`}
                         alt="category"
-                        fill
                         style={{
+                            display: "block",
+                            width: "100%",
+                            height: "100%",
                             objectFit: "cover",
                         }}
                     />
@@ -80,9 +82,16 @@ const Category = ({ category }) => {
                 style={{ zIndex: 20 }}
                 className="absolute m-auto inset-0 text-center h-fit w-fit flex flex-col items-center"
             >
-                <div className="p-4 text-2xl font-medium w-fit m-auto">
-                    {category.name}
-                </div>
+                <NavLink
+                    to={`/admin/company/pub/${pubID}/menu/${menuID}/category/${category.id}`}
+                >
+                    <div
+                        className="p-4 text-2xl font-medium w-full m-auto cursor-pointer"
+                        style={{ textShadow: "0px 0px 3px black" }}
+                    >
+                        {category.name}
+                    </div>
+                </NavLink>
                 {/* if has no image */}
                 {/* uploading image */}
                 {isLoading ? (

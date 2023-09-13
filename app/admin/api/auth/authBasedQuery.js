@@ -1,22 +1,27 @@
+"use client"
+
 import { v4 as uuid } from "uuid";
 import { fetchBaseQuery } from "@reduxjs/toolkit/dist/query";
 import { refreshToken } from "./refreshToken";
 import { convertRespError } from "../resperrors/convertRespError";
 import { appErrors } from "../../errors/errors";
 
-export let access_token =
-  "";
+export let accesstoken =
+"";
+console.log("sending request token: ", accesstoken);
 
-export const setAccessToken = (token) => {
-  access_token = token;
+export const setaccesstoken = (token) => {
+  console.log("settingToken ", token);
+  accesstoken = token;
 };
 
 export const authenticationBasedQuery = async (args, api, extraOptions) => {
+  console.log("sending request token: ", accesstoken);
   const requestID = uuid();
   const resp = await fetchBaseQuery({
     baseUrl: "/",
     prepareHeaders: (headers) => {
-      headers.set("access_token", `${access_token}`);
+      headers.set("accesstoken", `${accesstoken}`);
       return headers;
     },
   })(args, api, extraOptions);
@@ -27,7 +32,9 @@ export const authenticationBasedQuery = async (args, api, extraOptions) => {
         case 401: {
             let res = await refreshToken();
             if (res.ok) {
-                access_token = res.access_token;
+                console.log("refreshed token: ", res.accesstoken);
+                accesstoken = res.accesstoken;
+                setaccesstoken(res.accesstoken);
                 return await authenticationBasedQuery(args, api, extraOptions);
             }
             

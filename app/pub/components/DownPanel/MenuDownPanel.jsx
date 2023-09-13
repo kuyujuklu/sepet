@@ -1,12 +1,21 @@
 import MenuList from "../PubPage/Menus/MenuList";
 import downPanelStyle from "../../sass/custom/down-panel.module.scss";
-import React, { useContext } from "react";
+import React, { useContext  } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ThemeContext } from "../PubPage/PubPage";
+import { useSelector } from "react-redux";
+import { selectDishes } from "../../store/basketSlice";
 
 const MenuDownPanel = ({ pubID, data, reference }) => {
     const themeContext = useContext(ThemeContext);
+    const selectedDishes = useSelector(selectDishes);
+    const count = Object.keys(selectedDishes).reduce(
+        (acc, id) => (acc += selectedDishes[id]),
+        0
+    );
+
+
     return (
         <div
             className={downPanelStyle.wrapper}
@@ -21,7 +30,11 @@ const MenuDownPanel = ({ pubID, data, reference }) => {
                     className="flex flex-col gap-2"
                     style={{ minWidth: 320, width: "100%" }}
                 >
-                    <MenuList menus={data.menus} />
+                    <div className="relative ">
+                        <div className="relative ">
+                            <MenuList menus={data.menus} />
+                        </div>
+                    </div>
                     <div
                         className="flex justify-evenly items-center w-full p-2"
                         style={{
@@ -45,7 +58,7 @@ const MenuDownPanel = ({ pubID, data, reference }) => {
                             </div>
                         </Link>
                         <Link href={`/pub/${pubID}/basket`}>
-                            <div className="flex flex-col justify-center items-center">
+                            <div className="relative flex flex-col justify-center items-center">
                                 <Image
                                     className="cursor-pointer"
                                     src={
@@ -57,6 +70,19 @@ const MenuDownPanel = ({ pubID, data, reference }) => {
                                     width={30}
                                     height={35}
                                 />
+                                {count > 0 && (
+                                    <div
+                                        className="absolute bg-red-600 rounded-full aspect-square text-3xs px-1 flex items-center"
+                                        style={{
+                                            top: -5,
+                                            right: -5,
+                                        }}
+                                        width={20}
+                                        height={20}
+                                    >
+                                        {count}
+                                    </div>
+                                )}
                             </div>
                         </Link>
                     </div>

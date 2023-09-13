@@ -14,6 +14,7 @@ const CompanyPage = () => {
   const {data, error} = useGetCompanyQuery({}, {refetchOnMountOrArgChange: true})
 
   useEffect(() => {
+    console.log("this is test log")
     if (error && error.text === appErrors.unauthorized) {
         dispatch(requireAuthentication())
     }

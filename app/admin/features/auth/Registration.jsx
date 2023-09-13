@@ -11,7 +11,7 @@ import {
 } from "../../validation/validateCompany";
 import PhoneNumberInput from "../../components/Inputs/PhoneNumberInput";
 import { useLazyRegistrateQuery } from "../../api/auth/authQuery";
-import { setAccessToken } from "../../api/auth/authBasedQuery";
+import { setaccesstoken } from "../../api/auth/authBasedQuery";
 import WhiteSpinner from "../../components/loaders/WhiteSpinner";
 import { useDispatch } from "react-redux";
 import { setAuthenticated } from "./authSlice";
@@ -31,8 +31,8 @@ const Registration = () => {
     const dispatch = useDispatch();
 
     useEffect(() => {
-        if (data?.ok && data?.access_token) {
-            setAccessToken(data.access_token);
+        if (data?.ok && data?.accesstoken) {
+            setaccesstoken(data.accesstoken);
             dispatch(company.util.resetApiState());
             navigate("/admin/company");
         }

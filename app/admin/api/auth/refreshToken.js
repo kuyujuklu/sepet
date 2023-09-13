@@ -23,7 +23,7 @@ export const refreshToken = async () => {
     if(body.ok) {
         return {
             ok: true,
-            access_token: body.access_token
+            accesstoken: body.accesstoken
         };
     }
 
