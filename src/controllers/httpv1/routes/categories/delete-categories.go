@@ -23,7 +23,7 @@ type deleteCategoryOutput struct {
 // @Success      200 {object}  deleteCategoryOutput
 // @Router       /company/{companyID}/pubs/{pubID}/menus/{menuID}/categories/{categoryID} [DELETE]
 // @Security ApiKeyAuth
-// @Param access_token header string  true "access_token"
+// @Param AccessToken header string  true "accesstoken"
 func (c *categoryController) DeleteCategory(ctx *fiber.Ctx) error {
 	userID, userSignificance, err := h.GetUserIDAndSignificanceFromLocals(ctx)
 	if err != nil {

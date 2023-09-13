@@ -23,7 +23,7 @@ type getCompanyOutput struct {
 // @Success      200  {object}  getCompanyOutput
 // @Router       /company/{id} [get]
 // @Security ApiKeyAuth
-// @Param access_token header string  true "access_token"
+// @Param AccessToken header string  true "accesstoken"
 func (c *companiesController) GetCompanyByID(ctx *fiber.Ctx) error {
 	userID, userSignificance, err := h.GetUserIDAndSignificanceFromLocals(ctx)
 	if err != nil {

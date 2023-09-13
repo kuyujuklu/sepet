@@ -25,7 +25,7 @@ type getAllDishesOutput struct {
 // @Success      200  {object} getAllDishesOutput
 // @Router       /company/{companyID}/pubs/{pubID}/menus/{menuID}/categories/{categoryID}/dishes [GET]
 // @Security ApiKeyAuth
-// @Param access_token header string  true "access_token"
+// @Param AccessToken header string  true "accesstoken"
 func (c *dishesController) GetAllDishes(ctx *fiber.Ctx) error {
 	userID, userSignificance, err := h.GetUserIDAndSignificanceFromLocals(ctx)
 	if err != nil {

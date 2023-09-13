@@ -110,6 +110,7 @@ func (s *pubsService) UpdatePub(id int, pub models.Pub) (models.Pub, error) {
 	pub.CompanyID = pubFromDB.CompanyID
 	pub.CreatedAt = pubFromDB.CreatedAt
 	pub.BgImageFileName = pubFromDB.BgImageFileName
+	pub.QrCodeFileName = pubFromDB.QrCodeFileName
 	pub.LogoFileName = pubFromDB.LogoFileName
 
 	return s.PubsRepo.UpdatePub(id, pub)

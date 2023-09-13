@@ -66,7 +66,7 @@ func (r *companiesRepo) GetAllCompanies() ([]models.Company, error) {
 
 func (r *companiesRepo) GetCompanyById(id int) (models.Company, error) {
 	var company models.Company
-	result := r.Database.First(&company, "id = ?", id)
+	result := r.Database.Preload("Role").First(&company, "id = ?", id)
 
 	if result.Error != nil {
 		return models.Company{}, companyerrors.ErrCompanyNotFound

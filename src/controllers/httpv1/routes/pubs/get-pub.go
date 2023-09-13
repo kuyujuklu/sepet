@@ -24,7 +24,7 @@ type getPubByIDOutput struct {
 // @Success      200  {object}  getPubByIDOutput
 // @Router       /company/{companyID}/pubs/{pubID} [GET]
 // @Security ApiKeyAuth
-// @Param access_token header string  true "access_token"
+// @Param AccessToken header string  true "accesstoken"
 func (c *pubController) GetPubByID(ctx *fiber.Ctx) error {
 	userID, userSignificance, err := h.GetUserIDAndSignificanceFromLocals(ctx)
 	if err != nil {

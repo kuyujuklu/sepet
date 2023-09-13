@@ -11,7 +11,7 @@ import (
 var jwtService = jwtservice.New()
 
 // func AuthMW(ctx *fiber.Ctx) error {
-// 	accessToken := ctx.Cookies("access_token")
+// 	accessToken := ctx.Cookies("accesstoken")
 
 // 	if accessToken == "" {
 // 		ctx.Locals("authorized", false)
@@ -52,7 +52,7 @@ var jwtService = jwtservice.New()
 // }
 
 func StrictAuthMW(ctx *fiber.Ctx) error {
-	accessToken := ctx.Get("access_token")
+	accessToken := ctx.Get("accesstoken")
 
 	if accessToken == "" {
 		return h.SendError(ctx, jwterrors.ErrEmptyAccessToken, h.AUTOMATIC_STATUS_CODE)

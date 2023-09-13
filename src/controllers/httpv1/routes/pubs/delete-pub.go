@@ -21,7 +21,7 @@ type deltePubOutput struct {
 // @Success      200 {object}  deltePubOutput
 // @Router       /company/{companyID}/pubs/{pubID} [DELETE]
 // @Security ApiKeyAuth
-// @Param access_token header string  true "access_token"
+// @Param AccessToken header string  true "accesstoken"
 func (c *pubController) DeletePub(ctx *fiber.Ctx) error {
 	userID, userSignificance, err := h.GetUserIDAndSignificanceFromLocals(ctx)
 	if err != nil {

@@ -17,7 +17,7 @@ definitions:
     type: object
   auth.loginOutput:
     properties:
-      access_token:
+      AccessToken:
         type: string
       ok:
         example: true
@@ -101,7 +101,7 @@ definitions:
     type: object
   companies.createCompanyOutput:
     properties:
-      access_token:
+      AccessToken:
         type: string
       company:
         $ref: '#/definitions/entities.CompanyOutput'
@@ -566,9 +566,9 @@ paths:
         name: id
         required: true
         type: integer
-      - description: access_token
+      - description: AccessToken
         in: header
-        name: access_token
+        name: AccessToken
         required: true
         type: string
       produces:
@@ -615,9 +615,9 @@ paths:
         name: companyID
         required: true
         type: integer
-      - description: access_token
+      - description: AccessToken
         in: header
-        name: access_token
+        name: AccessToken
         required: true
         type: string
       produces:
@@ -649,9 +649,9 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/entities.CreatePubInput'
-      - description: access_token
+      - description: AccessToken
         in: header
-        name: access_token
+        name: AccessToken
         required: true
         type: string
       produces:
@@ -680,9 +680,9 @@ paths:
         name: pubID
         required: true
         type: integer
-      - description: access_token
+      - description: AccessToken
         in: header
-        name: access_token
+        name: AccessToken
         required: true
         type: string
       produces:
@@ -712,9 +712,9 @@ paths:
         name: pubID
         required: true
         type: integer
-      - description: access_token
+      - description: AccessToken
         in: header
-        name: access_token
+        name: AccessToken
         required: true
         type: string
       produces:
@@ -750,9 +750,9 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/entities.UpdatePubInput'
-      - description: access_token
+      - description: AccessToken
         in: header
-        name: access_token
+        name: AccessToken
         required: true
         type: string
       produces:
@@ -807,9 +807,9 @@ paths:
         name: bg
         required: true
         type: file
-      - description: access_token
+      - description: AccessToken
         in: header
-        name: access_token
+        name: AccessToken
         required: true
         type: string
       produces:
@@ -864,9 +864,9 @@ paths:
         name: logo
         required: true
         type: file
-      - description: access_token
+      - description: AccessToken
         in: header
-        name: access_token
+        name: AccessToken
         required: true
         type: string
       produces:
@@ -895,9 +895,9 @@ paths:
         name: pubID
         required: true
         type: integer
-      - description: access_token
+      - description: AccessToken
         in: header
-        name: access_token
+        name: AccessToken
         required: true
         type: string
       produces:
@@ -933,9 +933,9 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/entities.MenuInput'
-      - description: access_token
+      - description: AccessToken
         in: header
-        name: access_token
+        name: AccessToken
         required: true
         type: string
       produces:
@@ -969,9 +969,9 @@ paths:
         name: menuID
         required: true
         type: integer
-      - description: access_token
+      - description: AccessToken
         in: header
-        name: access_token
+        name: AccessToken
         required: true
         type: string
       produces:
@@ -1004,9 +1004,9 @@ paths:
         name: menuID
         required: true
         type: integer
-      - description: access_token
+      - description: AccessToken
         in: header
-        name: access_token
+        name: AccessToken
         required: true
         type: string
       produces:
@@ -1047,9 +1047,9 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/entities.MenuInput'
-      - description: access_token
+      - description: AccessToken
         in: header
-        name: access_token
+        name: AccessToken
         required: true
         type: string
       produces:
@@ -1083,9 +1083,9 @@ paths:
         name: menuID
         required: true
         type: integer
-      - description: access_token
+      - description: AccessToken
         in: header
-        name: access_token
+        name: AccessToken
         required: true
         type: string
       produces:
@@ -1127,9 +1127,9 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/entities.CategoryInput'
-      - description: access_token
+      - description: AccessToken
         in: header
-        name: access_token
+        name: AccessToken
         required: true
         type: string
       produces:
@@ -1168,9 +1168,9 @@ paths:
         name: categoryID
         required: true
         type: integer
-      - description: access_token
+      - description: AccessToken
         in: header
-        name: access_token
+        name: AccessToken
         required: true
         type: string
       produces:
@@ -1208,9 +1208,9 @@ paths:
         name: categoryID
         required: true
         type: integer
-      - description: access_token
+      - description: AccessToken
         in: header
-        name: access_token
+        name: AccessToken
         required: true
         type: string
       produces:
@@ -1256,9 +1256,9 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/entities.CategoryInput'
-      - description: access_token
+      - description: AccessToken
         in: header
-        name: access_token
+        name: AccessToken
         required: true
         type: string
       produces:
@@ -1297,9 +1297,9 @@ paths:
         name: categoryID
         required: true
         type: integer
-      - description: access_token
+      - description: AccessToken
         in: header
-        name: access_token
+        name: AccessToken
         required: true
         type: string
       produces:
@@ -1346,9 +1346,9 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/entities.DishInput'
-      - description: access_token
+      - description: AccessToken
         in: header
-        name: access_token
+        name: AccessToken
         required: true
         type: string
       produces:
@@ -1392,9 +1392,9 @@ paths:
         name: dishID
         required: true
         type: integer
-      - description: access_token
+      - description: AccessToken
         in: header
-        name: access_token
+        name: AccessToken
         required: true
         type: string
       produces:
@@ -1437,9 +1437,9 @@ paths:
         name: dishID
         required: true
         type: integer
-      - description: access_token
+      - description: AccessToken
         in: header
-        name: access_token
+        name: AccessToken
         required: true
         type: string
       produces:
@@ -1490,9 +1490,9 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/entities.DishInput'
-      - description: access_token
+      - description: AccessToken
         in: header
-        name: access_token
+        name: AccessToken
         required: true
         type: string
       produces:
@@ -1577,9 +1577,9 @@ paths:
         name: image
         required: true
         type: file
-      - description: access_token
+      - description: AccessToken
         in: header
-        name: access_token
+        name: AccessToken
         required: true
         type: string
       produces:
@@ -1623,9 +1623,9 @@ paths:
         name: dishID
         required: true
         type: integer
-      - description: access_token
+      - description: AccessToken
         in: header
-        name: access_token
+        name: AccessToken
         required: true
         type: string
       produces:
@@ -1669,9 +1669,9 @@ paths:
         name: dishID
         required: true
         type: integer
-      - description: access_token
+      - description: AccessToken
         in: header
-        name: access_token
+        name: AccessToken
         required: true
         type: string
       produces:
@@ -1746,9 +1746,9 @@ paths:
         name: image
         required: true
         type: file
-      - description: access_token
+      - description: AccessToken
         in: header
-        name: access_token
+        name: AccessToken
         required: true
         type: string
       produces:
@@ -1787,9 +1787,9 @@ paths:
         name: categoryID
         required: true
         type: integer
-      - description: access_token
+      - description: AccessToken
         in: header
-        name: access_token
+        name: AccessToken
         required: true
         type: string
       produces:
@@ -1828,9 +1828,9 @@ paths:
         name: categoryID
         required: true
         type: integer
-      - description: access_token
+      - description: AccessToken
         in: header
-        name: access_token
+        name: AccessToken
         required: true
         type: string
       produces:
@@ -1864,9 +1864,9 @@ paths:
         name: menuID
         required: true
         type: integer
-      - description: access_token
+      - description: AccessToken
         in: header
-        name: access_token
+        name: AccessToken
         required: true
         type: string
       produces:
@@ -1900,9 +1900,9 @@ paths:
         name: menuID
         required: true
         type: integer
-      - description: access_token
+      - description: AccessToken
         in: header
-        name: access_token
+        name: AccessToken
         required: true
         type: string
       produces:
@@ -1928,9 +1928,9 @@ paths:
         name: id
         required: true
         type: integer
-      - description: access_token
+      - description: AccessToken
         in: header
-        name: access_token
+        name: AccessToken
         required: true
         type: string
       produces:

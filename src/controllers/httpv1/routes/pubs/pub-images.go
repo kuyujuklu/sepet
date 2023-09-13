@@ -27,7 +27,7 @@ type fileUploadOutput struct {
 // @Success      200  {object}  fileUploadOutput
 // @Router       /company/{companyID}/pubs/{pubID}/logo [PATCH]
 // @Security ApiKeyAuth
-// @Param access_token header string  true "access_token"
+// @Param AccessToken header string  true "accesstoken"
 func (c *pubController) UploadPubLogo(ctx *fiber.Ctx) error {
 	userID, userSignificance, err := h.GetUserIDAndSignificanceFromLocals(ctx)
 	if err != nil {
@@ -84,7 +84,7 @@ func (c *pubController) UploadPubLogo(ctx *fiber.Ctx) error {
 // @Success      200  {object}  fileUploadOutput
 // @Router       /company/{companyID}/pubs/{pubID}/bg [PATCH]
 // @Security ApiKeyAuth
-// @Param access_token header string  true "access_token"
+// @Param AccessToken header string  true "accesstoken"
 func (c *pubController) UploadPubBG(ctx *fiber.Ctx) error {
 	userID, userSignificance, err := h.GetUserIDAndSignificanceFromLocals(ctx)
 	if err != nil {

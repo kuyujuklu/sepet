@@ -22,7 +22,7 @@ type delteMenuOutput struct {
 // @Success      200 {object}  delteMenuOutput
 // @Router       /company/{companyID}/pubs/{pubID}/menus/{menuID} [DELETE]
 // @Security ApiKeyAuth
-// @Param access_token header string  true "access_token"
+// @Param AccessToken header string  true "accesstoken"
 func (c *menuController) DeleteMenu(ctx *fiber.Ctx) error {
 	userID, userSignificance, err := h.GetUserIDAndSignificanceFromLocals(ctx)
 	if err != nil {

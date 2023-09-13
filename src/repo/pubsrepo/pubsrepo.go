@@ -200,6 +200,8 @@ func (r *pubsRepo) CreatePub(pub models.Pub) (models.Pub, error) {
 		return models.Pub{}, err
 	}
 
+	fmt.Println("pub qr code file name: ", pub.QrCodeFileName)
+
 	return pub, nil
 }
 func (r *pubsRepo) getPubLink(pubID int) string {

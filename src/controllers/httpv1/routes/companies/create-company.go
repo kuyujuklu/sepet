@@ -12,7 +12,7 @@ import (
 type createCompanyOutput struct {
 	Ok           bool                   `json:"ok" example:"true"`
 	Company      entities.CompanyOutput `json:"company"`
-	Access_token string                 `json:"access_token"`
+	Access_token string                 `json:"accesstoken"`
 }
 
 // @Summary      Create company
@@ -56,7 +56,7 @@ func (c *companiesController) CreateCompany(ctx *fiber.Ctx) error {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
 
-	access_token, err := c.JwtService.GetAccessTokenString(
+	AccessToken, err := c.JwtService.GetAccessTokenString(
 		int(company.ID),
 		role.SignificanceNumber,
 		jwtservice.STANDARD_ACCESS_LIFE_TIME)
@@ -65,12 +65,12 @@ func (c *companiesController) CreateCompany(ctx *fiber.Ctx) error {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
 
-	//Return response with access_token
+	//Return response with AccessToken
 	return h.SendSuccess(
 		ctx,
 		fiber.Map{
-			"company":      output,
-			"access_token": access_token,
+			"company":     output,
+			"accesstoken": AccessToken,
 		},
 		fiber.StatusCreated)
 }

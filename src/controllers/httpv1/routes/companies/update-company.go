@@ -10,7 +10,7 @@ package companies
 // @Success      200  {object}  entities.CompanyOutput
 // @Router       /company/{id} [PUT]
 // @Security ApiKeyAuth
-// @Param access_token header string  true "access_token"
+// @Param AccessToken header string  true "accesstoken"
 // func (c *companiesController) UpdateCompany(ctx *fiber.Ctx) error {
 // 	id, err := strconv.Atoi(ctx.Params("companyID"))
 // 	if err != nil {

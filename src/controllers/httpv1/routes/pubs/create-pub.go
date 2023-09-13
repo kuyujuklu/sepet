@@ -25,7 +25,7 @@ type cratePubOutput struct {
 // @Success      201  {object}  cratePubOutput
 // @Router       /company/{companyID}/pubs/ [POST]
 // @Security ApiKeyAuth
-// @Param access_token header string  true "access_token"
+// @Param AccessToken header string  true "accesstoken"
 func (c *pubController) CreatePub(ctx *fiber.Ctx) error {
 	userID, userSignificance, err := h.GetUserIDAndSignificanceFromLocals(ctx)
 	if err != nil {

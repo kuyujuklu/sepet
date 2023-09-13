@@ -5,6 +5,7 @@ import (
 
 	h "github.com/alexkalak/qrmenu/src/controllers/httpv1/httphelpers"
 	"github.com/alexkalak/qrmenu/src/controllers/httpv1/input"
+	"github.com/alexkalak/qrmenu/src/errors/companyerrors"
 	"github.com/alexkalak/qrmenu/src/errors/jwterrors"
 	"github.com/alexkalak/qrmenu/src/errors/servererrors"
 	"github.com/alexkalak/qrmenu/src/models"
@@ -41,7 +42,7 @@ type loginInput struct {
 
 type loginOutput struct {
 	Ok          bool   `json:"ok" example:"true"`
-	AccessToken string `json:"access_token"`
+	AccessToken string `json:"accesstoken"`
 }
 
 // @Summary      Login
@@ -97,7 +98,7 @@ func (c *authController) loginAsCompany(ctx *fiber.Ctx, email string, password s
 	return h.SendSuccess(
 		ctx,
 		fiber.Map{
-			"access_token": accessToken,
+			"accesstoken": accessToken,
 		},
 		fiber.StatusOK,
 	)
@@ -113,13 +114,23 @@ func (c *authController) RefreshToken(ctx *fiber.Ctx) error {
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
+
 	if !valid {
 		return h.SendError(ctx, jwterrors.ErrNotValidSignature, h.AUTOMATIC_STATUS_CODE)
 	}
 
+	user, err := c.CompanyService.GetCompanyById(userClaims.ID)
+	if err != nil {
+		return h.SendError(
+			ctx,
+			companyerrors.ErrCompanyNotFound,
+			h.AUTOMATIC_STATUS_CODE,
+		)
+	}
+
 	accessToken, err := c.JwtService.GetAccessTokenString(
-		userClaims.ID,
-		userClaims.Significance,
+		int(user.ID),
+		user.Role.SignificanceNumber,
 		jwtservice.STANDARD_ACCESS_LIFE_TIME)
 
 	if err != nil {
@@ -129,7 +140,7 @@ func (c *authController) RefreshToken(ctx *fiber.Ctx) error {
 	return h.SendSuccess(
 		ctx,
 		fiber.Map{
-			"access_token": accessToken,
+			"accesstoken": accessToken,
 		},
 		fiber.StatusOK)
 }

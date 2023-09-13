@@ -26,7 +26,7 @@ type updatePubOutput struct {
 // @Success      200  {object}  updatePubOutput
 // @Router       /company/{companyID}/pubs/{pubID} [PUT]
 // @Security ApiKeyAuth
-// @Param access_token header string  true "access_token"
+// @Param AccessToken header string  true "accesstoken"
 func (c *pubController) UpdatePub(ctx *fiber.Ctx) error {
 	userID, userSignificance, err := h.GetUserIDAndSignificanceFromLocals(ctx)
 	if err != nil {

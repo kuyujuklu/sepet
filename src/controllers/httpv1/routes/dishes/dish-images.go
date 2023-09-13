@@ -30,7 +30,7 @@ type fileUploadOutput struct {
 // @Success      200  {object}  fileUploadOutput
 // @Router       /company/{companyID}/pubs/{pubID}/menus/{menuID}/categories/{categoryID}/dishes/{dishID}/image [PATCH]
 // @Security ApiKeyAuth
-// @Param access_token header string  true "access_token"
+// @Param AccessToken header string  true "accesstoken"
 func (c *dishesController) UploadDishImage(ctx *fiber.Ctx) error {
 	fmt.Println("request")
 	userID, userSignificance, err := h.GetUserIDAndSignificanceFromLocals(ctx)

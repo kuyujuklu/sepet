@@ -108,8 +108,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "access_token",
-                        "name": "access_token",
+                        "description": "AccessToken",
+                        "name": "AccessToken",
                         "in": "header",
                         "required": true
                     }
@@ -184,8 +184,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "access_token",
-                        "name": "access_token",
+                        "description": "AccessToken",
+                        "name": "AccessToken",
                         "in": "header",
                         "required": true
                     }
@@ -237,8 +237,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "access_token",
-                        "name": "access_token",
+                        "description": "AccessToken",
+                        "name": "AccessToken",
                         "in": "header",
                         "required": true
                     }
@@ -288,8 +288,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "access_token",
-                        "name": "access_token",
+                        "description": "AccessToken",
+                        "name": "AccessToken",
                         "in": "header",
                         "required": true
                     }
@@ -346,8 +346,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "access_token",
-                        "name": "access_token",
+                        "description": "AccessToken",
+                        "name": "AccessToken",
                         "in": "header",
                         "required": true
                     }
@@ -392,8 +392,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "access_token",
-                        "name": "access_token",
+                        "description": "AccessToken",
+                        "name": "AccessToken",
                         "in": "header",
                         "required": true
                     }
@@ -477,8 +477,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "access_token",
-                        "name": "access_token",
+                        "description": "AccessToken",
+                        "name": "AccessToken",
                         "in": "header",
                         "required": true
                     }
@@ -562,8 +562,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "access_token",
-                        "name": "access_token",
+                        "description": "AccessToken",
+                        "name": "AccessToken",
                         "in": "header",
                         "required": true
                     }
@@ -610,8 +610,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "access_token",
-                        "name": "access_token",
+                        "description": "AccessToken",
+                        "name": "AccessToken",
                         "in": "header",
                         "required": true
                     }
@@ -668,8 +668,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "access_token",
-                        "name": "access_token",
+                        "description": "AccessToken",
+                        "name": "AccessToken",
                         "in": "header",
                         "required": true
                     }
@@ -723,8 +723,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "access_token",
-                        "name": "access_token",
+                        "description": "AccessToken",
+                        "name": "AccessToken",
                         "in": "header",
                         "required": true
                     }
@@ -788,8 +788,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "access_token",
-                        "name": "access_token",
+                        "description": "AccessToken",
+                        "name": "AccessToken",
                         "in": "header",
                         "required": true
                     }
@@ -841,8 +841,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "access_token",
-                        "name": "access_token",
+                        "description": "AccessToken",
+                        "name": "AccessToken",
                         "in": "header",
                         "required": true
                     }
@@ -896,8 +896,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "access_token",
-                        "name": "access_token",
+                        "description": "AccessToken",
+                        "name": "AccessToken",
                         "in": "header",
                         "required": true
                     }
@@ -963,8 +963,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "access_token",
-                        "name": "access_token",
+                        "description": "AccessToken",
+                        "name": "AccessToken",
                         "in": "header",
                         "required": true
                     }
@@ -1025,8 +1025,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "access_token",
-                        "name": "access_token",
+                        "description": "AccessToken",
+                        "name": "AccessToken",
                         "in": "header",
                         "required": true
                     }
@@ -1097,8 +1097,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "access_token",
-                        "name": "access_token",
+                        "description": "AccessToken",
+                        "name": "AccessToken",
                         "in": "header",
                         "required": true
                     }
@@ -1157,8 +1157,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "access_token",
-                        "name": "access_token",
+                        "description": "AccessToken",
+                        "name": "AccessToken",
                         "in": "header",
                         "required": true
                     }
@@ -1219,8 +1219,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "access_token",
-                        "name": "access_token",
+                        "description": "AccessToken",
+                        "name": "AccessToken",
                         "in": "header",
                         "required": true
                     }
@@ -1293,8 +1293,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "access_token",
-                        "name": "access_token",
+                        "description": "AccessToken",
+                        "name": "AccessToken",
                         "in": "header",
                         "required": true
                     }
@@ -1362,8 +1362,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "access_token",
-                        "name": "access_token",
+                        "description": "AccessToken",
+                        "name": "AccessToken",
                         "in": "header",
                         "required": true
                     }
@@ -1441,8 +1441,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "access_token",
-                        "name": "access_token",
+                        "description": "AccessToken",
+                        "name": "AccessToken",
                         "in": "header",
                         "required": true
                     }
@@ -1508,8 +1508,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "access_token",
-                        "name": "access_token",
+                        "description": "AccessToken",
+                        "name": "AccessToken",
                         "in": "header",
                         "required": true
                     }
@@ -1635,8 +1635,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "access_token",
-                        "name": "access_token",
+                        "description": "AccessToken",
+                        "name": "AccessToken",
                         "in": "header",
                         "required": true
                     }
@@ -1704,8 +1704,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "access_token",
-                        "name": "access_token",
+                        "description": "AccessToken",
+                        "name": "AccessToken",
                         "in": "header",
                         "required": true
                     }
@@ -1773,8 +1773,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "access_token",
-                        "name": "access_token",
+                        "description": "AccessToken",
+                        "name": "AccessToken",
                         "in": "header",
                         "required": true
                     }
@@ -1886,8 +1886,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "access_token",
-                        "name": "access_token",
+                        "description": "AccessToken",
+                        "name": "AccessToken",
                         "in": "header",
                         "required": true
                     }
@@ -1948,8 +1948,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "access_token",
-                        "name": "access_token",
+                        "description": "AccessToken",
+                        "name": "AccessToken",
                         "in": "header",
                         "required": true
                     }
@@ -2010,8 +2010,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "access_token",
-                        "name": "access_token",
+                        "description": "AccessToken",
+                        "name": "AccessToken",
                         "in": "header",
                         "required": true
                     }
@@ -2065,8 +2065,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "access_token",
-                        "name": "access_token",
+                        "description": "AccessToken",
+                        "name": "AccessToken",
                         "in": "header",
                         "required": true
                     }
@@ -2120,8 +2120,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "access_token",
-                        "name": "access_token",
+                        "description": "AccessToken",
+                        "name": "AccessToken",
                         "in": "header",
                         "required": true
                     }
@@ -2164,8 +2164,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "access_token",
-                        "name": "access_token",
+                        "description": "AccessToken",
+                        "name": "AccessToken",
                         "in": "header",
                         "required": true
                     }
@@ -2207,7 +2207,7 @@ const docTemplate = `{
         "auth.loginOutput": {
             "type": "object",
             "properties": {
-                "access_token": {
+                "AccessToken": {
                     "type": "string"
                 },
                 "ok": {
@@ -2333,7 +2333,7 @@ const docTemplate = `{
         "companies.createCompanyOutput": {
             "type": "object",
             "properties": {
-                "access_token": {
+                "AccessToken": {
                     "type": "string"
                 },
                 "company": {

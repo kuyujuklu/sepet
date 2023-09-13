@@ -23,7 +23,7 @@ type getAllMenusOutput struct {
 // @Success      200  {object}  createMenuOutput
 // @Router       /company/{companyID}/pubs/{pubID}/menus/ [GET]
 // @Security ApiKeyAuth
-// @Param access_token header string  true "access_token"
+// @Param AccessToken header string  true "accesstoken"
 func (c *menuController) GetAllMenus(ctx *fiber.Ctx) error {
 	userID, userSignificance, err := h.GetUserIDAndSignificanceFromLocals(ctx)
 	if err != nil {

@@ -23,7 +23,7 @@ type moveMenuOutput struct {
 // @Success      200  {object}  moveMenuOutput
 // @Router       /company/{companyID}/pubs/{pubID}/menus/{menuID}/move-left [POST]
 // @Security ApiKeyAuth
-// @Param access_token header string  true "access_token"
+// @Param AccessToken header string  true "accesstoken"
 func (c *menuController) MoveMenuLeft(ctx *fiber.Ctx) error {
 	userID, userSignificance, err := h.GetUserIDAndSignificanceFromLocals(ctx)
 	if err != nil {
@@ -73,7 +73,7 @@ func (c *menuController) MoveMenuLeft(ctx *fiber.Ctx) error {
 // @Success      200  {object}  moveMenuOutput
 // @Router       /company/{companyID}/pubs/{pubID}/menus/{menuID}/move-right [POST]
 // @Security ApiKeyAuth
-// @Param access_token header string  true "access_token"
+// @Param AccessToken header string  true "accesstoken"
 func (c *menuController) MoveMenuRight(ctx *fiber.Ctx) error {
 	userID, userSignificance, err := h.GetUserIDAndSignificanceFromLocals(ctx)
 	if err != nil {

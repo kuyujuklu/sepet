@@ -23,7 +23,7 @@ type getAllPubsForCompanyOutput struct {
 // @Success      200  {object}  getAllPubsForCompanyOutput
 // @Router       /company/{companyID}/pubs [GET]
 // @Security ApiKeyAuth
-// @Param access_token header string  true "access_token"
+// @Param AccessToken header string  true "accesstoken"
 func (c *pubController) GetAllPubs(ctx *fiber.Ctx) error {
 	userID, userSignificance, err := h.GetUserIDAndSignificanceFromLocals(ctx)
 	if err != nil {
