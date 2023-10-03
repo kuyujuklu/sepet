@@ -5,8 +5,5 @@ const respErrors = {
 }
 
 export const convertRespError = (error) => {
-    let err = respErrors[error];
-    if(!err) {
-        return appErrors.unknown_error;
-    }
+    return respErrors[error] ?? appErrors.unknown_error;
 }

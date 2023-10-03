@@ -11,8 +11,7 @@ import { setPubID } from "./pubSlice";
 import { setCompanyID } from "../company/companySlice";
 import Categories from "./Categories/Categories";
 import Dishes from "./Dishes/Dishes";
-import { appErrors } from "../../errors/errors";
-import { requireAuthentication } from "../auth/authSlice";
+import { errorKeys, setReceivingError } from "../errorHandlers/errorHandlerSlice";
 
 export const ThemeContext = createContext({
     theme: "light",
@@ -36,26 +35,33 @@ const PubPage = () => {
 
     const dispatch = useDispatch();
 
-    //company and pub data
+    //company data
     const {
         data: companyData,
-        // isLoading: isLoadingCompany,
         error: companyError,
     } = useGetCompanyQuery();
 
     useEffect(() => {
-        if (companyError && companyError.text === appErrors.unauthorized) {
-            dispatch(requireAuthentication())
-        }
+        if(!companyError) return;
+
+        dispatch(setReceivingError({errorKey: errorKeys.get_company, error: companyError}))
     }, [companyError, dispatch]);
 
+    //pub data
     const pubID = useParams().pubID;
+    useEffect(() => {
+        dispatch(setPubID(pubID));
+        return () => {
+            dispatch(setPubID(null));
+        }
+    }, [pubID, dispatch]);
+    
     const {
         data: pubData,
-        // isLoading: isLoadingPub,
         error: pubError,
     } = useGetPubQuery({ companyID: companyData?.company?.id, pubID: pubID });
 
+    //setting contexts
     useEffect(() => {
         if (pubData?.pub) {
             dispatch(setPubID(pubData.pub.id));
@@ -79,9 +85,9 @@ const PubPage = () => {
     }, [companyData?.company?.id, dispatch, pubData]);
 
     useEffect(() => {
-        if (pubError && pubError.text === pubError.unauthorized) {
-            dispatch(requireAuthentication())
-        }
+        if(!pubError) return;
+
+        dispatch(setReceivingError({errorKey: errorKeys.get_pub_by_id, error: pubError}))
     }, [dispatch, pubError]);
 
     return (

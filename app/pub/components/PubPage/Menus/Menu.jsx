@@ -31,7 +31,7 @@ const Menu = ({ menu }) => {
     return (
         <div className="w-full">
             {/* Menu name */}
-            <div
+            <button
                 onClick={selectMenu}
                 className={`border-2 cursor-pointer w-full py-2 px-4 sm:px-8 rounded-3xl text-sm sm:text-lg font-medium break-words`}
                 style={{
@@ -42,7 +42,7 @@ const Menu = ({ menu }) => {
                 }}
             >
                 {menu.name}
-            </div>
+            </button>
         </div>
     );
 };

@@ -4,10 +4,10 @@ import { useDispatch, useSelector } from "react-redux";
 import { selectPubID } from "../pubSlice";
 import { selectCompanyID } from "../../company/companySlice";
 import { openDeleteDishPopup, openUpdateDishPopup } from "./dishesSlice";
-import { useContext, useEffect } from "react";
+import { useContext } from "react";
 import { useMoveDishLeftMutation, useMoveDishRightMutation } from "@/app/admin/api/dish/dish";
 import { ThemeContext } from "../PubPage";
-import { requireAuthentication } from "../../auth/authSlice";
+import { fixedCacheKeys } from "@/app/admin/api/fixedCacheKeys";
 
 const DishTools = ({menuID, categoryID, dish}) => {
     const dispatch = useDispatch()
@@ -15,20 +15,8 @@ const DishTools = ({menuID, categoryID, dish}) => {
     const companyID = useSelector(selectCompanyID);
     const pubID = useSelector(selectPubID);
 
-    const [moveTop, { error: moveTopError }] = useMoveDishLeftMutation();
-    useEffect(() => {
-        if (moveTopError && moveTopError.text === moveTopError.unauthorized) {
-            dispatch(requireAuthentication())
-        }
-    }, [dispatch, moveTopError]);
-
-
-    const [moveDown, { error: moveDownError }] = useMoveDishRightMutation();
-    useEffect(() => {
-        if (moveDownError && moveDownError.text === moveDownError.unauthorized) {
-            dispatch(requireAuthentication())
-        }
-    }, [dispatch, moveDownError]);
+    const [moveTop] = useMoveDishLeftMutation({fixedCacheKey: fixedCacheKeys.dishes.move_dish_left});
+    const [moveDown] = useMoveDishRightMutation({fixedCacheKey: fixedCacheKeys.dishes.move_dish_right});
 
     const themeContext = useContext(ThemeContext);
     

@@ -6,15 +6,15 @@ import { useDeleteMenuMutation } from "@/app/admin/api/menu/menu";
 import { closeDeleteMenuPopup, selectDeleteMenuPopupState } from "./menuSlice";
 import Popup from "@/app/admin/components/Popup/Popup";
 import WhiteSpinner from "@/app/admin/components/loaders/WhiteSpinner";
-import { requireAuthentication } from "../../auth/authSlice";
 import { useTranslation } from "react-i18next";
+import { fixedCacheKeys } from "@/app/admin/api/fixedCacheKeys";
 
 const DeleteMenuPopup = () => {
     const { t } = useTranslation();
     const dispatch = useDispatch();
     const popupState = useSelector(selectDeleteMenuPopupState);
 
-    const [deleteMenu, { data, error, isLoading }] = useDeleteMenuMutation();
+    const [deleteMenu, { data, isLoading }] = useDeleteMenuMutation({fixedCacheKey: fixedCacheKeys.menus.delete_menu});
 
     const closePopup = useCallback(() => {
         dispatch(closeDeleteMenuPopup());
@@ -25,12 +25,6 @@ const DeleteMenuPopup = () => {
             closePopup();
         }
     }, [closePopup, data]);
-
-    useEffect(() => {
-        if (error && error.text === error.unauthorized) {
-            dispatch(requireAuthentication())
-        }
-    }, [dispatch, error]);
 
     const handleButtonClick = () => {
         let companyID = popupState?.companyID;

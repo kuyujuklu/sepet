@@ -1,5 +1,5 @@
 "use client"
-import { useContext, useEffect } from "react";
+import { useContext } from "react";
 import { PubColorContext, ThemeContext } from "../PubPage";
 import { useDispatch, useSelector } from "react-redux";
 import { openDeleteMenuPopup, openUpdateMenuPopup, selectMenuID, setMenuID } from "./menuSlice";
@@ -7,7 +7,7 @@ import Image from "next/image";
 import { selectPubID } from "../pubSlice";
 import { selectCompanyID } from "../../company/companySlice";
 import { useMoveMenuLeftMutation, useMoveMenuRightMutation } from "@/app/admin/api/menu/menu";
-import { requireAuthentication } from "../../auth/authSlice";
+import { fixedCacheKeys } from "@/app/admin/api/fixedCacheKeys";
 
 const Menu = ({ menu }) => {
     const dispatch = useDispatch();
@@ -17,19 +17,8 @@ const Menu = ({ menu }) => {
     const selectedMenuID = useSelector(selectMenuID);
     const selected = selectedMenuID === menu.id;
 
-    const [moveLeft, {error: moveLeftError}] = useMoveMenuLeftMutation();
-    useEffect(() => {
-        if (moveLeftError && moveLeftError.text === moveLeftError.unauthorized) {
-            dispatch(requireAuthentication())
-        }
-    }, [dispatch, moveLeftError]);
-
-    const [moveRight, {error: moveRightError}] = useMoveMenuRightMutation();
-    useEffect(() => {
-        if (moveRightError && moveRightError.text === moveRightError.unauthorized) {
-            dispatch(requireAuthentication())
-        }
-    }, [dispatch, moveRightError]);
+    const [moveLeft] = useMoveMenuLeftMutation({fixedCacheKey: fixedCacheKeys.menus.move_menu_left});
+    const [moveRight] = useMoveMenuRightMutation({fixedCacheKey: fixedCacheKeys.menus.move_menu_right});
 
     const themeContext = useContext(ThemeContext);
     const pubColorContext = useContext(PubColorContext);

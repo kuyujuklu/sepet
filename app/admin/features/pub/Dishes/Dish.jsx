@@ -12,6 +12,7 @@ import { currencies } from "@/app/admin/static-data/data";
 import { useGetPubQuery } from "@/app/admin/api/pub/pub";
 import { requireAuthentication } from "../../auth/authSlice";
 import { useTranslation } from "react-i18next";
+import { fixedCacheKeys } from "@/app/admin/api/fixedCacheKeys";
 
 const Dish = ({ dish, menuID, categoryID }) => {
     const { t } = useTranslation();
@@ -29,13 +30,7 @@ const Dish = ({ dish, menuID, categoryID }) => {
         }
     }, [dispatch, pubError]);
 
-    const [uploadImage, { isLoading, error }] = useUploadDishImageMutation();
-
-    useEffect(() => {
-        if (error && error.text === error.unauthorized) {
-            dispatch(requireAuthentication());
-        }
-    }, [dispatch, error]);
+    const [uploadImage, { isLoading }] = useUploadDishImageMutation({fixedCacheKey: fixedCacheKeys.dishes.upload_dish_image});
 
     const themeContext = useContext(ThemeContext);
 

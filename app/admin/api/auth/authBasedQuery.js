@@ -8,15 +8,12 @@ import { appErrors } from "../../errors/errors";
 
 export let accesstoken =
 "";
-console.log("sending request token: ", accesstoken);
 
 export const setaccesstoken = (token) => {
-  console.log("settingToken ", token);
   accesstoken = token;
 };
 
 export const authenticationBasedQuery = async (args, api, extraOptions) => {
-  console.log("sending request token: ", accesstoken);
   const requestID = uuid();
   const resp = await fetchBaseQuery({
     baseUrl: "/",
@@ -32,7 +29,6 @@ export const authenticationBasedQuery = async (args, api, extraOptions) => {
         case 401: {
             let res = await refreshToken();
             if (res.ok) {
-                console.log("refreshed token: ", res.accesstoken);
                 accesstoken = res.accesstoken;
                 setaccesstoken(res.accesstoken);
                 return await authenticationBasedQuery(args, api, extraOptions);

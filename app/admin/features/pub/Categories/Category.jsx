@@ -1,33 +1,26 @@
 "use client";
-import { useContext, useEffect } from "react";
+import { useContext } from "react";
 import { ThemeContext } from "../PubPage";
 import Image from "next/image";
 import { selectCompanyID } from "../../company/companySlice";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { selectMenuID } from "../Menus/menuSlice";
 import { selectPubID } from "../pubSlice";
 import { useUploadCategoryImageMutation } from "@/app/admin/api/categories/category";
 import WhiteSpinner from "@/app/admin/components/loaders/WhiteSpinner";
 import CategoryTools from "./CategoryTools";
 import { NavLink } from "react-router-dom";
-import { requireAuthentication } from "../../auth/authSlice";
 import { useTranslation } from "react-i18next";
+import { fixedCacheKeys } from "@/app/admin/api/fixedCacheKeys";
 
 const Category = ({ category }) => {
     const { t } = useTranslation();
-    const dispatch = useDispatch();
     const companyID = useSelector(selectCompanyID);
     const pubID = useSelector(selectPubID);
     const menuID = useSelector(selectMenuID);
 
-    const [uploadImage, { isLoading, error }] =
-        useUploadCategoryImageMutation();
-
-    useEffect(() => {
-        if (error && error.text === error.unauthorized) {
-            dispatch(requireAuthentication());
-        }
-    }, [dispatch, error]);
+    const [uploadImage, { isLoading }] =
+        useUploadCategoryImageMutation({fixedCacheKey: fixedCacheKeys.categories.upload_category_image});
 
     const themeContext = useContext(ThemeContext);
 

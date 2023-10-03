@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import Image from "next/image";
 import { useDispatch } from "react-redux";
 import { useGetPubQuery } from "../../api/pub/pub";
@@ -6,11 +6,14 @@ import { useContext, useEffect } from "react";
 import { openQrCodePopup, openUpdatePubPopup } from "./pubSlice";
 import { NavLink } from "react-router-dom";
 import { ThemeContext } from "./PubPage";
-import { requireAuthentication } from "../auth/authSlice";
+import {
+    errorKeys,
+    setReceivingError,
+} from "../errorHandlers/errorHandlerSlice";
 
 const PubPageHeader = ({ pubImageFileName, pubName, companyID, pubID }) => {
-	const themeContext = useContext(ThemeContext);
-	const dispatch = useDispatch();
+    const themeContext = useContext(ThemeContext);
+    const dispatch = useDispatch();
 
     const { data, error } = useGetPubQuery({
         companyID: companyID,
@@ -18,9 +21,10 @@ const PubPageHeader = ({ pubImageFileName, pubName, companyID, pubID }) => {
     });
 
     useEffect(() => {
-        if (error && error.text === error.unauthorized) {
-            dispatch(requireAuthentication())
-        }
+        if (!error) return;
+        dispatch(
+            setReceivingError({ errorKey: errorKeys.get_pub_by_id, error })
+        );
     }, [dispatch, error]);
 
     const handleEditClick = () => {
@@ -28,15 +32,11 @@ const PubPageHeader = ({ pubImageFileName, pubName, companyID, pubID }) => {
     };
 
     const handleOpenQrCode = () => {
-        dispatch(openQrCodePopup({imageFileName: pubImageFileName}));
-    }
-
-
+        dispatch(openQrCodePopup({ imageFileName: pubImageFileName }));
+    };
 
     return (
-        <div 
-            className="flex items-center flex-wrap gap-x-6 gap-y-2"
-        >
+        <div className="flex items-center flex-wrap gap-x-6 gap-y-2">
             <h1
                 className=" text-4xl font-medium"
                 style={{
@@ -49,7 +49,11 @@ const PubPageHeader = ({ pubImageFileName, pubName, companyID, pubID }) => {
             <div className="flex items-center gap-4">
                 <div className="cursor-pointer" onClick={handleOpenQrCode}>
                     <Image
-                        src={themeContext.theme === "dark" ? "/images/svg/qr-code-white.svg" : "/images/svg/qr-code-black.svg"} 
+                        src={
+                            themeContext.theme === "dark"
+                                ? "/images/svg/qr-code-white.svg"
+                                : "/images/svg/qr-code-black.svg"
+                        }
                         alt="qr-code"
                         width={25}
                         height={25}
@@ -57,7 +61,11 @@ const PubPageHeader = ({ pubImageFileName, pubName, companyID, pubID }) => {
                 </div>
                 <div className="cursor-pointer" onClick={handleEditClick}>
                     <Image
-                        src={themeContext.theme === "dark" ? "/images/svg/settings-white.svg" : "/images/svg/settings-black.svg"} 
+                        src={
+                            themeContext.theme === "dark"
+                                ? "/images/svg/settings-white.svg"
+                                : "/images/svg/settings-black.svg"
+                        }
                         alt="settings"
                         width={25}
                         height={25}
@@ -66,7 +74,11 @@ const PubPageHeader = ({ pubImageFileName, pubName, companyID, pubID }) => {
                 <NavLink to="/admin/company">
                     <div className="cursor-pointer">
                         <Image
-                            src={themeContext.theme === "dark" ? "/images/svg/profile-white.svg" : "/images/svg/profile-black.svg"} 
+                            src={
+                                themeContext.theme === "dark"
+                                    ? "/images/svg/profile-white.svg"
+                                    : "/images/svg/profile-black.svg"
+                            }
                             alt="profile"
                             width={25}
                             height={25}

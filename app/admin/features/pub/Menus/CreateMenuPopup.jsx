@@ -8,15 +8,15 @@ import InputWithLabel from "@/app/admin/components/Inputs/InputWithLabel";
 import Popup from "@/app/admin/components/Popup/Popup";
 import WhiteSpinner from "@/app/admin/components/loaders/WhiteSpinner";
 import CheckboxWithLabel from "@/app/admin/components/Inputs/CheckboxWithLabel";
-import { requireAuthentication } from "../../auth/authSlice";
 import { useTranslation } from "react-i18next";
+import { fixedCacheKeys } from "@/app/admin/api/fixedCacheKeys";
 
 const CreateMenuPopup = () => {
     const {t} = useTranslation()
     const dispatch = useDispatch();
     const popupState = useSelector(selectCreateMenuPopupState);
 
-    const [createMenu, { data, error, isLoading }] = useCreateMenuMutation();
+    const [createMenu, { data, isLoading }] = useCreateMenuMutation({fixedCacheKey: fixedCacheKeys.menus.create_menu});
 
     const closePopup = useCallback(() => {
         dispatch(closeCreateMenuPopup());
@@ -30,12 +30,6 @@ const CreateMenuPopup = () => {
             closePopup();
         }
     }, [closePopup, data]);
-
-    useEffect(() => {
-        if (error && error.text === error.unauthorized) {
-            dispatch(requireAuthentication())
-        }
-    }, [dispatch, error]);
 
     const handleButtonClick = () => {
         const pub = {

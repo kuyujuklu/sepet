@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useEffect, useRef, useState } from "react";
+import { createContext, useEffect, useState } from "react";
 import PubPageUpper from "./PubPageUpper";
 import PubPageInfo from "./PubPageInfo";
 import { store } from "../../store/store";
@@ -11,6 +11,7 @@ import BasketDownPanel from "../DownPanel/BasketDownPanel";
 import { setData } from "../../store/pubInfoSlice";
 import NoSSR from "react-no-ssr";
 import WhiteSpinner from "@/app/admin/components/loaders/WhiteSpinner";
+import SomethingWentWrong from "@/app/shared-components/Errors/SomethingWentWrong";
 
 export const ThemeContext = createContext({
     theme: "light",
@@ -61,23 +62,10 @@ export default function PubPage({
         }
     }, [data?.pub]);
 
-    const downPanelRef = useRef(null);
-    const [downPanelHeight, setDownPanelHeight] = useState(0);
-
-    useEffect(() => {
-        if (!downPanelRef?.current) return;
-
-        setDownPanelHeight(downPanelRef.current.clientHeight);
-        const resizeObserver = new ResizeObserver(() => {
-            if (downPanelRef?.current) {
-                setDownPanelHeight(downPanelRef.current.clientHeight + 20);
-            }
-        });
-
-        resizeObserver.observe(downPanelRef.current);
-        return () => resizeObserver.disconnect(); // clean up
-    }, [downPanelRef]);
-
+    if(data?.pub?.expired) return (
+        <SomethingWentWrong />
+    )
+    
     return (
         <Provider store={store}>
             <ThemeContext.Provider value={theme}>
@@ -90,14 +78,13 @@ export default function PubPage({
                         }
                     >
                         {data?.pub && (
-                            <>
+                            <div>
                                 <DataToStateUploader data={data} />
                                 {/* wrapper */}
                                 <div
                                     style={{
                                         fontFamily: "Rubik, sans-serif",
-                                        width: "100vw",
-                                        height: "100vh",
+                                        minHeight: "100vh",
                                         background:
                                             theme.theme === "light"
                                                 ? "#cccccc"
@@ -111,10 +98,11 @@ export default function PubPage({
                                             margin: "auto",
                                             height: "100%",
                                             background: theme.bgColor,
-                                            minHeight: "200px",
+                                            minHeight: "100vh",
+                                            paddingBottom: "160px",
                                         }}
                                         className={
-                                            "relative rounded-3xl h-full"
+                                            "relative rounded-3xl"
                                         }
                                     >
                                         <PubPageUpper pub={data.pub} />
@@ -140,7 +128,7 @@ export default function PubPage({
                                                 //down panel phantom box to keep the page height
                                                 <div
                                                     style={{
-                                                        height: downPanelHeight,
+                                                        height: "150px",
                                                         width: "100%",
                                                     }}
                                                 ></div>
@@ -152,19 +140,17 @@ export default function PubPage({
                                                     <MenuDownPanel
                                                         pubID={data.pub.id}
                                                         data={downPanelData}
-                                                        ref={downPanelRef}
                                                     />
                                                 ) : (
                                                     <BasketDownPanel
                                                         pubID={data.pub.id}
-                                                        ref={downPanelRef}
                                                     />
                                                 )}
                                             </>
                                         )}
                                     </div>
                                 </div>
-                            </>
+                            </div>
                         )}
                     </NoSSR>
                 </PubColorContext.Provider>

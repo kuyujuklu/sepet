@@ -6,16 +6,15 @@ import { useCallback, useEffect } from "react";
 import { Button } from "@mui/material";
 import WhiteSpinner from "../../components/loaders/WhiteSpinner";
 import { useDeletePubMutation } from "../../api/pub/pub";
-import { requireAuthentication } from "../auth/authSlice";
-import { appErrors } from "../../errors/errors";
 import { useTranslation } from "react-i18next";
+import { fixedCacheKeys } from "../../api/fixedCacheKeys";
 
 const DeletePubPopup = () => {
     const { t } = useTranslation();
     const dispatch = useDispatch();
     const popupState = useSelector(selectDeletePubPopupState);
 
-    const [deletePopup, { data, error, isLoading }] = useDeletePubMutation();
+    const [deletePopup, { data, isLoading }] = useDeletePubMutation({fixedCacheKey: fixedCacheKeys.pubs.delete_pub});
 
     const closePopup = useCallback(() => {
         dispatch(closeDeletePubPopup());
@@ -26,12 +25,6 @@ const DeletePubPopup = () => {
             closePopup();
         }
     }, [closePopup, data]);
-
-    useEffect(() => {
-        if (error && error.text === appErrors.unauthorized) {
-            dispatch(requireAuthentication());
-        }
-    }, [data, dispatch, error]);
 
     const handleButtonClick = () => {
         let companyID = popupState?.companyID;

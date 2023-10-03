@@ -4,20 +4,17 @@ import { useEffect } from "react"
 import AddDishButton from "./AddDishButton"
 import Dish from "./Dish"
 import { useDispatch } from "react-redux"
-import { requireAuthentication } from "../../auth/authSlice"
+import { errorKeys, setReceivingError } from "../../errorHandlers/errorHandlerSlice"
 
 const DishesList = ({companyID, pubID, menuID, categoryID}) => {
     const {data: dishesData, error} = useGetDishesQuery({companyID, pubID, menuID, categoryID})
     const dispatch = useDispatch()
 
     useEffect(() => {
-        if (error && error.text === error.unauthorized) {
-            dispatch(requireAuthentication())
-        }
+        if(!error) return;
+
+        dispatch(setReceivingError({errorKey: errorKeys.get_dishes, error}))
     }, [dispatch, error])
-    useEffect(() => {
-        console.log(dishesData)
-    }, [dishesData])
 
     return (
         <div>

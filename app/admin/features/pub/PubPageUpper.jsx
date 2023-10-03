@@ -1,20 +1,13 @@
 "use client"
 import { ThemeContext } from "./PubPage";
-import { useContext, useEffect } from "react";
+import { useContext } from "react";
 import { useUploadPubBGMutation } from "../../api/pub/pub";
-import { useDispatch } from "react-redux";
-import { requireAuthentication } from "../auth/authSlice";
 import { useTranslation } from "react-i18next";
+import { fixedCacheKeys } from "../../api/fixedCacheKeys";
 
 const PubPageUpper = ({ imageFileName, companyID, pubID }) => {
     const { t } = useTranslation();
-    const dispatch = useDispatch();
-    const [uploadImage, { error }] = useUploadPubBGMutation();
-    useEffect(() => {
-        if (error && error.text === error.unauthorized) {
-            dispatch(requireAuthentication());
-        }
-    }, [dispatch, error]);
+    const [uploadImage] = useUploadPubBGMutation({fixedCacheKey: fixedCacheKeys.pubs.upload_pub_bg});
     const themeContext = useContext(ThemeContext);
 
     const handleFileChange = (e) => {

@@ -12,16 +12,16 @@ import {
 import { useUpdateCategoryMutation } from "@/app/admin/api/categories/category";
 import { HexColorPicker } from "react-colorful";
 import CheckboxWithLabel from "@/app/admin/components/Inputs/CheckboxWithLabel";
-import { requireAuthentication } from "../../auth/authSlice";
 import { useTranslation } from "react-i18next";
+import { fixedCacheKeys } from "@/app/admin/api/fixedCacheKeys";
 
 const UpdateCategoryPopup = () => {
     const { t } = useTranslation();
     const dispatch = useDispatch();
     const popupState = useSelector(selectUpdateCategoryPopupState);
 
-    const [updateCategory, { data, error, isLoading }] =
-        useUpdateCategoryMutation();
+    const [updateCategory, { data, isLoading }] =
+        useUpdateCategoryMutation({fixedCacheKey: fixedCacheKeys.categories.update_category});
 
     const closePopup = useCallback(() => {
         dispatch(closeUpdateCategoryPopup());
@@ -49,12 +49,6 @@ const UpdateCategoryPopup = () => {
             closePopup();
         }
     }, [closePopup, data]);
-
-    useEffect(() => {
-        if (error && error.text === error.unauthorized) {
-            dispatch(requireAuthentication());
-        }
-    }, [dispatch, error]);
 
     const handleButtonClick = () => {
         const pub = {

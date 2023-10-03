@@ -1,6 +1,6 @@
 "use client"
 import Image from "next/image";
-import { useContext, useEffect } from "react";
+import { useContext } from "react";
 import { ThemeContext } from "../PubPage";
 import { useDispatch, useSelector } from "react-redux";
 import { openDeleteCategoryPopup, openUpdateCategoryPopup } from "./categorySlice";
@@ -8,7 +8,7 @@ import { selectPubID } from "../pubSlice";
 import { selectCompanyID } from "../../company/companySlice";
 import { selectMenuID } from "../Menus/menuSlice";
 import { useMoveCategoryLeftMutation, useMoveCategoryRightMutation } from "@/app/admin/api/categories/category";
-import { requireAuthentication } from "../../auth/authSlice";
+import { fixedCacheKeys } from "@/app/admin/api/fixedCacheKeys";
 
 const CategoryTools = ({category}) => {
     const dispatch = useDispatch()
@@ -17,20 +17,9 @@ const CategoryTools = ({category}) => {
     const pubID = useSelector(selectPubID);
     const menuID = useSelector(selectMenuID)
 
-    const [moveTop, { error: moveTopError }] = useMoveCategoryLeftMutation();
-    useEffect(() => {
-        if (moveTopError && moveTopError.text === moveTopError.unauthorized) {
-            dispatch(requireAuthentication())
-        }
-    }, [dispatch, moveTopError]);
+    const [moveTop] = useMoveCategoryLeftMutation({fixedCacheKey: fixedCacheKeys.categories.move_category_left});
 
-
-    const [moveDown, { error: moveDownError }] = useMoveCategoryRightMutation();
-    useEffect(() => {
-        if (moveDownError && moveDownError.text === moveDownError.unauthorized) {
-            dispatch(requireAuthentication())
-        }
-    }, [dispatch, moveDownError]);
+    const [moveDown] = useMoveCategoryRightMutation({fixedCacheKey: fixedCacheKeys.categories.move_category_right});
 
     const themeContext = useContext(ThemeContext);
     

@@ -1,6 +1,7 @@
 {
     "errors": {
-        "something_went_wrong": "Ceva nu a mers bine. Încercați mai târziu."
+        "something_went_wrong": "Ceva nu a mers bine. Încercați mai târziu.",
+        "unknown_error": "Ceva nu a mers bine. Încercați mai târziu."
     },
     "client": {},
     "admin": {
@@ -68,6 +69,8 @@
             "pubs": "Locații",
             "pub": {
                 "address": "Adresă",
+                "expiration_time": "Plătită până la",
+                "expired": "Neplătită",
                 "edit_menu_button": "Editați meniul"
             }
         },

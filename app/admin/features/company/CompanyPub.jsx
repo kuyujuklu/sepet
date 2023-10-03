@@ -1,13 +1,18 @@
-"use client"
+"use client";
 import { Button } from "@mui/material";
 import Image from "next/image";
-import { openDeletePubPopup, openQrCodePopup, openUpdatePubPopup } from "../pub/pubSlice";
+import {
+    openDeletePubPopup,
+    openQrCodePopup,
+    openUpdatePubPopup,
+} from "../pub/pubSlice";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { ConvertQrMenuApiTimeToLocal } from "@/app/utils/time";
 
 const CompanyPub = ({ pub }) => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
@@ -22,8 +27,8 @@ const CompanyPub = ({ pub }) => {
     };
 
     const handleOpenQrCode = () => {
-        dispatch(openQrCodePopup({imageFileName: pub.qr_code_file_name}));
-    }
+        dispatch(openQrCodePopup({ imageFileName: pub.qr_code_file_name }));
+    };
 
     const goToPub = () => {
         navigate(`/admin/company/pub/${pub.id}`);
@@ -69,14 +74,33 @@ const CompanyPub = ({ pub }) => {
             </header>
             <main className="block mb-2">
                 <div className="mb-4 text-2xs text-gray-700">
-                    payment 2222-22-22
+                    {t("admin.company.pub.expiration_time")}
+                    <br />
+                    <span>
+                        {ConvertQrMenuApiTimeToLocal(
+                            pub.expiration_time_utc,
+                            i18n.language
+                        )}
+                    </span>
                 </div>
                 <div className="mb text-base font-bold">{pub.name}</div>
                 <div className="mb text-xs text-gray-700 break-words">
                     {t("admin.company.pub.address")}: {pub.address}
                 </div>
+                {pub.expired && (
+                    <div className=" text-red-600 uppercase text-center py px-4 border border-red-600 mt-3 rounded-lg">
+                        {t("admin.company.pub.expired")}
+                    </div>
+                )}
             </main>
-            <footer className="flex flex-col text-center mt-6">
+            <footer
+                className="flex flex-col text-center"
+                style={
+                    pub.expired
+                        ? { mt: "4px", alignItems: "center" }
+                        : { mt: "24px", alignItems: "left" }
+                }
+            >
                 <Button
                     variant="contained"
                     sx={{

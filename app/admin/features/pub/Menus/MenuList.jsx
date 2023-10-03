@@ -8,7 +8,7 @@ import { useGetMenusQuery } from "@/app/admin/api/menu/menu";
 import { selectCompanyID } from "../../company/companySlice";
 import { selectPubID } from "../pubSlice";
 import { selectMenuID, setMenuID } from "./menuSlice";
-import { requireAuthentication } from "../../auth/authSlice";
+import { errorKeys, setReceivingError } from "../../errorHandlers/errorHandlerSlice";
 
 const MenuList = () => {
     const dispatch = useDispatch();
@@ -22,9 +22,9 @@ const MenuList = () => {
     } = useGetMenusQuery({ pubID, companyID });
 
     useEffect(() => {
-        if (error && error.text === error.unauthorized) {
-            dispatch(requireAuthentication())
-        }
+        if(!error) return;
+
+        dispatch(setReceivingError({errorKey: errorKeys.get_menus, error}))
     }, [dispatch, error]);
 
     useEffect(() => {
@@ -39,6 +39,12 @@ const MenuList = () => {
 
         dispatch(setMenuID(menuData.menus.toSorted((a, b) => a.place - b.place)[0].id))
     }, [dispatch, menuData, selectedMenuID])
+
+    useEffect(() => {
+        return () => {
+            dispatch(setMenuID(null))
+        }
+    }, [dispatch])
 
     return (
         <div className="flex flex-wrap gap-6">

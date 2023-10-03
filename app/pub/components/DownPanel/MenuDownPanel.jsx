@@ -4,22 +4,14 @@ import React, { useContext  } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ThemeContext } from "../PubPage/PubPage";
-import { useSelector } from "react-redux";
-import { selectDishes } from "../../store/basketSlice";
+import BasketCount from "./BasketCount";
 
-const MenuDownPanel = ({ pubID, data, reference }) => {
+const MenuDownPanel = ({ pubID, data }) => {
     const themeContext = useContext(ThemeContext);
-    const selectedDishes = useSelector(selectDishes);
-    const count = Object.keys(selectedDishes).reduce(
-        (acc, id) => (acc += selectedDishes[id]),
-        0
-    );
-
 
     return (
         <div
             className={downPanelStyle.wrapper}
-            ref={reference}
             style={{
                 color: themeContext.textColor,
                 background: "transparent",
@@ -30,11 +22,12 @@ const MenuDownPanel = ({ pubID, data, reference }) => {
                     className="flex flex-col gap-2"
                     style={{ minWidth: 320, width: "100%" }}
                 >
-                    <div className="relative ">
-                        <div className="relative ">
+                    <div className="relative">
+                        <div className="relative">
                             <MenuList menus={data.menus} />
                         </div>
                     </div>
+
                     <div
                         className="flex justify-evenly items-center w-full p-2"
                         style={{
@@ -70,19 +63,7 @@ const MenuDownPanel = ({ pubID, data, reference }) => {
                                     width={30}
                                     height={35}
                                 />
-                                {count > 0 && (
-                                    <div
-                                        className="absolute bg-red-600 rounded-full aspect-square text-3xs px-1 flex items-center"
-                                        style={{
-                                            top: -5,
-                                            right: -5,
-                                        }}
-                                        width={20}
-                                        height={20}
-                                    >
-                                        {count}
-                                    </div>
-                                )}
+                                <BasketCount />
                             </div>
                         </Link>
                     </div>

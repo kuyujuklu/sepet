@@ -1,0 +1,48 @@
+@import '../../vendor/var.module.scss';
+
+.alertsContainer {
+    position: fixed;
+    z-index: 200;
+    overflow: hidden;
+    height: 100vh;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    gap: 3vh;
+    justify-content: end;
+    right: 5vw;
+    bottom: 5vh;
+}
+
+.alert {
+    position: relative;
+    pointer-events: all;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 0.5rem;
+    border-radius: 10px;
+    width: 20vw;
+    min-width: 200px;
+    transition: 0.5s;
+    opacity: 1;
+
+    &Hidden {
+        left: 100%;
+    }
+
+    &.success {
+        background: $green;
+        color: white;
+    }
+
+    &.warning {
+        background: $orange;
+        color: white;
+    }
+
+    &.danger {
+        background: $red;
+        color: white
+    }
+}

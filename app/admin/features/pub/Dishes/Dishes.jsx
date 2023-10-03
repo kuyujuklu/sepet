@@ -6,7 +6,7 @@ import { useEffect } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { selectCompanyID } from "../../company/companySlice"
 import DishesList from "./DishesList"
-import { requireAuthentication } from "../../auth/authSlice"
+import { errorKeys, setReceivingError } from "../../errorHandlers/errorHandlerSlice"
 
 const Dishes = () => {
     const dispatch = useDispatch()
@@ -18,9 +18,9 @@ const Dishes = () => {
 
     const {data: categoryData, error} = useGetCategoryQuery({companyID, pubID, menuID, categoryID})
     useEffect(() => {
-      if (error && error.text === error.unauthorized) {
-          dispatch(requireAuthentication())
-      }
+      if(!error) return;
+
+      dispatch(setReceivingError({errorKey: errorKeys.get_category_by_id, error}))
     }, [dispatch, error])
     
   return (

@@ -13,7 +13,6 @@ listenToIncreaseDishAmount.startListening({
     actionCreator: increaseDishAmount,
     effect: () => write(store),
 })
-
 export const listeToDecreaseDishAmout = createListenerMiddleware();
 listeToDecreaseDishAmout.startListening({
     actionCreator: decreaseDishAmount,

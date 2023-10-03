@@ -9,15 +9,15 @@ import {
     selectDeleteDishPopupState,
 } from "./dishesSlice";
 import { useDeleteDishMutation } from "@/app/admin/api/dish/dish";
-import { requireAuthentication } from "../../auth/authSlice";
 import { useTranslation } from "react-i18next";
+import { fixedCacheKeys } from "@/app/admin/api/fixedCacheKeys";
 
 const DeleteDishPopup = () => {
     const { t } = useTranslation();
     const dispatch = useDispatch();
     const popupState = useSelector(selectDeleteDishPopupState);
 
-    const [deleteDish, { data, error, isLoading }] = useDeleteDishMutation();
+    const [deleteDish, { data, isLoading }] = useDeleteDishMutation({fixedCacheKey: fixedCacheKeys.dishes.delete_dish});
 
     const closePopup = useCallback(() => {
         dispatch(closeDeleteDishPopup());
@@ -28,12 +28,6 @@ const DeleteDishPopup = () => {
             closePopup();
         }
     }, [closePopup, data]);
-
-    useEffect(() => {
-        if (error && error.text === error.unauthorized) {
-            dispatch(requireAuthentication());
-        }
-    }, [dispatch, error]);
 
     const handleButtonClick = () => {
         let companyID = popupState?.companyID;

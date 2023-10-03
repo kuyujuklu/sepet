@@ -19,6 +19,8 @@ import UpdateDishPopup from "./features/pub/Dishes/UpdateDishPopup";
 import DeleteDishPopup from "./features/pub/Dishes/DeleteDishPopup";
 import { useEffect } from "react";
 import QrCodePopup from "./features/pub/QrCodePopup";
+import ErrorHandlers from "./features/errorHandlers/ErrorHandlers";
+import Alerts from "./features/alerts/Alerts";
 
 const App = () => {
   return (
@@ -43,7 +45,7 @@ const AppInner = () => {
     <div 
       style={{
         maxWidth: 1280,
-        padding:"10px 20px",
+        padding:"10px 20px 200px",
         margin: "40px auto",
         minHeight: 500,
       }}
@@ -55,6 +57,9 @@ const AppInner = () => {
         <Route path="/company" element={<CompanyPage />} />
         <Route path="/company/pub/:pubID/*" element={<PubPage />} />
       </Routes>
+      
+      <Alerts />
+      <ErrorHandlers />
       <AuthWatcher />
       <Popups />
     </div>

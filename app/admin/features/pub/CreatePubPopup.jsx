@@ -8,9 +8,8 @@ import InputWithLabel from "../../components/Inputs/InputWithLabel";
 import { Button } from "@mui/material";
 import WhiteSpinner from "../../components/loaders/WhiteSpinner";
 import { useCreatePubMutation } from "../../api/pub/pub";
-import { appErrors } from "../../errors/errors";
-import { requireAuthentication } from "../auth/authSlice";
 import { useTranslation } from "react-i18next";
+import { fixedCacheKeys } from "../../api/fixedCacheKeys";
 
 const CreatePubPopup = () => {
     const { t } = useTranslation();
@@ -18,7 +17,7 @@ const CreatePubPopup = () => {
     const dispatch = useDispatch();
     const popupState = useSelector(selectCreatePubPopupState);
 
-    const [createPub, { data, error, isLoading }] = useCreatePubMutation();
+    const [createPub, { data, isLoading }] = useCreatePubMutation({fixedCacheKey: fixedCacheKeys.pubs.create_pub});
 
     const closePopup = useCallback(() => {
         dispatch(closeCreatePubPopup());
@@ -33,12 +32,6 @@ const CreatePubPopup = () => {
             closePopup();
         }
     }, [closePopup, data]);
-
-    useEffect(() => {
-        if (error && error.text === appErrors.unauthorized) {
-            dispatch(requireAuthentication());
-        }
-    }, [data, dispatch, error]);
 
     const handleButtonClick = () => {
         const pub = {

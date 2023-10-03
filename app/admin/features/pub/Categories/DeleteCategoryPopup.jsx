@@ -9,16 +9,16 @@ import {
     selectDeleteCategoryPopupState,
 } from "./categorySlice";
 import { useDeleteCategoryMutation } from "@/app/admin/api/categories/category";
-import { requireAuthentication } from "../../auth/authSlice";
 import { useTranslation } from "react-i18next";
+import { fixedCacheKeys } from "@/app/admin/api/fixedCacheKeys";
 
 const DeleteCategoryPopup = () => {
     const { t } = useTranslation();
     const dispatch = useDispatch();
     const popupState = useSelector(selectDeleteCategoryPopupState);
 
-    const [deleteCategory, { data, error, isLoading }] =
-        useDeleteCategoryMutation();
+    const [deleteCategory, { data, isLoading }] =
+        useDeleteCategoryMutation({fixedCacheKey: fixedCacheKeys.categories.delete_category});
 
     const closePopup = useCallback(() => {
         dispatch(closeDeleteCategoryPopup());
@@ -29,12 +29,6 @@ const DeleteCategoryPopup = () => {
             closePopup();
         }
     }, [closePopup, data]);
-
-    useEffect(() => {
-        if (error && error.text === error.unauthorized) {
-            dispatch(requireAuthentication());
-        }
-    }, [dispatch, error]);
 
     const handleButtonClick = () => {
         let companyID = popupState?.companyID;

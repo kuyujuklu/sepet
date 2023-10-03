@@ -12,15 +12,15 @@ import SelectWithLabel from "../../components/Inputs/SelectWithLabel";
 import { HexColorPicker } from "react-colorful";
 import Textarea from "../../components/Inputs/Textarea";
 import { currencies } from "../../static-data/data";
-import { requireAuthentication } from "../auth/authSlice";
 import { useTranslation } from "react-i18next";
+import { fixedCacheKeys } from "../../api/fixedCacheKeys";
 
 const UpdatePubPopup = () => {
     const { t } = useTranslation();
     const dispatch = useDispatch();
     const popupState = useSelector(selectUpdatePubPopupState);
 
-    const [updatePub, { data, error, isLoading }] = useUpdatePubMutation();
+    const [updatePub, { data, isLoading }] = useUpdatePubMutation({fixedCacheKey: fixedCacheKeys.pubs.update_pub});
 
     const closePopup = useCallback(() => {
         dispatch(closeUpdatePubPopup());
@@ -51,12 +51,6 @@ const UpdatePubPopup = () => {
             closePopup();
         }
     }, [closePopup, data]);
-
-    useEffect(() => {
-        if (error && error.text === error.unauthorized) {
-            dispatch(requireAuthentication());
-        }
-    }, [dispatch, error]);
 
     const handleButtonClick = () => {
         const pub = {

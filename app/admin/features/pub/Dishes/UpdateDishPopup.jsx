@@ -11,16 +11,16 @@ import {
 import { HexColorPicker } from "react-colorful";
 import CheckboxWithLabel from "@/app/admin/components/Inputs/CheckboxWithLabel";
 import { useUpdateDishMutation } from "@/app/admin/api/dish/dish";
-import { requireAuthentication } from "../../auth/authSlice";
 import { useTranslation } from "react-i18next";
+import { fixedCacheKeys } from "@/app/admin/api/fixedCacheKeys";
 
 const UpdateDishPopup = () => {
     const {t} = useTranslation();
     const dispatch = useDispatch();
     const popupState = useSelector(selectUpdateDishPopupState);
 
-    const [updateDish, { data, error, isLoading }] =
-        useUpdateDishMutation();
+    const [updateDish, { data, isLoading }] =
+        useUpdateDishMutation({fixedCacheKey: fixedCacheKeys.dishes.update_dish});
 
     const closePopup = useCallback(() => {
         dispatch(closeUpdateDishPopup());
@@ -49,12 +49,6 @@ const UpdateDishPopup = () => {
             closePopup();
         }
     }, [closePopup, data]);
-
-    useEffect(() => {
-        if (error && error.text === error.unauthorized) {
-            dispatch(requireAuthentication())
-        }
-    }, [dispatch, error]);
 
     const handleButtonClick = () => {
         const dish = {

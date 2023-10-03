@@ -16,6 +16,14 @@ const basketSlice = createSlice({
                 return
             }
 
+            //clear state from null or 0 values
+            let keys = Object.keys(state.dishes)
+            for(let key of keys) {
+                if(!state.dishes[key]) {
+                    delete state.dishes[key]
+                }
+            }
+
             state.dishes[action.payload.dishID]++;
         },
         decreaseDishAmount(state, action) {
@@ -25,7 +33,13 @@ const basketSlice = createSlice({
                 state.dishes[action.payload.dishID] = null;
                 return
             }
-
+            //clear state from null or 0 values
+            let keys = Object.keys(state.dishes)
+            for(let key of keys) {
+                if(!state.dishes[key]) {
+                    delete state.dishes[key]
+                }
+            }
             state.dishes[action.payload.dishID]--;
         }
     },

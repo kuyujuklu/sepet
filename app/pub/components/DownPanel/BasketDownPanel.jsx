@@ -3,14 +3,11 @@ import React, { useContext } from "react";
 import { ThemeContext } from "../PubPage/PubPage";
 import Image from "next/image";
 import Link from "next/link";
-import { useSelector } from "react-redux";
-import { selectDishes } from "../../store/basketSlice";
+import BasketCount from "./BasketCount";
 
 const DownPanel = ({ reference, pubID }) => {
     const themeContext = useContext(ThemeContext);
 
-    const selectedDishes = useSelector(selectDishes);
-    const count = Object.keys(selectedDishes).reduce((acc, id) => acc += selectedDishes[id], 0);
     return (
         <div
             className={downPanelStyle.wrapper}
@@ -25,7 +22,7 @@ const DownPanel = ({ reference, pubID }) => {
                     style={{ minWidth: 320, width: "100%" }}
                 >
                     <div
-                        className="flex justify-evenly items-center w-full"
+                        className="flex justify-evenly items-center w-full p-2"
                         style={{
                             background: themeContext.bgColor,
                         }}
@@ -59,19 +56,7 @@ const DownPanel = ({ reference, pubID }) => {
                                     height={35}
                                 />
                                 <span className="text-2xs">Basket</span>
-                                {count > 0 && (
-                                    <div
-                                        className="absolute bg-red-600 rounded-full aspect-square text-3xs px-1 flex items-center"
-                                        style={{
-                                            top: -5,
-                                            right: -5,
-                                        }}
-                                        width={20}
-                                        height={20}
-                                    >
-                                        {count}
-                                    </div>
-                                )}
+                                <BasketCount />
                             </div>
                         </Link>
                     </div>
