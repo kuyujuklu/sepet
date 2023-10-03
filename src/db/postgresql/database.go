@@ -40,6 +40,7 @@ func Init() *gorm.DB {
 		&models.Category{},
 		&models.Dish{},
 		&models.Role{},
+		&models.Admin{},
 	)
 	return db
 }

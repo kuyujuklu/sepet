@@ -2,6 +2,7 @@ package pubservice
 
 import (
 	"mime/multipart"
+	"time"
 
 	"github.com/alexkalak/qrmenu/src/errors/puberrors"
 	"github.com/alexkalak/qrmenu/src/models"
@@ -9,6 +10,10 @@ import (
 	"github.com/alexkalak/qrmenu/src/repo/pubsrepo"
 	"github.com/alexkalak/qrmenu/src/services/companyservice"
 	"github.com/alexkalak/qrmenu/src/services/currencyservice"
+)
+
+const (
+	FREE_TRIAL_DAYS = 30
 )
 
 type PubService interface {
@@ -19,6 +24,7 @@ type PubService interface {
 	GetAllDishesForPub(id int) ([]models.Dish, error)
 	CreatePub(pub models.Pub) (models.Pub, error)
 	UpdatePub(id int, pub models.Pub) (models.Pub, error)
+	ExtendSubscription(id int, days int) (time.Time, error)
 	DeletePub(id int) error
 	UploadPubLogo(pubID int, fileHeader *multipart.FileHeader) (string, error)
 	UploadPubBG(pubID int, fileHeader *multipart.FileHeader) (string, error)
@@ -83,6 +89,10 @@ func (s *pubsService) CreatePub(pub models.Pub) (models.Pub, error) {
 	if err != nil {
 		return models.Pub{}, err
 	}
+
+	//free trial
+	pub.ExpirationTime = time.Now().UTC().Add(time.Hour * 24 * FREE_TRIAL_DAYS)
+
 	return s.PubsRepo.CreatePub(pub)
 }
 
@@ -112,8 +122,26 @@ func (s *pubsService) UpdatePub(id int, pub models.Pub) (models.Pub, error) {
 	pub.BgImageFileName = pubFromDB.BgImageFileName
 	pub.QrCodeFileName = pubFromDB.QrCodeFileName
 	pub.LogoFileName = pubFromDB.LogoFileName
+	pub.ExpirationTime = pubFromDB.ExpirationTime
 
 	return s.PubsRepo.UpdatePub(id, pub)
+}
+
+func (s *pubsService) ExtendSubscription(id int, days int) (time.Time, error) {
+	pub, err := s.GetPubById(id)
+	if err != nil {
+		return time.Unix(0, 0), err
+	}
+
+	t := pub.ExpirationTime
+	if time.Now().After(t) {
+		t = time.Now()
+	}
+
+	newTime := t.Add(time.Hour * 24 * time.Duration(days))
+
+	return s.PubsRepo.UpdateExpirationTime(id, newTime)
+
 }
 
 func (s *pubsService) DeletePub(id int) error {

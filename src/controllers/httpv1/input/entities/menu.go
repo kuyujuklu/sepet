@@ -9,12 +9,12 @@ type MenuInput struct {
 	Visible bool   `json:"visible" validate:"" example:"true"`
 }
 
-func (c *MenuInput) ConvertToModel(pubID int) models.Menu {
+func (m *MenuInput) ConvertToModel(pubID int) models.Menu {
 	menu := models.Menu{
-		Name:    c.Name,
-		PubID:   uint(c.PubID),
-		Place:   c.Place,
-		Visible: c.Visible,
+		Name:    m.Name,
+		PubID:   uint(m.PubID),
+		Place:   m.Place,
+		Visible: m.Visible,
 	}
 
 	return menu
@@ -28,10 +28,10 @@ type MenuOutput struct {
 	Visible bool   `json:"visible" example:"true"`
 }
 
-func (c *MenuOutput) ConvertFromModel(menu models.Menu) {
-	c.ID = int(menu.ID)
-	c.Name = menu.Name
-	c.PubID = int(menu.PubID)
-	c.Place = menu.Place
-	c.Visible = menu.Visible
+func (m *MenuOutput) ConvertFromModel(menu models.Menu) {
+	m.ID = int(menu.ID)
+	m.Name = menu.Name
+	m.PubID = int(menu.PubID)
+	m.Place = menu.Place
+	m.Visible = menu.Visible
 }

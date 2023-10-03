@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"github.com/alexkalak/qrmenu/src/controllers/httpv1/routes/admin"
 	"github.com/alexkalak/qrmenu/src/controllers/httpv1/routes/auth"
 	"github.com/alexkalak/qrmenu/src/controllers/httpv1/routes/categories"
 	"github.com/alexkalak/qrmenu/src/controllers/httpv1/routes/client"
@@ -23,6 +24,7 @@ func Router(router fiber.Router) {
 	categoriesRouter := categories.New()
 	dishesRouter := dishes.New()
 	clientRouter := client.New()
+	adminRouter := admin.New()
 
 	//Without authorization
 	router.Route("/auth", authRouter.UnauthorizedRouter)
@@ -40,4 +42,7 @@ func Router(router fiber.Router) {
 	router.Route("/company/:companyID<int>/pubs/:pubID<int>/menus/:menuID<int>/categories", categoriesRouter.AuthorizedRouter)
 	router.Route("/company/:companyID<int>/pubs/:pubID<int>/menus/:menuID<int>/categories/:categoryID<int>/dishes", dishesRouter.AuthorizedRouter)
 	router.Route("/client/", clientRouter.AuthorizedRouter)
+
+	//Admin authorization
+	router.Route("/admin", adminRouter.Router)
 }

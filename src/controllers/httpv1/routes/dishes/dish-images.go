@@ -1,7 +1,6 @@
 package dishes
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 
@@ -32,7 +31,6 @@ type fileUploadOutput struct {
 // @Security ApiKeyAuth
 // @Param AccessToken header string  true "accesstoken"
 func (c *dishesController) UploadDishImage(ctx *fiber.Ctx) error {
-	fmt.Println("request")
 	userID, userSignificance, err := h.GetUserIDAndSignificanceFromLocals(ctx)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
@@ -48,7 +46,7 @@ func (c *dishesController) UploadDishImage(ctx *fiber.Ctx) error {
 		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
 	}
 
-	err = h.CheckAccess(userID, companyID, userSignificance)
+	err = h.CheckAccessForCompanyAction(userID, companyID, userSignificance)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
@@ -57,7 +55,6 @@ func (c *dishesController) UploadDishImage(ctx *fiber.Ctx) error {
 	if file == nil || err != nil {
 		return h.SendError(ctx, httperrors.ErrBadDocument, h.AUTOMATIC_STATUS_CODE)
 	}
-	fmt.Println("file uploaded")
 
 	fileNameSplitted := strings.Split(file.Filename, ".")
 	fileExtension := fileNameSplitted[len(fileNameSplitted)-1]

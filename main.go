@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"time"
@@ -22,20 +23,31 @@ import (
 //@description simple description
 
 func main() {
+	//configure
 	loadEnv()
+	configureTime()
 	configure()
 	initiatePostgresDB()
 
+	//create app
 	app := createApp()
 	setupRoutes(app)
 	configureSWAG(app)
 	configureFileSystem(app)
 
+	//print time in console
+	fmt.Println("Time Now: ", time.Now().Format("2006-01-02 15:04:05"))
+
+	//start app
 	log.Fatal(app.Listen(":" + getPort()))
 }
 
 func loadEnv() {
 	godotenv.Load()
+}
+
+func configureTime() {
+	time.Local = time.UTC
 }
 
 func configure() {

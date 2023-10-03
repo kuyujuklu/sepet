@@ -2,7 +2,6 @@ package dishesrepo
 
 import (
 	"errors"
-	"fmt"
 	"io"
 	"mime/multipart"
 	"os"
@@ -155,7 +154,6 @@ func (s *dishesRepo) DeleteDishImage(dishID int) error {
 	err = os.Remove(DISHES_IMAGES_PATH + category.ImageFileName)
 
 	if err != nil {
-		fmt.Println("error: ", err)
 		exists := !errors.Is(err, os.ErrNotExist)
 		if exists {
 			logs.Error("unable to delete dish image ", err)

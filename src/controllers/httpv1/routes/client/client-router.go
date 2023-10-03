@@ -25,7 +25,7 @@ func New() *clientController {
 }
 
 func (c *clientController) UnauthorizedRouter(router fiber.Router) {
-	router.Get("/pub/:pubID", c.GetPubInfo)
+	router.Get("/pub/:pubID<int>", c.GetPubInfo)
 }
 
 func (c *clientController) AuthorizedRouter(router fiber.Router) {}

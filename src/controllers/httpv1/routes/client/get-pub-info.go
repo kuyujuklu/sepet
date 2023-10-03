@@ -1,7 +1,6 @@
 package client
 
 import (
-	"fmt"
 	"strconv"
 
 	h "github.com/alexkalak/qrmenu/src/controllers/httpv1/httphelpers"
@@ -26,7 +25,6 @@ type getPubInfoOutput struct {
 // @Success      200  {object}  getPubInfoOutput
 // @Router       /client/pub/{id} [get]
 func (c *clientController) GetPubInfo(ctx *fiber.Ctx) error {
-	fmt.Println("got query in get pub on client router")
 	pubID, err := strconv.Atoi(ctx.Params("pubID"))
 	if err != nil {
 		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)

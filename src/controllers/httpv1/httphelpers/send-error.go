@@ -2,6 +2,7 @@ package httphelpers
 
 import (
 	"github.com/alexkalak/qrmenu/src/controllers/httpv1/input"
+	"github.com/alexkalak/qrmenu/src/errors/adminerrors"
 	"github.com/alexkalak/qrmenu/src/errors/autherrors"
 	"github.com/alexkalak/qrmenu/src/errors/categoryerrors"
 	"github.com/alexkalak/qrmenu/src/errors/companyerrors"
@@ -102,6 +103,10 @@ var errors = map[error]int{
 
 	//autherrors
 	autherrors.ErrInvalidCredentials: fiber.StatusUnauthorized,
+
+	//adminerrors
+	adminerrors.ErrAdminNotFound:          fiber.StatusNotFound,
+	adminerrors.ErrAdminIncorrectPassword: fiber.StatusUnauthorized,
 }
 
 func SendError(ctx *fiber.Ctx, err error, statusCode int) error {

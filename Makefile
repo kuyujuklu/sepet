@@ -3,3 +3,6 @@ default:
 
 docker:
 	sudo docker build -t alexkalak/qr-back .
+docker-push:
+	sudo make docker
+	sudo docker push alexkalak/qr-back

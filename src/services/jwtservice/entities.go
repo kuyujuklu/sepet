@@ -7,7 +7,8 @@ import (
 )
 
 const (
-	STANDARD_ACCESS_LIFE_TIME = time.Minute * 15 // 15 minutes
+	STANDARD_ACCESS_LIFE_TIME = time.Minute * 15    // 15 minutes
+	ADMIN_ACCESS_LIFE_TIME    = time.Hour * 24 * 30 //month
 )
 const (
 	STANDARD_REFRESH_LIFE_TIME = time.Hour * 24 * 30 //month

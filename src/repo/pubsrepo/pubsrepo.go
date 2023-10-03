@@ -6,6 +6,7 @@ import (
 	"io"
 	"mime/multipart"
 	"os"
+	"time"
 
 	"github.com/alexkalak/qrmenu/src/db/postgresql"
 	"github.com/alexkalak/qrmenu/src/errors/categoryerrors"
@@ -48,9 +49,12 @@ type PubsRepo interface {
 	GetAllCategoriesForPub(pubID int) ([]models.Category, error)
 	GetAllDishesForPub(pubID int) ([]models.Dish, error)
 	GetPubById(id int) (models.Pub, error)
+
 	CreatePub(pub models.Pub) (models.Pub, error)
 	UpdatePub(id int, pub models.Pub) (models.Pub, error)
+	UpdateExpirationTime(id int, t time.Time) (time.Time, error)
 	DeletePub(id int) error
+
 	UploadPubLogo(pubID int, fileHeader *multipart.FileHeader) (string, error)
 	UploadPubBG(pubID int, fileHeader *multipart.FileHeader) (string, error)
 	DeletePubLogo(shipmentID int) error
@@ -131,7 +135,6 @@ func (r *pubsRepo) GetAllCategoriesForPub(pubID int) ([]models.Category, error) 
 	result := r.Database.Where(condition).Find(&categories)
 
 	if result.Error != nil {
-		fmt.Println("error: ", result.Error)
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return categories, nil
 		}
@@ -163,7 +166,6 @@ func (r *pubsRepo) GetAllDishesForPub(pubID int) ([]models.Dish, error) {
 	result := r.Database.Where(condition).Find(&dishes)
 
 	if result.Error != nil {
-		fmt.Println("error: ", result.Error)
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return dishes, nil
 		}
@@ -183,7 +185,6 @@ func (r *pubsRepo) CreatePub(pub models.Pub) (models.Pub, error) {
 
 	err := qrcode.WriteFile(r.getPubLink(int(pub.ID)), qrcode.Medium, 256, QR_CODES_FILE_PATH+fileID+".png")
 	if err != nil {
-		fmt.Println("unable to create qr code for pub ", err, " pub id ", pub.ID)
 		logs.Error("unable to create qr code for pub ", err, " pub id ", pub.ID)
 		return models.Pub{}, err
 	}
@@ -195,15 +196,13 @@ func (r *pubsRepo) CreatePub(pub models.Pub) (models.Pub, error) {
 		UpdateColumn("qr_code_file_name", pub.QrCodeFileName)
 
 	if result.Error != nil {
-		fmt.Println("unable to create qr code for pub ", err, " pub id ", pub.ID)
 		logs.Error("unable to update pub qr code file name ", err, " pub id ", pub.ID)
 		return models.Pub{}, err
 	}
 
-	fmt.Println("pub qr code file name: ", pub.QrCodeFileName)
-
 	return pub, nil
 }
+
 func (r *pubsRepo) getPubLink(pubID int) string {
 	return fmt.Sprintf("%s://%s/pub/%d", r.HttpScheme, r.HttpHost, pubID)
 }
@@ -216,6 +215,21 @@ func (r *pubsRepo) UpdatePub(id int, pub models.Pub) (models.Pub, error) {
 	}
 
 	return pub, nil
+}
+
+func (r *pubsRepo) UpdateExpirationTime(id int, t time.Time) (time.Time, error) {
+	err := r.Database.Model(&models.Pub{}).Where("id = ?", id).UpdateColumn("expiration_time", t).Error
+	if err != nil {
+		return time.Unix(0, 0), err
+	}
+
+	pub, err := r.GetPubById(id)
+	if err != nil {
+		return time.Unix(0, 0), err
+	}
+
+	return pub.ExpirationTime, nil
+
 }
 
 func (r *pubsRepo) DeletePub(id int) error {

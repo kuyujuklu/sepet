@@ -1,6 +1,10 @@
 package models
 
-import "gorm.io/gorm"
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
 
 type Pub struct {
 	gorm.Model
@@ -20,4 +24,6 @@ type Pub struct {
 	Currency   Currency
 	CompanyID  uint
 	Company    Company
+
+	ExpirationTime time.Time
 }

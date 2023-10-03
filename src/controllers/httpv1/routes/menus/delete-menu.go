@@ -34,7 +34,7 @@ func (c *menuController) DeleteMenu(ctx *fiber.Ctx) error {
 		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
 	}
 
-	err = h.CheckAccess(userID, companyID, userSignificance)
+	err = h.CheckAccessForCompanyAction(userID, companyID, userSignificance)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}

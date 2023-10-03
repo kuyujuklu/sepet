@@ -2,7 +2,6 @@ package menurepo
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/alexkalak/qrmenu/src/db/postgresql"
 	"github.com/alexkalak/qrmenu/src/errors/categoryerrors"
@@ -134,7 +133,6 @@ func (r *menuRepo) CreateMenu(menu models.Menu) (models.Menu, error) {
 	if result.Error != nil {
 		return models.Menu{}, menuerrors.ErrUnableToCreateMenu
 	}
-	fmt.Println("menu id ", menu.ID)
 
 	return menu, nil
 }

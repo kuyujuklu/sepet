@@ -1,15 +1,16 @@
 package httphelpers
 
 import (
-	"fmt"
-
 	"github.com/alexkalak/qrmenu/src/errors/httperrors"
 	"github.com/alexkalak/qrmenu/src/models"
 )
 
-func CheckAccess(userID int, inputUserID int, userSignificance int) error {
-	if userID != inputUserID && userSignificance > models.ADMIN_SIGNIFICANCE {
-		fmt.Println("httperrors.ErrForbidden")
+func CheckAccessForCompanyAction(userID int, companyID int, userSignificance int) error {
+	if userSignificance < models.COMPANY_SIGNIFICANCE {
+		return nil
+	}
+
+	if userID != companyID {
 		return httperrors.ErrForbidden
 	}
 

@@ -1,7 +1,6 @@
 package pubs
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 
@@ -44,7 +43,7 @@ func (c *pubController) UploadPubLogo(ctx *fiber.Ctx) error {
 		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
 	}
 
-	err = h.CheckAccess(userID, companyID, userSignificance)
+	err = h.CheckAccessForCompanyAction(userID, companyID, userSignificance)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
@@ -101,7 +100,7 @@ func (c *pubController) UploadPubBG(ctx *fiber.Ctx) error {
 		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
 	}
 
-	err = h.CheckAccess(userID, companyID, userSignificance)
+	err = h.CheckAccessForCompanyAction(userID, companyID, userSignificance)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
@@ -168,8 +167,6 @@ func (c *pubController) GetPubBG(ctx *fiber.Ctx) error {
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
-
-	fmt.Println("fileName: ", pubsrepo.PUB_BACKGROUND_FILE_PATH+fileName)
 
 	return ctx.SendFile(pubsrepo.PUB_BACKGROUND_FILE_PATH + fileName)
 }

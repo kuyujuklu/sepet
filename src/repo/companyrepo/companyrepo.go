@@ -2,7 +2,6 @@ package companyrepo
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/alexkalak/qrmenu/src/db/postgresql"
 	"github.com/alexkalak/qrmenu/src/errors/autherrors"
@@ -118,7 +117,6 @@ func (r *companiesRepo) checkIfCompanyExists(company models.Company) error {
 	}
 
 	if companyFromDB.ID != 0 {
-		fmt.Println("company with the same email exists", companyFromDB.ID, companyFromDB.Email, company.Email)
 		return companyerrors.ErrCompanyWithTheSameEmailAlreadyExists
 	}
 

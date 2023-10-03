@@ -1,15 +1,20 @@
 package entities
 
-import "github.com/alexkalak/qrmenu/src/models"
+import (
+	"time"
+
+	"github.com/alexkalak/qrmenu/src/helpers"
+	"github.com/alexkalak/qrmenu/src/models"
+)
 
 type CreatePubInput struct {
 	Name string `json:"name" validate:"required,min=2" example:"My pub name"`
 }
 
-func (c *CreatePubInput) ConvertToModel(companyID int) models.Pub {
+func (p *CreatePubInput) ConvertToModel(companyID int) models.Pub {
 	pub := models.Pub{
 		CompanyID:  uint(companyID),
-		Name:       c.Name,
+		Name:       p.Name,
 		Color:      "#dc4444",
 		ColorTheme: "dark",
 		CurrencyID: 1,
@@ -30,25 +35,27 @@ type UpdatePubInput struct {
 	CompanyID  int `json:"company_id" example:"1"`
 }
 
-func (c *UpdatePubInput) ConvertToModel(companyID int, pubID int) models.Pub {
+func (p *UpdatePubInput) ConvertToModel(companyID int, pubID int) models.Pub {
 	pub := models.Pub{
 		CompanyID:      uint(companyID),
-		CurrencyID:     uint(c.CurrencyID),
-		Name:           c.Name,
-		ColorTheme:     c.ColorTheme,
-		Color:          c.Color,
-		WifiPassword:   c.WifiPassword,
-		Address:        c.Address,
-		AdditionalInfo: c.AdditionalInfo,
+		CurrencyID:     uint(p.CurrencyID),
+		Name:           p.Name,
+		ColorTheme:     p.ColorTheme,
+		Color:          p.Color,
+		WifiPassword:   p.WifiPassword,
+		Address:        p.Address,
+		AdditionalInfo: p.AdditionalInfo,
 	}
 
-	pub.ID = uint(c.CompanyID)
+	pub.ID = uint(p.CompanyID)
 
 	return pub
 }
 
 type PubOutput struct {
 	ID              int    `json:"id" example:"1"`
+	Expired         bool   `json:"expired" example:"false"`
+	ExpirationTime  string `json:"expiration_time_utc" example:""`
 	Name            string `json:"name" example:"My pub name"`
 	QrCodeFileName  string `json:"qr_code_file_name" example:"my-pub-name.png"`
 	ColorTheme      string `json:"color_theme" example:"light"`
@@ -63,17 +70,30 @@ type PubOutput struct {
 	CompanyID  int `json:"company_id"`
 }
 
-func (c *PubOutput) ConvertFromModel(pub models.Pub) {
-	c.ID = int(pub.ID)
-	c.Name = pub.Name
-	c.QrCodeFileName = pub.QrCodeFileName
-	c.ColorTheme = pub.ColorTheme
-	c.Color = pub.Color
-	c.BgImageFileName = pub.BgImageFileName
-	c.LogoFileName = pub.LogoFileName
-	c.WifiPassword = pub.WifiPassword
-	c.Address = pub.Address
-	c.AdditionalInfo = pub.AdditionalInfo
-	c.CurrencyID = int(pub.CurrencyID)
-	c.CompanyID = int(pub.CompanyID)
+func (p *PubOutput) ConvertFromModel(pub models.Pub) {
+
+	if time.Now().Unix() > pub.ExpirationTime.Unix() {
+		p.Expired = true
+	}
+
+	p.ExpirationTime = helpers.ConvertToStandardApiTime(pub.ExpirationTime)
+	p.ID = int(pub.ID)
+	p.Name = pub.Name
+	p.QrCodeFileName = pub.QrCodeFileName
+	p.ColorTheme = pub.ColorTheme
+	p.Color = pub.Color
+	p.BgImageFileName = pub.BgImageFileName
+	p.LogoFileName = pub.LogoFileName
+	p.WifiPassword = pub.WifiPassword
+	p.Address = pub.Address
+	p.AdditionalInfo = pub.AdditionalInfo
+	p.CurrencyID = int(pub.CurrencyID)
+	p.CompanyID = int(pub.CompanyID)
+}
+
+type UpdateExpirationTimeInput struct {
+	Days int `json:"days" validate:"required,numeric" example:"30"`
+}
+type UpdateExpirationTimeOutput struct {
+	ExpirationTime string `json:"expiration_time_utc" validate:"required" example:"2021-01-01 00:00:00"`
 }
