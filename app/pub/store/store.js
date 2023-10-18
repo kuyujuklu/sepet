@@ -8,11 +8,19 @@ import { basketMiddleware } from "./middleware/basketMiddleware";
 
 let store
 
+function isTimeInLocalStorageExpired() {
+    let time = localStorage.getItem("lastBasketAction")
+    if(!time) return true;
+    time = parseInt(time)
+    if(time + 1000 * 60 * 60 * 24 < new Date().getTime()) return true;
+    return false;
+}
+
 if(typeof window !== "undefined") {
     store = configureStore({
         preloadedState: {
             basketSlice: {
-                dishes: JSON.parse(localStorage.getItem("basket")) || {},
+                dishes: isTimeInLocalStorageExpired() ? {} : (JSON.parse(localStorage.getItem("basket")) || {}),
             },
         },
         reducer: {

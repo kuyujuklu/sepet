@@ -42,8 +42,8 @@ export const ValidatePassword = (password) => {
         return "admin.validation_errors.company.password.required";
     }
 
-    if(validators.ValidateLength(password, 6, 255)) {
-        switch(validators.ValidateLength(password, 6, 255)) {
+    if(validators.ValidateLength(password, 8, 255)) {
+        switch(validators.ValidateLength(password, 8, 255)) {
             case appErrors.min:
                 return "admin.validation_errors.company.password.min";
             case appErrors.max:

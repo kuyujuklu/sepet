@@ -1,8 +1,9 @@
 import { useCreatePubMutation, useDeletePubMutation, useUpdatePubMutation } from "@/app/admin/api/pub/pub"
 import { useEffect } from "react"
-import { errorKeys, selectReceivingError, setStandardHandlingError  } from "../errorHandlerSlice"
+import { errorKeys, selectReceivingError, handleErrorStandardWay  } from "../errorHandlerSlice"
 import { useDispatch, useSelector } from "react-redux"
 import { fixedCacheKeys } from "@/app/admin/api/fixedCacheKeys"
+import { appErrors } from "@/app/admin/errors/errors"
 
 const PubErrorsHandler = () => {
     const dispatch = useDispatch()
@@ -17,42 +18,48 @@ const PubErrorsHandler = () => {
         if (!pubCreateError)
             return
 
-        dispatch(setStandardHandlingError(pubCreateError))
+        dispatch(handleErrorStandardWay(pubCreateError))
     }, [dispatch, pubCreateError])
 
     useEffect(() => {
         if (!pubUpdateError)
             return
 
-        dispatch(setStandardHandlingError(pubUpdateError))
+        dispatch(handleErrorStandardWay(pubUpdateError))
     }, [dispatch, pubUpdateError])
 
     useEffect(() => {
         if (!pubDeleteError)
             return
 
-        dispatch(setStandardHandlingError(pubDeleteError))
+        dispatch(handleErrorStandardWay(pubDeleteError))
     }, [dispatch, pubDeleteError])
     
     useEffect(() => {
         if (!pubUploadBgError)
             return
 
-        dispatch(setStandardHandlingError(pubUploadBgError))
+        let newErr = {...pubUploadBgError}
+
+        if(pubUploadBgError.text === appErrors.invalidFileExtension) {
+            newErr.text = appErrors.fileIsNotAnImage
+        }
+
+        dispatch(handleErrorStandardWay(newErr))
     }, [dispatch, pubUploadBgError])
 
     useEffect(() => {
         if (!pubGetByIDError  || pubGetByIDError.originalStatus === 404)
             return
 
-        dispatch(setStandardHandlingError(pubGetByIDError))
+        dispatch(handleErrorStandardWay(pubGetByIDError))
     }, [dispatch, pubGetByIDError])
     
     useEffect(() => {
         if (!getPubsError || getPubsError.originalStatus === 404)
             return
 
-        dispatch(setStandardHandlingError(getPubsError))
+        dispatch(handleErrorStandardWay(getPubsError))
     }, [dispatch, getPubsError])
 
     return (

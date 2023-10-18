@@ -10,10 +10,15 @@ import { useLazyAuthenticateQuery } from "../../api/auth/authQuery";
 import { setaccesstoken } from "../../api/auth/authBasedQuery";
 import WhiteSpinner from "../../components/loaders/WhiteSpinner";
 import { useDispatch } from "react-redux";
-import { setAuthenticated } from "./authSlice";
+import { setAuthenticated, setRequireAuthenticationToFalse } from "./authSlice";
 import { company } from "../../api/company/company";
+import { auth } from "../../api/auth/authQuery";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { errorKeys, setReceivingError } from "../errorHandlers/errorHandlerSlice";
+import { convertRespError } from "../../api/resperrors/convertRespError";
+import { appErrors } from "../../errors/errors";
+import Header from "./Header";
 
 const Authentication = () => {
     const { t } = useTranslation();
@@ -28,18 +33,25 @@ const Authentication = () => {
     useEffect(() => {
         if (data?.ok && data?.accesstoken) {
             setaccesstoken(data.accesstoken);
+            dispatch(setAuthenticated(true));
+            dispatch(setRequireAuthenticationToFalse())
             dispatch(company.util.resetApiState());
+            dispatch(auth.util.resetApiState());
             navigate("/admin/company/");
         }
     }, [data, dispatch, navigate]);
 
     useEffect(() => {
         if (!error) return;
+        let newError = {...error};
 
-        if (error?.data?.validationErrors) {
-            console.log("errors", error.data.validationErrors);
+        if(newError.status === 400 && newError.data.validationErrors) {
+            newError.text = appErrors.validationError
+        } else {
+            newError.text = convertRespError(newError.data.err)
         }
 
+        dispatch(setReceivingError({errorKey: errorKeys.authentication, error: newError}))
         dispatch(setAuthenticated(false));
     }, [dispatch, error]);
 
@@ -53,16 +65,17 @@ const Authentication = () => {
     };
 
     return (
-        <div className="flex w-full h-full border border-gray">
+        <div className="flex flex-col items-center w-full h-full m-auto py-2 sm:py-5 gap-5">
+            <Header />
             <div
                 style={{
                     minHeight: "600px",
                     maxWidth: "500px",
                     borderRadius: "40px",
                 }}
-                className="flex flex-col gap-y-4 p-10 w-full m-auto shadow-2xl"
+                className="flex flex-col gap-y-4 p-2 sm:p-10 w-full m-auto shadow-2xl"
             >
-                <h1 className="text-2xl font-bold text-gray-700">
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-700">
                     {t("admin.authentication.headline")}
                 </h1>
                 <div className="flex flex-col gap-6">

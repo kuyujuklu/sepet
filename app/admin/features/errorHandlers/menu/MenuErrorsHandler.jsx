@@ -1,5 +1,5 @@
 import { useEffect } from "react"
-import { errorKeys, selectReceivingError, setStandardHandlingError  } from "../errorHandlerSlice"
+import { errorKeys, selectReceivingError, handleErrorStandardWay  } from "../errorHandlerSlice"
 import { useDispatch, useSelector } from "react-redux"
 import { fixedCacheKeys } from "@/app/admin/api/fixedCacheKeys"
 import { useCreateMenuMutation, useDeleteMenuMutation, useMoveMenuLeftMutation, useMoveMenuRightMutation, useUpdateMenuMutation } from "@/app/admin/api/menu/menu"
@@ -18,49 +18,49 @@ const MenuErrorsHandler = () => {
         if (!menuCreateError)
             return
 
-        dispatch(setStandardHandlingError(menuCreateError))
+        dispatch(handleErrorStandardWay(menuCreateError))
     }, [dispatch, menuCreateError])
     
     useEffect(() => {
         if (!menuUpdateError)
             return
 
-        dispatch(setStandardHandlingError(menuUpdateError))
+        dispatch(handleErrorStandardWay(menuUpdateError))
     }, [dispatch, menuUpdateError])
 
     useEffect(() => {
         if (!menuDeleteError)
             return
 
-        dispatch(setStandardHandlingError(menuDeleteError))
+        dispatch(handleErrorStandardWay(menuDeleteError))
     }, [dispatch, menuDeleteError])
     
     useEffect(() => {
         if (!menuMoveLeftError)
             return
 
-        dispatch(setStandardHandlingError(menuMoveLeftError))
+        dispatch(handleErrorStandardWay(menuMoveLeftError))
     }, [dispatch, menuMoveLeftError])
 
     useEffect(() => {
         if (!menuMoveRightError)
             return
 
-        dispatch(setStandardHandlingError(menuMoveRightError))
+        dispatch(handleErrorStandardWay(menuMoveRightError))
     }, [dispatch, menuMoveRightError])
     
     useEffect(() => {
         if (!menuGetByIDError|| menuGetByIDError.originalStatus === 404)
             return
 
-        dispatch(setStandardHandlingError(menuGetByIDError))
+        dispatch(handleErrorStandardWay(menuGetByIDError))
     }, [dispatch, menuGetByIDError])
     
     useEffect(() => {
         if (!getMenusError || getMenusError.originalStatus === 404)
             return
 
-        dispatch(setStandardHandlingError(getMenusError))
+        dispatch(handleErrorStandardWay(getMenusError))
     }, [dispatch, getMenusError])
 
     return (

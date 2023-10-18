@@ -10,6 +10,11 @@ export const errorKeys = {
     get_categories: "get_categories",
     get_dish_by_id: "get_dish_by_id",
     get_dishes: "get_dishes",
+
+    //authentication
+    authentication: 'authentication',
+    registration: 'registration',
+    logout: 'logout',
 };
 
 const initialState = {
@@ -24,6 +29,10 @@ const initialState = {
         [errorKeys.get_categories]: null,
         [errorKeys.get_dish_by_id]: null,
         [errorKeys.get_dishes]: null,
+
+        [errorKeys.registration]: null,
+        [errorKeys.authentication]: null,
+        [errorKeys.logout]: null,
     },
 };
 
@@ -31,7 +40,7 @@ const errorHandlerSlice = createSlice({
     name: "errorHandlerSlice",
     initialState,
     reducers: {
-        setStandardHandlingError(state, action) {
+        handleErrorStandardWay(state, action) {
             state.standardHandlingError = action.payload ?? null;
             console.log("pushedStandardError ", action.payload);
         },
@@ -50,7 +59,7 @@ export const selectStandardHandlingError = (state) =>
 export const selectReceivingError = errorKey => state => state.errorHandlerSlice.receivingErrors[errorKey];
 
 export const {
-    setStandardHandlingError,
+    handleErrorStandardWay,
     setReceivingError
 } = errorHandlerSlice.actions;
 

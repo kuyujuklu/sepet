@@ -1,8 +1,9 @@
 import { useEffect } from "react"
-import { errorKeys, selectReceivingError, setStandardHandlingError  } from "../errorHandlerSlice"
+import { errorKeys, selectReceivingError, handleErrorStandardWay  } from "../errorHandlerSlice"
 import { useDispatch, useSelector } from "react-redux"
 import { fixedCacheKeys } from "@/app/admin/api/fixedCacheKeys"
 import { useCreateCategoryMutation, useDeleteCategoryMutation, useMoveCategoryLeftMutation, useMoveCategoryRightMutation, useUpdateCategoryMutation, useUploadCategoryImageMutation } from "@/app/admin/api/categories/category"
+import { appErrors } from "@/app/admin/errors/errors"
 
 const CategoryErrorsHandler = () => {
     const dispatch = useDispatch()
@@ -19,56 +20,63 @@ const CategoryErrorsHandler = () => {
         if (!categoryCreateError)
             return
 
-        dispatch(setStandardHandlingError(categoryCreateError))
+        dispatch(handleErrorStandardWay(categoryCreateError))
     }, [dispatch, categoryCreateError])
     
     useEffect(() => {
         if (!categoryUpdateError)
             return
 
-        dispatch(setStandardHandlingError(categoryUpdateError))
+        dispatch(handleErrorStandardWay(categoryUpdateError))
     }, [dispatch, categoryUpdateError])
 
     useEffect(() => {
         if (!categoryDeleteError)
             return
 
-        dispatch(setStandardHandlingError(categoryDeleteError))
+        dispatch(handleErrorStandardWay(categoryDeleteError))
     }, [dispatch, categoryDeleteError])
 
     useEffect(() => {
         if (!categoryUploadImageError)
             return
 
-        dispatch(setStandardHandlingError(categoryUploadImageError))
+
+        let newErr = {...categoryUploadImageError}
+
+        if(categoryUploadImageError.text === appErrors.invalidFileExtension) {
+            newErr.text = appErrors.fileIsNotAnImage
+        }
+    
+        dispatch(handleErrorStandardWay(newErr))
     }, [dispatch, categoryUploadImageError])
     
     useEffect(() => {
         if (!categoryMoveLeftError)
             return
 
-        dispatch(setStandardHandlingError(categoryMoveLeftError))
+        dispatch(handleErrorStandardWay(categoryMoveLeftError))
     }, [dispatch, categoryMoveLeftError])
 
     useEffect(() => {
         if (!categoryMoveRightError)
             return
 
-        dispatch(setStandardHandlingError(categoryMoveRightError))
+        dispatch(handleErrorStandardWay(categoryMoveRightError))
     }, [dispatch, categoryMoveRightError])
     
     useEffect(() => {
         if (!categoryGetByIDError|| categoryGetByIDError.originalStatus === 404)
             return
 
-        dispatch(setStandardHandlingError(categoryGetByIDError))
+        dispatch(handleErrorStandardWay(categoryGetByIDError))
     }, [dispatch, categoryGetByIDError])
     
     useEffect(() => {
         if (!getCategoriesError || getCategoriesError.originalStatus === 404)
             return
 
-        dispatch(setStandardHandlingError(getCategoriesError))
+        dispatch(handleErrorStandardWay(getCategoriesError))
     }, [dispatch, getCategoriesError])
     
 

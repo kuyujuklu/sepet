@@ -1,8 +1,9 @@
 import { useEffect } from "react"
-import { errorKeys, selectReceivingError, setStandardHandlingError  } from "../errorHandlerSlice"
+import { errorKeys, selectReceivingError, handleErrorStandardWay  } from "../errorHandlerSlice"
 import { useDispatch, useSelector } from "react-redux"
 import { fixedCacheKeys } from "@/app/admin/api/fixedCacheKeys"
 import { useCreateDishMutation, useDeleteDishMutation, useMoveDishLeftMutation, useMoveDishRightMutation, useUpdateDishMutation, useUploadDishImageMutation } from "@/app/admin/api/dish/dish"
+import { appErrors } from "@/app/admin/errors/errors"
 
 const DishErrorsHandler = () => {
     const dispatch = useDispatch()
@@ -19,55 +20,61 @@ const DishErrorsHandler = () => {
         if (!dishCreateError)
             return
 
-        dispatch(setStandardHandlingError(dishCreateError))
+        dispatch(handleErrorStandardWay(dishCreateError))
     }, [dispatch, dishCreateError])
     
     useEffect(() => {
         if (!dishUpdateError)
             return
 
-        dispatch(setStandardHandlingError(dishUpdateError))
+        dispatch(handleErrorStandardWay(dishUpdateError))
     }, [dispatch, dishUpdateError])
 
     useEffect(() => {
         if (!dishDeleteError)
             return
 
-        dispatch(setStandardHandlingError(dishDeleteError))
+        dispatch(handleErrorStandardWay(dishDeleteError))
     }, [dispatch, dishDeleteError])
 
     useEffect(() => {
         if (!dishUploadImageError)
             return
 
-        dispatch(setStandardHandlingError(dishUploadImageError))
+        let newErr = {...dishUploadImageError}
+
+        if(dishUploadImageError.text === appErrors.invalidFileExtension) {
+            newErr.text = appErrors.fileIsNotAnImage
+        }
+
+        dispatch(handleErrorStandardWay(newErr))
     }, [dispatch, dishUploadImageError])
     
     useEffect(() => {
         if (!dishMoveLeftError)
             return
 
-        dispatch(setStandardHandlingError(dishMoveLeftError))
+        dispatch(handleErrorStandardWay(dishMoveLeftError))
     }, [dispatch, dishMoveLeftError])
 
     useEffect(() => {
         if (!dishMoveRightError)
             return
 
-        dispatch(setStandardHandlingError(dishMoveRightError))
+        dispatch(handleErrorStandardWay(dishMoveRightError))
     }, [dispatch, dishMoveRightError])
     
     useEffect(() => {
         if (!dishGetByIDError|| dishGetByIDError.originalStatus === 404)
             return
 
-        dispatch(setStandardHandlingError(dishGetByIDError))
+        dispatch(handleErrorStandardWay(dishGetByIDError))
     }, [dispatch, dishGetByIDError])
     
     useEffect(() => {
         if (!getDishesError || getDishesError.originalStatus === 404)
             return
-        dispatch(setStandardHandlingError(getDishesError))
+        dispatch(handleErrorStandardWay(getDishesError))
     }, [dispatch, getDishesError])
     
 

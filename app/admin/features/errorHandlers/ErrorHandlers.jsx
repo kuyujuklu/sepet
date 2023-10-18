@@ -2,7 +2,7 @@ import { useDispatch, useSelector } from "react-redux";
 import PubErrorsHandler from "./pub/PubErrorsHandler";
 import {
     selectStandardHandlingError,
-    setStandardHandlingError,
+    handleErrorStandardWay,
 } from "./errorHandlerSlice";
 import { useEffect } from "react";
 import { pushAlert } from "../alerts/alertSlice";
@@ -12,6 +12,8 @@ import { requireAuthentication } from "../auth/authSlice";
 import MenuErrorsHandler from "./menu/MenuErrorsHandler";
 import CategoryErrorsHandler from "./category/CategoryErrorsHandler";
 import DishErrorsHandler from "./dish/DishErrorsHandler";
+import CompanyErrorsHandler from "./company/CompanyErrorsHandler";
+import AuthErrorsHandler from "./auth/AuthErrorsHandler";
 
 const ErrorHandlers = () => {
     const {t} = useTranslation();
@@ -21,8 +23,20 @@ const ErrorHandlers = () => {
     useEffect(() => {
         if (!standardHandlingError) return;
 
+        if(!standardHandlingError.text) {
+            dispatch(pushAlert({
+                message: t(appErrors.something_went_wrong),
+                type: "danger",
+                delay: 3000,
+            }))
+            dispatch(handleErrorStandardWay(null));
+            return
+        }
+
 		if(standardHandlingError.text === appErrors.unauthorized) {
+            dispatch(handleErrorStandardWay(null));
 			dispatch(requireAuthentication())
+            return
 		}
 
         dispatch(pushAlert({
@@ -30,12 +44,14 @@ const ErrorHandlers = () => {
 			type: "danger",
 			delay: 3000,
         }))
-        dispatch(setStandardHandlingError(null));
+        dispatch(handleErrorStandardWay(null));
 
 	}, [dispatch, standardHandlingError, t]);
 
     return (
         <>
+            <AuthErrorsHandler />
+            <CompanyErrorsHandler />
             <PubErrorsHandler />
             <MenuErrorsHandler />
             <CategoryErrorsHandler />

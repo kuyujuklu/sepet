@@ -3,7 +3,7 @@ import Index from "..";
 
 export default function Page() {
     return (
-        <div>
+        <div className="block">
             <Index />
         </div>
     );

@@ -3,7 +3,7 @@ let reqNum = 0;
 let API_SERV = process.env.API_SERV || "qrcodesapi";
 
 export const getPubInfo = async (id) => {
-    console.log(`made request to ${API_SERV}`, reqNum++);
+    console.log(`made request to ${API_SERV}/api/client/pub/id`, reqNum++);
 
     const res = await fetch(`http://${API_SERV}/api/client/pub/${id}`, 
         {next: { revalidate: 0 }}

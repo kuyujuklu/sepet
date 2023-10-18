@@ -4,7 +4,7 @@ import { selectDishes } from "../../store/basketSlice";
 const BasketCount = () => {
     const selectedDishes = useSelector(selectDishes);
     const count = Object.keys(selectedDishes)
-        .reduce((acc, id) => (acc += selectedDishes[id]), 0);
+        .reduce((acc, id) => (acc += selectedDishes[id].count ?? 0), 0);
     console.log("count: ", count);
     return (
         <>

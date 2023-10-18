@@ -29,7 +29,17 @@ export const auth = createApi({
             }),
             invalidatesTags: ['Company'],
         }),
+        logout: builder.query({
+            query: () => ({
+                url: `/auth/logout`,
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }),
+            invalidatesTags: ['Company'],
+        }),
     }),
 })
 
-export const { useLazyRegistrateQuery, useLazyAuthenticateQuery } = auth;
+export const { useLazyRegistrateQuery, useLazyAuthenticateQuery, useLazyLogoutQuery } = auth;

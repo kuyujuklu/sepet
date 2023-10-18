@@ -1,10 +1,19 @@
 {
     "errors": {
         "something_went_wrong": "Ceva nu a mers bine. Încercați mai târziu.",
-        "unknown_error": "Ceva nu a mers bine. Încercați mai târziu."
+        "unknown_error": "Ceva nu a mers bine. Încercați mai târziu.",
+        "validation_error": "Unele date nu sunt valide.",
+        "invalid_credentials": "Date de autentificare incorecte.",
+        "company_with_the_same_name_already_exists": "Compania cu același nume există deja.",
+        "company_with_the_same_email_already_exists": "Compania cu același e-mail există deja.",
+        "file_is_too_large": "Fișierul este prea mare.",
+        "file_is_not_an_image": "Fișierul nu este o imagine.",
+        "invalid_file": "Fișier invalid.",
+        "invalid_file_extension": "Extensie de fișier invalidă."
     },
     "client": {},
     "admin": {
+        "logout": "Deconectați de la cont",
         "language": "Limba",
         "images": {
             "upload": "Încărca",
@@ -28,7 +37,7 @@
                 },
                 "password": {
                     "required": "Parola este obligatorie.",
-                    "min": "Parola trebuie să aibă cel puțin 6 caractere.",
+                    "min": "Parola trebuie să aibă cel puțin 8 caractere.",
                     "max": "Parola trebuie să aibă cel mult 255 de caractere."
                 }
             },
