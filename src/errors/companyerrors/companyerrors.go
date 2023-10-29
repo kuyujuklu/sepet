@@ -15,3 +15,9 @@ var ErrUnableToCreateCompany = errors.New("unable to create company")
 var ErrUnableToUpdateCompany = errors.New("unable to update company")
 
 var ErrUnableToDeleteCompany = errors.New("unable to delete company")
+
+var ErrPubLimitExceeded = errors.New("pub limit exceeded")
+
+var ErrNotCompaniesEntity = errors.New("not companies entity")
+
+var ErrCompanyEntityNotFound = errors.New("company entity not found")

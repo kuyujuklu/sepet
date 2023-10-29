@@ -65,3 +65,58 @@ func (c *adminController) UpdatePubExpirationTime(ctx *fiber.Ctx) error {
 		},
 		fiber.StatusOK)
 }
+
+type updatePubTariff struct {
+	Ok     bool   `json:"ok" example:"true"`
+	Tariff string `json:"pub"`
+}
+
+// @Summary      Update pub expiration time
+// @Description  Updates pub expiration
+// @Tags         admin
+// @Param companyID path int true "company id"
+// @Param pubID path int true "pub id"
+// @Param input body  true "pub params"
+// @Accept       json
+// @Produce      json
+// @Success      200  {object}  updatePubTariff
+// @Router       /company/{companyID}/pubs/{pubID}/expiration-time [POST]
+// @Security ApiKeyAuth
+// @Param AccessToken header string  true "accesstoken"
+func (c *adminController) UpdateCompanyTariff(ctx *fiber.Ctx) error {
+	_, userSignificance, err := h.GetUserIDAndSignificanceFromLocals(ctx)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	isAdmin := h.IsAdmin(userSignificance)
+
+	if !isAdmin {
+		return h.SendError(ctx, httperrors.ErrForbidden, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	companyID, err := strconv.Atoi(ctx.Params("companyID"))
+	if err != nil {
+		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	input, validationErrors, err := input.ParseRequestBody[entities.CompanyUpdateTariffInput](ctx)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+	if len(validationErrors) > 0 {
+		return h.SendValidationErrors(ctx, validationErrors)
+	}
+
+	company, err := c.CompanyService.UpdateCompanyTariff(companyID, input.Tariff)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	return h.SendSuccess(
+		ctx,
+		fiber.Map{
+			"tariff": company.Tariff.Name,
+		},
+		fiber.StatusOK)
+}

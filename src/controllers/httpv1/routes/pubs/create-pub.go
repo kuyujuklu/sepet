@@ -10,7 +10,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-type cratePubOutput struct {
+type CreatePubOutput struct {
 	Ok  bool               `json:"ok" example:"true"`
 	Pub entities.PubOutput `json:"pub"`
 }
@@ -22,7 +22,7 @@ type cratePubOutput struct {
 // @Param input body entities.CreatePubInput true "pub params"
 // @Accept       json
 // @Produce      json
-// @Success      201  {object}  cratePubOutput
+// @Success      201  {object}  CreatePubOutput
 // @Router       /company/{companyID}/pubs/ [POST]
 // @Security ApiKeyAuth
 // @Param AccessToken header string  true "accesstoken"

@@ -6,11 +6,12 @@ import (
 
 	h "github.com/alexkalak/qrmenu/src/controllers/httpv1/httphelpers"
 	"github.com/alexkalak/qrmenu/src/errors/httperrors"
+	"github.com/alexkalak/qrmenu/src/models"
 	"github.com/alexkalak/qrmenu/src/repo/pubsrepo"
 	"github.com/gofiber/fiber/v2"
 )
 
-type fileUploadOutput struct {
+type FileUploadOutput struct {
 	FileName string `json:"file_name"`
 	Ok       bool   `json:"ok" example:"true"`
 }
@@ -23,7 +24,7 @@ type fileUploadOutput struct {
 // @Param logo formData file true "logo"
 // @Accept       mpfd
 // @Produce      json
-// @Success      200  {object}  fileUploadOutput
+// @Success      200  {object}  FileUploadOutput
 // @Router       /company/{companyID}/pubs/{pubID}/logo [PATCH]
 // @Security ApiKeyAuth
 // @Param AccessToken header string  true "accesstoken"
@@ -43,14 +44,15 @@ func (c *pubController) UploadPubLogo(ctx *fiber.Ctx) error {
 		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
 	}
 
-	err = h.CheckAccessForCompanyAction(userID, companyID, userSignificance)
+	//Checking access for action with pub for company
+	err = h.CheckAccess(userID, companyID, userSignificance, models.PUB_COMPANY_ENTITY, pubID)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
 
 	file, err := ctx.FormFile("logo")
 	if file == nil || err != nil {
-		return h.SendError(ctx, httperrors.ErrBadDocument, h.AUTOMATIC_STATUS_CODE)
+		return h.SendError(ctx, httperrors.ErrInvalidFileExtension, h.AUTOMATIC_STATUS_CODE)
 	}
 
 	fileNameSplitted := strings.Split(file.Filename, ".")
@@ -100,14 +102,15 @@ func (c *pubController) UploadPubBG(ctx *fiber.Ctx) error {
 		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
 	}
 
-	err = h.CheckAccessForCompanyAction(userID, companyID, userSignificance)
+	//Checking access for action with pub for company
+	err = h.CheckAccess(userID, companyID, userSignificance, models.PUB_COMPANY_ENTITY, pubID)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
 
 	file, err := ctx.FormFile("bg")
 	if file == nil || err != nil {
-		return h.SendError(ctx, httperrors.ErrBadDocument, h.AUTOMATIC_STATUS_CODE)
+		return h.SendError(ctx, httperrors.ErrInvalidFileExtension, h.AUTOMATIC_STATUS_CODE)
 	}
 
 	fileNameSplitted := strings.Split(file.Filename, ".")

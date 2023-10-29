@@ -6,10 +6,11 @@ import (
 	h "github.com/alexkalak/qrmenu/src/controllers/httpv1/httphelpers"
 	"github.com/alexkalak/qrmenu/src/controllers/httpv1/input/entities"
 	"github.com/alexkalak/qrmenu/src/errors/httperrors"
+	"github.com/alexkalak/qrmenu/src/models"
 	"github.com/gofiber/fiber/v2"
 )
 
-type getPubByIDOutput struct {
+type GetPubByIDOutput struct {
 	Ok  bool               `json:"ok" example:"true"`
 	Pub entities.PubOutput `json:"pub"`
 }
@@ -21,7 +22,7 @@ type getPubByIDOutput struct {
 // @Param pubID path int true "pub id"
 // @Accept       json
 // @Produce      json
-// @Success      200  {object}  getPubByIDOutput
+// @Success      200  {object}  GetPubByIDOutput
 // @Router       /company/{companyID}/pubs/{pubID} [GET]
 // @Security ApiKeyAuth
 // @Param AccessToken header string  true "accesstoken"
@@ -36,14 +37,15 @@ func (c *pubController) GetPubByID(ctx *fiber.Ctx) error {
 		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
 	}
 
-	err = h.CheckAccessForCompanyAction(userID, companyID, userSignificance)
-	if err != nil {
-		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
-	}
-
 	pubID, err := strconv.Atoi(ctx.Params("pubID"))
 	if err != nil {
 		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	//Checking access for action with pub for company
+	err = h.CheckAccess(userID, companyID, userSignificance, models.PUB_COMPANY_ENTITY, pubID)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
 
 	pub, err := c.PubService.GetPubById(pubID)

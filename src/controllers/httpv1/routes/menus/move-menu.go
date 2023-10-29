@@ -5,6 +5,7 @@ import (
 
 	h "github.com/alexkalak/qrmenu/src/controllers/httpv1/httphelpers"
 	"github.com/alexkalak/qrmenu/src/errors/httperrors"
+	"github.com/alexkalak/qrmenu/src/models"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -35,22 +36,18 @@ func (c *menuController) MoveMenuLeft(ctx *fiber.Ctx) error {
 		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
 	}
 
-	err = h.CheckAccessForCompanyAction(userID, companyID, userSignificance)
-	if err != nil {
-		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
-	}
-
-	pubID, err := strconv.Atoi(ctx.Params("pubID"))
-	if err != nil {
-		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
-	}
-
 	menuID, err := strconv.Atoi(ctx.Params("menuID"))
 	if err != nil {
 		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
 	}
 
-	place, err := c.MenuService.MoveMenuLeft(pubID, menuID)
+	//Checking access for action with menu for company
+	err = h.CheckAccess(userID, companyID, userSignificance, models.MENU_COMPANY_ENTITY, menuID)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	place, err := c.MenuService.MoveMenuLeft(menuID)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
@@ -85,22 +82,18 @@ func (c *menuController) MoveMenuRight(ctx *fiber.Ctx) error {
 		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
 	}
 
-	err = h.CheckAccessForCompanyAction(userID, companyID, userSignificance)
-	if err != nil {
-		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
-	}
-
-	pubID, err := strconv.Atoi(ctx.Params("pubID"))
-	if err != nil {
-		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
-	}
-
 	menuID, err := strconv.Atoi(ctx.Params("menuID"))
 	if err != nil {
 		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
 	}
 
-	place, err := c.MenuService.MoveMenuRight(pubID, menuID)
+	//Checking access for action with menu for company
+	err = h.CheckAccess(userID, companyID, userSignificance, models.MENU_COMPANY_ENTITY, menuID)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	place, err := c.MenuService.MoveMenuRight(menuID)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}

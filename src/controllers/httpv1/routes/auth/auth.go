@@ -39,6 +39,7 @@ func New() *authController {
 
 func (c *authController) UnauthorizedRouter(router fiber.Router) {
 	router.Post("/login", c.Login)
+	router.Post("/logout", c.Logout)
 	router.Post("/refresh-token", c.RefreshToken)
 }
 
@@ -147,6 +148,11 @@ func (c *authController) loginAsAdmin(ctx *fiber.Ctx, adminName string, password
 		},
 		fiber.StatusOK,
 	)
+}
+
+func (c *authController) Logout(ctx *fiber.Ctx) error {
+	h.DeleteRefreshToken(ctx)
+	return h.SendSuccess(ctx, fiber.Map{}, fiber.StatusOK)
 }
 
 func (c *authController) RefreshToken(ctx *fiber.Ctx) error {

@@ -9,6 +9,7 @@ import (
 	"github.com/alexkalak/qrmenu/src/errors/puberrors"
 	"github.com/alexkalak/qrmenu/src/errors/servererrors"
 	"github.com/alexkalak/qrmenu/src/models"
+	"github.com/alexkalak/qrmenu/src/repo/tariffrepo"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
@@ -24,16 +25,19 @@ type CompanyRepo interface {
 	GetAllPubsForCompany(companyId int) ([]models.Pub, error)
 	CreateCompany(company models.Company) (models.Company, error)
 	UpdateCompany(id int, company models.Company) (models.Company, error)
+	UpdateCompanyTariff(id int, tariffID int) (models.Company, error)
 	DeleteCompany(id int) error
 }
 
 type companiesRepo struct {
-	Database *gorm.DB
+	Database   *gorm.DB
+	TariffRepo tariffrepo.TariffRepo
 }
 
 func New() CompanyRepo {
 	return &companiesRepo{
-		Database: postgresql.GetDB(),
+		Database:   postgresql.GetDB(),
+		TariffRepo: tariffrepo.New(),
 	}
 }
 
@@ -54,7 +58,10 @@ func (r *companiesRepo) Login(email string, password string) (models.Company, er
 
 func (r *companiesRepo) GetAllCompanies() ([]models.Company, error) {
 	var companies []models.Company
-	result := r.Database.Find(&companies)
+	result := r.Database.
+		Preload("Role").
+		Preload("Tariff").
+		Find(&companies)
 
 	if result.Error != nil {
 		return nil, companyerrors.ErrUnableToGetCompany
@@ -65,7 +72,10 @@ func (r *companiesRepo) GetAllCompanies() ([]models.Company, error) {
 
 func (r *companiesRepo) GetCompanyById(id int) (models.Company, error) {
 	var company models.Company
-	result := r.Database.Preload("Role").First(&company, "id = ?", id)
+	result := r.Database.
+		Preload("Role").
+		Preload("Tariff").
+		First(&company, "id = ?", id)
 
 	if result.Error != nil {
 		return models.Company{}, companyerrors.ErrCompanyNotFound
@@ -142,6 +152,27 @@ func (r *companiesRepo) UpdateCompany(id int, company models.Company) (models.Co
 	company.Password = companyFromDB.Password
 	company.RoleID = companyFromDB.RoleID
 	company.CreatedAt = companyFromDB.CreatedAt
+
+	res := r.Database.Save(&company)
+	if res.Error != nil {
+		return models.Company{}, companyerrors.ErrUnableToUpdateCompany
+	}
+
+	return company, nil
+}
+
+func (r *companiesRepo) UpdateCompanyTariff(id int, tariffID int) (models.Company, error) {
+	company, err := r.GetCompanyById(id)
+	if err != nil {
+		return models.Company{}, err
+	}
+
+	tariff, err := r.TariffRepo.GetTariffByID(tariffID)
+	if err != nil {
+		return models.Company{}, err
+	}
+
+	company.Tariff = tariff
 
 	res := r.Database.Save(&company)
 	if res.Error != nil {

@@ -9,7 +9,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-type getAllPubsForCompanyOutput struct {
+type GetAllPubsForCompanyOutput struct {
 	Ok   bool                 `json:"ok" example:"true"`
 	Pubs []entities.PubOutput `json:"pubs"`
 }
@@ -20,7 +20,7 @@ type getAllPubsForCompanyOutput struct {
 // @Param companyID path int true "company id"
 // @Accept       json
 // @Produce      json
-// @Success      200  {object}  getAllPubsForCompanyOutput
+// @Success      200  {object}  GetAllPubsForCompanyOutput
 // @Router       /company/{companyID}/pubs [GET]
 // @Security ApiKeyAuth
 // @Param AccessToken header string  true "accesstoken"

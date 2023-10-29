@@ -9,6 +9,7 @@ type Category struct {
 	Place         int
 	Visible       bool
 	Dishes        []Dish
+	Menu          Menu
 	MenuID        uint
 	TextColor     string
 }

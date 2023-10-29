@@ -5,6 +5,7 @@ import (
 	"io"
 	"mime/multipart"
 	"os"
+	"strings"
 
 	"github.com/alexkalak/qrmenu/src/db/postgresql"
 	"github.com/alexkalak/qrmenu/src/errors/categoryerrors"
@@ -35,6 +36,7 @@ type CategoryRepo interface {
 	CreateCategory(category models.Category) (models.Category, error)
 	UpdateCategory(id int, category models.Category) (models.Category, error)
 	DeleteCategory(id int) error
+	GetCompanyID(categoryID int) (int, error)
 	UploadCategoryImage(categoryID int, fileHeader *multipart.FileHeader) (string, error)
 	DeleteCategoryImage(categoryID int) error
 	GetImageFileName(id int) (string, error)
@@ -113,6 +115,16 @@ func (r *categoryRepo) DeleteCategory(id int) error {
 	return nil
 }
 
+func (r *categoryRepo) GetCompanyID(categoryID int) (int, error) {
+	var category models.Category
+	err := r.Database.Preload("Menu.Pub.Company").Find(&category, categoryID).Error
+	if err != nil {
+		return 0, err
+	}
+
+	return int(category.Menu.Pub.Company.ID), nil
+}
+
 func (r *categoryRepo) GetAllDishesForCategory(categoryID int) ([]models.Dish, error) {
 	var dishes []models.Dish
 	res := r.Database.Find(&dishes, "category_id = ?", categoryID)
@@ -131,7 +143,9 @@ func (s *categoryRepo) UploadCategoryImage(categoryID int, fileHeader *multipart
 	}
 
 	fileID := uuid.New().String()
-	fileName := fileID + "." + fileHeader.Filename
+	fileNameSplitted := strings.Split(fileHeader.Filename, ".")
+	fileExtension := fileNameSplitted[len(fileNameSplitted)-1]
+	fileName := fileID + "." + fileExtension
 
 	file, err := os.OpenFile(CATEGORY_IMAGES_PATH+fileName, os.O_CREATE|os.O_WRONLY, 0777)
 	if err != nil {

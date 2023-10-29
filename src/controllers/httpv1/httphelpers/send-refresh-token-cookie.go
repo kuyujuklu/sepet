@@ -25,3 +25,12 @@ func SendRefreshTokenInHttpOnlyCookies(ctx *fiber.Ctx, userID int, userSignifica
 
 	return nil
 }
+
+func DeleteRefreshToken(ctx *fiber.Ctx) {
+	ctx.Cookie(&fiber.Cookie{
+		Name:     "refresh_token",
+		Value:    "",
+		Expires:  time.Unix(0, 0),
+		HTTPOnly: true,
+	})
+}

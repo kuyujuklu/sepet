@@ -6,6 +6,7 @@ import (
 	"io"
 	"mime/multipart"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/alexkalak/qrmenu/src/db/postgresql"
@@ -54,6 +55,7 @@ type PubsRepo interface {
 	UpdatePub(id int, pub models.Pub) (models.Pub, error)
 	UpdateExpirationTime(id int, t time.Time) (time.Time, error)
 	DeletePub(id int) error
+	GetCompanyID(pubID int) (int, error)
 
 	UploadPubLogo(pubID int, fileHeader *multipart.FileHeader) (string, error)
 	UploadPubBG(pubID int, fileHeader *multipart.FileHeader) (string, error)
@@ -229,7 +231,6 @@ func (r *pubsRepo) UpdateExpirationTime(id int, t time.Time) (time.Time, error) 
 	}
 
 	return pub.ExpirationTime, nil
-
 }
 
 func (r *pubsRepo) DeletePub(id int) error {
@@ -242,6 +243,15 @@ func (r *pubsRepo) DeletePub(id int) error {
 	return nil
 }
 
+func (r *pubsRepo) GetCompanyID(pubID int) (int, error) {
+	pub, err := r.GetPubById(pubID)
+	if err != nil {
+		return 0, err
+	}
+
+	return int(pub.CompanyID), nil
+}
+
 func (s *pubsRepo) UploadPubLogo(pubID int, fileHeader *multipart.FileHeader) (string, error) {
 	_, err := s.GetPubById(pubID)
 	if err != nil {
@@ -249,7 +259,9 @@ func (s *pubsRepo) UploadPubLogo(pubID int, fileHeader *multipart.FileHeader) (s
 	}
 
 	fileID := uuid.New().String()
-	fileName := fileID + "." + fileHeader.Filename
+	fileNameSplitted := strings.Split(fileHeader.Filename, ".")
+	fileExtension := fileNameSplitted[len(fileNameSplitted)-1]
+	fileName := fileID + "." + fileExtension
 
 	file, err := os.OpenFile(PUB_LOGO_FILE_PATH+fileName, os.O_CREATE|os.O_WRONLY, 0777)
 	if err != nil {
@@ -283,7 +295,9 @@ func (s *pubsRepo) UploadPubBG(pubID int, fileHeader *multipart.FileHeader) (str
 	}
 
 	fileID := uuid.New().String()
-	fileName := fileID + "." + fileHeader.Filename
+	fileNameSplitted := strings.Split(fileHeader.Filename, ".")
+	fileExtension := fileNameSplitted[len(fileNameSplitted)-1]
+	fileName := fileID + "." + fileExtension
 
 	file, err := os.OpenFile(PUB_BACKGROUND_FILE_PATH+fileName, os.O_CREATE|os.O_WRONLY, 0777)
 	if err != nil {

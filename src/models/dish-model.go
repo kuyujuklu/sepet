@@ -7,6 +7,7 @@ type Dish struct {
 	Name          string
 	ImageFileName string
 	Price         float64
+	SalePrice     float64
 	Ingredients   string
 	TextColor     string
 	Place         int

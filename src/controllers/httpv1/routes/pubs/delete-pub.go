@@ -5,10 +5,11 @@ import (
 
 	h "github.com/alexkalak/qrmenu/src/controllers/httpv1/httphelpers"
 	"github.com/alexkalak/qrmenu/src/errors/httperrors"
+	"github.com/alexkalak/qrmenu/src/models"
 	"github.com/gofiber/fiber/v2"
 )
 
-type deltePubOutput struct {
+type DeltePubOutput struct {
 	Ok bool `json:"ok" example:"true"`
 }
 
@@ -18,7 +19,7 @@ type deltePubOutput struct {
 // @Param companyID path int true "company id"
 // @Param pubID path int true "pub id"
 // @Produce      json
-// @Success      200 {object}  deltePubOutput
+// @Success      200 {object}  DeltePubOutput
 // @Router       /company/{companyID}/pubs/{pubID} [DELETE]
 // @Security ApiKeyAuth
 // @Param AccessToken header string  true "accesstoken"
@@ -33,14 +34,15 @@ func (c *pubController) DeletePub(ctx *fiber.Ctx) error {
 		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
 	}
 
-	err = h.CheckAccessForCompanyAction(userID, companyID, userSignificance)
-	if err != nil {
-		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
-	}
-
 	pubID, err := strconv.Atoi(ctx.Params("pubID"))
 	if err != nil {
 		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	//Checking access for action with pub for company
+	err = h.CheckAccess(userID, companyID, userSignificance, models.PUB_COMPANY_ENTITY, pubID)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
 
 	err = c.PubService.DeletePub(pubID)

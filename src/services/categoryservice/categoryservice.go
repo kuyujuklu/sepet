@@ -3,6 +3,7 @@ package categoryservice
 import (
 	"mime/multipart"
 
+	"github.com/alexkalak/qrmenu/src/errors/companyerrors"
 	"github.com/alexkalak/qrmenu/src/models"
 	"github.com/alexkalak/qrmenu/src/repo/categoryrepo"
 	"github.com/alexkalak/qrmenu/src/services/menuservice"
@@ -15,10 +16,11 @@ type CategoryService interface {
 	CreateCategory(category models.Category, menuID int) (models.Category, error)
 	UpdateCategory(id int, category models.Category, menuID int) (models.Category, error)
 	DeleteCategory(id int) error
+	CheckCompanyAccess(companyID int, categoryID int) error
 	UploadCategoryImage(id int, fileHeader *multipart.FileHeader) (string, error)
 	GetImageFileName(id int) (string, error)
-	MoveCategoryLeft(menuID int, categoryID int) (int, error)
-	MoveCategoryRight(menuID int, categoryID int) (int, error)
+	MoveCategoryLeft(categoryID int) (int, error)
+	MoveCategoryRight(categoryID int) (int, error)
 }
 
 type categoryService struct {
@@ -89,6 +91,19 @@ func (s *categoryService) DeleteCategory(id int) error {
 	return s.CategoryRepo.DeleteCategory(id)
 }
 
+func (s *categoryService) CheckCompanyAccess(companyID int, categoryID int) error {
+	realCompanyID, err := s.CategoryRepo.GetCompanyID(categoryID)
+	if err != nil {
+		return err
+	}
+
+	if realCompanyID != companyID {
+		return companyerrors.ErrNotCompaniesEntity
+	}
+
+	return nil
+}
+
 func (s *categoryService) UploadCategoryImage(id int, fileHeader *multipart.FileHeader) (string, error) {
 	err := s.CategoryRepo.DeleteCategoryImage(id)
 	if err != nil {
@@ -102,12 +117,7 @@ func (s *categoryService) GetImageFileName(id int) (string, error) {
 	return s.CategoryRepo.GetImageFileName(id)
 }
 
-func (s *categoryService) MoveCategoryLeft(menuID int, categoryID int) (int, error) {
-	_, err := s.MenuService.GetMenuById(menuID)
-	if err != nil {
-		return 0, err
-	}
-
+func (s *categoryService) MoveCategoryLeft(categoryID int) (int, error) {
 	category, err := s.CategoryRepo.GetCategoryById(categoryID)
 	if err != nil {
 		return 0, err
@@ -117,19 +127,16 @@ func (s *categoryService) MoveCategoryLeft(menuID int, categoryID int) (int, err
 		return 1, nil
 	}
 
-	return s.CategoryRepo.SetCategoryPlace(menuID, categoryID, category.Place-1)
+	return s.CategoryRepo.SetCategoryPlace(int(category.MenuID), categoryID, category.Place-1)
 }
 
-func (s *categoryService) MoveCategoryRight(menuID int, categoryID int) (int, error) {
-	_, err := s.MenuService.GetMenuById(menuID)
-	if err != nil {
-		return 0, err
-	}
-
+func (s *categoryService) MoveCategoryRight(categoryID int) (int, error) {
 	category, err := s.CategoryRepo.GetCategoryById(categoryID)
 	if err != nil {
 		return 0, err
 	}
+
+	menuID := int(category.MenuID)
 
 	maxPlace, err := s.CategoryRepo.GetCategoryMaxPlace(menuID)
 	if err != nil {

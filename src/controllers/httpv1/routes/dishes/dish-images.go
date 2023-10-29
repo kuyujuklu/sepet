@@ -6,6 +6,7 @@ import (
 
 	h "github.com/alexkalak/qrmenu/src/controllers/httpv1/httphelpers"
 	"github.com/alexkalak/qrmenu/src/errors/httperrors"
+	"github.com/alexkalak/qrmenu/src/models"
 	"github.com/alexkalak/qrmenu/src/repo/dishesrepo"
 	"github.com/gofiber/fiber/v2"
 )
@@ -46,14 +47,15 @@ func (c *dishesController) UploadDishImage(ctx *fiber.Ctx) error {
 		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
 	}
 
-	err = h.CheckAccessForCompanyAction(userID, companyID, userSignificance)
+	//Checking access for action with dish for company
+	err = h.CheckAccess(userID, companyID, userSignificance, models.DISH_COMPANY_ENTITY, dishID)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
 
 	file, err := ctx.FormFile("image")
 	if file == nil || err != nil {
-		return h.SendError(ctx, httperrors.ErrBadDocument, h.AUTOMATIC_STATUS_CODE)
+		return h.SendError(ctx, httperrors.ErrInvalidFileExtension, h.AUTOMATIC_STATUS_CODE)
 	}
 
 	fileNameSplitted := strings.Split(file.Filename, ".")

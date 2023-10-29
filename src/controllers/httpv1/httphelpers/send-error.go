@@ -15,6 +15,7 @@ import (
 	"github.com/alexkalak/qrmenu/src/errors/puberrors"
 	"github.com/alexkalak/qrmenu/src/errors/roleerrors"
 	"github.com/alexkalak/qrmenu/src/errors/servererrors"
+	"github.com/alexkalak/qrmenu/src/errors/tarifferrors"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -25,8 +26,11 @@ const (
 var errors = map[error]int{
 	//Company errors
 	companyerrors.ErrCompanyNotFound:                      fiber.StatusNotFound,
+	companyerrors.ErrCompanyEntityNotFound:                fiber.StatusNotFound,
 	companyerrors.ErrCompanyWithTheSameEmailAlreadyExists: fiber.StatusConflict,
 	companyerrors.ErrCompanyWithTheSameNameAlreadyExists:  fiber.StatusConflict,
+	companyerrors.ErrPubLimitExceeded:                     fiber.StatusForbidden,
+	companyerrors.ErrNotCompaniesEntity:                   fiber.StatusForbidden,
 	companyerrors.ErrUnableToGetCompany:                   fiber.StatusInternalServerError,
 	companyerrors.ErrUnableToCreateCompany:                fiber.StatusInternalServerError,
 	companyerrors.ErrUnableToUpdateCompany:                fiber.StatusInternalServerError,
@@ -100,6 +104,10 @@ var errors = map[error]int{
 
 	//roleerrors
 	roleerrors.ErrRoleNotFound: fiber.StatusNotFound,
+
+	//tarifferrors
+	tarifferrors.ErrTariffNotFound:    fiber.StatusNotFound,
+	tarifferrors.ErrUnableToGetTariff: fiber.StatusInternalServerError,
 
 	//autherrors
 	autherrors.ErrInvalidCredentials: fiber.StatusUnauthorized,

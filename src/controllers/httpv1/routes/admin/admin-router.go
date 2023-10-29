@@ -2,17 +2,20 @@ package admin
 
 import (
 	"github.com/alexkalak/qrmenu/src/controllers/httpv1/middleware"
+	"github.com/alexkalak/qrmenu/src/services/companyservice"
 	"github.com/alexkalak/qrmenu/src/services/pubservice"
 	"github.com/gofiber/fiber/v2"
 )
 
 type adminController struct {
-	PubService pubservice.PubService
+	PubService     pubservice.PubService
+	CompanyService companyservice.CompanyService
 }
 
 func New() *adminController {
 	return &adminController{
-		PubService: pubservice.New(),
+		PubService:     pubservice.New(),
+		CompanyService: companyservice.New(),
 	}
 }
 
@@ -20,4 +23,5 @@ func (c *adminController) Router(router fiber.Router) {
 	router.Use(middleware.StrictAuthMW)
 	router.Use(middleware.AdminAuthMW)
 	router.Post("/pubs/:pubID<int>/update-expiration-time", c.UpdatePubExpirationTime)
+	router.Post("/companies/:companyID<int>/update-tariff", c.UpdateCompanyTariff)
 }

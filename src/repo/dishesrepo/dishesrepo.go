@@ -5,6 +5,7 @@ import (
 	"io"
 	"mime/multipart"
 	"os"
+	"strings"
 
 	"github.com/alexkalak/qrmenu/src/db/postgresql"
 	"github.com/alexkalak/qrmenu/src/errors/disheserrors"
@@ -33,6 +34,7 @@ type DishesRepo interface {
 	CreateDish(categoryID int, dish models.Dish) (models.Dish, error)
 	UpdateDish(id int, dish models.Dish) (models.Dish, error)
 	DeleteDish(id int) error
+	GetCompanyID(dishID int) (int, error)
 	UploadDishImage(dishID int, fileHeader *multipart.FileHeader) (string, error)
 	DeleteDishImage(dishID int) error
 	GetImageFileName(dishID int) (string, error)
@@ -52,6 +54,7 @@ func New() DishesRepo {
 
 func (r *dishesRepo) GetAllDishes() ([]models.Dish, error) {
 	var dishes []models.Dish
+
 	result := r.Database.Find(&dishes)
 
 	if result.Error != nil {
@@ -107,6 +110,16 @@ func (r *dishesRepo) DeleteDish(id int) error {
 	return nil
 }
 
+func (r *dishesRepo) GetCompanyID(dishID int) (int, error) {
+	var dish models.Dish
+	err := r.Database.Preload("Category.Menu.Pub.Company").Find(&dish, dishID).Error
+	if err != nil {
+		return 0, err
+	}
+
+	return int(dish.Category.Menu.Pub.Company.ID), nil
+}
+
 func (s *dishesRepo) UploadDishImage(dishID int, fileHeader *multipart.FileHeader) (string, error) {
 	_, err := s.GetDishById(dishID)
 	if err != nil {
@@ -114,7 +127,9 @@ func (s *dishesRepo) UploadDishImage(dishID int, fileHeader *multipart.FileHeade
 	}
 
 	fileID := uuid.New().String()
-	fileName := fileID + "." + fileHeader.Filename
+	fileNameSplitted := strings.Split(fileHeader.Filename, ".")
+	fileExtension := fileNameSplitted[len(fileNameSplitted)-1]
+	fileName := fileID + "." + fileExtension
 
 	file, err := os.OpenFile(DISHES_IMAGES_PATH+fileName, os.O_CREATE|os.O_WRONLY, 0777)
 	if err != nil {

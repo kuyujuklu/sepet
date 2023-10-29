@@ -22,6 +22,7 @@ type MenuRepo interface {
 	FreePlaceForMenu(pubID int, place int) error
 	UpdateMenu(id int, menu models.Menu) (models.Menu, error)
 	DeleteMenu(id int) error
+	GetCompanyID(menuID int) (int, error)
 	SetMenuPlace(pubID int, menuID int, place int) (int, error)
 	GetMenuMaxPlace(pubID int) (int, error)
 }
@@ -173,4 +174,14 @@ func (r *menuRepo) DeleteMenu(id int) error {
 	}
 
 	return nil
+}
+
+func (r *menuRepo) GetCompanyID(menuID int) (int, error) {
+	var menu models.Menu
+	err := r.Database.Preload("Pub.Company").Find(&menu, menuID).Error
+	if err != nil {
+		return 0, err
+	}
+
+	return int(menu.Pub.Company.ID), nil
 }

@@ -4,9 +4,9 @@ import (
 	"mime/multipart"
 	"time"
 
+	"github.com/alexkalak/qrmenu/src/errors/companyerrors"
 	"github.com/alexkalak/qrmenu/src/errors/puberrors"
 	"github.com/alexkalak/qrmenu/src/models"
-	"github.com/alexkalak/qrmenu/src/repo/companyrepo"
 	"github.com/alexkalak/qrmenu/src/repo/pubsrepo"
 	"github.com/alexkalak/qrmenu/src/services/companyservice"
 	"github.com/alexkalak/qrmenu/src/services/currencyservice"
@@ -26,6 +26,7 @@ type PubService interface {
 	UpdatePub(id int, pub models.Pub) (models.Pub, error)
 	ExtendSubscription(id int, days int) (time.Time, error)
 	DeletePub(id int) error
+	CheckCompanyAccess(companyID int, categoryID int) error
 	UploadPubLogo(pubID int, fileHeader *multipart.FileHeader) (string, error)
 	UploadPubBG(pubID int, fileHeader *multipart.FileHeader) (string, error)
 	GetPubLogoFileName(pubID int) (string, error)
@@ -41,7 +42,7 @@ type pubsService struct {
 func New() PubService {
 	return &pubsService{
 		PubsRepo:        pubsrepo.New(),
-		CompanyService:  companyrepo.New(),
+		CompanyService:  companyservice.New(),
 		CurrencyService: currencyservice.New(),
 	}
 }
@@ -85,7 +86,16 @@ func (s *pubsService) GetAllDishesForPub(id int) ([]models.Dish, error) {
 }
 
 func (s *pubsService) CreatePub(pub models.Pub) (models.Pub, error) {
-	_, err := s.CompanyService.GetCompanyById(int(pub.CompanyID))
+	bool, err := s.CompanyService.CanCreatePub(int(pub.CompanyID))
+	if err != nil {
+		return models.Pub{}, err
+	}
+
+	if !bool {
+		return models.Pub{}, puberrors.ErrUnableToCreatePub
+	}
+
+	_, err = s.CompanyService.GetCompanyById(int(pub.CompanyID))
 	if err != nil {
 		return models.Pub{}, err
 	}
@@ -146,6 +156,19 @@ func (s *pubsService) ExtendSubscription(id int, days int) (time.Time, error) {
 
 func (s *pubsService) DeletePub(id int) error {
 	return s.PubsRepo.DeletePub(id)
+}
+
+func (s *pubsService) CheckCompanyAccess(companyID int, pubID int) error {
+	realCompanyID, err := s.PubsRepo.GetCompanyID(pubID)
+	if err != nil {
+		return err
+	}
+
+	if realCompanyID != companyID {
+		return companyerrors.ErrNotCompaniesEntity
+	}
+
+	return nil
 }
 
 func (s *pubsService) UploadPubLogo(pubID int, fileHeader *multipart.FileHeader) (string, error) {

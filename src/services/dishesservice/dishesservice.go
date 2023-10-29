@@ -3,6 +3,7 @@ package dishesservice
 import (
 	"mime/multipart"
 
+	"github.com/alexkalak/qrmenu/src/errors/companyerrors"
 	"github.com/alexkalak/qrmenu/src/models"
 	"github.com/alexkalak/qrmenu/src/repo/dishesrepo"
 	"github.com/alexkalak/qrmenu/src/services/categoryservice"
@@ -14,10 +15,11 @@ type DishesService interface {
 	CreateDish(categoryID int, dish models.Dish) (models.Dish, error)
 	UpdateDish(id int, dish models.Dish) (models.Dish, error)
 	DeleteDish(id int) error
+	CheckCompanyAccess(companyID int, dishID int) error
 	UploadDishImage(id int, fileHeader *multipart.FileHeader) (string, error)
 	GetImageFileName(id int) (string, error)
-	MoveDishLeft(categoryID int, dishID int) (int, error)
-	MoveDishRight(categoryID int, dishID int) (int, error)
+	MoveDishLeft(dishID int) (int, error)
+	MoveDishRight(dishID int) (int, error)
 }
 
 type dishesService struct {
@@ -79,6 +81,19 @@ func (s *dishesService) DeleteDish(id int) error {
 	return s.DishesRepo.DeleteDish(id)
 }
 
+func (s *dishesService) CheckCompanyAccess(companyID int, dishID int) error {
+	realCompanyID, err := s.DishesRepo.GetCompanyID(dishID)
+	if err != nil {
+		return err
+	}
+
+	if realCompanyID != companyID {
+		return companyerrors.ErrNotCompaniesEntity
+	}
+
+	return nil
+}
+
 func (s *dishesService) UploadDishImage(id int, fileHeader *multipart.FileHeader) (string, error) {
 	err := s.DishesRepo.DeleteDishImage(id)
 	if err != nil {
@@ -92,12 +107,7 @@ func (s *dishesService) GetImageFileName(id int) (string, error) {
 	return s.DishesRepo.GetImageFileName(id)
 }
 
-func (s *dishesService) MoveDishLeft(categoryID int, dishID int) (int, error) {
-	_, err := s.CategoryService.GetCategoryById(categoryID)
-	if err != nil {
-		return 0, err
-	}
-
+func (s *dishesService) MoveDishLeft(dishID int) (int, error) {
 	dish, err := s.DishesRepo.GetDishById(dishID)
 	if err != nil {
 		return 0, err
@@ -107,19 +117,16 @@ func (s *dishesService) MoveDishLeft(categoryID int, dishID int) (int, error) {
 		return 1, nil
 	}
 
-	return s.DishesRepo.SetDishPlace(categoryID, dishID, dish.Place-1)
+	return s.DishesRepo.SetDishPlace(int(dish.CategoryID), dishID, dish.Place-1)
 }
 
-func (s *dishesService) MoveDishRight(categoryID int, dishID int) (int, error) {
-	_, err := s.CategoryService.GetCategoryById(categoryID)
-	if err != nil {
-		return 0, err
-	}
-
+func (s *dishesService) MoveDishRight(dishID int) (int, error) {
 	dish, err := s.DishesRepo.GetDishById(dishID)
 	if err != nil {
 		return 0, err
 	}
+
+	categoryID := int(dish.CategoryID)
 
 	maxPlace, err := s.DishesRepo.GetDishMaxPlace(categoryID)
 	if err != nil {
