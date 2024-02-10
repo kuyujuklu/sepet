@@ -28,6 +28,7 @@ const UpdateDishPopup = () => {
 
     const [name, setName] = useState("");
     const [price, setPrice] = useState(0);
+    const [salePrice, setSalePrice] = useState("");
     const [ingredients, setingredients] = useState("");
     const [textColor, setTextColor] = useState("#ffffff");
     const [visible, setVisible] = useState(true);
@@ -38,6 +39,7 @@ const UpdateDishPopup = () => {
         if (popupState.initialDish) {
             setName(popupState.initialDish.name);
             setPrice(popupState.initialDish.price);
+            setSalePrice(popupState.initialDish.sale_price);
             setingredients(popupState.initialDish.ingredients);
             setTextColor(popupState.initialDish.text_color ?? "#ffffff");
             setVisible(popupState.initialDish.visible);
@@ -54,11 +56,14 @@ const UpdateDishPopup = () => {
         const dish = {
             name,
             price: Number(price),
+            salePrice: +salePrice,
             ingredients,
             visible,
             textColor,
             place: popupState.place ?? 1,
         };
+
+        console.log(dish)
 
         if (
             !popupState.companyID ||
@@ -111,6 +116,17 @@ const UpdateDishPopup = () => {
                         }}
                         value={price}
                         setValue={setPrice}
+                    />
+                    <InputWithLabel
+                        label={t("admin.popups.create_dish_popup.sale_price")}
+                        labelClassName={
+                            "text-xs sm:text-base text-gray-500 font-medium"
+                        }
+                        labelStyle={{
+                            marginBottom: ".1rem",
+                        }}
+                        value={salePrice}
+                        setValue={setSalePrice}
                     />
                     <InputWithLabel
                         label={t("admin.popups.update_dish_popup.ingredients")}

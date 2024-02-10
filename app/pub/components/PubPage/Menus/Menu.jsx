@@ -5,7 +5,7 @@ import { PubColorContext, ThemeContext } from "../PubPage";
 import { selectMenuID, setMenuID } from "@/app/pub/store/menuSlice";
 import { useRouter } from "next/navigation";
 
-const Menu = ({ menu }) => {
+const Menu = ({ menu, pubID }) => {
     const router = useRouter()
     const dispatch = useDispatch();
     const selectedMenuID = useSelector(selectMenuID);
@@ -23,7 +23,7 @@ const Menu = ({ menu }) => {
 
     const selectMenu = () => {
         if (selected)
-            router.push(`/pub/${menu?.pub_id}/`)
+            router.push(`/pub/${pubID}/`)
 
         dispatch(setMenuID(menu.id));
     };

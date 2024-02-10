@@ -10,8 +10,8 @@ import { usePathname } from "next/navigation";
 import BasketDownPanel from "../DownPanel/BasketDownPanel";
 import { setData } from "../../store/pubInfoSlice";
 import NoSSR from "react-no-ssr";
-import WhiteSpinner from "@/app/admin/components/loaders/WhiteSpinner";
 import SomethingWentWrong from "@/app/shared-components/Errors/SomethingWentWrong";
+import { setBasketPubID } from "../../store/basketSlice";
 
 export const ThemeContext = createContext({
     theme: "light",
@@ -67,95 +67,94 @@ export default function PubPage({
     )
     
     return (
-        <Provider store={store}>
-            <ThemeContext.Provider value={theme}>
-                <PubColorContext.Provider value={pubColorValue}>
-                    <NoSSR
-                        onSSR={
-                            <div className="h-full w-full flex items-center justify-center">
-                                <WhiteSpinner />
-                            </div>
-                        }
-                    >
-                        {data?.pub && (
-                            <div>
-                                <DataToStateUploader data={data} />
-                                {/* wrapper */}
-                                <div
-                                    style={{
-                                        fontFamily: "Rubik, sans-serif",
-                                        minHeight: "100vh",
-                                        background:
-                                            theme.theme === "light"
-                                                ? "#cccccc"
-                                                : "#222222",
-                                    }}
-                                >
+        <NoSSR
+            onSSR={
+                <div className="h-full w-full flex items-center justify-center">
+                </div>
+            }
+        >
+            <Provider store={store}>
+                <ThemeContext.Provider value={theme}>
+                    <PubColorContext.Provider value={pubColorValue}>
+                            {data?.pub && (
+                                <div>
+                                    <DataToStateUploader data={data} />
+                                    {/* wrapper */}
                                     <div
                                         style={{
-                                            fontFamily: "Rubik, sans",
-                                            maxWidth: "600px",
-                                            margin: "auto",
-                                            height: "100%",
-                                            background: theme.bgColor,
+                                            fontFamily: "Rubik, sans-serif",
                                             minHeight: "100vh",
-                                            paddingBottom: "160px",
+                                            background:
+                                                theme.theme === "light"
+                                                    ? "#cccccc"
+                                                    : "#222222",
                                         }}
-                                        className={
-                                            "relative rounded-3xl"
-                                        }
                                     >
-                                        <PubPageUpper pub={data.pub} />
                                         <div
                                             style={{
                                                 fontFamily: "Rubik, sans",
-                                                display: "block",
-                                                position: "relative",
-                                                top: "160px",
-                                                padding: "20px",
-                                                zIndex: 10,
+                                                maxWidth: "600px",
+                                                margin: "auto",
+                                                height: "100%",
                                                 background: theme.bgColor,
+                                                minHeight: "100vh",
+                                                paddingBottom: "160px",
                                             }}
-                                            className="rounded-2xl p-5"
+                                            className={
+                                                "relative rounded-3xl"
+                                            }
                                         >
-                                            {isChoosingFood && (
-                                                <PubPageInfo pub={data.pub} />
-                                            )}
+                                            <PubPageUpper pub={data.pub} />
+                                            <div
+                                                style={{
+                                                    fontFamily: "Rubik, sans",
+                                                    display: "block",
+                                                    position: "relative",
+                                                    top: "160px",
+                                                    padding: "20px",
+                                                    zIndex: 10,
+                                                    background: theme.bgColor,
+                                                }}
+                                                className="rounded-2xl p-5"
+                                            >
+                                                {isChoosingFood && (
+                                                    <PubPageInfo pub={data.pub} />
+                                                )}
 
-                                            {children}
+                                                {children}
 
+                                                {hasDownPanel && (
+                                                    //down panel phantom box to keep the page height
+                                                    <div
+                                                        style={{
+                                                            height: "150px",
+                                                            width: "100%",
+                                                        }}
+                                                    ></div>
+                                                )}
+                                            </div>
                                             {hasDownPanel && (
-                                                //down panel phantom box to keep the page height
-                                                <div
-                                                    style={{
-                                                        height: "150px",
-                                                        width: "100%",
-                                                    }}
-                                                ></div>
+                                                <>
+                                                    {isChoosingFood ? (
+                                                        <MenuDownPanel
+                                                            pubID={data.pub.id}
+                                                            data={downPanelData}
+                                                        />
+                                                    ) : (
+                                                        <BasketDownPanel
+                                                            pubID={data.pub.id}
+                                                        />
+                                                    )}
+                                                </>
                                             )}
                                         </div>
-                                        {hasDownPanel && (
-                                            <>
-                                                {isChoosingFood ? (
-                                                    <MenuDownPanel
-                                                        pubID={data.pub.id}
-                                                        data={downPanelData}
-                                                    />
-                                                ) : (
-                                                    <BasketDownPanel
-                                                        pubID={data.pub.id}
-                                                    />
-                                                )}
-                                            </>
-                                        )}
                                     </div>
                                 </div>
-                            </div>
-                        )}
-                    </NoSSR>
-                </PubColorContext.Provider>
-            </ThemeContext.Provider>
-        </Provider>
+                            )}
+                    </PubColorContext.Provider>
+                </ThemeContext.Provider>
+            </Provider>
+        </NoSSR>
     );
 }
 
@@ -164,5 +163,10 @@ const DataToStateUploader = ({ data }) => {
 
     useEffect(() => {
         if (data) dispatch(setData(data));
+        if(data?.pub) {
+            console.log("set basket pub id", data.pub.id);
+            dispatch(setBasketPubID(data.pub.id))
+        }
     }, [data, dispatch]);
+    return <></>
 };

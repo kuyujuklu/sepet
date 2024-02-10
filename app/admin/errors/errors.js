@@ -11,11 +11,15 @@ export const appErrors = {
     min: "errors.min",
     max: "errors.max",
     fieldMustBeNumber: "errors.field_must_be_number",
+    invalidUrlName: "errors.invalid_url_name",
 
     //login-registration
     invalidCredentials: "errors.invalid_credentials",
     companyWithTheSameNameAlreadyExists: "errors.company_with_the_same_name_already_exists",
     companyWithTheSameEmailAlreadyExists: "errors.company_with_the_same_email_already_exists",
+
+    //limit exceeded
+    pubLimitExceeded: "errors.pub_limit_exceeded",
 
     //file uploading
     fileIsTooLarge: "errors.file_is_too_large",

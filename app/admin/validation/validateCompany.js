@@ -54,6 +54,14 @@ export const ValidatePassword = (password) => {
     return null;
 }
 
+export const ValidateRepeatPassword = (repeatPassword, password) => {
+    if(repeatPassword !== password) {
+        return "admin.validation_errors.company.repeat_password.not_match";
+    }
+
+    return null;
+}
+
 export const ValidateCompany = (company) => {
     let errors = [];
     let err = validateCompanyName(company.name);

@@ -10,6 +10,8 @@ export const errorKeys = {
     get_categories: "get_categories",
     get_dish_by_id: "get_dish_by_id",
     get_dishes: "get_dishes",
+    get_pub_shipping: "get_pub_shipping",
+    get_pub_preorder: "get_pub_preorder",
 
     //authentication
     authentication: 'authentication',

@@ -5,6 +5,7 @@ import { Button } from "@mui/material";
 import {
     ValidateCompany,
     ValidatePassword,
+    ValidateRepeatPassword,
     validateCompanyEmail,
     validateCompanyName,
     validateCompayPhone,
@@ -23,6 +24,7 @@ import { errorKeys, setReceivingError } from "../errorHandlers/errorHandlerSlice
 import { appErrors } from "../../errors/errors";
 import { convertRespError } from "../../api/resperrors/convertRespError";
 import Header from "./Header";
+import { tariffs } from "../../static-data/data";
 
 const Registration = () => {
     const { t } = useTranslation();
@@ -31,9 +33,15 @@ const Registration = () => {
         const navigate = useNavigate();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [repeatPassword, setRepeatPassword] = useState("");
     const [name, setName] = useState("");
     const [phone, setPhone] = useState("");
     const dispatch = useDispatch();
+
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    //if tariff is not in url params or is not valid, set basic tariff
+    const tariff = tariffs[urlParams.get("tariff")] ?  tariffs[urlParams.get("tariff")] : tariffs.basic
 
     useEffect(() => {
         if (data?.ok && data?.accesstoken) {
@@ -61,6 +69,7 @@ const Registration = () => {
     }, [error, dispatch]);
 
     const handleButtonClick = () => {
+        setValidateAll(true);
         let validationErrors = ValidateCompany({
             email,
             password,
@@ -72,15 +81,27 @@ const Registration = () => {
             return;
         }
 
+        let valdationRepeatPasswordError = ValidateRepeatPassword(
+            repeatPassword,
+            password
+        );
+
+        if(valdationRepeatPasswordError) {
+            return;
+        }
+
         registrateQuery({
             data: {
                 email,
                 password,
                 name,
                 phone,
+                tariff
             },
         });
     };
+
+    const [validateAll, setValidateAll] = useState(false); 
 
     return (
         <div className="flex flex-col items-center w-full h-full py-2 sm:py-5 gap-5">
@@ -112,6 +133,7 @@ const Registration = () => {
                                 maxWidth: "600px",
                             }}
                             validators={[validateCompanyEmail]}
+                            validationDependencies={{requireValidation: validateAll}}
                         />
                     </div>
                     <div>
@@ -128,6 +150,7 @@ const Registration = () => {
                                 maxWidth: "600px",
                             }}
                             validators={[validateCompanyName]}
+                            validationDependencies={{requireValidation: validateAll}}
                         />
                     </div>
                     <div>
@@ -144,6 +167,7 @@ const Registration = () => {
                                 maxWidth: "600px",
                             }}
                             validators={[validateCompayPhone]}
+                            validationDependencies={{requireValidation: validateAll}}
                         />
                     </div>
                     <div>
@@ -161,6 +185,25 @@ const Registration = () => {
                                 maxWidth: "600px",
                             }}
                             validators={[ValidatePassword]}
+                            validationDependencies={{requireValidation: validateAll}}
+                        />
+                    </div>
+                    <div>
+                        <div className="text-sm font-medium">
+                            {t("admin.registration.repeat_password")}
+                        </div>
+                        <Input
+                            type="password"
+                            value={repeatPassword}
+                            setValue={setRepeatPassword}
+                            style={{
+                                marginTop: "10px",
+                                minHeight: "40px",
+                                fontSize: "16px",
+                                maxWidth: "600px",
+                            }}
+                            validators={[(value) => ValidateRepeatPassword(value, password)]}
+                            validationDependencies={{requireValidation: true, password}}
                         />
                     </div>
 

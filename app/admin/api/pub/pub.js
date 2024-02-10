@@ -2,27 +2,28 @@ import { createApi } from "@reduxjs/toolkit/dist/query/react";
 import { authenticationBasedQuery } from "../auth/authBasedQuery";
 
 export const pub = createApi({
-    reducerPath: 'pubQuery',
+    reducerPath: "pubQuery",
     baseQuery: authenticationBasedQuery,
-    tagTypes: ['Pub'],
+    tagTypes: ["Pub", "Shipping", "Preorder"],
     endpoints: (builder) => ({
         createPub: builder.mutation({
-            query: ({companyID, data}) => ({
+            query: ({ companyID, data }) => ({
                 url: `/api/company/${companyID}/pubs/`,
-                method: 'POST',
+                method: "POST",
                 body: {
                     name: data.name,
+                    url_name: data.urlName,
                 },
                 headers: {
-                    'Content-Type': 'application/json'
-                }
+                    "Content-Type": "application/json",
+                },
             }),
-            invalidatesTags: ['Pub']
+            invalidatesTags: ["Pub"],
         }),
         updatePub: builder.mutation({
-            query: ({companyID, data, pubID}) => ({
+            query: ({ companyID, data, pubID }) => ({
                 url: `/api/company/${companyID}/pubs/${pubID}/`,
-                method: 'PUT',
+                method: "PUT",
                 body: {
                     name: data.name,
                     color_theme: data.colorTheme,
@@ -33,31 +34,38 @@ export const pub = createApi({
                     currency_id: data.currencyID,
                 },
                 headers: {
-                    'Content-Type': 'application/json'
-                }
+                    "Content-Type": "application/json",
+                },
             }),
-            invalidatesTags: ['Pub']
+            invalidatesTags: ["Pub"],
         }),
         deletePub: builder.mutation({
-            query: ({companyID, pubID}) => ({
+            query: ({ companyID, pubID }) => ({
                 url: `/api/company/${companyID}/pubs/${pubID}/`,
-                method: 'Delete',
+                method: "Delete",
             }),
-            invalidatesTags: ['Pub']
+            invalidatesTags: ["Pub"],
         }),
         getPubs: builder.query({
-            query: ({companyID}) => ({
+            query: ({ companyID }) => ({
                 url: `/api/company/${companyID}/pubs/`,
-                method: 'GET',
+                method: "GET",
             }),
-            providesTags: ['Pub']
+            providesTags: ["Pub"],
         }),
         getPub: builder.query({
-            query: ({companyID, pubID}) => ({
+            query: ({ companyID, pubID }) => ({
                 url: `/api/company/${companyID}/pubs/${pubID}/`,
-                method: 'GET',
+                method: "GET",
             }),
-            providesTags: ['Pub']
+            providesTags: ["Pub"],
+        }),
+        getFullPubInfo: builder.query({
+            query: ({ pubID }) => ({
+                url: `/api/client/pub/${pubID}/`,
+                method: "GET",
+            }),
+            providesTags: ["Pub"],
         }),
         uploadPubBG: builder.mutation({
             query: ({ companyID, pubID, data }) => ({
@@ -67,8 +75,74 @@ export const pub = createApi({
             }),
             invalidatesTags: ["Pub"],
         }),
+        getShipping: builder.query({
+            query: ({ pubID }) => ({
+                url: `/api/client/pub/${pubID}/shipping`,
+                method: "GET",
+            }),
+            providesTags: ["Pub", "Shipping"],
+        }),
+        setShipping: builder.mutation({
+            query: ({ companyID, shapes, pubID }) => ({
+                url: `/api/company/${companyID}/pubs/${pubID}/shipping`,
+                method: "POST",
+                body: {
+                    shapes
+                },
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }),
+            invalidatesTags: ["Shipping"],
+        }),
+        setShippingAvailability: builder.mutation({
+            query: ({ companyID, pubID, available }) => ({
+                url: `/api/company/${companyID}/pubs/${pubID}/shipping-availability`,
+                method: "POST",
+                body: {
+                    available: available
+                },
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }),
+            invalidatesTags: ["Shipping"],
+        }),
+        getPreorder: builder.query({
+            query: ({ pubID }) => ({
+                url: `/api/client/pub/${pubID}/preorder`,
+                method: "GET",
+            }),
+            providesTags: ["Pub", "Preorder"],
+        }),
+        setPreorder: builder.mutation({
+            query: ({ companyID, preorder, pubID }) => ({
+                url: `/api/company/${companyID}/pubs/${pubID}/preorder`,
+                method: "POST",
+                body: {
+                    "card_preorder": preorder.cardPreorder,
+                    "cash_preorder": preorder.cashPreorder
+                },
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }),
+            invalidatesTags: ["Preorder"],
+        }),
     }),
-    
-})
+});
 
-export const { useGetPubsQuery, useCreatePubMutation, useUpdatePubMutation, useDeletePubMutation, useGetPubQuery, useUploadPubBGMutation } = pub;
+export const {
+    useGetPubsQuery,
+    useCreatePubMutation,
+    useUpdatePubMutation,
+    useDeletePubMutation,
+    useGetPubQuery,
+    useGetFullPubInfoQuery,
+    useUploadPubBGMutation,
+    useGetShippingQuery,
+    useSetShippingMutation,
+    useSetShippingAvailabilityMutation,
+    useGetPreorderQuery,
+    useSetPreorderMutation,
+} = pub;

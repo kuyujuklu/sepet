@@ -9,6 +9,8 @@ import dishReducer from "../features/pub/Dishes/dishesSlice"
 import authenticationReducer from "../features/auth/authSlice"
 import errorHandlerReducer from "../features/errorHandlers/errorHandlerSlice"
 import alertsReducer from "../features/alerts/alertSlice"
+import shippingReducer from "../features/admin/ShippingAndPreorder/Shipping/shippingSlice"
+import preorderReducer from "../features/admin/ShippingAndPreorder/Preorder/preorderSlice"
 import { setupListeners } from "@reduxjs/toolkit/dist/query";
 import { pub } from "../api/pub/pub";
 import { menu } from "../api/menu/menu";
@@ -25,6 +27,8 @@ export const store = configureStore({
         authentication: authenticationReducer,
         errorHandlerSlice: errorHandlerReducer,
         alerts: alertsReducer,
+        shippingSlice: shippingReducer,
+        preorderSlice: preorderReducer,
         [auth.reducerPath]: auth.reducer,
         [company.reducerPath]: company.reducer,
         [pub.reducerPath]: pub.reducer,

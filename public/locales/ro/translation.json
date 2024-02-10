@@ -9,7 +9,8 @@
         "file_is_too_large": "Fișierul este prea mare.",
         "file_is_not_an_image": "Fișierul nu este o imagine.",
         "invalid_file": "Fișier invalid.",
-        "invalid_file_extension": "Extensie de fișier invalidă."
+        "invalid_file_extension": "Extensie de fișier invalidă.",
+        "pub_limit_exceeded": "A fost depășită limita de localități. Actualizați tariful pentru a adăuga noi localități."
     },
     "client": {},
     "admin": {
@@ -39,6 +40,9 @@
                     "required": "Parola este obligatorie.",
                     "min": "Parola trebuie să aibă cel puțin 8 caractere.",
                     "max": "Parola trebuie să aibă cel mult 255 de caractere."
+                },
+                "repeat_password": {
+                    "not_match": "Parolele nu se potrivesc."
                 }
             },
             "pub": {
@@ -50,7 +54,8 @@
                 "url_name": {
                     "required": "URL-ul locației este obligatoriu.",
                     "min": "URL-ul locației trebuie să aibă cel puțin 3 caractere.",
-                    "max": "URL-ul locației trebuie să aibă cel mult 255 de caractere."
+                    "max": "URL-ul locației trebuie să aibă cel mult 255 de caractere.",
+                    "invalid_url_name": "URL-ul ar trebui să conțină doar litere mici englezești și cifre."
                 },
                 "wifi-password": {
                     "min": "Parola trebuie să aibă cel puțin 8 caractere.",
@@ -71,11 +76,16 @@
             "your_name": "Numele tău",
             "your_phone": "Numărul tău de telefon",
             "password": "Parola",
+            "repeat_password": "Repeta parola",
             "registrate_button": "Creați cont",
             "link_to_authentication": "Aveți deja un cont? Conectați-vă"
         },
         "company": {
             "pubs": "Locații",
+            "tariff": "Tarif",
+            "tariff_basic": "Basic",
+            "tariff_pro": "Professional",
+            "tariff_business": "Business",
             "pub": {
                 "address": "Adresă",
                 "expiration_time": "Plătită până la",
@@ -94,9 +104,14 @@
             }
         },
         "popups": {
+            "upgrade_tariff_popup": {
+                "header": "Actualizați tariful",
+                "main_headline": "Pentru a schimba tariful, vă rugăm să contactați administratorul"
+            },
             "create_pub_popup": {
                 "headline": "Adăugați locație",
                 "name": "Numele locației",
+                "url_name": "Nume scurt pentru URL", 
                 "create_button": "Adăugați"
             },
             "update_pub_popup": {

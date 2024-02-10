@@ -12,6 +12,10 @@ const respErrors = {
     "bad document": appErrors.invalidFile,
     "invalid file extension": appErrors.invalidFileExtension,
 
+    //limit exceeded
+    "pub limit exceeded": appErrors.pubLimitExceeded,
+
+
     //validation
     "validation error": appErrors.validationError,
 }

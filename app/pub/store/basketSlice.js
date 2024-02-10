@@ -39,10 +39,16 @@ const basketSlice = createSlice({
         decreaseDishAmount(state, action) {
             if (!action.payload?.dishID) return;
 
-            if (!state.dishes[action.payload.dishID]) {
-                state.dishes[action.payload.dishID] = null;
+            if (
+                !state.dishes[action.payload.dishID] ||
+                !state.dishes[action.payload.dishID].count
+            ) {
+                state.dishes[action.payload.dishID] = {
+                    pubID: state.pubID,
+                    count: 0,
+                };
             } else {
-                state.dishes[action.payload.dishID]--;
+                state.dishes[action.payload.dishID].count--;
             }
 
             //clear state from null or 0 values

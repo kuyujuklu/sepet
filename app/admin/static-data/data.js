@@ -25,3 +25,9 @@ export const currencies = [
         symbol: '₺'
     }
 ]
+
+export const tariffs = {
+    basic: "basic",
+    pro: "pro",
+    business: "business"
+}

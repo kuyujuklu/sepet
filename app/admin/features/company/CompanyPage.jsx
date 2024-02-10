@@ -11,6 +11,7 @@ import {
     setReceivingError,
 } from "../errorHandlers/errorHandlerSlice";
 import LogoutButton from "./LogoutButton";
+import CompanyTariff from "./CompanyTariff";
 
 const CompanyPage = () => {
     const dispatch = useDispatch();
@@ -31,7 +32,16 @@ const CompanyPage = () => {
                 <SwitchLang />
                 <LogoutButton />
             </div>
-            <CompanyUpper />
+            
+            <div className="flex items-center justify-center my-8">
+                {data && 
+                    <CompanyTariff tariff={data.company.tariff} />
+                }
+            </div>
+            
+            <div className="my-10">
+                <CompanyUpper />
+            </div>
             <CompanyPubs companyID={data?.company?.id} />
         </div>
     );

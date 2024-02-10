@@ -2,6 +2,7 @@ import SomethingWentWrong from "@/app/shared-components/Errors/SomethingWentWron
 import { getPubInfo } from "../api/pub";
 import PubPage from "../components/PubPage/PubPage";
 
+
 export default async function PubWithMenusLayout({ children, params }) {
     let data = await getPubInfo(params?.pubID);
 

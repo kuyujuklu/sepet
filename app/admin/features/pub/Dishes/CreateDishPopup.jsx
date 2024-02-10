@@ -28,6 +28,7 @@ const CreateDishPopup = () => {
 
     const [name, setName] = useState("");
     const [price, setPrice] = useState(0);
+    const [salePrice, setSalePrice] = useState("");
     const [ingredients, setingredients] = useState("");
     const [textColor, setTextColor] = useState("#ffffff");
     const [visible, setVisible] = useState(true);
@@ -44,6 +45,7 @@ const CreateDishPopup = () => {
         const dish = {
             name,
             price: Number(price),
+            salePrice: +salePrice,
             ingredients,
             visible,
             textColor,
@@ -99,6 +101,17 @@ const CreateDishPopup = () => {
                         }}
                         value={price}
                         setValue={setPrice}
+                    />
+                    <InputWithLabel
+                        label={t("admin.popups.create_dish_popup.sale_price")}
+                        labelClassName={
+                            "text-xs sm:text-base text-gray-500 font-medium"
+                        }
+                        labelStyle={{
+                            marginBottom: ".1rem",
+                        }}
+                        value={salePrice}
+                        setValue={setSalePrice}
                     />
                     <InputWithLabel
                         label={t("admin.popups.create_dish_popup.ingredients")}

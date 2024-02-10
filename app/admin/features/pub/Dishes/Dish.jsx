@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { useDispatch, useSelector } from "react-redux";
 import { selectPubID } from "../pubSlice";
 import { selectCompanyID } from "../../company/companySlice";
@@ -30,7 +30,9 @@ const Dish = ({ dish, menuID, categoryID }) => {
         }
     }, [dispatch, pubError]);
 
-    const [uploadImage, { isLoading }] = useUploadDishImageMutation({fixedCacheKey: fixedCacheKeys.dishes.upload_dish_image});
+    const [uploadImage, { isLoading }] = useUploadDishImageMutation({
+        fixedCacheKey: fixedCacheKeys.dishes.upload_dish_image,
+    });
 
     const themeContext = useContext(ThemeContext);
 
@@ -51,6 +53,13 @@ const Dish = ({ dish, menuID, categoryID }) => {
             data: formData,
         });
     };
+
+
+
+    const currency = currencies.find(
+        (currency) => currency.id === pubData?.pub?.currency_id
+    )?.symbol ?? "Lei"
+
     return (
         <div>
             {/* dish innter */}
@@ -84,7 +93,12 @@ const Dish = ({ dish, menuID, categoryID }) => {
                     style={{ zIndex: 20 }}
                     className="absolute m-auto inset-0 text-center h-fit w-fit flex flex-col items-center"
                 >
-                    <div className="p-4 text-xl font-medium" style={{textShadow: "0px 0px 3px black"}}>{dish.name}</div>
+                    <div
+                        className="p-4 text-xl font-medium"
+                        style={{ textShadow: "0px 0px 3px black" }}
+                    >
+                        {dish.name}
+                    </div>
                     {isLoading ? (
                         <WhiteSpinner />
                     ) : (
@@ -137,18 +151,30 @@ const Dish = ({ dish, menuID, categoryID }) => {
             {/* dish price */}
             <div className="flex flex-col justify-between px-4 py-2">
                 <div>
-                    <span className="text-gray-600 text-xl">{dish.ingredients}</span>
+                    <span className="text-gray-600 text-xl">
+                        {dish.ingredients}
+                    </span>
                 </div>
                 <div
                     style={{ color: themeContext.textColor }}
                     className="text-xl font-medium"
                 >
-                    {dish.price} {" "}
+                    {
+                        <>
+                            {dish.sale_price ? (
+                                <span>
+                                    <strike className="mr-3 text-red-500">{dish.price} {currency}</strike>
+                                    <span className="">
+                                        {dish.sale_price}
+                                    </span>
+                                </span>
+                            ) : (
+                                <span>{dish.price}</span>
+                            )}
+                        </>
+                    }{" "}
                     <span>
-                        {currencies.find(
-                            (currency) =>
-                                currency.id === pubData?.pub?.currency_id
-                        )?.symbol ?? "Lei"}
+                        {currency}
                     </span>
                 </div>
             </div>

@@ -1,4 +1,4 @@
-import { useCreatePubMutation, useDeletePubMutation, useUpdatePubMutation } from "@/app/admin/api/pub/pub"
+import { useCreatePubMutation, useDeletePubMutation, useSetPreorderMutation, useUpdatePubMutation } from "@/app/admin/api/pub/pub"
 import { useEffect } from "react"
 import { errorKeys, selectReceivingError, handleErrorStandardWay  } from "../errorHandlerSlice"
 import { useDispatch, useSelector } from "react-redux"
@@ -11,8 +11,14 @@ const PubErrorsHandler = () => {
     const [, {error: pubUpdateError }] = useUpdatePubMutation({fixedCacheKey: fixedCacheKeys.pubs.update_pub})
     const [, {error: pubDeleteError }] = useDeletePubMutation({fixedCacheKey: fixedCacheKeys.pubs.delete_pub})
     const [, {error: pubUploadBgError }] = useDeletePubMutation({fixedCacheKey: fixedCacheKeys.pubs.upload_pub_bg})
+    const [, {error: pubSetShippingError }] = useDeletePubMutation({fixedCacheKey: fixedCacheKeys.pubs.set_shipping})
+    const [, {error: pubSetShippingAvailibilityError }] = useDeletePubMutation({fixedCacheKey: fixedCacheKeys.pubs.set_shipping_availability})
+    const [, {error: pubSetPreorderError }] = useSetPreorderMutation({fixedCacheKey: fixedCacheKeys.pubs.set_preorder})
+    
     const pubGetByIDError = useSelector(selectReceivingError(errorKeys.get_pub_by_id))
     const getPubsError = useSelector(selectReceivingError(errorKeys.get_pubs))
+    const getPubShippingError = useSelector(selectReceivingError(errorKeys.get_pub_shipping))
+    const getPubPreorderError = useSelector(selectReceivingError(errorKeys.get_pub_preorder))
 
     useEffect(() => {
         if (!pubCreateError)
@@ -34,6 +40,27 @@ const PubErrorsHandler = () => {
 
         dispatch(handleErrorStandardWay(pubDeleteError))
     }, [dispatch, pubDeleteError])
+
+    useEffect(() => {
+        if (!pubSetShippingAvailibilityError)
+            return
+
+        dispatch(handleErrorStandardWay(pubSetShippingAvailibilityError))
+    }, [dispatch, pubSetShippingAvailibilityError])
+
+    useEffect(() => {
+        if (!pubSetShippingError)
+            return
+
+        dispatch(handleErrorStandardWay(pubSetShippingError))
+    }, [dispatch, pubSetShippingError])
+
+    useEffect(() => {
+        if (!pubSetPreorderError)
+            return
+
+        dispatch(handleErrorStandardWay(pubSetPreorderError))
+    }, [dispatch, pubSetPreorderError])
     
     useEffect(() => {
         if (!pubUploadBgError)
@@ -61,6 +88,20 @@ const PubErrorsHandler = () => {
 
         dispatch(handleErrorStandardWay(getPubsError))
     }, [dispatch, getPubsError])
+
+    useEffect(() => {
+        if (!getPubShippingError || getPubShippingError.originalStatus === 404)
+            return
+
+        dispatch(handleErrorStandardWay(getPubShippingError))
+    }, [dispatch, getPubShippingError])
+
+    useEffect(() => {
+        if (!getPubPreorderError || getPubPreorderError.originalStatus === 404)
+            return
+
+        dispatch(handleErrorStandardWay(getPubPreorderError))
+    }, [dispatch, getPubPreorderError])
 
     return (
     <div></div>

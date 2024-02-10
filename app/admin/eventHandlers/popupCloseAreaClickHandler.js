@@ -1,5 +1,7 @@
 export const closePopupAreaClickHandler = (callback) => {
     return (e) => {
+        e.stopPropagation();
+        
         if(e.currentTarget !== e.target)
             return
         const pointerUpHandler = (event) => {

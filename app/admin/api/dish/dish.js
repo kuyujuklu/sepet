@@ -13,6 +13,7 @@ export const dish = createApi({
                 body: {
                     name: data.name,
                     price: data.price,
+                    sale_price: data.salePrice,
                     ingredients: data.ingredients,
                     place: data.place,
                     visible: data.visible,
@@ -31,6 +32,7 @@ export const dish = createApi({
                 body: {
                     name: data.name,
                     price: data.price,
+                    sale_price: data.salePrice,
                     ingredients: data.ingredients,
                     place: data.place,
                     visible: data.visible,
@@ -40,7 +42,7 @@ export const dish = createApi({
                     "Content-Type": "application/json",
                 },
             }),
-            invalidatesTags: ["Dish"],
+            invalidatesTags: ["Dish", "Pub"],
         }),
         deleteDish: builder.mutation({
             query: ({ companyID, pubID, menuID, categoryID, dishID }) => ({

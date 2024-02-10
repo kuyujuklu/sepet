@@ -9,6 +9,9 @@ export const fixedCacheKeys = {
         get_all_pubs: 'pubs.get_all_pubs',
         get_pub_by_id: 'pubs.get_pub_by_id',
         upload_pub_bg: 'pubs.upload_pub_bg',
+        set_shipping: 'pubs.set_shipping',
+        set_shipping_availability: 'pubs.set_shipping_availability',
+        set_preorder: 'pubs.set_preorder',
     },
     menus: {
         create_menu: 'menus.create_menu',

@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 import { ThemeContext } from "../PubPage";
 import { currencies } from "@/app/admin/static-data/data";
 import Image from "next/image";
@@ -8,11 +8,13 @@ import {
     increaseDishAmount,
     selectDish,
 } from "@/app/pub/store/basketSlice";
+import BlackSpinner from "@/app/admin/components/loaders/BlackSpinner";
 
 const Dish = ({ dish, currencyID }) => {
     const dispatch = useDispatch();
 
-    const dishAmount = useSelector(selectDish(dish?.id));
+    const dishAmountFromState = useSelector(selectDish(dish?.id));
+    const dishAmount = dishAmountFromState?.count ?? 0;
     const themeContext = useContext(ThemeContext);
 
     const handleIncreaseClick = () => {
@@ -26,6 +28,15 @@ const Dish = ({ dish, currencyID }) => {
 
         dispatch(decreaseDishAmount({ dishID: dish.id }));
     };
+
+    const [imageIsLoaded, setImageIsLoaded] = useState(false);
+    useEffect(() => {
+        setTimeout(() => setImageIsLoaded(true), 5000)
+    }, [])
+
+    const currency = currencies.find(
+        (currency) => currency.id === currencyID
+    )?.symbol ?? "Lei"
 
     return (
         <div>
@@ -42,6 +53,8 @@ const Dish = ({ dish, currencyID }) => {
             >
                 {dish.image_file_name && (
                     <img
+                        fill
+                        onLoad={() => setImageIsLoaded(true)}
                         src={`/api-static/images/dishes/${dish.image_file_name}`}
                         alt="dish"
                         style={{
@@ -53,6 +66,7 @@ const Dish = ({ dish, currencyID }) => {
                     />
                 )}
 
+
                 {/* category center content*/}
                 <div
                     style={{ zIndex: 20 }}
@@ -63,6 +77,9 @@ const Dish = ({ dish, currencyID }) => {
                         style={{ textShadow: "0px 0px 3px black" }}
                     >
                         {dish.name}
+                        {
+                            dish.image_file_name && !imageIsLoaded && (<div className="w-full h-full flex pt-3 justify-center"><BlackSpinner /></div>)
+                        }
                     </div>
                 </div>
             </div>
@@ -78,11 +95,22 @@ const Dish = ({ dish, currencyID }) => {
                     className="flex text-xl font-medium items-center gap-x-6"
                 >
                     <span>
-                        {dish.price}{" "}
+                        {
+                            <>
+                                {dish.sale_price ? (
+                                    <span>
+                                        <strike className="mr-3 text-red-500">{dish.price} {currency}</strike>
+                                        <span className="">
+                                            {dish.sale_price}
+                                        </span>
+                                    </span>
+                                ) : (
+                                    <span>{dish.price}</span>
+                                )}
+                            </>
+                        }{" "}
                         <span>
-                            {currencies.find(
-                                (currency) => currency.id === currencyID
-                            )?.symbol ?? "Lei"}
+                            {currency}
                         </span>
                     </span>
 

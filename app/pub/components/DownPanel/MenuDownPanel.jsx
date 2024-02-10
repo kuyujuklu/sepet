@@ -24,7 +24,7 @@ const MenuDownPanel = ({ pubID, data }) => {
                 >
                     <div className="relative">
                         <div className="relative">
-                            <MenuList menus={data.menus} />
+                            <MenuList menus={data.menus} pubID={pubID}/>
                         </div>
                     </div>
 

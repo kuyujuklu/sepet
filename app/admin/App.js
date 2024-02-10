@@ -21,6 +21,8 @@ import { useEffect } from "react";
 import QrCodePopup from "./features/pub/QrCodePopup";
 import ErrorHandlers from "./features/errorHandlers/ErrorHandlers";
 import Alerts from "./features/alerts/Alerts";
+import TariffPopup from "./features/company/TariffPopup";
+import AdminPanel from "./features/admin/AdminPanel";
 
 const App = () => {
   return (
@@ -55,7 +57,10 @@ const AppInner = () => {
         <Route path="/auth/registration" element={<Registration />} />
         <Route path="/auth/authentication" element={<Authentication />} />
         <Route path="/company" element={<CompanyPage />} />
+        {/* Edit menu  */}
         <Route path="/company/pub/:pubID/*" element={<PubPage />} />
+        {/* Admin panel */}
+        <Route path="/pub/:pubID/*" element={<AdminPanel />} />
       </Routes>
       
       <Alerts />
@@ -69,6 +74,8 @@ const AppInner = () => {
 const Popups =() => {
   return (
     <>
+      <TariffPopup />
+
       <CreatePubPopup />
       <UpdatePubPopup />
       <DeletePubPopup />

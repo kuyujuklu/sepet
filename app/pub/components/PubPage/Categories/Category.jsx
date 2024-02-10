@@ -1,7 +1,13 @@
 "use client";
+import BlackSpinner from "@/app/admin/components/loaders/BlackSpinner";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 const Category = ({ category, pubID }) => {
+    const [imageIsLoaded, setImageIsLoaded] = useState(false);
+    useEffect(() => {
+        setTimeout(() => setImageIsLoaded(true), 5000)
+    }, [])
     return (
         <Link
             style={{ display: "block", height: "160px", width: "100%" }}
@@ -18,6 +24,7 @@ const Category = ({ category, pubID }) => {
             >
                 {category.image_file_name && (
                     <img
+                        onLoad={() => setImageIsLoaded(true)}
                         src={`/api-static/images/categories/${category.image_file_name}`}
                         alt="category"
                         style={{
@@ -39,6 +46,9 @@ const Category = ({ category, pubID }) => {
                         style={{ textShadow: "0px 0px 3px black" }}
                     >
                         {category.name}
+                        {
+                            category.image_file_name && !imageIsLoaded && (<div className="w-full h-full flex pt-3 justify-center"><BlackSpinner /></div>)
+                        }
                     </div>
                 </div>
             </div>

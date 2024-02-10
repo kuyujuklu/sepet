@@ -10,6 +10,9 @@ const pubInfoSlice = createSlice({
     reducers: {
         setData(state, action) {
             state.data = action.payload;
+            console.log("URL_NAME ++++++++++++++", action.payload.pub.url_name)
+            if(state.data.pub)
+                state.data.pub.id = action.payload.pub.url_name;
         },
     },
 });

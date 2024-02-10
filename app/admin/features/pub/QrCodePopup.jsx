@@ -22,7 +22,6 @@ const QrCodePopup = () => {
                         <img 
                             src={"/api-static/images/pubs/qr/" + popupState.imageFileName}
                             alt="qr code"
-                            fill
                         />
                     </div>
                 </main>

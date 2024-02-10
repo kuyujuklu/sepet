@@ -9,6 +9,15 @@ export const validators = {
         }
         return null
     },
+    ValidateUrlName(value) {
+        if(!value) {
+            return appErrors.fieldIsRequired
+        }
+        if(!/^[a-z0-9-]+$/.test(value)) {
+            return appErrors.invalidUrlName
+        }
+        return null
+    },
     ValidateEmail (value) {
         value = value.trim();
         if(!emailRegex.test(value))

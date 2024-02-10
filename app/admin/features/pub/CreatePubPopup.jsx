@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import Popup from "../../components/Popup/Popup";
 import { closeCreatePubPopup, selectCreatePubPopupState } from "./pubSlice";
 import { useCallback, useEffect, useState } from "react";
-import { ValidatePub, ValidatePubName } from "../../validation/validatePub";
+import { ValidatePub, ValidatePubName, ValidatePubUrlName } from "../../validation/validatePub";
 import InputWithLabel from "../../components/Inputs/InputWithLabel";
 import { Button } from "@mui/material";
 import WhiteSpinner from "../../components/loaders/WhiteSpinner";
@@ -24,6 +24,7 @@ const CreatePubPopup = () => {
     }, [dispatch]);
 
     const [name, setName] = useState("");
+    const [urlName, setUrlName] = useState("");
     // const [currencyID, setCurrencyID] = useState(1);
     // const [languageID, setLanguageID] = useState(1);
 
@@ -35,6 +36,7 @@ const CreatePubPopup = () => {
 
     const handleButtonClick = () => {
         const pub = {
+            urlName: urlName,
             name,
             currencyID: 1,
             languageID: 1,
@@ -72,6 +74,18 @@ const CreatePubPopup = () => {
                         value={name}
                         setValue={setName}
                         validators={[ValidatePubName]}
+                    />
+                    <InputWithLabel
+                        label={t("admin.popups.create_pub_popup.url_name")}
+                        labelClassName={
+                            "text-xs sm:text-base text-gray-500 font-medium"
+                        }
+                        labelStyle={{
+                            marginBottom: ".1rem",
+                        }}
+                        value={urlName}
+                        setValue={setUrlName}
+                        validators={[ValidatePubUrlName]}
                     />
                 </main>
                 <footer className="text-center">
