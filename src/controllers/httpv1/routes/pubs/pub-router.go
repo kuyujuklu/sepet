@@ -32,4 +32,12 @@ func (c *pubController) AuthorizedRouter(router fiber.Router) {
 	router.Delete("/:pubID<int>/", c.DeletePub)
 	router.Patch("/:pubID<int>/logo", c.UploadPubLogo)
 	router.Patch("/:pubID<int>/bg", c.UploadPubBG)
+
+	router.Post("/:pubID<int>/shipping", c.SetShapesForPub)
+	router.Post("/:pubID<int>/shipping-availability", c.SetAvailableShipping)
+	router.Get("/:pubID<int>/shipping", c.GetShapesForPub)
+
+	router.Post("/:pubID<int>/preorder", c.SetPubPreorder)
+	router.Get("/:pubID<int>/preorder", c.GetPubPreorderInfo)
+
 }

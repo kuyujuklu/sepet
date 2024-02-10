@@ -47,6 +47,8 @@ var errors = map[error]int{
 	puberrors.ErrPubHasBadCompanyID:      fiber.StatusForbidden,
 	puberrors.ErrPubHasNoLogo:            fiber.StatusNotFound,
 	puberrors.ErrPubHasNoBG:              fiber.StatusNotFound,
+	puberrors.ErrPubShippingIsInvalid:    fiber.StatusInternalServerError,
+	puberrors.ErrPubPreorderIsInvalid:    fiber.StatusInternalServerError,
 
 	//Menu errors
 	menuerrors.ErrNotPubsMenu:              fiber.StatusForbidden,

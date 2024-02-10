@@ -81,6 +81,7 @@ func configureLogs() {
 
 	logs.Configure(logsConfig)
 }
+
 func configureRepos() {
 	repo.Configure()
 }

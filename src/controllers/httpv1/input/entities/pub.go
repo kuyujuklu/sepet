@@ -8,13 +8,15 @@ import (
 )
 
 type CreatePubInput struct {
-	Name string `json:"name" validate:"required,min=2" example:"My pub name"`
+	UrlName string `json:"url_name" validate:"required,min=2" example:"my-pub-name"`
+	Name    string `json:"name" validate:"required,min=2" example:"My pub name"`
 }
 
 func (p *CreatePubInput) ConvertToModel(companyID int) models.Pub {
 	pub := models.Pub{
 		CompanyID:  uint(companyID),
 		Name:       p.Name,
+		UrlName:    p.UrlName,
 		Color:      "#dc4444",
 		ColorTheme: "dark",
 		CurrencyID: 1,
@@ -57,6 +59,7 @@ type PubOutput struct {
 	Expired         bool   `json:"expired" example:"false"`
 	ExpirationTime  string `json:"expiration_time_utc" example:""`
 	Name            string `json:"name" example:"My pub name"`
+	UrlName         string `json:"url_name" example:"my-pub-name"`
 	QrCodeFileName  string `json:"qr_code_file_name" example:"my-pub-name.png"`
 	ColorTheme      string `json:"color_theme" example:"light"`
 	Color           string `json:"color" example:"#ffffff"`
@@ -79,6 +82,7 @@ func (p *PubOutput) ConvertFromModel(pub models.Pub) {
 	p.ExpirationTime = helpers.ConvertToStandardApiTime(pub.ExpirationTime)
 	p.ID = int(pub.ID)
 	p.Name = pub.Name
+	p.UrlName = pub.UrlName
 	p.QrCodeFileName = pub.QrCodeFileName
 	p.ColorTheme = pub.ColorTheme
 	p.Color = pub.Color

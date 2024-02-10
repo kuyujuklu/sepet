@@ -1,6 +1,7 @@
 package pubservice
 
 import (
+	"errors"
 	"mime/multipart"
 	"time"
 
@@ -19,6 +20,7 @@ const (
 type PubService interface {
 	GetAllPubs() ([]models.Pub, error)
 	GetPubById(id int) (models.Pub, error)
+	GetPubByUrlName(urlName string) (models.Pub, error)
 	GetAllMenusForPub(id int) ([]models.Menu, error)
 	GetAllCategoriesForPub(id int) ([]models.Category, error)
 	GetAllDishesForPub(id int) ([]models.Dish, error)
@@ -31,6 +33,14 @@ type PubService interface {
 	UploadPubBG(pubID int, fileHeader *multipart.FileHeader) (string, error)
 	GetPubLogoFileName(pubID int) (string, error)
 	GetPubBGFileName(pubID int) (string, error)
+
+	SetShippingAvailable(pubID int, available bool) error
+	EnableShippingAndSetShapes(pubID int, shapes []models.Shape) error
+	GetShapes(pubID int) ([]models.Shape, error)
+	GetShipping(pubID int) (models.Shipping, error)
+	SetCardPreorder(pubID int, available bool) error
+	SetCashPreorder(pubID int, available bool) error
+	GetPreorderInfo(pubID int) (models.PreorderInfo, error)
 }
 
 type pubsService struct {
@@ -58,6 +68,10 @@ func (s *pubsService) GetPubById(id int) (models.Pub, error) {
 	}
 
 	return pub, nil
+}
+
+func (s *pubsService) GetPubByUrlName(urlName string) (models.Pub, error) {
+	return s.PubsRepo.GetPubByUrlName(urlName)
 }
 
 func (s *pubsService) GetAllMenusForPub(id int) ([]models.Menu, error) {
@@ -95,6 +109,14 @@ func (s *pubsService) CreatePub(pub models.Pub) (models.Pub, error) {
 		return models.Pub{}, puberrors.ErrUnableToCreatePub
 	}
 
+	_, err = s.PubsRepo.GetPubByUrlName(pub.UrlName)
+	if err == nil {
+		return models.Pub{}, puberrors.ErrPubURLNameAlreadyExists
+	}
+	if err != nil && !errors.Is(err, puberrors.ErrPubNotFound) {
+		return models.Pub{}, err
+	}
+
 	_, err = s.CompanyService.GetCompanyById(int(pub.CompanyID))
 	if err != nil {
 		return models.Pub{}, err
@@ -128,6 +150,7 @@ func (s *pubsService) UpdatePub(id int, pub models.Pub) (models.Pub, error) {
 
 	pub.ID = pubFromDB.ID
 	pub.CompanyID = pubFromDB.CompanyID
+	pub.UrlName = pubFromDB.UrlName
 	pub.CreatedAt = pubFromDB.CreatedAt
 	pub.BgImageFileName = pubFromDB.BgImageFileName
 	pub.QrCodeFileName = pubFromDB.QrCodeFileName
@@ -217,4 +240,36 @@ func (s *pubsService) GetPubLogoFileName(pubID int) (string, error) {
 
 func (s *pubsService) GetPubBGFileName(pubID int) (string, error) {
 	return s.PubsRepo.GetPubBGFileName(pubID)
+}
+
+func (s *pubsService) EnableShippingAndSetShapes(pubID int, shapes []models.Shape) error {
+	err := s.PubsRepo.EnableShipping(pubID)
+	if err != nil {
+		return nil
+	}
+
+	return s.PubsRepo.SetPubShapes(pubID, shapes)
+}
+func (s *pubsService) GetShapes(pubID int) ([]models.Shape, error) {
+	return s.PubsRepo.GetPubShapes(pubID)
+}
+
+func (s *pubsService) GetShipping(pubID int) (models.Shipping, error) {
+	return s.PubsRepo.GetShipping(pubID)
+}
+
+func (s *pubsService) SetShippingAvailable(pubID int, available bool) error {
+	return s.PubsRepo.SetShippingAvailable(pubID, available)
+}
+
+func (s *pubsService) SetCardPreorder(pubID int, available bool) error {
+	return s.PubsRepo.SetCardPreorder(pubID, available)
+}
+
+func (s *pubsService) SetCashPreorder(pubID int, available bool) error {
+	return s.PubsRepo.SetCashPreorder(pubID, available)
+}
+
+func (s *pubsService) GetPreorderInfo(pubID int) (models.PreorderInfo, error) {
+	return s.PubsRepo.GetPreorderInfo(pubID)
 }

@@ -8,6 +8,7 @@ import (
 
 type Pub struct {
 	gorm.Model
+	UrlName         string
 	Name            string
 	QrCodeFileName  string
 	ColorTheme      string
@@ -24,6 +25,12 @@ type Pub struct {
 	Currency   Currency
 	CompanyID  uint
 	Company    Company
+
+	ShippingID uint
+	Shipping   Shipping
+
+	PreorderInfoID uint
+	PreorderInfo   PreorderInfo
 
 	ExpirationTime time.Time
 }

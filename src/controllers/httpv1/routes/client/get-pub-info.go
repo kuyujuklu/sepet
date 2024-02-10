@@ -1,15 +1,13 @@
 package client
 
 import (
-	"strconv"
-
 	h "github.com/alexkalak/qrmenu/src/controllers/httpv1/httphelpers"
 	"github.com/alexkalak/qrmenu/src/controllers/httpv1/input/entities"
 	"github.com/alexkalak/qrmenu/src/errors/httperrors"
 	"github.com/gofiber/fiber/v2"
 )
 
-type getPubInfoOutput struct {
+type GetPubInfoOutput struct {
 	Ok         bool                      `json:"ok" example:"true"`
 	PubInfo    entities.PubOutput        `json:"pub"`
 	Menus      []entities.MenuOutput     `json:"menus"`
@@ -22,30 +20,30 @@ type getPubInfoOutput struct {
 // @Tags         client
 // @Param id path int true "pub id"
 // @Produce      json
-// @Success      200  {object}  getPubInfoOutput
+// @Success      200  {object}  GetPubInfoOutput
 // @Router       /client/pub/{id} [get]
 func (c *clientController) GetPubInfo(ctx *fiber.Ctx) error {
-	pubID, err := strconv.Atoi(ctx.Params("pubID"))
-	if err != nil {
+	pubName := ctx.Params("pubName")
+	if pubName == "" {
 		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
 	}
 
-	pub, err := c.PubService.GetPubById(pubID)
+	pub, err := c.PubService.GetPubByUrlName(pubName)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
 
-	menus, err := c.PubService.GetAllMenusForPub(pubID)
+	menus, err := c.PubService.GetAllMenusForPub(int(pub.ID))
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
 
-	categories, err := c.PubService.GetAllCategoriesForPub(pubID)
+	categories, err := c.PubService.GetAllCategoriesForPub(int(pub.ID))
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
 
-	dishes, err := c.PubService.GetAllDishesForPub(pubID)
+	dishes, err := c.PubService.GetAllDishesForPub(int(pub.ID))
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}

@@ -21,3 +21,7 @@ var ErrPubHasNoLogo = errors.New("pub has no logo")
 var ErrPubHasNoBG = errors.New("pub has no BG")
 
 var ErrUnableToCreateQrCode = errors.New("unable to create QR code")
+
+var ErrPubShippingIsInvalid = errors.New("pub shipping is invalid")
+
+var ErrPubPreorderIsInvalid = errors.New("pub preorder is invalid")

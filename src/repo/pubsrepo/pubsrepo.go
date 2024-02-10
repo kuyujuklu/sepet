@@ -1,6 +1,7 @@
 package pubsrepo
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -15,6 +16,7 @@ import (
 	"github.com/alexkalak/qrmenu/src/errors/menuerrors"
 	"github.com/alexkalak/qrmenu/src/errors/oserrors"
 	"github.com/alexkalak/qrmenu/src/errors/puberrors"
+	"github.com/alexkalak/qrmenu/src/errors/servererrors"
 	"github.com/alexkalak/qrmenu/src/logs"
 	"github.com/alexkalak/qrmenu/src/models"
 	"github.com/alexkalak/qrmenu/src/repo/menurepo"
@@ -50,6 +52,7 @@ type PubsRepo interface {
 	GetAllCategoriesForPub(pubID int) ([]models.Category, error)
 	GetAllDishesForPub(pubID int) ([]models.Dish, error)
 	GetPubById(id int) (models.Pub, error)
+	GetPubByUrlName(urlName string) (models.Pub, error)
 
 	CreatePub(pub models.Pub) (models.Pub, error)
 	UpdatePub(id int, pub models.Pub) (models.Pub, error)
@@ -63,6 +66,16 @@ type PubsRepo interface {
 	DeletePubBG(shipmentID int) error
 	GetPubLogoFileName(pubID int) (string, error)
 	GetPubBGFileName(pubID int) (string, error)
+
+	//Shipping
+	EnableShipping(pubID int) error
+	GetPubShapes(pubID int) ([]models.Shape, error)
+	SetPubShapes(pubID int, shapes []models.Shape) error
+	GetShipping(pubID int) (models.Shipping, error)
+	SetShippingAvailable(pubID int, available bool) error
+	SetCardPreorder(pubID int, available bool) error
+	SetCashPreorder(pubID int, available bool) error
+	GetPreorderInfo(pubID int) (models.PreorderInfo, error)
 }
 
 type pubsRepo struct {
@@ -84,7 +97,7 @@ func New() PubsRepo {
 
 func (r *pubsRepo) GetAllPubs() ([]models.Pub, error) {
 	var pubs []models.Pub
-	result := r.Database.Find(&pubs)
+	result := r.Database.Preload("Shipping").Preload("PreorderInfo").Find(&pubs)
 
 	if result.Error != nil {
 		return nil, puberrors.ErrUnableToGetPub
@@ -95,9 +108,22 @@ func (r *pubsRepo) GetAllPubs() ([]models.Pub, error) {
 
 func (r *pubsRepo) GetPubById(id int) (models.Pub, error) {
 	var pub models.Pub
-	result := r.Database.First(&pub, "id = ?", id)
+	result := r.Database.Preload("Shipping").Preload("PreorderInfo").First(&pub, "id = ?", id)
 
 	if result.Error != nil {
+		fmt.Println("error: ", result.Error)
+		return models.Pub{}, puberrors.ErrPubNotFound
+	}
+
+	return pub, nil
+}
+
+func (r *pubsRepo) GetPubByUrlName(urlName string) (models.Pub, error) {
+	var pub models.Pub
+	result := r.Database.Preload("Shipping").Preload("PreorderInfo").First(&pub, "url_name = ?", urlName)
+
+	if result.Error != nil {
+		fmt.Println("error: ", result.Error)
 		return models.Pub{}, puberrors.ErrPubNotFound
 	}
 
@@ -178,6 +204,24 @@ func (r *pubsRepo) GetAllDishesForPub(pubID int) ([]models.Dish, error) {
 }
 
 func (r *pubsRepo) CreatePub(pub models.Pub) (models.Pub, error) {
+	var shipping models.Shipping
+	err := r.Database.Create(&shipping).Error
+	if err != nil {
+		return models.Pub{}, puberrors.ErrUnableToCreatePub
+	}
+
+	pub.ShippingID = shipping.ID
+	pub.Shipping = shipping
+
+	var preorderInfo models.PreorderInfo
+	err = r.Database.Create(&preorderInfo).Error
+	if err != nil {
+		return models.Pub{}, puberrors.ErrUnableToCreatePub
+	}
+
+	pub.PreorderInfoID = preorderInfo.ID
+	pub.PreorderInfo = preorderInfo
+
 	result := r.Database.Create(&pub)
 	if result.Error != nil {
 		return models.Pub{}, puberrors.ErrUnableToCreatePub
@@ -185,13 +229,14 @@ func (r *pubsRepo) CreatePub(pub models.Pub) (models.Pub, error) {
 
 	fileID := uuid.New().String()
 
-	err := qrcode.WriteFile(r.getPubLink(int(pub.ID)), qrcode.Medium, 256, QR_CODES_FILE_PATH+fileID+".png")
+	err = qrcode.WriteFile(r.getPubLink(pub.UrlName), qrcode.Medium, 256, QR_CODES_FILE_PATH+fileID+".png")
 	if err != nil {
 		logs.Error("unable to create qr code for pub ", err, " pub id ", pub.ID)
 		return models.Pub{}, err
 	}
 
 	pub.QrCodeFileName = fileID + ".png"
+
 	result = r.Database.
 		Model(&models.Pub{}).
 		Where("id = ?", pub.ID).
@@ -205,8 +250,8 @@ func (r *pubsRepo) CreatePub(pub models.Pub) (models.Pub, error) {
 	return pub, nil
 }
 
-func (r *pubsRepo) getPubLink(pubID int) string {
-	return fmt.Sprintf("%s://%s/pub/%d", r.HttpScheme, r.HttpHost, pubID)
+func (r *pubsRepo) getPubLink(urlName string) string {
+	return fmt.Sprintf("%s://%s/pub/%s", r.HttpScheme, r.HttpHost, urlName)
 }
 
 func (r *pubsRepo) UpdatePub(id int, pub models.Pub) (models.Pub, error) {
@@ -403,4 +448,131 @@ func (s *pubsRepo) GetPubBGFileName(pubID int) (string, error) {
 	}
 
 	return pub.BgImageFileName, nil
+}
+
+func (s *pubsRepo) EnableShipping(pubID int) error {
+	pub, err := s.GetPubById(pubID)
+	if err != nil {
+		return err
+	}
+
+	pub.Shipping.Available = true
+	err = s.Database.Model(&models.Shipping{}).Where("id = ?", pub.ShippingID).UpdateColumn("available", true).Error
+	return err
+}
+
+func (s *pubsRepo) GetShipping(pubID int) (models.Shipping, error) {
+	pub, err := s.GetPubById(pubID)
+	if err != nil {
+		return models.Shipping{}, err
+	}
+
+	return pub.Shipping, nil
+}
+
+func (s *pubsRepo) GetPubShapes(pubID int) ([]models.Shape, error) {
+	pub, err := s.GetPubById(pubID)
+	if err != nil {
+		return nil, err
+	}
+
+	if pub.Shipping.ShapesJSON == "" {
+		return nil, nil
+	}
+
+	shapes := make([]models.Shape, 0)
+	err = json.Unmarshal([]byte(pub.Shipping.ShapesJSON), &shapes)
+	if err != nil {
+		return nil, servererrors.ErrInternalServerError
+	}
+	return shapes, nil
+}
+
+func (s *pubsRepo) SetPubShapes(pubID int, shapes []models.Shape) error {
+	pub, err := s.GetPubById(pubID)
+	if err != nil {
+		return err
+	}
+	shapesJson, err := json.Marshal(shapes)
+	if err != nil {
+		return servererrors.ErrInternalServerError
+	}
+
+	err = s.Database.First(&models.Shipping{}, "id = ?", pub.ShippingID).Error
+	if err != nil {
+		return puberrors.ErrPubShippingIsInvalid
+	}
+
+	res := s.Database.Model(&models.Shipping{}).Where("id = ?", pub.ShippingID).UpdateColumn("shapes_json", shapesJson)
+	if res.Error != nil {
+		return servererrors.ErrInternalServerError
+	}
+
+	return nil
+}
+
+func (s *pubsRepo) SetShippingAvailable(pubID int, available bool) error {
+	pub, err := s.GetPubById(pubID)
+	if err != nil {
+		return err
+	}
+
+	err = s.Database.First(&models.Shipping{}, "id = ?", pub.ShippingID).Error
+	if err != nil {
+		return puberrors.ErrPubShippingIsInvalid
+	}
+
+	res := s.Database.Model(&models.Shipping{}).Where("id = ?", pub.ShippingID).UpdateColumn("available", available)
+	if res.Error != nil {
+		return servererrors.ErrInternalServerError
+	}
+
+	return nil
+}
+
+func (s *pubsRepo) SetCardPreorder(pubID int, available bool) error {
+	pub, err := s.GetPubById(pubID)
+	if err != nil {
+		return err
+	}
+
+	err = s.Database.First(&models.PreorderInfo{}, "id = ?", pub.PreorderInfoID).Error
+	if err != nil {
+		return puberrors.ErrPubPreorderIsInvalid
+	}
+
+	err = s.Database.Model(&models.PreorderInfo{}).Where("id = ?", pub.PreorderInfoID).UpdateColumn("card_preorder", available).Error
+	if err != nil {
+		return servererrors.ErrInternalServerError
+	}
+
+	return nil
+}
+
+func (s *pubsRepo) SetCashPreorder(pubID int, available bool) error {
+	pub, err := s.GetPubById(pubID)
+	if err != nil {
+		return err
+	}
+
+	err = s.Database.First(&models.PreorderInfo{}, "id = ?", pub.PreorderInfoID).Error
+	if err != nil {
+		return puberrors.ErrPubPreorderIsInvalid
+	}
+
+	res := s.Database.Model(&models.PreorderInfo{}).Where("id = ?", pub.PreorderInfoID).UpdateColumn("cash_preorder", available)
+	if res.Error != nil {
+		return servererrors.ErrInternalServerError
+	}
+
+	return nil
+}
+
+func (r *pubsRepo) GetPreorderInfo(pubID int) (models.PreorderInfo, error) {
+	pub, err := r.GetPubById(pubID)
+	if err != nil {
+		return models.PreorderInfo{}, err
+	}
+
+	return pub.PreorderInfo, nil
 }
