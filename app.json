@@ -25,6 +25,24 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location."
+        }
+      ],
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "./assets/fonts/AnonymousPro-Bold.ttf",
+            "./assets/fonts/AnonymousPro-Regular.ttf"
+          ]
+        }
+      ],
+      "expo-secure-store"
+    ]
   }
 }
