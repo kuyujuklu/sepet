@@ -43,7 +43,7 @@ func (c *companiesController) CreateCompany(ctx *fiber.Ctx) error {
 	}
 
 	output := entities.CompanyOutput{}
-	output.ConvertFromModel(company)
+	output.FillFromModel(company)
 
 	//Cookies
 	role, err := c.RoleService.GetRoleByName(models.COMPANY_ROLE_NAME)

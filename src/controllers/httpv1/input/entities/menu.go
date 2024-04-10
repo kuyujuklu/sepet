@@ -28,7 +28,7 @@ type MenuOutput struct {
 	Visible bool   `json:"visible" example:"true"`
 }
 
-func (m *MenuOutput) ConvertFromModel(menu models.Menu) {
+func (m *MenuOutput) FillFromModel(menu models.Menu) {
 	m.ID = int(menu.ID)
 	m.Name = menu.Name
 	m.PubID = int(menu.PubID)

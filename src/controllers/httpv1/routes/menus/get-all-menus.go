@@ -55,7 +55,7 @@ func (c *menuController) GetAllMenus(ctx *fiber.Ctx) error {
 	output := []entities.MenuOutput{}
 	for _, menu := range menus {
 		menuOutput := entities.MenuOutput{}
-		menuOutput.ConvertFromModel(menu)
+		menuOutput.FillFromModel(menu)
 		output = append(output, menuOutput)
 	}
 

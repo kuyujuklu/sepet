@@ -33,7 +33,7 @@ func (c *companiesController) GetCompanyByAccessToken(ctx *fiber.Ctx) error {
 	}
 
 	output := entities.CompanyOutput{}
-	output.ConvertFromModel(company)
+	output.FillFromModel(company)
 
 	return h.SendSuccess(
 		ctx,

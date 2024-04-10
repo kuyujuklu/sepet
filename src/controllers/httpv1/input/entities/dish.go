@@ -40,7 +40,7 @@ type DishOutput struct {
 	CategoryID    int     `json:"category_id" example:"1"`
 }
 
-func (d *DishOutput) ConvertFromModel(dish models.Dish) {
+func (d *DishOutput) FillFromModel(dish models.Dish) {
 	d.ID = int(dish.ID)
 	d.Name = dish.Name
 	d.ImageFileName = dish.ImageFileName

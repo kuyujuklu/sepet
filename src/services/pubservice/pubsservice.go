@@ -2,6 +2,7 @@ package pubservice
 
 import (
 	"errors"
+	"fmt"
 	"mime/multipart"
 	"time"
 
@@ -21,26 +22,38 @@ type PubService interface {
 	GetAllPubs() ([]models.Pub, error)
 	GetPubById(id int) (models.Pub, error)
 	GetPubByUrlName(urlName string) (models.Pub, error)
+
 	GetAllMenusForPub(id int) ([]models.Menu, error)
+
 	GetAllCategoriesForPub(id int) ([]models.Category, error)
+	GetCategoriesWithPreloadedMenuForPubs(pubs []models.Pub) ([]models.Category, error)
+
 	GetAllDishesForPub(id int) ([]models.Dish, error)
+
 	CreatePub(pub models.Pub) (models.Pub, error)
 	UpdatePub(id int, pub models.Pub) (models.Pub, error)
 	ExtendSubscription(id int, days int) (time.Time, error)
 	DeletePub(id int) error
+
 	CheckCompanyAccess(companyID int, categoryID int) error
 	UploadPubLogo(pubID int, fileHeader *multipart.FileHeader) (string, error)
 	UploadPubBG(pubID int, fileHeader *multipart.FileHeader) (string, error)
 	GetPubLogoFileName(pubID int) (string, error)
 	GetPubBGFileName(pubID int) (string, error)
 
+	SetLatLng(pubID int, lat float64, lng float64) error
+
 	SetShippingAvailable(pubID int, available bool) error
 	EnableShippingAndSetShapes(pubID int, shapes []models.Shape) error
 	GetShapes(pubID int) ([]models.Shape, error)
 	GetShipping(pubID int) (models.Shipping, error)
+	SetShippingTime(pubID int, shippingTimeFrom int, shippingTimeTo int) error
+
 	SetCardPreorder(pubID int, available bool) error
 	SetCashPreorder(pubID int, available bool) error
 	GetPreorderInfo(pubID int) (models.PreorderInfo, error)
+
+	GetPubsWithShippingAvailableForPoint(point models.Vertex) ([]models.Pub, error)
 }
 
 type pubsService struct {
@@ -90,6 +103,11 @@ func (s *pubsService) GetAllCategoriesForPub(id int) ([]models.Category, error) 
 
 	return s.PubsRepo.GetAllCategoriesForPub(id)
 }
+
+func (s *pubsService) GetCategoriesWithPreloadedMenuForPubs(pubs []models.Pub) ([]models.Category, error) {
+	return s.PubsRepo.GetCategoriesWithPreloadedMenuForPubs(pubs)
+}
+
 func (s *pubsService) GetAllDishesForPub(id int) ([]models.Dish, error) {
 	_, err := s.GetPubById(id)
 	if err != nil {
@@ -150,12 +168,16 @@ func (s *pubsService) UpdatePub(id int, pub models.Pub) (models.Pub, error) {
 
 	pub.ID = pubFromDB.ID
 	pub.CompanyID = pubFromDB.CompanyID
+	pub.Lat = pubFromDB.Lat
+	pub.Lng = pubFromDB.Lng
 	pub.UrlName = pubFromDB.UrlName
 	pub.CreatedAt = pubFromDB.CreatedAt
 	pub.BgImageFileName = pubFromDB.BgImageFileName
 	pub.QrCodeFileName = pubFromDB.QrCodeFileName
 	pub.LogoFileName = pubFromDB.LogoFileName
 	pub.ExpirationTime = pubFromDB.ExpirationTime
+	pub.PreorderInfoID = pubFromDB.PreorderInfoID
+	pub.ShippingID = pubFromDB.ShippingID
 
 	return s.PubsRepo.UpdatePub(id, pub)
 }
@@ -242,6 +264,10 @@ func (s *pubsService) GetPubBGFileName(pubID int) (string, error) {
 	return s.PubsRepo.GetPubBGFileName(pubID)
 }
 
+func (s *pubsService) SetLatLng(pubID int, lat float64, lng float64) error {
+	return s.PubsRepo.SetLatLng(pubID, lat, lng)
+}
+
 func (s *pubsService) EnableShippingAndSetShapes(pubID int, shapes []models.Shape) error {
 	err := s.PubsRepo.EnableShipping(pubID)
 	if err != nil {
@@ -272,4 +298,71 @@ func (s *pubsService) SetCashPreorder(pubID int, available bool) error {
 
 func (s *pubsService) GetPreorderInfo(pubID int) (models.PreorderInfo, error) {
 	return s.PubsRepo.GetPreorderInfo(pubID)
+}
+
+func (s *pubsService) SetShippingTime(pubID int, shippingTimeFrom int, shippingTimeTo int) error {
+	return s.PubsRepo.SetShippingTime(pubID, shippingTimeFrom, shippingTimeTo)
+}
+
+func (s *pubsService) GetPubsWithShippingAvailableForPoint(point models.Vertex) ([]models.Pub, error) {
+	pubs, err := s.PubsRepo.GetPubsWithAvailableShipping()
+	if err != nil {
+		return nil, err
+	}
+
+	var availablePubs []models.Pub
+	fmt.Println("pubs len: ", len(pubs))
+	for _, pub := range pubs {
+		shapes, err := pub.Shipping.GetShapes()
+		if err != nil {
+			fmt.Println("error getting shapes While getting pubs with shipping available for point: ", err)
+			continue
+		}
+
+		if pub.Shipping.Available && s.IsPointInsideShapes(shapes, point.Lat, point.Lng) {
+			availablePubs = append(availablePubs, pub)
+		}
+	}
+
+	return availablePubs, nil
+}
+
+func (s *pubsService) IsPointInsideShapes(shapes []models.Shape, lat float64, lng float64) bool {
+	for _, shape := range shapes {
+		if s.IsPointInsidePolygon(shape.Vertices, lat, lng) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (s *pubsService) IsPointInsidePolygon(vertices []models.Vertex, lat float64, lng float64) bool {
+	length := len(vertices)
+	count := 0
+
+	for i := 0; i < length; i++ {
+		var x1 float64 = 0
+		var y1 float64 = 0
+		var x2 float64 = 0
+		var y2 float64 = 0
+
+		x1 = vertices[i].Lat
+		y1 = vertices[i].Lng
+
+		if i == length-1 {
+			x2 = vertices[0].Lat
+			y2 = vertices[0].Lng
+		} else {
+			x2 = vertices[i+1].Lat
+			y2 = vertices[i+1].Lng
+		}
+
+		if (lng < y1) != (lng < y2) &&
+			lat < x1+((lng-y1)/(y2-y1))*(x2-x1) {
+			count++
+		}
+	}
+
+	return count%2 == 1
 }

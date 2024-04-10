@@ -7,6 +7,7 @@ import (
 	"time"
 
 	httpv1 "github.com/alexkalak/qrmenu/src/controllers/httpv1/routes"
+	"github.com/alexkalak/qrmenu/src/controllers/ws"
 	"github.com/alexkalak/qrmenu/src/db/postgresql"
 	"github.com/alexkalak/qrmenu/src/logs"
 	"github.com/alexkalak/qrmenu/src/repo"
@@ -114,4 +115,6 @@ func createApp() *fiber.App {
 
 func setupRoutes(app *fiber.App) {
 	app.Route("/api", httpv1.Router)
+	app.Route("/ws", ws.Router)
+	app.Get("/", func(c *fiber.Ctx) error { return c.SendFile("index.html") })
 }

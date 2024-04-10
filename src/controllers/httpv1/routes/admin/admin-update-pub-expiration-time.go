@@ -21,7 +21,7 @@ type updatePubExpirationTimeOutput struct {
 // @Tags         admin
 // @Param companyID path int true "company id"
 // @Param pubID path int true "pub id"
-// @Param input body  true "pub params"
+// @Param input body entities.UpdateExpirationTimeInput true "pub params"
 // @Accept       json
 // @Produce      json
 // @Success      200  {object}  updatePubExpirationTimeOutput
@@ -76,7 +76,7 @@ type updatePubTariff struct {
 // @Tags         admin
 // @Param companyID path int true "company id"
 // @Param pubID path int true "pub id"
-// @Param input body  true "pub params"
+// @Param input body entities.CompanyUpdateTariffInput true "pub params"
 // @Accept       json
 // @Produce      json
 // @Success      200  {object}  updatePubTariff

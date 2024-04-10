@@ -58,7 +58,7 @@ func (c *dishesController) GetAllDishes(ctx *fiber.Ctx) error {
 	output := []entities.DishOutput{}
 	for _, dish := range dishes {
 		dishOutput := entities.DishOutput{}
-		dishOutput.ConvertFromModel(dish)
+		dishOutput.FillFromModel(dish)
 		output = append(output, dishOutput)
 	}
 

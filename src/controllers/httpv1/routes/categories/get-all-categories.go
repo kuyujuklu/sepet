@@ -56,7 +56,7 @@ func (c *categoryController) GetAllCategories(ctx *fiber.Ctx) error {
 	output := []entities.CategoryOutput{}
 	for _, category := range categories {
 		categoryOutput := entities.CategoryOutput{}
-		categoryOutput.ConvertFromModel(category)
+		categoryOutput.FillFromModel(category)
 		output = append(output, categoryOutput)
 	}
 

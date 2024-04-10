@@ -48,7 +48,11 @@ func (c *pubController) GetAllPubs(ctx *fiber.Ctx) error {
 	output := []entities.PubOutput{}
 	for _, pub := range pubs {
 		outputPub := entities.PubOutput{}
-		outputPub.ConvertFromModel(pub)
+		err = outputPub.FillFromModel(pub)
+		if err != nil {
+			return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+		}
+
 		output = append(output, outputPub)
 	}
 

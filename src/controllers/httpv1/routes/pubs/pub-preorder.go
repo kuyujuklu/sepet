@@ -11,7 +11,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-type GetPubPreorderInfo struct {
+type GetPubPreorderInfoOutput struct {
 	Ok           bool `json:"ok" example:"true"`
 	CardPreorder bool `json:"card_preorder"`
 	CashPreorder bool `json:"cash_preorder"`
@@ -24,7 +24,7 @@ type GetPubPreorderInfo struct {
 // @Param pubID path int true "pub id"
 // @Accept       json
 // @Produce      json
-// @Success      200  {object}  SetShippingShapes
+// @Success      200  {object}  GetPubPreorderInfoOutput
 // @Router       /company/{companyID}/pubs/{pubID}/preorder [GET]
 // @Security ApiKeyAuth
 // @Param AccessToken header string  true "accesstoken"

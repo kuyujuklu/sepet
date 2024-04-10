@@ -5,13 +5,11 @@ import (
 	"github.com/alexkalak/qrmenu/src/errors/httperrors"
 	"github.com/alexkalak/qrmenu/src/models"
 	"github.com/alexkalak/qrmenu/src/services/categoryservice"
-	"github.com/alexkalak/qrmenu/src/services/companyservice"
 	"github.com/alexkalak/qrmenu/src/services/dishesservice"
 	"github.com/alexkalak/qrmenu/src/services/menuservice"
 	"github.com/alexkalak/qrmenu/src/services/pubservice"
 )
 
-var companyService = companyservice.New()
 var pubService = pubservice.New()
 var menuService = menuservice.New()
 var categoryService = categoryservice.New()

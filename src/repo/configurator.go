@@ -2,6 +2,7 @@ package repo
 
 import (
 	"github.com/alexkalak/qrmenu/src/repo/categoryrepo"
+	"github.com/alexkalak/qrmenu/src/repo/clientrepo"
 	"github.com/alexkalak/qrmenu/src/repo/companyrepo"
 	"github.com/alexkalak/qrmenu/src/repo/dishesrepo"
 	"github.com/alexkalak/qrmenu/src/repo/menurepo"
@@ -26,6 +27,10 @@ func Configure() error {
 	}
 
 	if err := dishesrepo.Configure(); err != nil {
+		return err
+	}
+
+	if err := clientrepo.Configure(); err != nil {
 		return err
 	}
 

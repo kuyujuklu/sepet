@@ -10,47 +10,6 @@ import (
 
 var jwtService = jwtservice.New()
 
-// func AuthMW(ctx *fiber.Ctx) error {
-// 	accessToken := ctx.Cookies("accesstoken")
-
-// 	if accessToken == "" {
-// 		ctx.Locals("authorized", false)
-// 		ctx.Locals("authorization-error", "empty access token")
-// 		return ctx.Next()
-// 	}
-
-// 	userClaims, ok, err := jwtService.ParseJwtTokenString(accessToken)
-// 	if err != nil {
-// 		if err.Error() == "token expired" {
-// 			ctx.Locals("authorized", false)
-// 			ctx.Locals("authorization-error", "access token expired")
-// 			return ctx.Next()
-// 		}
-
-// 		if err.Error() == "token signature invalid" {
-// 			ctx.Locals("authorized", false)
-// 			ctx.Locals("authorization-error", "access token signature invalid")
-// 			return ctx.Next()
-// 		}
-
-// 		ctx.Locals("authorized", false)
-// 		ctx.Locals("authorization-error", "acces token invalid")
-// 		return ctx.Next()
-// 	}
-
-// 	if !ok {
-// 		ctx.Locals("authorized", false)
-// 		ctx.Locals("authorization-error", "acces token invalid")
-// 		return ctx.Next()
-// 	}
-
-// 	ctx.Locals("authorized", true)
-// 	ctx.Locals("user-id", userClaims.ID)
-// 	ctx.Locals("user-role", userClaims.Role)
-
-// 	return ctx.Next()
-// }
-
 func StrictAuthMW(ctx *fiber.Ctx) error {
 	accessToken := ctx.Get("accesstoken")
 

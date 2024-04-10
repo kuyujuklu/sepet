@@ -56,7 +56,7 @@ func (c *dishesController) GetDishByID(ctx *fiber.Ctx) error {
 	}
 
 	output := entities.DishOutput{}
-	output.ConvertFromModel(dish)
+	output.FillFromModel(dish)
 
 	return h.SendSuccess(
 		ctx,

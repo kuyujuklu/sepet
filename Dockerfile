@@ -1,13 +1,15 @@
-FROM golang:1.20
-
-RUN mkdir /app
-
-ADD . /app/
+FROM golang:1.21.8-alpine3.19
 
 WORKDIR /app
 
-RUN go build -o main .
+COPY go.mod go.sum ./
+
+RUN go mod download
+
+COPY .  .
+
+RUN CGO_ENABLED=0 GOOS=linux go build -o /docker-gs-ping
 
 EXPOSE ${PORT}
 
-CMD ["/app/main"]
+CMD ["/docker-gs-ping"]

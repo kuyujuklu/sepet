@@ -57,7 +57,10 @@ func (c *pubController) CreatePub(ctx *fiber.Ctx) error {
 	}
 
 	output := entities.PubOutput{}
-	output.ConvertFromModel(pub)
+	err = output.FillFromModel(pub)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
 
 	return h.SendSuccess(
 		ctx,

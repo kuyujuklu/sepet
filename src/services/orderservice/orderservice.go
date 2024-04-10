@@ -1,0 +1,224 @@
+package orderservice
+
+import (
+	"fmt"
+	"sync"
+
+	"github.com/alexkalak/qrmenu/src/models"
+	"github.com/alexkalak/qrmenu/src/repo/clientrepo"
+	"github.com/alexkalak/qrmenu/src/repo/orderrepo"
+	"github.com/alexkalak/qrmenu/src/repo/pubsrepo"
+	"github.com/alexkalak/qrmenu/src/repo/rolerepo"
+	"github.com/gofiber/contrib/websocket"
+	"github.com/google/uuid"
+)
+
+type void interface{}
+
+type connectionsSet map[*websocket.Conn]void
+
+func (c connectionsSet) Add(conn *websocket.Conn) {
+	_, ok := c[conn]
+	if !ok {
+		c[conn] = new(void)
+	}
+}
+func (c connectionsSet) Remove(conn *websocket.Conn) {
+	_, ok := c[conn]
+	if !ok {
+		return
+	}
+
+	delete(c, conn)
+}
+
+type ordersForPubConnections struct {
+	mu sync.Mutex
+	//Pub id contains websocket connections
+	Connections map[int]connectionsSet
+}
+
+type OrderService interface {
+	GetOrdersForPub(pubID int) ([]models.Order, error)
+	GetOrdersForClient(clientID int) ([]models.Order, error)
+	GetOrderByID(orderID int) (models.Order, error)
+	CreateOrder(models.Order) (models.Order, error)
+	CreateOrderForUnknownClient(models.Order) (models.Order, error)
+	UpdateOrderStatus(orderID int, status string) error
+	AddConnectionToOrdersForPubConnections(pubID int, conn *websocket.Conn) error
+	RemoveConnectionFromOrdersForPubConnections(pubID int, conn *websocket.Conn) error
+}
+
+type orderService struct {
+	OrderRepo               orderrepo.OrderRepo
+	ClientRepo              clientrepo.ClientRepo
+	WebSocketPubConnections ordersForPubConnections
+	PubsRepo                pubsrepo.PubsRepo
+	RoleRepo                rolerepo.RoleRepo
+}
+
+var singleton OrderService = nil
+
+func New() OrderService {
+	if singleton == nil {
+		singleton = &orderService{
+			PubsRepo:   pubsrepo.New(),
+			OrderRepo:  orderrepo.New(),
+			ClientRepo: clientrepo.New(),
+			RoleRepo:   rolerepo.New(),
+			WebSocketPubConnections: ordersForPubConnections{
+				Connections: map[int]connectionsSet{},
+			},
+		}
+	}
+
+	return singleton
+}
+
+func (s *orderService) GetOrdersForPub(pubID int) ([]models.Order, error) {
+	return s.OrderRepo.GetOrdersForPub(pubID)
+}
+
+func (s *orderService) GetOrdersForClient(clientID int) ([]models.Order, error) {
+	return s.OrderRepo.GetOrdersForClient(clientID)
+}
+
+func (s *orderService) GetOrderByID(orderID int) (models.Order, error) {
+	return s.OrderRepo.GetOrderByID(orderID)
+}
+
+func (s *orderService) CreateOrder(order models.Order) (models.Order, error) {
+	tx := s.OrderRepo.NewTransaction()
+
+	order.Status = models.NOT_HANDLED_ORDER_STATUS
+	order, err := s.OrderRepo.CreateOrderWithinTransaction(tx, order)
+	if err != nil {
+		fmt.Println("creating order error")
+		return models.Order{}, err
+	}
+
+	err = s.SendSingleOrderMessage(order.PubID, order, CREATE_EVENT_TYPE)
+	if err != nil {
+		fmt.Println("sending notification error")
+		return models.Order{}, err
+	}
+
+	tx.Commit()
+	return order, nil
+}
+
+func (s *orderService) CreateOrderForUnknownClient(order models.Order) (models.Order, error) {
+	role, err := s.RoleRepo.GetRoleByName(models.CLIENT_ROLE_NAME)
+	if err != nil {
+		return models.Order{}, err
+	}
+
+	orderName := "order in place from web menu"
+	if order.OrderType == models.DELIVERY_ORDER_TYPE {
+		orderName = "delivery order from web menu"
+	} else if order.OrderType == models.PREORDER_ORDER_TYPE {
+		orderName = "preorder from web menu"
+	}
+
+	client, err := s.ClientRepo.CreateClient(models.Client{
+		Name:   orderName,
+		Phone:  uuid.New().String(),
+		RoleID: int(role.ID),
+	})
+
+	if err != nil {
+		return models.Order{}, err
+	}
+
+	order.ClientID = int(client.ID)
+
+	return s.CreateOrder(order)
+}
+
+func (s *orderService) UpdateOrderStatus(orderID int, status string) error {
+	err := models.CheckOrderStatusCorrectness(status)
+	if err != nil {
+		return err
+	}
+
+	_, err = s.OrderRepo.GetOrderByID(orderID)
+	if err != nil {
+		return err
+	}
+
+	tx := s.OrderRepo.NewTransaction()
+
+	err = s.OrderRepo.UpdateOrderStatusWithinTransaction(tx, orderID, status)
+	if err != nil {
+		return err
+	}
+
+	order, err := s.OrderRepo.GetOrderByIDWithinTransaction(tx, orderID)
+	if err != nil {
+		return err
+	}
+
+	err = s.SendSingleOrderMessage(order.PubID, order, UPDATE_EVENT_TYPE)
+	if err != nil {
+		fmt.Println("sending notification error")
+		return err
+	}
+
+	tx.Commit()
+	return nil
+}
+
+func (s *orderService) SendSingleOrderMessage(pubID int, order models.Order, eventType EventType) error {
+	connections := s.WebSocketPubConnections.Connections[pubID]
+	fmt.Println("connections: ", s.WebSocketPubConnections.Connections)
+	fmt.Println("sending notifications for ", len(connections), " connections")
+	for conn := range connections {
+		outputOrder := WSOrderOutput{}
+		err := outputOrder.FillFromModel(order)
+		if err != nil {
+			return err
+		}
+
+		message := WSMessage{
+			EventType: eventType,
+			Order:     outputOrder,
+		}
+
+		err = conn.WriteJSON(message)
+		if err != nil {
+			err := conn.WriteJSON(message)
+			if err != nil {
+				fmt.Println("Sending order for pub error: ", err)
+			}
+		}
+	}
+
+	return nil
+}
+
+func (s *orderService) AddConnectionToOrdersForPubConnections(pubID int, conn *websocket.Conn) error {
+	_, err := s.PubsRepo.GetPubById(pubID)
+	if err != nil {
+		return err
+	}
+
+	s.WebSocketPubConnections.mu.Lock()
+	existingConnections, ok := s.WebSocketPubConnections.Connections[pubID]
+	if !ok {
+		existingConnections = connectionsSet{}
+		s.WebSocketPubConnections.Connections[pubID] = existingConnections
+	}
+
+	existingConnections.Add(conn)
+	fmt.Println("added new connection, allConnections: ", s.WebSocketPubConnections.Connections[pubID])
+
+	s.WebSocketPubConnections.mu.Unlock()
+	return nil
+}
+
+func (s *orderService) RemoveConnectionFromOrdersForPubConnections(pubID int, conn *websocket.Conn) error {
+	s.WebSocketPubConnections.mu.Lock()
+	s.WebSocketPubConnections.Connections[pubID].Remove(conn)
+	s.WebSocketPubConnections.mu.Unlock()
+	return nil
+}

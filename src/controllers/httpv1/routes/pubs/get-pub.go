@@ -54,7 +54,7 @@ func (c *pubController) GetPubByID(ctx *fiber.Ctx) error {
 	}
 
 	output := entities.PubOutput{}
-	output.ConvertFromModel(pub)
+	output.FillFromModel(pub)
 
 	return h.SendSuccess(
 		ctx,

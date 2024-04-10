@@ -78,7 +78,7 @@ func (c *menuController) UpdateMenu(ctx *fiber.Ctx) error {
 	}
 
 	output := entities.MenuOutput{}
-	output.ConvertFromModel(menu)
+	output.FillFromModel(menu)
 
 	return h.SendSuccess(
 		ctx,

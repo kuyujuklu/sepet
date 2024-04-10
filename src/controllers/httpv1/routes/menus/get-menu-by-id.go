@@ -54,7 +54,7 @@ func (c *menuController) GetMenuByID(ctx *fiber.Ctx) error {
 	}
 
 	output := entities.MenuOutput{}
-	output.ConvertFromModel(menu)
+	output.FillFromModel(menu)
 
 	return h.SendSuccess(
 		ctx,

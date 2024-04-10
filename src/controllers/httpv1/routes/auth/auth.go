@@ -10,6 +10,7 @@ import (
 	"github.com/alexkalak/qrmenu/src/errors/servererrors"
 	"github.com/alexkalak/qrmenu/src/models"
 	"github.com/alexkalak/qrmenu/src/services/adminservice"
+	"github.com/alexkalak/qrmenu/src/services/clientservice"
 	"github.com/alexkalak/qrmenu/src/services/companyservice"
 	"github.com/alexkalak/qrmenu/src/services/jwtservice"
 	"github.com/alexkalak/qrmenu/src/services/roleservice"
@@ -26,6 +27,7 @@ type authController struct {
 	CompanyService companyservice.CompanyService
 	RoleService    roleservice.RoleService
 	AdminService   adminservice.AdminService
+	ClientService  clientservice.ClientService
 }
 
 func New() *authController {
@@ -34,6 +36,7 @@ func New() *authController {
 		CompanyService: companyservice.New(),
 		RoleService:    roleservice.New(),
 		AdminService:   adminservice.New(),
+		ClientService:  clientservice.New(),
 	}
 }
 
@@ -44,9 +47,10 @@ func (c *authController) UnauthorizedRouter(router fiber.Router) {
 }
 
 type loginInput struct {
-	Email    string `json:"email" validate:"required" example:"alex@alex.alex"` //if as is equal to AS_COMPANY
-	Password string `json:"password" validate:"required" example:"123123123"`
-	As       string `json:"as" validate:"required" example:"company"`
+	Email       string `json:"email" validate:"omitempty,email" example:"alex@alex.alex"` //for companies and admins
+	PhoneNumber string `json:"phone" example:"37367507188"`                               //for users
+	Password    string `json:"password" validate:"omitempty,min=3" example:"123123123"`   //for companies and admins
+	As          string `json:"as" validate:"required" example:"company"`                  // for all
 }
 
 type loginOutput struct {

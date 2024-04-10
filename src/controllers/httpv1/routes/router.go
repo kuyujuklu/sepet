@@ -8,6 +8,7 @@ import (
 	"github.com/alexkalak/qrmenu/src/controllers/httpv1/routes/companies"
 	"github.com/alexkalak/qrmenu/src/controllers/httpv1/routes/dishes"
 	"github.com/alexkalak/qrmenu/src/controllers/httpv1/routes/menus"
+	"github.com/alexkalak/qrmenu/src/controllers/httpv1/routes/orders"
 	"github.com/alexkalak/qrmenu/src/controllers/httpv1/routes/pubs"
 	"github.com/gofiber/fiber/v2"
 )
@@ -25,11 +26,13 @@ func Router(router fiber.Router) {
 	dishesRouter := dishes.New()
 	clientRouter := client.New()
 	adminRouter := admin.New()
+	ordersRouter := orders.New()
 
 	//Without authorization
 	router.Route("/auth", authRouter.UnauthorizedRouter)
 	router.Route("/company", companiesRouter.UnauthorizedRouter)
 	router.Route("/company/:companyID<int>/pubs", pubsRouter.UnauthorizedRouter)
+	router.Route("/orders/", ordersRouter.UnauthorizedRouter)
 	router.Route("/company/:companyID<int>/pubs/:pubID<int>/menus", menusRouter.UnauthorizedRouter)
 	router.Route("/company/:companyID<int>/pubs/:pubID<int>/menus/:menuID<int>/categories", categoriesRouter.UnauthorizedRouter)
 	router.Route("/company/:companyID<int>/pubs/:pubID<int>/menus/:menuID<int>/categories/:categoryID<int>/dishes", dishesRouter.UnauthorizedRouter)
@@ -38,6 +41,7 @@ func Router(router fiber.Router) {
 	//With authorization
 	router.Route("/company", companiesRouter.AuthorizedRouter)
 	router.Route("/company/:companyID<int>/pubs", pubsRouter.AuthorizedRouter)
+	router.Route("/company/:companyID<int>/pubs/:pubID<int>/orders/", ordersRouter.AuthorizedRouter)
 	router.Route("/company/:companyID<int>/pubs/:pubID<int>/menus", menusRouter.AuthorizedRouter)
 	router.Route("/company/:companyID<int>/pubs/:pubID<int>/menus/:menuID<int>/categories", categoriesRouter.AuthorizedRouter)
 	router.Route("/company/:companyID<int>/pubs/:pubID<int>/menus/:menuID<int>/categories/:categoryID<int>/dishes", dishesRouter.AuthorizedRouter)

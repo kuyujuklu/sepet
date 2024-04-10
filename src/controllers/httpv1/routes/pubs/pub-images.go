@@ -82,7 +82,7 @@ func (c *pubController) UploadPubLogo(ctx *fiber.Ctx) error {
 // @Param bg formData file true "bg"
 // @Accept       mpfd
 // @Produce      json
-// @Success      200  {object}  fileUploadOutput
+// @Success      200  {object}  FileUploadOutput
 // @Router       /company/{companyID}/pubs/{pubID}/bg [PATCH]
 // @Security ApiKeyAuth
 // @Param AccessToken header string  true "accesstoken"

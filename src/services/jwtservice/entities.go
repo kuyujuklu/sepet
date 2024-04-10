@@ -11,7 +11,7 @@ const (
 	ADMIN_ACCESS_LIFE_TIME    = time.Hour * 24 * 30 //month
 )
 const (
-	STANDARD_REFRESH_LIFE_TIME = time.Hour * 24 * 30 //month
+	STANDARD_REFRESH_LIFE_TIME = time.Hour * 24 * 30 * 6 //6 months
 )
 
 type UserClaims struct {

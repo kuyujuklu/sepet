@@ -1,23 +1,45 @@
 definitions:
+  admin.updatePubExpirationTimeOutput:
+    properties:
+      ok:
+        example: true
+        type: boolean
+      pub:
+        $ref: '#/definitions/entities.PubOutput'
+    type: object
+  admin.updatePubTariff:
+    properties:
+      ok:
+        example: true
+        type: boolean
+      pub:
+        type: string
+    type: object
   auth.loginInput:
     properties:
       as:
+        description: for all
         example: company
         type: string
       email:
+        description: for companies and admins
         example: alex@alex.alex
         type: string
       password:
+        description: for companies and admins
         example: "123123123"
+        minLength: 3
+        type: string
+      phone:
+        description: for users
+        example: "37367507188"
         type: string
     required:
     - as
-    - email
-    - password
     type: object
   auth.loginOutput:
     properties:
-      AccessToken:
+      accesstoken:
         type: string
       ok:
         example: true
@@ -79,7 +101,90 @@ definitions:
         example: true
         type: boolean
     type: object
-  client.getPubInfoOutput:
+  client.CreateAuthenticationSessionOutput:
+    properties:
+      err:
+        example: client not found
+        type: string
+      next_session_time:
+        example: "2006-01-24"
+        type: string
+      ok:
+        example: true
+        type: boolean
+    type: object
+  client.CreateOrderOutput:
+    properties:
+      err:
+        example: unable to create order
+        type: string
+      ok:
+        example: true
+        type: boolean
+      order:
+        $ref: '#/definitions/entities.OrderOutput'
+    type: object
+  client.CreateRegistrationSessionOutput:
+    properties:
+      err:
+        example: client not found
+        type: string
+      next_session_time:
+        example: "2006-01-24"
+        type: string
+      ok:
+        example: true
+        type: boolean
+    type: object
+  client.GetAvailablePubsOutput:
+    properties:
+      err:
+        type: string
+      ok:
+        example: true
+        type: boolean
+      pubs:
+        items:
+          $ref: '#/definitions/entities.PubOutput'
+        type: array
+    type: object
+  client.GetCategoriesOutput:
+    properties:
+      categories:
+        items:
+          $ref: '#/definitions/entities.CategoryOutput'
+        type: array
+      err:
+        type: string
+      ok:
+        example: true
+        type: boolean
+    type: object
+  client.GetClientOutput:
+    properties:
+      client:
+        $ref: '#/definitions/entities.ClientOutput'
+      err:
+        example: invalid validation number
+        type: string
+      ok:
+        example: true
+        type: boolean
+    type: object
+  client.GetOrdersOutput:
+    properties:
+      err:
+        example: ""
+        type: string
+      ok:
+        example: true
+        type: boolean
+      orders:
+        items:
+          $ref: '#/definitions/entities.OrderOutput'
+        type: array
+    type: object
+  client.GetPubInfoOutput:
     properties:
       categories:
         items:
@@ -99,9 +204,46 @@ definitions:
       pub:
         $ref: '#/definitions/entities.PubOutput'
     type: object
+  client.GetPubPreorderOutput:
+    properties:
+      card_preorder:
+        type: boolean
+      cash_preorder:
+        type: boolean
+      ok:
+        example: true
+        type: boolean
+    type: object
+  client.GetShippingShapes:
+    properties:
+      available:
+        type: boolean
+      ok:
+        example: true
+        type: boolean
+      shapes:
+        items:
+          $ref: '#/definitions/models.Shape'
+        type: array
+    type: object
+  client.ValidationOutput:
+    properties:
+      access_token:
+        example: access_token
+        type: string
+      err:
+        example: invalid validation number
+        type: string
+      ok:
+        example: true
+        type: boolean
+      refresh_token:
+        example: refresh_token
+        type: string
+    type: object
   companies.createCompanyOutput:
     properties:
-      AccessToken:
+      accesstoken:
         type: string
       company:
         $ref: '#/definitions/entities.CompanyOutput'
@@ -175,6 +317,9 @@ definitions:
     type: object
   entities.CategoryInput:
     properties:
+      category_type:
+        example: pizza
+        type: string
       name:
         example: My category name
         minLength: 2
@@ -189,12 +334,16 @@ definitions:
         example: true
         type: boolean
     required:
+    - category_type
     - name
     - place
     - text_color
     type: object
   entities.CategoryOutput:
     properties:
+      category_type:
+        example: pizza
+        type: string
       id:
         example: 1
         type: integer
@@ -217,6 +366,18 @@ definitions:
         example: true
         type: boolean
     type: object
+  entities.ClientOutput:
+    properties:
+      created_at:
+        example: "2006-01-22"
+        type: string
+      name:
+        example: Vladimir Zhirinovskiy
+        type: string
+      phone:
+        example: "37367507188"
+        type: string
+    type: object
   entities.CompanyInput:
     properties:
       email:
@@ -234,10 +395,14 @@ definitions:
         example: "37377777777"
         minLength: 7
         type: string
+      tariff:
+        example: basic
+        type: string
     required:
     - name
     - password
     - phone
+    - tariff
     type: object
   entities.CompanyOutput:
     properties:
@@ -253,12 +418,78 @@ definitions:
       phone:
         example: "37377777777"
         type: string
+      tariff:
+        example: basic
+        type: string
+    type: object
+  entities.CompanyUpdateTariffInput:
+    properties:
+      tariff:
+        example: My company name
+        minLength: 2
+        type: string
+    required:
+    - tariff
+    type: object
+  entities.CreateAuthenticationSessionInput:
+    properties:
+      phone:
+        example: "37367507188"
+        type: string
+    type: object
+  entities.CreateOrderInput:
+    properties:
+      comments:
+        example: without sugar
+        type: string
+      dishes:
+        items:
+          $ref: '#/definitions/entities.OrderDish'
+        type: array
+      full_address:
+        example: Lenina 889
+        type: string
+      main_phone_number:
+        example: "843829"
+        type: string
+      order_type:
+        example: delivery
+        type: string
+      payment_type:
+        type: string
+      pub_id:
+        type: integer
+      second_phone_number:
+        example: "929320"
+        type: string
+      table_for_in_place_order:
+        example: 2
+        type: integer
+      town:
+        example: Kazaklia
+        type: string
     type: object
   entities.CreatePubInput:
     properties:
       name:
         example: My pub name
         minLength: 2
+        type: string
+      url_name:
+        example: my-pub-name
+        minLength: 2
+        type: string
+    required:
+    - name
+    - url_name
+    type: object
+  entities.CreateRegistrationSessionInput:
+    properties:
+      name:
+        example: Vladimir Zhirinovskiy
+        type: string
+      phone:
+        example: "37367507188"
         type: string
     required:
     - name
@@ -276,6 +507,9 @@ definitions:
         example: 1
         type: integer
       price:
+        example: 1.99
+        type: number
+      sale_price:
         example: 1.99
         type: number
       text_color:
@@ -309,6 +543,9 @@ definitions:
         example: 1
         type: integer
       price:
+        example: 1.99
+        type: number
+      sale_price:
         example: 1.99
         type: number
       text_color:
@@ -354,6 +591,55 @@ definitions:
         example: true
         type: boolean
     type: object
+  entities.OrderDish:
+    properties:
+      count:
+        type: integer
+      dish_id:
+        type: integer
+    type: object
+  entities.OrderOutput:
+    properties:
+      client_id:
+        type: integer
+      comments:
+        type: string
+      created_time:
+        example: "2006-01-02 15:04:05"
+        type: string
+      dishes:
+        items:
+          $ref: '#/definitions/entities.OrderDish'
+        type: array
+      full_address:
+        example: Lenina 889
+        type: string
+      id:
+        example: 12
+        type: integer
+      main_phone_number:
+        example: "843829"
+        type: string
+      order_type:
+        example: delivery
+        type: string
+      payment_type:
+        type: string
+      pub_id:
+        type: integer
+      pub_name:
+        example: Big star
+        type: string
+      second_phone_number:
+        example: "929320"
+        type: string
+      table_for_in_place_order:
+        example: 2
+        type: integer
+      town:
+        example: Kazaklia
+        type: string
+    type: object
   entities.PubOutput:
     properties:
       additional_info:
@@ -375,9 +661,21 @@ definitions:
         type: integer
       currency_id:
         type: integer
+      expiration_time_utc:
+        example: ""
+        type: string
+      expired:
+        example: false
+        type: boolean
       id:
         example: 1
         type: integer
+      lat:
+        example: 55.7558
+        type: number
+      lng:
+        example: 37.6176
+        type: number
       logo_file_name:
         example: my-pub-name-logo.png
         type: string
@@ -387,9 +685,84 @@ definitions:
       qr_code_file_name:
         example: my-pub-name.png
         type: string
+      shipping:
+        $ref: '#/definitions/entities.ShippingOutput'
+      url_name:
+        example: my-pub-name
+        type: string
       wifi_password:
         example: "12345678"
         type: string
+    type: object
+  entities.SetAvailableShipping:
+    properties:
+      available:
+        type: boolean
+    type: object
+  entities.SetLatLngInput:
+    properties:
+      lat:
+        example: 55.7558
+        type: number
+      lng:
+        example: 37.6176
+        type: number
+    required:
+    - lat
+    - lng
+    type: object
+  entities.SetPubPreorder:
+    properties:
+      card_preorder:
+        type: boolean
+      cash_preorder:
+        type: boolean
+    type: object
+  entities.SetShippingShapes:
+    properties:
+      shapes:
+        items:
+          $ref: '#/definitions/models.Shape'
+        type: array
+    type: object
+  entities.SetShippingTime:
+    properties:
+      from:
+        example: 30
+        type: integer
+      to:
+        example: 50
+        type: integer
+    type: object
+  entities.ShapeOutput:
+    properties:
+      vertices:
+        items:
+          $ref: '#/definitions/entities.VertexOutput'
+        type: array
+    type: object
+  entities.ShippingOutput:
+    properties:
+      available:
+        type: boolean
+      id:
+        type: integer
+      shapes:
+        items:
+          $ref: '#/definitions/entities.ShapeOutput'
+        type: array
+      shipping_time_from:
+        type: integer
+      shipping_time_to:
+        type: integer
+    type: object
+  entities.UpdateExpirationTimeInput:
+    properties:
+      days:
+        example: 30
+        type: integer
+    required:
+    - days
     type: object
   entities.UpdatePubInput:
     properties:
@@ -420,6 +793,22 @@ definitions:
         type: string
     required:
     - name
+    type: object
+  entities.ValidateSessionInput:
+    properties:
+      phone:
+        example: "37367507188"
+        type: string
+      validation_number:
+        example: 123456
+        type: integer
+    type: object
+  entities.VertexOutput:
+    properties:
+      lat:
+        type: number
+      lng:
+        type: number
     type: object
   menus.createMenuOutput:
     properties:
@@ -459,7 +848,45 @@ definitions:
         example: true
         type: boolean
     type: object
-  pubs.cratePubOutput:
+  models.Shape:
+    properties:
+      vertices:
+        items:
+          $ref: '#/definitions/models.Vertex'
+        type: array
+    type: object
+  models.Vertex:
+    properties:
+      lat:
+        type: number
+      lng:
+        type: number
+    type: object
+  orders.CreateOrderOutput:
+    properties:
+      err:
+        example: unable to create order
+        type: string
+      ok:
+        example: true
+        type: boolean
+      order:
+        $ref: '#/definitions/entities.OrderOutput'
+    type: object
+  orders.GetOrdersOutput:
+    properties:
+      err:
+        example: ""
+        type: string
+      ok:
+        example: true
+        type: boolean
+      orders:
+        items:
+          $ref: '#/definitions/entities.OrderOutput'
+        type: array
+    type: object
+  pubs.CreatePubOutput:
     properties:
       ok:
         example: true
@@ -467,13 +894,13 @@ definitions:
       pub:
         $ref: '#/definitions/entities.PubOutput'
     type: object
-  pubs.deltePubOutput:
+  pubs.DeltePubOutput:
     properties:
       ok:
         example: true
         type: boolean
     type: object
-  pubs.fileUploadOutput:
+  pubs.FileUploadOutput:
     properties:
       file_name:
         type: string
@@ -481,7 +908,7 @@ definitions:
         example: true
         type: boolean
     type: object
-  pubs.getAllPubsForCompanyOutput:
+  pubs.GetAllPubsForCompanyOutput:
     properties:
       ok:
         example: true
@@ -491,7 +918,7 @@ definitions:
           $ref: '#/definitions/entities.PubOutput'
         type: array
     type: object
-  pubs.getPubByIDOutput:
+  pubs.GetPubByIDOutput:
     properties:
       ok:
         example: true
@@ -499,7 +926,68 @@ definitions:
       pub:
         $ref: '#/definitions/entities.PubOutput'
     type: object
-  pubs.updatePubOutput:
+  pubs.GetPubPreorderInfoOutput:
+    properties:
+      card_preorder:
+        type: boolean
+      cash_preorder:
+        type: boolean
+      ok:
+        example: true
+        type: boolean
+    type: object
+  pubs.GetShippingShapes:
+    properties:
+      available:
+        type: boolean
+      ok:
+        example: true
+        type: boolean
+      shapes:
+        items:
+          $ref: '#/definitions/models.Shape'
+        type: array
+    type: object
+  pubs.SetLatLngResponse:
+    properties:
+      err:
+        example: ""
+        type: string
+      lat:
+        example: 55.7558
+        type: number
+      lng:
+        example: 37.6176
+        type: number
+      ok:
+        example: true
+        type: boolean
+    type: object
+  pubs.SetPubPreorder:
+    properties:
+      ok:
+        example: true
+        type: boolean
+    type: object
+  pubs.SetShippingAvailable:
+    properties:
+      ok:
+        example: true
+        type: boolean
+    type: object
+  pubs.SetShippingShapes:
+    properties:
+      ok:
+        example: true
+        type: boolean
+    type: object
+  pubs.SetShippingTime:
+    properties:
+      ok:
+        example: true
+        type: boolean
+    type: object
+  pubs.UpdatePubOutput:
     properties:
       ok:
         example: true
@@ -513,6 +1001,149 @@ info:
   title: QrMenuApi
   version: "1.0"
 paths:
+  /api/client/authentication:
+    post:
+      description: return ok if sms was sended
+      parameters:
+      - description: authentication input
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/entities.CreateAuthenticationSessionInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/client.CreateAuthenticationSessionOutput'
+      summary: Create session for registration
+      tags:
+      - Registration
+  /api/client/authentication/validation:
+    post:
+      description: return ok and tokens if successfully authenticated
+      parameters:
+      - description: validation input
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/entities.ValidateSessionInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/client.ValidationOutput'
+      summary: Handle validation for authentication
+      tags:
+      - Authentication
+  /api/client/orders:
+    get:
+      description: gets all orders for pub
+      parameters:
+      - description: accesstoken
+        in: header
+        name: AccessToken
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/orders.GetOrdersOutput'
+      summary: Get orders
+      tags:
+      - Pub
+    post:
+      description: creates order
+      parameters:
+      - description: order input
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/entities.CreateOrderInput'
+      - description: accesstoken
+        in: header
+        name: AccessToken
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/client.CreateOrderOutput'
+      summary: Create order
+      tags:
+      - Order
+  /api/client/registration:
+    post:
+      description: return ok if sms was sended
+      parameters:
+      - description: registratio input
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/entities.CreateRegistrationSessionInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/client.CreateRegistrationSessionOutput'
+      summary: Create session for registration
+      tags:
+      - Registration
+  /api/client/registration/validation:
+    post:
+      description: return ok and tokens if successfully registered
+      parameters:
+      - description: validation input
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/entities.ValidateSessionInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/client.ValidationOutput'
+      summary: Handle validation for registration
+      tags:
+      - Registration
+  /api/orders/:
+    post:
+      description: creates order without authroization
+      parameters:
+      - description: order input
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/entities.CreateOrderInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/orders.CreateOrderOutput'
+      summary: Create order without authorization
+      tags:
+      - Order
   /auth/login:
     post:
       consumes:
@@ -536,6 +1167,51 @@ paths:
       summary: Login
       tags:
       - auth
+  /client:
+    get:
+      description: return client info
+      parameters:
+      - description: accesstoken
+        in: header
+        name: AccessToken
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/client.GetClientOutput'
+      summary: Get client info
+      tags:
+      - client
+  /client/get-available-categories:
+    get:
+      description: returns available categories from pubs available for shipping
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/client.GetCategoriesOutput'
+      summary: Get available categories for shipping
+      tags:
+      - client
+  /client/get-available-pubs:
+    get:
+      description: returns pubs available pubs info
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/client.GetAvailablePubsOutput'
+      summary: Get available pubs info
+      tags:
+      - client
   /client/pub/{id}:
     get:
       description: return all pub info includes menus categories and dishes
@@ -551,7 +1227,59 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/client.getPubInfoOutput'
+            $ref: '#/definitions/client.GetPubInfoOutput'
+      summary: Get all pub info
+      tags:
+      - client
+  /client/pub/{pubID}/shipping:
+    get:
+      consumes:
+      - application/json
+      description: Gets shipping shapes
+      parameters:
+      - description: company id
+        in: path
+        name: companyID
+        required: true
+        type: integer
+      - description: pub id
+        in: path
+        name: pubID
+        required: true
+        type: integer
+      - description: accesstoken
+        in: header
+        name: AccessToken
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/client.GetShippingShapes'
+      security:
+      - ApiKeyAuth: []
+      summary: Get shipping shapes
+      tags:
+      - client
+  /client/pub/{url_name}:
+    get:
+      description: return all pub info includes menus categories and dishes
+      parameters:
+      - description: pub url name
+        in: path
+        name: url_name
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/client.GetPubInfoOutput'
       summary: Get all pub info
       tags:
       - client
@@ -566,7 +1294,7 @@ paths:
         name: id
         required: true
         type: integer
-      - description: AccessToken
+      - description: accesstoken
         in: header
         name: AccessToken
         required: true
@@ -615,7 +1343,7 @@ paths:
         name: companyID
         required: true
         type: integer
-      - description: AccessToken
+      - description: accesstoken
         in: header
         name: AccessToken
         required: true
@@ -626,7 +1354,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/pubs.getAllPubsForCompanyOutput'
+            $ref: '#/definitions/pubs.GetAllPubsForCompanyOutput'
       security:
       - ApiKeyAuth: []
       summary: Get all pubs
@@ -649,7 +1377,7 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/entities.CreatePubInput'
-      - description: AccessToken
+      - description: accesstoken
         in: header
         name: AccessToken
         required: true
@@ -660,7 +1388,7 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/pubs.cratePubOutput'
+            $ref: '#/definitions/pubs.CreatePubOutput'
       security:
       - ApiKeyAuth: []
       summary: Create pub
@@ -680,7 +1408,7 @@ paths:
         name: pubID
         required: true
         type: integer
-      - description: AccessToken
+      - description: accesstoken
         in: header
         name: AccessToken
         required: true
@@ -691,7 +1419,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/pubs.deltePubOutput'
+            $ref: '#/definitions/pubs.DeltePubOutput'
       security:
       - ApiKeyAuth: []
       summary: Delete pub
@@ -712,7 +1440,7 @@ paths:
         name: pubID
         required: true
         type: integer
-      - description: AccessToken
+      - description: accesstoken
         in: header
         name: AccessToken
         required: true
@@ -723,7 +1451,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/pubs.getPubByIDOutput'
+            $ref: '#/definitions/pubs.GetPubByIDOutput'
       security:
       - ApiKeyAuth: []
       summary: Get pub
@@ -750,7 +1478,7 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/entities.UpdatePubInput'
-      - description: AccessToken
+      - description: accesstoken
         in: header
         name: AccessToken
         required: true
@@ -761,7 +1489,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/pubs.updatePubOutput'
+            $ref: '#/definitions/pubs.UpdatePubOutput'
       security:
       - ApiKeyAuth: []
       summary: Update pub
@@ -807,7 +1535,7 @@ paths:
         name: bg
         required: true
         type: file
-      - description: AccessToken
+      - description: accesstoken
         in: header
         name: AccessToken
         required: true
@@ -818,10 +1546,88 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/pubs.fileUploadOutput'
+            $ref: '#/definitions/pubs.FileUploadOutput'
       security:
       - ApiKeyAuth: []
       summary: Upload bg
+      tags:
+      - pub
+  /company/{companyID}/pubs/{pubID}/expiration-time:
+    post:
+      consumes:
+      - application/json
+      description: Updates pub expiration
+      parameters:
+      - description: company id
+        in: path
+        name: companyID
+        required: true
+        type: integer
+      - description: pub id
+        in: path
+        name: pubID
+        required: true
+        type: integer
+      - description: pub params
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/entities.CompanyUpdateTariffInput'
+      - description: accesstoken
+        in: header
+        name: AccessToken
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/admin.updatePubTariff'
+      security:
+      - ApiKeyAuth: []
+      summary: Update pub expiration time
+      tags:
+      - admin
+  /company/{companyID}/pubs/{pubID}/geolocation:
+    post:
+      consumes:
+      - application/json
+      description: sets lat lng for pub
+      parameters:
+      - description: company id
+        in: path
+        name: companyID
+        required: true
+        type: integer
+      - description: pub id
+        in: path
+        name: pubID
+        required: true
+        type: integer
+      - description: pub params
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/entities.SetLatLngInput'
+      - description: accesstoken
+        in: header
+        name: AccessToken
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pubs.SetLatLngResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Set lat lng
       tags:
       - pub
   /company/{companyID}/pubs/{pubID}/logo:
@@ -864,7 +1670,7 @@ paths:
         name: logo
         required: true
         type: file
-      - description: AccessToken
+      - description: accesstoken
         in: header
         name: AccessToken
         required: true
@@ -875,7 +1681,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/pubs.fileUploadOutput'
+            $ref: '#/definitions/pubs.FileUploadOutput'
       security:
       - ApiKeyAuth: []
       summary: Upload logo
@@ -895,7 +1701,7 @@ paths:
         name: pubID
         required: true
         type: integer
-      - description: AccessToken
+      - description: accesstoken
         in: header
         name: AccessToken
         required: true
@@ -933,7 +1739,7 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/entities.MenuInput'
-      - description: AccessToken
+      - description: accesstoken
         in: header
         name: AccessToken
         required: true
@@ -969,7 +1775,7 @@ paths:
         name: menuID
         required: true
         type: integer
-      - description: AccessToken
+      - description: accesstoken
         in: header
         name: AccessToken
         required: true
@@ -1004,7 +1810,7 @@ paths:
         name: menuID
         required: true
         type: integer
-      - description: AccessToken
+      - description: accesstoken
         in: header
         name: AccessToken
         required: true
@@ -1047,7 +1853,7 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/entities.MenuInput'
-      - description: AccessToken
+      - description: accesstoken
         in: header
         name: AccessToken
         required: true
@@ -1083,7 +1889,7 @@ paths:
         name: menuID
         required: true
         type: integer
-      - description: AccessToken
+      - description: accesstoken
         in: header
         name: AccessToken
         required: true
@@ -1127,7 +1933,7 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/entities.CategoryInput'
-      - description: AccessToken
+      - description: accesstoken
         in: header
         name: AccessToken
         required: true
@@ -1168,7 +1974,7 @@ paths:
         name: categoryID
         required: true
         type: integer
-      - description: AccessToken
+      - description: accesstoken
         in: header
         name: AccessToken
         required: true
@@ -1208,7 +2014,7 @@ paths:
         name: categoryID
         required: true
         type: integer
-      - description: AccessToken
+      - description: accesstoken
         in: header
         name: AccessToken
         required: true
@@ -1256,7 +2062,7 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/entities.CategoryInput'
-      - description: AccessToken
+      - description: accesstoken
         in: header
         name: AccessToken
         required: true
@@ -1297,7 +2103,7 @@ paths:
         name: categoryID
         required: true
         type: integer
-      - description: AccessToken
+      - description: accesstoken
         in: header
         name: AccessToken
         required: true
@@ -1346,7 +2152,7 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/entities.DishInput'
-      - description: AccessToken
+      - description: accesstoken
         in: header
         name: AccessToken
         required: true
@@ -1392,7 +2198,7 @@ paths:
         name: dishID
         required: true
         type: integer
-      - description: AccessToken
+      - description: accesstoken
         in: header
         name: AccessToken
         required: true
@@ -1437,7 +2243,7 @@ paths:
         name: dishID
         required: true
         type: integer
-      - description: AccessToken
+      - description: accesstoken
         in: header
         name: AccessToken
         required: true
@@ -1490,7 +2296,7 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/entities.DishInput'
-      - description: AccessToken
+      - description: accesstoken
         in: header
         name: AccessToken
         required: true
@@ -1577,7 +2383,7 @@ paths:
         name: image
         required: true
         type: file
-      - description: AccessToken
+      - description: accesstoken
         in: header
         name: AccessToken
         required: true
@@ -1623,7 +2429,7 @@ paths:
         name: dishID
         required: true
         type: integer
-      - description: AccessToken
+      - description: accesstoken
         in: header
         name: AccessToken
         required: true
@@ -1669,7 +2475,7 @@ paths:
         name: dishID
         required: true
         type: integer
-      - description: AccessToken
+      - description: accesstoken
         in: header
         name: AccessToken
         required: true
@@ -1746,7 +2552,7 @@ paths:
         name: image
         required: true
         type: file
-      - description: AccessToken
+      - description: accesstoken
         in: header
         name: AccessToken
         required: true
@@ -1787,7 +2593,7 @@ paths:
         name: categoryID
         required: true
         type: integer
-      - description: AccessToken
+      - description: accesstoken
         in: header
         name: AccessToken
         required: true
@@ -1828,7 +2634,7 @@ paths:
         name: categoryID
         required: true
         type: integer
-      - description: AccessToken
+      - description: accesstoken
         in: header
         name: AccessToken
         required: true
@@ -1864,7 +2670,7 @@ paths:
         name: menuID
         required: true
         type: integer
-      - description: AccessToken
+      - description: accesstoken
         in: header
         name: AccessToken
         required: true
@@ -1900,7 +2706,7 @@ paths:
         name: menuID
         required: true
         type: integer
-      - description: AccessToken
+      - description: accesstoken
         in: header
         name: AccessToken
         required: true
@@ -1917,6 +2723,188 @@ paths:
       summary: Move menu right
       tags:
       - menu
+  /company/{companyID}/pubs/{pubID}/preorder:
+    get:
+      consumes:
+      - application/json
+      description: Gets  preorder info
+      parameters:
+      - description: company id
+        in: path
+        name: companyID
+        required: true
+        type: integer
+      - description: pub id
+        in: path
+        name: pubID
+        required: true
+        type: integer
+      - description: accesstoken
+        in: header
+        name: AccessToken
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pubs.GetPubPreorderInfoOutput'
+      security:
+      - ApiKeyAuth: []
+      summary: Get preorder info
+      tags:
+      - pub
+  /company/{companyID}/pubs/{pubID}/shipping:
+    get:
+      consumes:
+      - application/json
+      description: Gets shipping shapes
+      parameters:
+      - description: company id
+        in: path
+        name: companyID
+        required: true
+        type: integer
+      - description: pub id
+        in: path
+        name: pubID
+        required: true
+        type: integer
+      - description: accesstoken
+        in: header
+        name: AccessToken
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pubs.GetShippingShapes'
+      security:
+      - ApiKeyAuth: []
+      summary: Get shipping shapes
+      tags:
+      - pub
+    post:
+      consumes:
+      - application/json
+      description: sets shipping shapes
+      parameters:
+      - description: company id
+        in: path
+        name: companyID
+        required: true
+        type: integer
+      - description: pub id
+        in: path
+        name: pubID
+        required: true
+        type: integer
+      - description: pub params
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/entities.SetShippingShapes'
+      - description: accesstoken
+        in: header
+        name: AccessToken
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pubs.SetShippingShapes'
+      security:
+      - ApiKeyAuth: []
+      summary: Set shipping shapes
+      tags:
+      - pub
+  /company/{companyID}/pubs/{pubID}/shipping-availability:
+    post:
+      consumes:
+      - application/json
+      description: sets shipping avaliability shapes
+      parameters:
+      - description: company id
+        in: path
+        name: companyID
+        required: true
+        type: integer
+      - description: pub id
+        in: path
+        name: pubID
+        required: true
+        type: integer
+      - description: pub params
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/entities.SetAvailableShipping'
+      - description: accesstoken
+        in: header
+        name: AccessToken
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pubs.SetShippingAvailable'
+      security:
+      - ApiKeyAuth: []
+      summary: Set shipping availability shapes
+      tags:
+      - pub
+  /company/{companyID}/pubs/{pubID}/shipping-time:
+    post:
+      consumes:
+      - application/json
+      description: sets shipping time
+      parameters:
+      - description: company id
+        in: path
+        name: companyID
+        required: true
+        type: integer
+      - description: pub id
+        in: path
+        name: pubID
+        required: true
+        type: integer
+      - description: time params
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/entities.SetShippingTime'
+      - description: accesstoken
+        in: header
+        name: AccessToken
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pubs.SetShippingTime'
+      security:
+      - ApiKeyAuth: []
+      summary: Set shipping time
+      tags:
+      - pub
   /company/{id}:
     get:
       consumes:
@@ -1928,7 +2916,7 @@ paths:
         name: id
         required: true
         type: integer
-      - description: AccessToken
+      - description: accesstoken
         in: header
         name: AccessToken
         required: true

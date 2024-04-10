@@ -22,6 +22,7 @@ func New() *pubController {
 func (c *pubController) UnauthorizedRouter(router fiber.Router) {
 	router.Get("/:pubID<int>/logo", c.GetPubLogo)
 	router.Get("/:pubID<int>/bg", c.GetPubBG)
+	router.Get("/:pubID<int>/geolocation", c.GetPubGeolocation)
 }
 func (c *pubController) AuthorizedRouter(router fiber.Router) {
 	router.Use(middleware.StrictAuthMW)
@@ -36,8 +37,10 @@ func (c *pubController) AuthorizedRouter(router fiber.Router) {
 	router.Post("/:pubID<int>/shipping", c.SetShapesForPub)
 	router.Post("/:pubID<int>/shipping-availability", c.SetAvailableShipping)
 	router.Get("/:pubID<int>/shipping", c.GetShapesForPub)
+	router.Post("/:pubID<int>/shipping-time", c.SetShippingTime)
 
 	router.Post("/:pubID<int>/preorder", c.SetPubPreorder)
 	router.Get("/:pubID<int>/preorder", c.GetPubPreorderInfo)
 
+	router.Post("/:pubID<int>/geolocation", c.SetPubGeolocation)
 }

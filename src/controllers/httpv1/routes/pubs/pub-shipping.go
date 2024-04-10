@@ -80,10 +80,10 @@ type SetShippingAvailable struct {
 // @Tags         pub
 // @Param companyID path int true "company id"
 // @Param pubID path int true "pub id"
-// @Param input body entities.SetShippingAvailable true "pub params"
+// @Param input body entities.SetAvailableShipping true "pub params"
 // @Accept       json
 // @Produce      json
-// @Success      200  {object} setShippingAvailable
+// @Success      200  {object} SetShippingAvailable
 // @Router       /company/{companyID}/pubs/{pubID}/shipping-availability [POST]
 // @Security ApiKeyAuth
 // @Param AccessToken header string  true "accesstoken"
@@ -130,6 +130,66 @@ func (c *pubController) SetAvailableShipping(ctx *fiber.Ctx) error {
 		fiber.StatusOK)
 }
 
+type SetShippingTime struct {
+	Ok bool `json:"ok" example:"true"`
+}
+
+// @Summary      Set shipping time
+// @Description  sets shipping time
+// @Tags         pub
+// @Param companyID path int true "company id"
+// @Param pubID path int true "pub id"
+// @Param input body entities.SetShippingTime true "time params"
+// @Accept       json
+// @Produce      json
+// @Success      200  {object} SetShippingTime
+// @Router       /company/{companyID}/pubs/{pubID}/shipping-time [POST]
+// @Security ApiKeyAuth
+// @Param AccessToken header string  true "accesstoken"
+func (c *pubController) SetShippingTime(ctx *fiber.Ctx) error {
+	userID, userSignificance, err := h.GetUserIDAndSignificanceFromLocals(ctx)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	companyID, err := strconv.Atoi(ctx.Params("companyID"))
+	if err != nil {
+		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	pubID, err := strconv.Atoi(ctx.Params("pubID"))
+	if err != nil {
+		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	//Checking access for action with pub for company
+	err = h.CheckAccess(userID, companyID, userSignificance, models.PUB_COMPANY_ENTITY, pubID)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	input, validationErrors, err := input.ParseRequestBody[entities.SetShippingTime](ctx)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	if len(validationErrors) > 0 {
+		return h.SendValidationErrors(ctx, validationErrors)
+	}
+
+	err = c.PubService.SetShippingTime(pubID, input.From, input.To)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	return h.SendSuccess(
+		ctx,
+		fiber.Map{
+			"ok": true,
+		},
+		fiber.StatusOK)
+}
+
 type GetShippingShapes struct {
 	Ok        bool           `json:"ok" example:"true"`
 	Available bool           `json:"available"`
@@ -143,7 +203,7 @@ type GetShippingShapes struct {
 // @Param pubID path int true "pub id"
 // @Accept       json
 // @Produce      json
-// @Success      200  {object}  SetShippingShapes
+// @Success      200  {object}  GetShippingShapes
 // @Router       /company/{companyID}/pubs/{pubID}/shipping [GET]
 // @Security ApiKeyAuth
 // @Param AccessToken header string  true "accesstoken"

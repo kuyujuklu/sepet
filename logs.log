@@ -1,3 +1,14 @@
 ERROR: 2023/08/28 11:48:58 config.go:40: unable to delete dish image  remove clientfiles/images/dishes/: directory not empty
 ERROR: 2023/08/28 11:49:02 config.go:40: unable to delete dish image  remove clientfiles/images/dishes/: directory not empty
 ERROR: 2023/08/28 11:50:05 config.go:40: unable to delete dish image  remove clientfiles/images/dishes/: directory not empty
+ERROR: 2024/02/25 20:35:19 config.go:40: unable to delete category image  remove clientfiles/images/categories/ac6fb72e-49d5-4051-bec5-81c8386b6371.jpeg: The process cannot access the file because it is being used by another process.
+ERROR: 2024/02/25 20:35:31 config.go:40: unable to delete category image  remove clientfiles/images/categories/5b91c393-f102-468f-9cf1-5350705de1c4.jpg: The process cannot access the file because it is being used by another process.
+ERROR: 2024/02/25 20:35:35 config.go:40: unable to delete category image  remove clientfiles/images/categories/5b91c393-f102-468f-9cf1-5350705de1c4.jpg: The process cannot access the file because it is being used by another process.
+ERROR: 2024/02/25 20:35:48 config.go:40: unable to delete category image  remove clientfiles/images/categories/5ef9e5ed-a477-489f-a66d-09bb078f8483.png: The process cannot access the file because it is being used by another process.
+ERROR: 2024/02/25 20:35:54 config.go:40: unable to delete category image  remove clientfiles/images/categories/5ef9e5ed-a477-489f-a66d-09bb078f8483.png: The process cannot access the file because it is being used by another process.
+ERROR: 2024/02/25 20:36:08 config.go:40: unable to delete category image  remove clientfiles/images/categories/4095d817-e4fe-4d1a-95d0-e293a5b98686.jpg: The process cannot access the file because it is being used by another process.
+ERROR: 2024/02/25 20:38:05 config.go:40: unable to delete category image  remove clientfiles/images/categories/16c1b848-7dcc-4eab-976e-7582e34edbf8.jpg: The process cannot access the file because it is being used by another process.
+ERROR: 2024/02/25 20:39:34 config.go:40: unable to delete category image  remove clientfiles/images/categories/ccf4cb30-986a-4690-a437-90b7b9999bb9.jpeg: The process cannot access the file because it is being used by another process.
+ERROR: 2024/02/25 20:40:34 config.go:40: unable to delete category image  remove clientfiles/images/categories/f8c75e02-f16a-44ff-bdde-6d5720fb06ac.png: The process cannot access the file because it is being used by another process.
+ERROR: 2024/02/25 20:41:21 config.go:40: unable to delete category image  remove clientfiles/images/categories/da34ce50-a3ce-4636-9eb0-7abb6428f6e9.png: The process cannot access the file because it is being used by another process.
+ERROR: 2024/02/25 20:42:46 config.go:40: unable to delete category image  remove clientfiles/images/categories/538c6d96-8444-421a-8ba0-d738746dd9e8.jpg: The process cannot access the file because it is being used by another process.

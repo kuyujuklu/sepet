@@ -79,7 +79,7 @@ func (c *categoryController) UpdateCategory(ctx *fiber.Ctx) error {
 	}
 
 	output := entities.CategoryOutput{}
-	output.ConvertFromModel(category)
+	output.FillFromModel(category)
 
 	return h.SendSuccess(
 		ctx,

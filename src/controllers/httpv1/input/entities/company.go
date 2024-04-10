@@ -39,7 +39,7 @@ func (c *CompanyInput) ConvertToModel() (models.Company, error) {
 	return company, nil
 }
 
-func (c *CompanyOutput) ConvertFromModel(company models.Company) {
+func (c *CompanyOutput) FillFromModel(company models.Company) {
 	c.ID = int(company.ID)
 	c.Name = company.Name
 	c.Phone = company.Phone

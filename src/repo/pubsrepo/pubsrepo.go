@@ -50,6 +50,7 @@ type PubsRepo interface {
 	GetAllPubs() ([]models.Pub, error)
 	GetAllMenusForPub(pubID int) ([]models.Menu, error)
 	GetAllCategoriesForPub(pubID int) ([]models.Category, error)
+	GetCategoriesWithPreloadedMenuForPubs(pubs []models.Pub) ([]models.Category, error)
 	GetAllDishesForPub(pubID int) ([]models.Dish, error)
 	GetPubById(id int) (models.Pub, error)
 	GetPubByUrlName(urlName string) (models.Pub, error)
@@ -67,12 +68,17 @@ type PubsRepo interface {
 	GetPubLogoFileName(pubID int) (string, error)
 	GetPubBGFileName(pubID int) (string, error)
 
+	//Geolocation
+	SetLatLng(pubID int, lat float64, lng float64) error
+
 	//Shipping
+	GetPubsWithAvailableShipping() ([]models.Pub, error)
 	EnableShipping(pubID int) error
 	GetPubShapes(pubID int) ([]models.Shape, error)
 	SetPubShapes(pubID int, shapes []models.Shape) error
 	GetShipping(pubID int) (models.Shipping, error)
 	SetShippingAvailable(pubID int, available bool) error
+	SetShippingTime(pubID int, shippingTimeFrom int, shippingTimeTo int) error
 	SetCardPreorder(pubID int, available bool) error
 	SetCashPreorder(pubID int, available bool) error
 	GetPreorderInfo(pubID int) (models.PreorderInfo, error)
@@ -166,6 +172,43 @@ func (r *pubsRepo) GetAllCategoriesForPub(pubID int) ([]models.Category, error) 
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return categories, nil
 		}
+		return nil, categoryerrors.ErrUnableToGetCategory
+	}
+
+	return categories, nil
+}
+
+func (r *pubsRepo) GetCategoriesWithPreloadedMenuForPubs(pubs []models.Pub) ([]models.Category, error) {
+	menus := make([]models.Menu, 0)
+	menusCondition := "pub_id in ("
+	for i, pub := range pubs {
+		menusCondition += fmt.Sprint(pub.ID)
+		if i != len(pubs)-1 {
+			menusCondition += ", "
+		}
+	}
+	menusCondition += ")"
+	resp := r.Database.Where(menusCondition).Find(&menus)
+	if resp.Error != nil {
+		return nil, menuerrors.ErrUnableToGetMenu
+	}
+
+	if len(menus) == 0 {
+		return nil, nil
+	}
+
+	categories := make([]models.Category, 0)
+	categoriesCondition := "menu_id in ("
+	for i, menu := range menus {
+		categoriesCondition += fmt.Sprint(menu.ID)
+		if i != len(menus)-1 {
+			categoriesCondition += ", "
+		}
+	}
+	categoriesCondition += ")"
+
+	resp = r.Database.Preload("Menu").Where(categoriesCondition).Find(&categories)
+	if resp.Error != nil {
 		return nil, categoryerrors.ErrUnableToGetCategory
 	}
 
@@ -450,6 +493,20 @@ func (s *pubsRepo) GetPubBGFileName(pubID int) (string, error) {
 	return pub.BgImageFileName, nil
 }
 
+func (s *pubsRepo) SetLatLng(pubID int, lat float64, lng float64) error {
+	_, err := s.GetPubById(pubID)
+	if err != nil {
+		return err
+	}
+
+	resp := s.Database.Model(&models.Pub{}).Where("id = ?", pubID).Updates(map[string]interface{}{"lat": lat, "lng": lng})
+	if resp.Error != nil {
+		return servererrors.ErrInternalServerError
+	}
+
+	return nil
+}
+
 func (s *pubsRepo) EnableShipping(pubID int) error {
 	pub, err := s.GetPubById(pubID)
 	if err != nil {
@@ -530,6 +587,33 @@ func (s *pubsRepo) SetShippingAvailable(pubID int, available bool) error {
 	return nil
 }
 
+func (s *pubsRepo) SetShippingTime(pubID int, shippingTimeFrom int, shippingTimeTo int) error {
+	pub, err := s.GetPubById(pubID)
+	if err != nil {
+		return err
+	}
+
+	err = s.Database.First(&models.Shipping{}, "id = ?", pub.ShippingID).Error
+	if err != nil {
+		return puberrors.ErrPubShippingIsInvalid
+	}
+
+	res := s.Database.
+		Model(&models.Shipping{}).
+		Where("id = ?", pub.ShippingID).
+		UpdateColumns(
+			map[string]interface{}{
+				"shipping_time_from": shippingTimeFrom,
+				"shipping_time_to":   shippingTimeTo,
+			},
+		)
+	if res.Error != nil {
+		return servererrors.ErrInternalServerError
+	}
+
+	return nil
+}
+
 func (s *pubsRepo) SetCardPreorder(pubID int, available bool) error {
 	pub, err := s.GetPubById(pubID)
 	if err != nil {
@@ -575,4 +659,15 @@ func (r *pubsRepo) GetPreorderInfo(pubID int) (models.PreorderInfo, error) {
 	}
 
 	return pub.PreorderInfo, nil
+}
+
+func (r *pubsRepo) GetPubsWithAvailableShipping() ([]models.Pub, error) {
+	var pubs []models.Pub
+	result := r.Database.Joins("JOIN shippings on pubs.shipping_id = shippings.id").Preload("Shipping").Find(&pubs, "shippings.available = ?", true)
+
+	if result.Error != nil {
+		return nil, puberrors.ErrUnableToGetPub
+	}
+
+	return pubs, nil
 }

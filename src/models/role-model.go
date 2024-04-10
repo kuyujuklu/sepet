@@ -3,11 +3,13 @@ package models
 const (
 	ADMIN_ROLE_NAME   = "admin"
 	COMPANY_ROLE_NAME = "company"
+	CLIENT_ROLE_NAME  = "client"
 )
 
 const (
 	ADMIN_SIGNIFICANCE   = 1
 	COMPANY_SIGNIFICANCE = 2
+	CLIENT_SIGNIFICANCE  = 2
 )
 
 type Role struct {

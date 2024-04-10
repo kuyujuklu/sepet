@@ -5,6 +5,7 @@ import (
 	"github.com/alexkalak/qrmenu/src/errors/adminerrors"
 	"github.com/alexkalak/qrmenu/src/errors/autherrors"
 	"github.com/alexkalak/qrmenu/src/errors/categoryerrors"
+	"github.com/alexkalak/qrmenu/src/errors/clienterrors"
 	"github.com/alexkalak/qrmenu/src/errors/companyerrors"
 	"github.com/alexkalak/qrmenu/src/errors/currencyerrors"
 	"github.com/alexkalak/qrmenu/src/errors/disheserrors"
@@ -67,6 +68,7 @@ var errors = map[error]int{
 	categoryerrors.ErrUnableToDeleteCategory:       fiber.StatusInternalServerError,
 	categoryerrors.ErrCategoryHaveNoImage:          fiber.StatusNotFound,
 	categoryerrors.ErrUnableToFreePlaceForCategory: fiber.StatusInternalServerError,
+	categoryerrors.ErrCategoryMenuNotFound:         fiber.StatusNotFound,
 
 	//Dish errors
 	disheserrors.ErrDishNotFound:             fiber.StatusNotFound,
@@ -117,6 +119,19 @@ var errors = map[error]int{
 	//adminerrors
 	adminerrors.ErrAdminNotFound:          fiber.StatusNotFound,
 	adminerrors.ErrAdminIncorrectPassword: fiber.StatusUnauthorized,
+
+	//clienterror
+	clienterrors.ErrClientNotFound:                       fiber.StatusNotFound,
+	clienterrors.ErrClientWithTheSameNumberAlreadyExists: fiber.StatusConflict,
+	clienterrors.ErrUnableToCreateSession:                fiber.StatusInternalServerError,
+	clienterrors.ErrUnableToGetClient:                    fiber.StatusInternalServerError,
+	clienterrors.ErrUnableToDeleteClient:                 fiber.StatusInternalServerError,
+	clienterrors.ErrUnableToUpdateClient:                 fiber.StatusInternalServerError,
+	clienterrors.ErrUnableToGetSession:                   fiber.StatusInternalServerError,
+	clienterrors.ErrTooManyLoginSessions:                 fiber.StatusTooManyRequests,
+	clienterrors.ErrInvalidValidationNumber:              fiber.StatusUnauthorized,
+	clienterrors.ErrInvalidLatitude:                      fiber.StatusBadRequest,
+	clienterrors.ErrInvalidLongitude:                     fiber.StatusBadRequest,
 }
 
 func SendError(ctx *fiber.Ctx, err error, statusCode int) error {
@@ -130,6 +145,19 @@ func SendError(ctx *fiber.Ctx, err error, statusCode int) error {
 		"ok":  false,
 		"err": err.Error(),
 	})
+}
+
+func SendErrorWithBody(ctx *fiber.Ctx, err error, statusCode int, additionalInfo fiber.Map) error {
+	if statusCode == AUTOMATIC_STATUS_CODE {
+		ctx.SendStatus(GetStatusByError(err))
+	} else {
+		ctx.SendStatus(statusCode)
+	}
+
+	additionalInfo["ok"] = false
+	additionalInfo["err"] = err.Error()
+
+	return ctx.JSON(additionalInfo)
 }
 
 func SendValidationErrors(ctx *fiber.Ctx, validationErrors []input.ValidationError) error {
