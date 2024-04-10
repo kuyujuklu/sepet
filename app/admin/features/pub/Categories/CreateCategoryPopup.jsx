@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "@mui/material";
 import InputWithLabel from "@/app/admin/components/Inputs/InputWithLabel";
-import Popup from "@/app/admin/components/Popup/Popup";
+import Popup from "@/app/shared-components/Popup/Popup";
 import WhiteSpinner from "@/app/admin/components/loaders/WhiteSpinner";
 import {
     closeCreateCategoryPopup,
@@ -14,6 +14,8 @@ import { HexColorPicker } from "react-colorful";
 import CheckboxWithLabel from "@/app/admin/components/Inputs/CheckboxWithLabel";
 import { useTranslation } from "react-i18next";
 import { fixedCacheKeys } from "@/app/admin/api/fixedCacheKeys";
+import SelectWithLabel from "@/app/admin/components/Inputs/SelectWithLabel";
+import { categoryTypes } from "@/app/admin/static-data/data";
 
 const CreateCategoryPopup = () => {
     const { t } = useTranslation();
@@ -28,6 +30,7 @@ const CreateCategoryPopup = () => {
     }, [dispatch]);
 
     const [name, setName] = useState("");
+    const [categoryType, setCategoryType] = useState(categoryTypes.Other.value);
     const [visible, setVisible] = useState(true);
     const [textColor, setTextColor] = useState("#ffffff");
     const [colorPickerOpened, setColorPickerOpened] = useState(true);
@@ -39,8 +42,9 @@ const CreateCategoryPopup = () => {
     }, [closePopup, data]);
 
     const handleButtonClick = () => {
-        const pub = {
+        const category = {
             name,
+            categoryType,
             visible,
             textColor,
             place: popupState.place ?? 1,
@@ -56,7 +60,7 @@ const CreateCategoryPopup = () => {
         }
 
         createCategory({
-            data: pub,
+            data: category,
             companyID: popupState.companyID,
             pubID: popupState.pubID,
             menuID: popupState.menuID,
@@ -82,6 +86,25 @@ const CreateCategoryPopup = () => {
                         }}
                         value={name}
                         setValue={setName}
+                    />
+                    <SelectWithLabel 
+                        label={t("admin.popups.create_category_popup.category_type")}
+                        wrapperClass="flex items-center gap-4"
+                        labelClassName={
+                            "text-sm sm:text-base text-gray-500 font-medium"
+                        }
+                        selectClassName={"text-xs sm:text-sm"}
+
+                        value={categoryType}
+                        setValue={setCategoryType}
+                        values={[
+                            {value: categoryTypes.Burger.value, text: t(categoryTypes.Burger.text) +" 🍔"},
+                            {value: categoryTypes.Pizza.value, text: t(categoryTypes.Pizza.text) +" 🍕"},
+                            {value: categoryTypes.Sushi.value, text: t(categoryTypes.Sushi.text) +" 🍣"},
+                            {value: categoryTypes.Drinks.value, text: t(categoryTypes.Drinks.text) +" 🍹"},
+                            {value: categoryTypes.Other.value, text: t(categoryTypes.Other.text) +" 🍽️"},
+                        ]}
+
                     />
                     {/* Pick color */}
                     <div>

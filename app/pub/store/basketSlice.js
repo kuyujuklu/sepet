@@ -3,6 +3,7 @@ import { createSlice } from "@reduxjs/toolkit";
 const initialState = {
     pubID: null,
     dishes: {},
+    lastOrder: null,
 };
 
 const basketSlice = createSlice({
@@ -80,6 +81,12 @@ const basketSlice = createSlice({
                     delete state.dishes[key];
                 }
             }
+        },
+        setLastOrder(state, action) {
+            const order = action.payload.order
+            if(!order) return;
+
+            state.lastOrder = order
         }
     },
 });
@@ -88,7 +95,9 @@ export const selectDish = (dishID) => (state) =>
     state.basketSlice.dishes[dishID];
 export const selectDishes = (state) => state.basketSlice.dishes;
 
-export const { increaseDishAmount, decreaseDishAmount, clearBasket, setBasketPubID } =
+export const selectLastOrder = (state) => state.basketSlice.lastOrder
+
+export const { increaseDishAmount, decreaseDishAmount, clearBasket, setBasketPubID, setLastOrder } =
     basketSlice.actions;
 
 export default basketSlice.reducer;

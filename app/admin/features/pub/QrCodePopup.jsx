@@ -1,7 +1,7 @@
 "use client"
 import { useDispatch, useSelector } from "react-redux";
 import { closeQrCodePopup, selectQrCodePopupState } from "./pubSlice";
-import Popup from "../../components/Popup/Popup";
+import Popup from "@/app/shared-components/Popup/Popup";
 
 const QrCodePopup = () => {
     const dispatch = useDispatch();

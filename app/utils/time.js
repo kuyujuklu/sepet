@@ -1,5 +1,4 @@
-export const ConvertQrMenuApiTimeToLocal = (time, lang) => {
-    const locale = lang === "ro" ? "ro-RO" : "ru-RU";
+export const GetUtcDateFromApiTime = (time) => {
     const rawDate = new Date(time);
     const date = new Date(
         Date.UTC(
@@ -11,6 +10,12 @@ export const ConvertQrMenuApiTimeToLocal = (time, lang) => {
             rawDate.getSeconds()
         )
     );
+    return date
+}
+
+export const ConvertQrMenuApiTimeToLocal = (time, lang) => {
+    const locale = lang === "ro" ? "ro-RO" : "ru-RU";
+    const date = GetUtcDateFromApiTime(time)
 
     const year = date.getFullYear();
 

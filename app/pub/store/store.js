@@ -4,7 +4,9 @@ import { configureStore } from "@reduxjs/toolkit";
 import pubInfoReducer from "./pubInfoSlice";
 import menuReducer from "./menuSlice";
 import basketReducer from "./basketSlice";
+import ordersReducer from "./orderSlice";
 import { basketMiddleware } from "./middleware/basketMiddleware";
+import { ordersApi } from "../api/rtk-query/orders";
 
 let store
 
@@ -21,14 +23,18 @@ if(typeof window !== "undefined") {
         preloadedState: {
             basketSlice: {
                 dishes: isTimeInLocalStorageExpired() ? {} : (JSON.parse(localStorage.getItem("basket")) || {}),
+                lastOrder: (JSON.parse(localStorage.getItem("lastOrder")) || {})
             },
         },
         reducer: {
             menuSlice: menuReducer,
             basketSlice: basketReducer,
             pubInfoSlice: pubInfoReducer,
+            orderSlice: ordersReducer,
+            [ordersApi.reducerPath]: ordersApi.reducer
         },
-        middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(...basketMiddleware),
+        middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(...basketMiddleware)
+        .concat(ordersApi.middleware),
     })
 }
 

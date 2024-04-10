@@ -4,7 +4,7 @@ import { useCallback, useEffect } from "react";
 import { Button } from "@mui/material";
 import { useDeleteMenuMutation } from "@/app/admin/api/menu/menu";
 import { closeDeleteMenuPopup, selectDeleteMenuPopupState } from "./menuSlice";
-import Popup from "@/app/admin/components/Popup/Popup";
+import Popup from "@/app/shared-components/Popup/Popup";
 import WhiteSpinner from "@/app/admin/components/loaders/WhiteSpinner";
 import { useTranslation } from "react-i18next";
 import { fixedCacheKeys } from "@/app/admin/api/fixedCacheKeys";

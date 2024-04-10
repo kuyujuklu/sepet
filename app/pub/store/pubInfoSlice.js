@@ -12,7 +12,10 @@ const pubInfoSlice = createSlice({
             state.data = action.payload;
             console.log("URL_NAME ++++++++++++++", action.payload.pub.url_name)
             if(state.data.pub)
-                state.data.pub.id = action.payload.pub.url_name;
+            // ETA PIZDEC
+            state.data.pub.real_id = action.payload.pub.id;
+            
+            state.data.pub.id = action.payload.pub.url_name;
         },
     },
 });

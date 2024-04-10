@@ -23,5 +23,8 @@ export const getPubInfo = async (id) => {
         console.log("no data error ==============================");
     }
 
+
+    console.log("data: ", data)
+
     return data;
 };

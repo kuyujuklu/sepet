@@ -13,12 +13,17 @@ module.exports = (phase) => {
         return {
             env: {
                 API_SERV: process.env.API_SERV,
+                IS_DEV: process.env.IS_DEV
             },
             async rewrites() {
                     return [
                         {
                           source: '/api/:path*',
                           destination: `http://localhost:9999/api/:path*` // Proxy to Backend
+                        },
+                        {
+                          source: '/ws/:path*',
+                          destination: `http://localhost:9999/ws/:path*` // Proxy to Backend
                         },
                         {
                             source: "/api-static/:path*",
@@ -33,6 +38,11 @@ module.exports = (phase) => {
     return {
         env: {
             API_SERV: process.env.API_SERV,
+            IS_DEV: process.env.IS_DEV,
+        },
+        i18n: {
+            locales: ['ru', 'ro'],
+            defaultLocale: 'ru',
         },
         async rewrites() {
                 return [

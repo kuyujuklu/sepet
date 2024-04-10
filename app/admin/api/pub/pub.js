@@ -4,7 +4,7 @@ import { authenticationBasedQuery } from "../auth/authBasedQuery";
 export const pub = createApi({
     reducerPath: "pubQuery",
     baseQuery: authenticationBasedQuery,
-    tagTypes: ["Pub", "Shipping", "Preorder"],
+    tagTypes: ["Pub", "Shipping", "Preorder", "Geolocation"],
     endpoints: (builder) => ({
         createPub: builder.mutation({
             query: ({ companyID, data }) => ({
@@ -61,8 +61,8 @@ export const pub = createApi({
             providesTags: ["Pub"],
         }),
         getFullPubInfo: builder.query({
-            query: ({ pubID }) => ({
-                url: `/api/client/pub/${pubID}/`,
+            query: ({ pubUrlName }) => ({
+                url: `/api/client/pub/${pubUrlName}/`,
                 method: "GET",
             }),
             providesTags: ["Pub"],
@@ -129,6 +129,41 @@ export const pub = createApi({
             }),
             invalidatesTags: ["Preorder"],
         }),
+        getGeolocation: builder.query({
+            query: ({ companyID, pubID }) => ({
+                url: `/api/company/${companyID}/pubs/${pubID}/geolocation`,
+                method: "GET",
+            }),
+            providesTags: ["Geolocation"],
+        }),
+        setGeolocation: builder.mutation({
+            query: ({ companyID, pubID, lat, lng }) => ({
+                url: `/api/company/${companyID}/pubs/${pubID}/geolocation`,
+                method: "POST",
+                body: {
+                    "lat": lat,
+                    "lng": lng
+                },
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }),
+            invalidatesTags: ["Geolocation", "Pub"],
+        }),
+        setShippingTime: builder.mutation({
+            query: ({ companyID, pubID, from, to }) => ({
+                url: `/api/company/${companyID}/pubs/${pubID}/shipping-time`,
+                method: "POST",
+                body: {
+                    "from": +from,
+                    "to": +to
+                },
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }),
+            invalidatesTags: ["Pub"],
+        }), 
     }),
 });
 
@@ -145,4 +180,8 @@ export const {
     useSetShippingAvailabilityMutation,
     useGetPreorderQuery,
     useSetPreorderMutation,
+    useGetGeolocationQuery,
+    useLazyGetGeolocationQuery,
+    useSetGeolocationMutation,
+    useSetShippingTimeMutation
 } = pub;

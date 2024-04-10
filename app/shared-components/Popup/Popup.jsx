@@ -1,7 +1,7 @@
 "use client"
-import { closePopupAreaClickHandler } from "../../eventHandlers/popupCloseAreaClickHandler";
 
-import style from "../../sass/components/popups/popup.module.scss";
+import { closePopupAreaClickHandler } from "@/app/admin/eventHandlers/popupCloseAreaClickHandler";
+import style from "./popup.module.scss";
 
 const Popup = ({ opened, closeCallback, children }) => {
     const closeClickHandler = closePopupAreaClickHandler(() => {

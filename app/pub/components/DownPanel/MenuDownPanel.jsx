@@ -5,10 +5,16 @@ import Link from "next/link";
 import Image from "next/image";
 import { ThemeContext } from "../PubPage/PubPage";
 import BasketCount from "./BasketCount";
+import SwitchLang from "./SwitchLang";
+import { useSelector } from "react-redux";
+import { selectDishes } from "../../store/basketSlice";
 
 const MenuDownPanel = ({ pubID, data }) => {
     const themeContext = useContext(ThemeContext);
 
+    const selectedDishes = useSelector(selectDishes);
+    const count = Object.keys(selectedDishes)
+        .reduce((acc, id) => (acc += selectedDishes[id].count ?? 0), 0);
     return (
         <div
             className={downPanelStyle.wrapper}
@@ -63,9 +69,12 @@ const MenuDownPanel = ({ pubID, data }) => {
                                     width={30}
                                     height={35}
                                 />
-                                <BasketCount />
+                                <BasketCount count={count} />
                             </div>
                         </Link>
+                        <div className="flex flex-col justify-center items-center">
+                            <SwitchLang />
+                        </div>
                     </div>
                 </div>
             </div>

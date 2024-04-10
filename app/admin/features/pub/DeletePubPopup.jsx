@@ -1,6 +1,6 @@
 "use client"
 import { useDispatch, useSelector } from "react-redux";
-import Popup from "../../components/Popup/Popup";
+import Popup from "@/app/shared-components/Popup/Popup";
 import { closeDeletePubPopup, selectDeletePubPopupState } from "./pubSlice";
 import { useCallback, useEffect } from "react";
 import { Button } from "@mui/material";

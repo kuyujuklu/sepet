@@ -5,7 +5,7 @@ import { Button } from "@mui/material";
 import { closeCreateMenuPopup, selectCreateMenuPopupState } from "./menuSlice";
 import { useCreateMenuMutation } from "@/app/admin/api/menu/menu";
 import InputWithLabel from "@/app/admin/components/Inputs/InputWithLabel";
-import Popup from "@/app/admin/components/Popup/Popup";
+import Popup from "@/app/shared-components/Popup/Popup";
 import WhiteSpinner from "@/app/admin/components/loaders/WhiteSpinner";
 import CheckboxWithLabel from "@/app/admin/components/Inputs/CheckboxWithLabel";
 import { useTranslation } from "react-i18next";

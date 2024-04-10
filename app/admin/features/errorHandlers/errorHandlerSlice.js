@@ -4,6 +4,7 @@ export const errorKeys = {
     get_company: 'get_company',
     get_pub_by_id: "get_pub_by_id",
     get_pubs: "get_pubs",
+    get_full_pub_info:"get_full_pub_info",
     get_menu_by_id: "get_menu_by_id",
     get_menus: "get_menus",
     get_category_by_id: "get_category_by_id",
@@ -17,6 +18,9 @@ export const errorKeys = {
     authentication: 'authentication',
     registration: 'registration',
     logout: 'logout',
+
+    //order
+    update_order_status: 'update_order_status'
 };
 
 const initialState = {
@@ -24,6 +28,7 @@ const initialState = {
     receivingErrors: {
         [errorKeys.get_company]: null,
         [errorKeys.get_pub_by_id]: null,
+        [errorKeys.get_full_pub_info]: null,
         [errorKeys.get_pubs]: null,
         [errorKeys.get_menu_by_id]: null,
         [errorKeys.get_menus]: null,

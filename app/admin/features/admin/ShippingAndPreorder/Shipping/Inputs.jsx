@@ -1,18 +1,19 @@
 import { Checkbox } from "@mui/material";
 import { useEffect, useState } from "react";
-import Map from "./Shipping/Map";
+import Map from "./Map";
 import {
     useGetPreorderQuery,
     useSetPreorderMutation,
     useSetShippingAvailabilityMutation,
 } from "@/app/admin/api/pub/pub";
-import { selectShipping } from "./Shipping/shippingSlice";
+import { selectShipping } from "./shippingSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { fixedCacheKeys } from "@/app/admin/api/fixedCacheKeys";
 import {
     errorKeys,
     setReceivingError,
-} from "../../errorHandlers/errorHandlerSlice";
+} from "../../../errorHandlers/errorHandlerSlice";
+import TimeInput from "./TimeInput";
 
 const Inputs = ({ pub }) => {
     const dispatch = useDispatch();
@@ -59,7 +60,7 @@ const Inputs = ({ pub }) => {
     useEffect(() => {
         if (!preorderData) return;
 
-        if(preorderWithCard === "idle" || preorderWithCash === "idle") return;
+        if (preorderWithCard === "idle" || preorderWithCash === "idle") return;
 
         if (
             preorderData.card_preorder === preorderWithCard &&
@@ -84,8 +85,9 @@ const Inputs = ({ pub }) => {
         setPreorder,
     ]);
 
-    const [shippingChecked, setShippingChecked] = useState(false);
-
+    const [shippingChecked, setShippingChecked] = useState(null);
+    const [shippingAvailabilityChanged, setShippingAvailabilityChanged] =
+        useState(false);
     const [setShippingAvailability] = useSetShippingAvailabilityMutation({
         fixedCacheKey: fixedCacheKeys.pubs.set_shipping_availability,
     });
@@ -95,6 +97,9 @@ const Inputs = ({ pub }) => {
     }, [shipping.available]);
 
     useEffect(() => {
+        if (shippingChecked === null) return;
+        if (!shippingAvailabilityChanged) return;
+
         setShippingAvailability({
             pubID: pub.id,
             companyID: pub.company_id,
@@ -105,6 +110,16 @@ const Inputs = ({ pub }) => {
     return (
         <div className="mt-4">
             <div style={{ maxWidth: "600px" }} className="m-auto mb-10">
+                {/* Time input */}
+                <div>
+                    <TimeInput
+                        shipping_time_from={pub?.shipping?.shipping_time_from}
+                        shipping_time_to={pub?.shipping?.shipping_time_to}
+                        companyID={pub?.company_id}
+                        pubID={pub?.id}
+                    />
+                </div>
+                <hr className="border-gray-300 my-4" />
                 <div>
                     <div className="font-normal text-lg">
                         If you wanna enable preordering for your pub put down
@@ -122,37 +137,48 @@ const Inputs = ({ pub }) => {
                             <span className="font-medium text-lg">
                                 Оплата наличными{" "}
                             </span>
-                                <Checkbox
-                                    checked={preorderWithCash === "idle" ? false : preorderWithCash}
-                                    onChange={() =>
-                                        setPreorderWithCash(!preorderWithCash)
-                                    }
-                                    disabled={isLoading}
-                                />
+                            <Checkbox
+                                checked={
+                                    preorderWithCash === "idle"
+                                        ? false
+                                        : preorderWithCash
+                                }
+                                onChange={() =>
+                                    setPreorderWithCash(!preorderWithCash)
+                                }
+                                disabled={isLoading}
+                            />
                         </div>
                         <div className="flex items-center gap-3">
                             <span className="font-medium text-lg">
                                 Оплата онлайн{" "}
                             </span>
-                                <Checkbox
-                                    checked={preorderWithCard === "idle" ? false : preorderWithCard}
-                                    onChange={() =>
-                                        setPreorderWithCard(!preorderWithCard)
-                                    }
-                                    disabled={isLoading}
-                                />
+                            <Checkbox
+                                checked={
+                                    preorderWithCard === "idle"
+                                        ? false
+                                        : preorderWithCard
+                                }
+                                onChange={() =>
+                                    setPreorderWithCard(!preorderWithCard)
+                                }
+                                disabled={isLoading}
+                            />
                         </div>
                     </div>
                 )}
-                <hr className="border-gray-300" />
-                <div className="mt-4">
+                <hr className="border-gray-300 my-4" />
+                <div>
                     <div className="font-normal text-lg">
                         If your pub has shipping put down the checkmark
                     </div>
                     <span className="font-medium text-lg">Shipping</span>
                     <Checkbox
                         checked={shippingChecked}
-                        onChange={() => setShippingChecked(!shippingChecked)}
+                        onChange={() => {
+                            setShippingAvailabilityChanged(true);
+                            setShippingChecked(!shippingChecked);
+                        }}
                     />
                 </div>
             </div>

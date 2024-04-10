@@ -2,7 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
     shipping: {
-        avaliable: false,
+        avaliable: null,
         shapes: []
     }
 };

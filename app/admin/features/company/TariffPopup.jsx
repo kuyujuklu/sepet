@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { closeTariffPopup, selectUpgradeTariffPopupState } from "./companySlice";
 import { useCallback } from "react";
-import Popup from "../../components/Popup/Popup";
+import Popup from "@/app/shared-components/Popup/Popup";
 
 const TariffPopup = () => {
     const { t } = useTranslation();

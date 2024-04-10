@@ -2,7 +2,7 @@
 import React from 'react'
 import Input from './Input'
 
-const InputWithLabel = ({type, value, setValue, inputStyle, inputClassName, labelStyle, label, labelClassName, validators}) => {
+const InputWithLabel = ({type, value, setValue, inputStyle, inputClassName, labelStyle, label, labelClassName, validators, validationDependencies}) => {
   return (
     <div>
         <div style={labelStyle} className={`ml-2 ${labelClassName}`}>{label}</div>
@@ -13,6 +13,7 @@ const InputWithLabel = ({type, value, setValue, inputStyle, inputClassName, labe
             style={inputStyle} 
             validators={validators}
             className={inputClassName}
+            validationDependencies={validationDependencies}
         />
     </div>
   )

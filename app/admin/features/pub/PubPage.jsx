@@ -12,6 +12,7 @@ import { setCompanyID } from "../company/companySlice";
 import Categories from "./Categories/Categories";
 import Dishes from "./Dishes/Dishes";
 import { errorKeys, setReceivingError } from "../errorHandlers/errorHandlerSlice";
+import { useTranslation } from "next-i18next";
 
 export const ThemeContext = createContext({
     theme: "light",
@@ -24,6 +25,8 @@ export const PubColorContext = createContext({
 });
 
 const PubPage = () => {
+    const {i18n} = useTranslation()
+
     //setting contexts
     const [theme, setTheme] = useState({
         theme: "light",
@@ -89,6 +92,7 @@ const PubPage = () => {
 
         dispatch(setReceivingError({errorKey: errorKeys.get_pub_by_id, error: pubError}))
     }, [dispatch, pubError]);
+
 
     return (
         <ThemeContext.Provider value={value}>

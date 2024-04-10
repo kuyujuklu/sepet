@@ -23,6 +23,7 @@ import ErrorHandlers from "./features/errorHandlers/ErrorHandlers";
 import Alerts from "./features/alerts/Alerts";
 import TariffPopup from "./features/company/TariffPopup";
 import AdminPanel from "./features/admin/AdminPanel";
+import GoogleMapsLoader from "./features/GoogleMapsLoader/GoogleMapsLoader";
 
 const App = () => {
   return (
@@ -67,6 +68,7 @@ const AppInner = () => {
       <ErrorHandlers />
       <AuthWatcher />
       <Popups />
+      <GoogleMapsLoader />
     </div>
   )
 }

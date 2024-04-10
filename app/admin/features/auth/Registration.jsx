@@ -30,7 +30,7 @@ const Registration = () => {
     const { t } = useTranslation();
     const [registrateQuery, { data, error, isLoading }] =
         useLazyRegistrateQuery();
-        const navigate = useNavigate();
+    const navigate = useNavigate();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [repeatPassword, setRepeatPassword] = useState("");

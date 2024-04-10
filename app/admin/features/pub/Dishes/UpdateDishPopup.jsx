@@ -2,7 +2,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "@mui/material";
 import InputWithLabel from "@/app/admin/components/Inputs/InputWithLabel";
-import Popup from "@/app/admin/components/Popup/Popup";
+import Popup from "@/app/shared-components/Popup/Popup";
 import WhiteSpinner from "@/app/admin/components/loaders/WhiteSpinner";
 import {
     closeUpdateDishPopup,

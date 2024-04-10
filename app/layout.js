@@ -7,9 +7,9 @@ export const metadata = {
     description: "Sandex md Qr code Молдова. Меню для вашего заведения. Удобно, быстро, красиво, дешево.",
 };
 
-export default function RootLayout({ children }) {
+function RootLayout({ children }) {
     return (
-        <html lang="ru">
+        <html>
               <head>
                   {" "}
                   <link
@@ -35,3 +35,5 @@ export default function RootLayout({ children }) {
         </html>
     );
 }
+
+export default RootLayout

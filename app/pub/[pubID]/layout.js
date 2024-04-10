@@ -3,7 +3,7 @@ import { getPubInfo } from "../api/pub";
 import PubPage from "../components/PubPage/PubPage";
 
 
-export default async function PubWithMenusLayout({ children, params }) {
+async function PubWithMenusLayout({ children, params }) {
     let data = await getPubInfo(params?.pubID);
 
     if (!data) {
@@ -24,3 +24,5 @@ export default async function PubWithMenusLayout({ children, params }) {
         </PubPage>
     );
 }
+
+export default PubWithMenusLayout

@@ -11,11 +11,14 @@ import errorHandlerReducer from "../features/errorHandlers/errorHandlerSlice"
 import alertsReducer from "../features/alerts/alertSlice"
 import shippingReducer from "../features/admin/ShippingAndPreorder/Shipping/shippingSlice"
 import preorderReducer from "../features/admin/ShippingAndPreorder/Preorder/preorderSlice"
+import googleMapReducer from "../features/GoogleMapsLoader/googleMapsSlice"
+import ordersReducer from "../features/admin/Orders/ordersSlice"
 import { setupListeners } from "@reduxjs/toolkit/dist/query";
 import { pub } from "../api/pub/pub";
 import { menu } from "../api/menu/menu";
 import { category } from "../api/categories/category";
 import { dish } from "../api/dish/dish";
+import { orders } from "../api/orders/orders";
 
 export const store = configureStore({
     reducer: {
@@ -29,12 +32,15 @@ export const store = configureStore({
         alerts: alertsReducer,
         shippingSlice: shippingReducer,
         preorderSlice: preorderReducer,
+        googleMaps: googleMapReducer,
+        orders: ordersReducer,
         [auth.reducerPath]: auth.reducer,
         [company.reducerPath]: company.reducer,
         [pub.reducerPath]: pub.reducer,
         [menu.reducerPath]: menu.reducer,
         [category.reducerPath]: category.reducer,
         [dish.reducerPath]: dish.reducer,
+        [orders.reducerPath]: orders.reducer,
     },
     middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(
         auth.middleware,
@@ -43,6 +49,7 @@ export const store = configureStore({
         menu.middleware,
         category.middleware,
         dish.middleware,
+        orders.middleware
     ),
 })
 

@@ -5,14 +5,13 @@ import {
     GoogleMap,
     Marker,
     Polygon,
-    useJsApiLoader,
 } from "@react-google-maps/api";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import { selectShipping } from "./shippingSlice";
 import { useSetShippingMutation } from "@/app/admin/api/pub/pub";
-
-const libraries = ["places", "drawing"];
+import { googleMapSelectIsLoaded } from "../../../GoogleMapsLoader/googleMapsSlice";
+import { Link } from "react-router-dom";
 
 const convertToPolygonShapes = (shapes) => {
     if (!shapes) return [];
@@ -29,45 +28,32 @@ const convertFromPolygonShapes = (shapes) => {
 };
 
 const Map = ({ pub }) => {
+    const isGoogleMapsApiLoaded = useSelector(googleMapSelectIsLoaded);
+
     const shippingFromState = useSelector(selectShipping);
     const defaultCenter = {
         lat: 47.00556,
         lng: 28.8575,
     };
+
     const [center, setCenter] = useState(defaultCenter);
-    const [markerPosition, setMarkerPosition] = useState(null);
-    const [zoom, setZoom] = useState(7);
-    const [loadingPosition, setLoadingPosition] = useState(true);
 
-    const { isLoaded, loadError } = useJsApiLoader({
-        googleMapsApiKey: "AIzaSyAhMM1BfEGmXzCSpIldr-fBL67naXQ-k5I",
-        libraries,
-    });
-
+    const markerPosition = useMemo(
+        () => (pub?.lat && pub?.lng ? { lat: pub.lat, lng: pub.lng } : null),
+        [pub.lat, pub.lng]
+    );
+    // Set center on marker position change
     useEffect(() => {
-        if (loadError) console.log(loadError);
-    }, [loadError]);
+        if (markerPosition) setCenter(markerPosition);
+    }, [markerPosition]);
 
-    useEffect(() => {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    const pos = {
-                        lat: position.coords.latitude,
-                        lng: position.coords.longitude,
-                    };
-                    setLoadingPosition(false);
-                    setMarkerPosition(pos);
-                    setZoom(7);
-                },
-                () => setLoadingPosition(false)
-            );
-        }
-    }, []);
-
+    // 
+    // Delivery area stuff
+    //
     const [shapes, setShapes] = useState([]);
     const [shapesChanged, setShapesChanged] = useState(false);
 
+    // detect changing shapes
     useEffect(() => {
         if (
             JSON.stringify(shapes) ===
@@ -80,6 +66,7 @@ const Map = ({ pub }) => {
         setShapesChanged(true);
     }, [shapes, shippingFromState.shapes]);
 
+    // upload shapes from state
     useEffect(() => {
         if (shippingFromState.shapes) {
             const shapes = convertToPolygonShapes(shippingFromState.shapes);
@@ -93,7 +80,7 @@ const Map = ({ pub }) => {
         if (isDeletingPolygon) {
             setShapes((prev) => prev.filter((_, i) => i !== index));
             setIsDeletingPolygon(false);
-            return
+            return;
         }
 
         if (polygonResizeVertex) {
@@ -203,14 +190,13 @@ const Map = ({ pub }) => {
         }
     };
 
-    return isLoaded ? (
+    return isGoogleMapsApiLoaded ? (
         <>
             {/* Headline */}
             <h1 className="text-bold text-center text-lg font-medium mb-4">
-                <span className="block">Select areas where you can ship the food</span>
-                {!markerPosition &&
-                    !loadingPosition &&
-                    <span className="p-3 text-xs font-normal">We could not load position, but you can select areas by your hand</span>}
+                <span className="block">
+                    Select areas where you can ship the food
+                </span>
             </h1>
 
             {/* Map */}
@@ -218,28 +204,21 @@ const Map = ({ pub }) => {
                 className="rounded-3xl overflow-hidden m-auto shadow-2xl border border-gray-200"
                 style={{ position: "relative", maxWidth: "800px" }}
             >
-                {loadingPosition ? (
+                {!markerPosition ? (
                     <div
-                        className="flex gap-10 justify-center items-center"
+                        className="flex flex-col gap-10 justify-center items-center font-bold px-10"
                         style={{ height: "450px" }}
                     >
-                        {!navigator.geolocation ? (
-                            <span className="text-xl font-bold">
-                                Please press allow on the top of screen to continue
-                            </span>
-                        ) : (
-                            <span className="text-xl font-bold">
-                                Wait, we are loading your geolocation
-                                <br />
-                                If there is a allow button on the top of the screent press it to continue
-                            </span>
-                        )}
-
-                        <BlackSpinner />
+                        <span>
+                            Please select the pub geolocation in admin panel
+                        </span>
+                        <Link className="text-blue-500 font-medium" to={pub?.id ? `/admin/pub/${pub?.id}` : "/admin/company"}>
+                            Go to admin panel
+                        </Link>
                     </div>
                 ) : (
                     <GoogleMap
-                        zoom={zoom}
+                        zoom={markerPosition ? 10 : 7}
                         center={center}
                         onClick={() => {
                             setIsDeletingPolygon(false);
@@ -301,8 +280,8 @@ const Map = ({ pub }) => {
                         margin: "15px 0 0  0",
                         ":hover": {
                             bgcolor: isDeletingPolygon
-                            ? "#7f1d1d"
-                            : "rgb(239 68 68)",
+                                ? "#7f1d1d"
+                                : "rgb(239 68 68)",
                         },
                     }}
                     onClick={() => {

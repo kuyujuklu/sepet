@@ -7,7 +7,7 @@ import {
     openUpdatePubPopup,
 } from "../pub/pubSlice";
 import { useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ConvertQrMenuApiTimeToLocal } from "@/app/utils/time";
 
@@ -31,7 +31,7 @@ const CompanyPub = ({ pub }) => {
     };
 
     const goToPub = () => {
-        navigate(`/admin/company/pub/${pub.id}`);
+        navigate(`/admin/pub/${pub.id}`);
     };
 
     return (
@@ -41,7 +41,7 @@ const CompanyPub = ({ pub }) => {
                 maxWidth: "200px",
                 transition: "all .2s ease-in-out",
             }}
-            className="border p-6 rounded-lg shadow-xl hover:shadow-2xl flex flex-col justify-between"
+            className="cursor-pointer border p-6 rounded-lg shadow-xl hover:shadow-2xl flex flex-col justify-between"
         >
             <header className="flex justify-between mb-2">
                 <div className="cursor-pointer">
@@ -118,7 +118,7 @@ const CompanyPub = ({ pub }) => {
                     }}
                     onClick={goToPub}
                 >
-                    {t("admin.company.pub.edit_menu_button")}
+                    {t("admin.company.pub.edit_button")}
                 </Button>
             </footer>
         </div>

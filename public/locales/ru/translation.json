@@ -1,4 +1,5 @@
 {
+    "test": "ТЕСТ",
     "errors": {
         "something_went_wrong": "Что-то пошло не так. Попробуйте позже.",
         "unknown_error": "Произошла неизвестная ошибка. Попробуйте позже.",
@@ -12,7 +13,58 @@
         "invalid_file_extension": "Неверное расширение файла.",
         "pub_limit_exceeded": "Превышен лимит заведений. Улучшите тариф для добавления новых заведений."
     },
-    "client": {},
+    "client": {
+        "pub_info": {
+            "wifi_password": "Пароль от Wi-Fi",
+            "address": "Адрес",
+            "additional_info": "Дополнительная информация"
+        },
+        "errors": {
+            "unknown_order_type": "Неизвестный тип заказа",
+            "unknown_payment_type": "Неизвестный тип оплаты",
+            "table_number_is_wrong": "Неверный номер столика",
+            "town_is_required": "Город является обязательным полем",
+            "min_town_length_is_3": "Минимум 3 буквы",
+            "max_town_length_is_100": "Максимум 100 букв",
+            "full_address_is_required": "Полный адрес является обязательным полем",
+            "min_full_address_length_is_6": "Минимум 6 букв",
+            "max_full_address_length_is_100": "Максимум 100 букв",
+            "phone_is_required": "Телефон является обязательным полем",
+            "min_phone_length_is_8": "Минимум 8 цифр"
+
+        },
+        "basket": {
+            "headline": "Корзина",
+            "last_order": {
+                "headline": "Последний заказ",
+                "delivery": "Доставка на дом",
+                "in_place_order":"Заказ в ресторане"
+            },
+            "create_order_button": "Заказать" 
+        },
+        "popups": {
+            "create_order": {
+                "headline": "Заказ",
+                "back": "Назад",
+                "next": "Далее",
+                "choose_order_type": "Выберите тип заказа",
+                "in_place_order": "Заказ в ресторане",
+                "delivery": "Доставка на дом",
+                "town": "Город",
+                "full_address": "Полный адрес",
+                "phone": "Телефон",
+                "choose_payment_type": "Выберите тип оплаты",
+                "cash_for_courier": "Наличными курьеру",
+                "card_for_courier": "Картой курьеру",
+                "table_number": "Номер столика",
+                "final_price" : "Цена заказа",
+                "comments": "Комментарии",
+
+                "create_order_button": "Заказать"
+
+            }
+        }
+    },
     "admin": {
         "logout": "Выйти из аккаунта",
         "language": "Язык",
@@ -90,17 +142,34 @@
                 "address": "Адрес",
                 "expiration_time": "Оплачен до",
                 "expired": "Не оплачен",
-                "edit_menu_button": "Редактировать меню"
+                "edit_button": "Управление"
             }
         },
         "pub": {},
         "categories": {
-            "add_category_button": "Добавить категорию"
+            "add_category_button": "Добавить категорию",
+            "category_types": {
+                "burger": "Бургер",
+                "pizza": "Пицца",
+                "drinks": "Напиток",
+                "sushi": "Суши",
+                "other": "Другое"
+            }
         },
         "dishes": {
             "add_dish_button": "Добавить блюдо",
             "upper": {
                 "return_back": "Вернуться назад"
+            },
+            "dish_types": {
+                "salad": "Салат",
+                "soup": "Суп",
+                "burger": "Бургер",
+                "pizza": "Пицца",
+                "pasta": "Паста",
+                "drink": "Напиток",
+                "sushi": "Суши",
+                "other": "Другое"
             }
         },
         "popups": {
@@ -138,6 +207,7 @@
             "create_category_popup": {
                 "headline": "Добавить категорию",
                 "name": "Название категории",
+                "category_type": "Тип категории",
                 "text_color": "Цвет текста",
                 "visible": "Видимость",
                 "create_button": "Добавить"
@@ -145,6 +215,7 @@
             "update_category_popup": {
                 "headline": "Редактировать категорию",
                 "name": "Название категории",
+                "category_type": "Тип категории",
                 "text_color": "Цвет текста",
                 "visible": "Видимость",
                 "save_button": "Сохранить"
@@ -176,6 +247,7 @@
             "create_dish_popup": {
                 "headline": "Добавить блюдо",
                 "name": "Название блюда",
+                "dish_type": "Тип блюда",
                 "description": "Описание",
                 "ingredients": "Ингридиенты",
                 "text_color": "Цвет текста",
@@ -189,6 +261,7 @@
                 "headline": "Редактировать блюдо",
                 "name": "Название блюда",
                 "description": "Описание",
+                "dish_type": "Тип блюда",
                 "ingredients": "Ингридиенты",
                 "text_color": "Цвет текста",
                 "price": "Цена",

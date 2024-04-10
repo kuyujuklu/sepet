@@ -2,10 +2,12 @@
 
 import { useContext } from "react";
 import { PubColorContext, ThemeContext } from "./PubPage";
+import { useTranslation } from "react-i18next";
 
 const PubPageInfo = ({ pub }) => {
     const themeContext = useContext(ThemeContext);
     const pubColorContext = useContext(PubColorContext);
+    const {t} = useTranslation()
 
     return (
         <div style={{ color: pubColorContext }}>
@@ -16,21 +18,21 @@ const PubPageInfo = ({ pub }) => {
                 {
                     pub.wifi_password &&
                     <div style={{ width: "100%", maxWidth: 300}} className="flex gap-2">
-                        <span>Пароль от Wi-Fi: </span>
+                        <span>{t("client.pub_info.wifi_password")}: </span>
                         <span>{pub.wifi_password}</span>
                     </div>
                 }
                 {
                     pub.address && 
                     <div style={{ width: "100%", maxWidth: 300}} className="flex items-center gap-2">
-                        <span>Адрес: </span>
+                        <span>{t("client.pub_info.address")}: </span>
                         <span>{pub.address}</span>
                     </div>
                 }
                 {
                     pub.additional_info && 
                     <div style={{ width: "100%" }} className="flex flex-wrap gap-x-2 mt-2">
-                        <span>Дополнительная информация: </span>
+                        <span>{t("client.pub_info.additional_info")}: </span>
                         <span>{pub.additional_info}</span>
                     </div>
                 }

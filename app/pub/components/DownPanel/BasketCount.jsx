@@ -1,11 +1,4 @@
-import { useSelector } from "react-redux";
-import { selectDishes } from "../../store/basketSlice";
-
-const BasketCount = () => {
-    const selectedDishes = useSelector(selectDishes);
-    const count = Object.keys(selectedDishes)
-        .reduce((acc, id) => (acc += selectedDishes[id].count ?? 0), 0);
-    console.log("count: ", count);
+const BasketCount = ({count}) => {
     return (
         <>
             {count > 0 && (

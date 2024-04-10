@@ -14,9 +14,11 @@ const PubErrorsHandler = () => {
     const [, {error: pubSetShippingError }] = useDeletePubMutation({fixedCacheKey: fixedCacheKeys.pubs.set_shipping})
     const [, {error: pubSetShippingAvailibilityError }] = useDeletePubMutation({fixedCacheKey: fixedCacheKeys.pubs.set_shipping_availability})
     const [, {error: pubSetPreorderError }] = useSetPreorderMutation({fixedCacheKey: fixedCacheKeys.pubs.set_preorder})
+    const [, {error: pubSetShippingTimeError }] = useSetPreorderMutation({fixedCacheKey: fixedCacheKeys.pubs.set_shipping_time})
     
     const pubGetByIDError = useSelector(selectReceivingError(errorKeys.get_pub_by_id))
     const getPubsError = useSelector(selectReceivingError(errorKeys.get_pubs))
+    const getFullPubInfoError = useSelector(selectReceivingError(errorKeys.get_full_pub_info))
     const getPubShippingError = useSelector(selectReceivingError(errorKeys.get_pub_shipping))
     const getPubPreorderError = useSelector(selectReceivingError(errorKeys.get_pub_preorder))
 
@@ -63,6 +65,14 @@ const PubErrorsHandler = () => {
     }, [dispatch, pubSetPreorderError])
     
     useEffect(() => {
+        if (!pubSetShippingTimeError)
+            return
+
+        dispatch(handleErrorStandardWay(pubSetShippingTimeError))
+    }, [dispatch, pubSetShippingTimeError])
+    
+
+    useEffect(() => {
         if (!pubUploadBgError)
             return
 
@@ -88,6 +98,13 @@ const PubErrorsHandler = () => {
 
         dispatch(handleErrorStandardWay(getPubsError))
     }, [dispatch, getPubsError])
+
+    useEffect(() => {
+        if (!getFullPubInfoError || getFullPubInfoError.originalStatus === 404)
+            return
+
+        dispatch(handleErrorStandardWay(getFullPubInfoError))
+    }, [dispatch, getFullPubInfoError])
 
     useEffect(() => {
         if (!getPubShippingError || getPubShippingError.originalStatus === 404)

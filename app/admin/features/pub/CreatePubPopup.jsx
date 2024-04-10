@@ -1,6 +1,6 @@
 "use client"
 import { useDispatch, useSelector } from "react-redux";
-import Popup from "../../components/Popup/Popup";
+import Popup from "@/app/shared-components/Popup/Popup";
 import { closeCreatePubPopup, selectCreatePubPopupState } from "./pubSlice";
 import { useCallback, useEffect, useState } from "react";
 import { ValidatePub, ValidatePubName, ValidatePubUrlName } from "../../validation/validatePub";

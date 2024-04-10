@@ -1,4 +1,4 @@
-import Inputs from "../Inputs"
+import Inputs from "./Shipping/Inputs"
 
 const Shipping = ({pub}) => {
   return (

@@ -7,9 +7,13 @@ import BlackSpinner from "../../components/loaders/BlackSpinner";
 import { Route, Routes, useParams } from "react-router-dom";
 import Sections from "./Sections";
 import { setCompanyID } from "../company/companySlice";
-import Shipping from "./ShippingAndPreorder/Shipping/Shipping";
+import Shipping from "./ShippingAndPreorder/Shipping";
 import {  setShipping } from "./ShippingAndPreorder/Shipping/shippingSlice";
-import { useGetPubQuery, useGetShippingQuery } from "../../api/pub/pub";
+import { pub, useGetPubQuery, useGetShippingQuery } from "../../api/pub/pub";
+import { setPubID } from "../pub/pubSlice";
+import OrdersPreloader from "./Orders/OrdersPreloader";
+import Orders from "./Orders/Orders";
+import OrderInfoPage from "./Orders/OrderInfo/OrderInfoPage";
 
 const AdminPanel = () => {
     const dispatch = useDispatch();
@@ -37,6 +41,12 @@ const AdminPanel = () => {
         error,
     } = useGetPubQuery({ pubID, companyID: companyData?.company?.id });
 
+
+    useEffect(() => {
+        if(!pubID) return;
+        dispatch(setPubID(pubID))
+    }, [dispatch, pubID])
+
     useEffect(() => {
         if(!error) return;
 
@@ -60,7 +70,6 @@ const AdminPanel = () => {
         }))
     }, [dispatch, error, shippingData, shippingError])
 
-
   return (
     <>
         {!pubData &&
@@ -71,12 +80,15 @@ const AdminPanel = () => {
         {
             pubData?.pub && 
             <div>
+                <OrdersPreloader companyID={companyData.company.id} pubID={pubID}/>
                 <div className="mb-6">
                     <Header name={pubData.pub.name} />
                 </div>
                     <Routes>
                         <Route path="/" element={<Sections pub={pubData.pub} />} />
                         <Route path="/shipping" element={<Shipping pub={pubData.pub} />} />
+                        <Route path="/orders" element={<Orders pub={pubData.pub} />} />
+                        <Route path="/order/:orderID/*" element={<OrderInfoPage pubUrlName={pubData?.pub.url_name} pubDishes={pubData.dishes}/>} />
                     </Routes>
                 <Sections />
             </div>
