@@ -1,0 +1,278 @@
+{
+    "test": "Testul",
+    "errors": {
+        "something_went_wrong": "Ceva nu a mers bine. Încercați mai târziu.",
+        "unknown_error": "Ceva nu a mers bine. Încercați mai târziu.",
+        "validation_error": "Unele date nu sunt valide.",
+        "invalid_credentials": "Date de autentificare incorecte.",
+        "company_with_the_same_name_already_exists": "Compania cu același nume există deja.",
+        "company_with_the_same_email_already_exists": "Compania cu același e-mail există deja.",
+        "file_is_too_large": "Fișierul este prea mare.",
+        "file_is_not_an_image": "Fișierul nu este o imagine.",
+        "invalid_file": "Fișier invalid.",
+        "invalid_file_extension": "Extensie de fișier invalidă.",
+        "pub_limit_exceeded": "A fost depășită limita de localități. Actualizați tariful pentru a adăuga noi localități."
+    },
+    "client": {
+        "errors": {
+            "unknown_order_type": "Tip de comandă necunoscut",
+            "unknown_payment_type": "Tip de plată necunoscut",
+            "table_number_is_wrong": "Număr de tabel nevalid",
+            "town_is_required": "Orașul este un câmp obligatoriu",
+            "min_town_length_is_3": "Minim 3 litere",
+            "max_town_length_is_100": "Maxim 100 de litere",
+            "full_address_is_required": "Adresa completă este un câmp obligatoriu",
+            "min_full_address_length_is_6": "Minim 6 litere",
+            "max_full_address_length_is_100": "Maxim 100 de litere",
+            "phone_is_required": "Telefonul este un câmp obligatoriu",
+            "min_phone_length_is_8": "Minim 8 cifre"
+
+        },
+        "pub_info": {
+            "wifi_password": "Parolă Wi-Fi",
+            "address": "Adresă",
+            "additional_info": "Informații suplimentare"
+        },
+        "basket": {
+            "headline": "Coș",
+            "last_order": {
+                "headline": "Ultima comandă",
+                "delivery": "Livrare la domiciliu",
+                "in_place_order":"Comandă la local"
+            },
+            "create_order_button": "Сomanda" 
+        },
+        "popups": {
+            "create_order": {
+                "headline": "Ordin",
+                "back": "Înapoi",
+                "next": "Departe",
+                "choose_order_type": "Alegeți tipul de comandă",
+                "in_place_order": "Comandă la local",
+                "delivery": "Livrare la domiciliu",
+                "town": "Oraș",
+                "full_address": "Adresa completă",
+                "phone": "Telefon",
+                "choose_payment_type": "Alegeți tipul de plată",
+                "cash_for_courier": "Plată în numerar curierului",
+                "card_for_courier": "Plată cu cardul curierului",
+                "table_number": "Numărul mesei",
+                "final_price": "Prețul final",
+                "comments": "Comentarii",
+                "create_order_button": "Comandă"
+
+            }
+        }
+    },
+    "admin": {
+        "logout": "Deconectați de la cont",
+        "language": "Limba",
+        "images": {
+            "upload": "Încărca",
+            "update": "Actualizați",
+            "image": "imagine"
+        },
+        "validation_errors": {
+            "company": {
+                "company_name": {
+                    "required": "Numele companiei este obligatoriu.",
+                    "min": "Numele companiei trebuie să aibă cel puțin 3 caractere.",
+                    "max": "Numele companiei trebuie să aibă cel mult 255 de caractere."
+                },
+                "email": {
+                    "required": "E-mailul este obligatoriu.",
+                    "invalid": "E-mailul trebuie să fie valid."
+                },
+                "phone": {
+                    "required": "Numărul de telefon este obligatoriu.",
+                    "invalid": "Numărul de telefon trebuie să fie valid."
+                },
+                "password": {
+                    "required": "Parola este obligatorie.",
+                    "min": "Parola trebuie să aibă cel puțin 8 caractere.",
+                    "max": "Parola trebuie să aibă cel mult 255 de caractere."
+                },
+                "repeat_password": {
+                    "not_match": "Parolele nu se potrivesc."
+                }
+            },
+            "pub": {
+                "name": {
+                    "required": "Numele locației este obligatoriu.",
+                    "min": "Numele locației trebuie să aibă cel puțin 3 caractere.",
+                    "max": "Numele locației trebuie să aibă cel mult 255 de caractere."
+                },
+                "url_name": {
+                    "required": "URL-ul locației este obligatoriu.",
+                    "min": "URL-ul locației trebuie să aibă cel puțin 3 caractere.",
+                    "max": "URL-ul locației trebuie să aibă cel mult 255 de caractere.",
+                    "invalid_url_name": "URL-ul ar trebui să conțină doar litere mici englezești și cifre."
+                },
+                "wifi-password": {
+                    "min": "Parola trebuie să aibă cel puțin 8 caractere.",
+                    "max": "Parola trebuie să aibă cel mult 255 de caractere."
+                }
+            }
+        },
+        "authentication": {
+            "headline": "Autentificați-vă",
+            "your_email": "Adresa ta de e-mail",
+            "password": "Parola",
+            "login": "Conectați-vă la cont",
+            "link_to_registration": "Nu aveți un cont? Înregistrați-vă"
+        },
+        "registration": {
+            "headline": "Înregistrați-vă",
+            "your_email": "Adresa ta de e-mail",
+            "your_name": "Numele tău",
+            "your_phone": "Numărul tău de telefon",
+            "password": "Parola",
+            "repeat_password": "Repeta parola",
+            "registrate_button": "Creați cont",
+            "link_to_authentication": "Aveți deja un cont? Conectați-vă"
+        },
+        "company": {
+            "pubs": "Locații",
+            "tariff": "Tarif",
+            "tariff_basic": "Basic",
+            "tariff_pro": "Professional",
+            "tariff_business": "Business",
+            "pub": {
+                "address": "Adresă",
+                "expiration_time": "Plătită până la",
+                "expired": "Neplătită",
+                "edit_button": "Management"
+            }
+        },
+        "pub": {},
+        "categories": {
+            "add_category_button": "Adăugați categorie",
+            "category_types": {
+                "burger": "Burger",
+                "pizza": "Pizza",
+                "drinks": "Băuturi",
+                "sushi": "Sushi",
+                "other": "Altele"
+            }
+        },
+        "dishes": {
+            "add_dish_button": "Adăugați fel de mâncare",
+            "upper": {
+                "return_back": "Înapoi"
+            },
+            "dish_types": {
+                "salad": "Salată",
+                "soup": "Supă",
+                "burger": "Burger",
+                "pizza": "Pizza",
+                "pasta": "Paste",
+                "drink": "Băutură",
+                "sushi": "Sushi",
+                "other": "Altele"
+            }
+        },
+        "popups": {
+            "upgrade_tariff_popup": {
+                "header": "Actualizați tariful",
+                "main_headline": "Pentru a schimba tariful, vă rugăm să contactați administratorul"
+            },
+            "create_pub_popup": {
+                "headline": "Adăugați locație",
+                "name": "Numele locației",
+                "url_name": "Nume scurt pentru URL", 
+                "create_button": "Adăugați"
+            },
+            "update_pub_popup": {
+                "headline": "Editați locație",
+                "name": "Numele locației",
+                "wifi_password": "Parola Wi-Fi",
+                "currency": "Valută",
+                "favorite_color": "Culoare preferată",
+                "theme": {
+                    "title": "Tema",
+                    "light": "Luminoasă",
+                    "dark": "Întunecată"
+                },
+                "address": "Adresă",
+                "additional_info": "Informații suplimentare",
+                "save_button": "Salvează"
+            },
+            "delete_pub_popup": {
+                "headline": "Șterge locație",
+                "text": "Sunteți sigur că doriți să ștergeți locația?",
+                "warning": "Datele nu vor putea fi recuperate după ștergere.",
+                "delete_button": "Șterge"
+            },
+            "create_category_popup": {
+                "headline": "Adăugați categorie",
+                "name": "Numele categoriei",
+                "category_type": "Tipul categoriei",
+                "text_color": "Culoare text",
+                "visible": "Vizibilitate",
+                "create_button": "Adaugă"
+            },
+            "update_category_popup": {
+                "headline": "Editați categorie",
+                "category_type": "Tipul categoriei",
+                "name": "Numele categoriei",
+                "text_color": "Culoare text",
+                "visible": "Vizibilitate",
+                "save_button": "Salvează"
+            },
+            "delete_category_popup": {
+                "headline": "Șterge categorie",
+                "text": "Sunteți sigur că doriți să ștergeți categoria?",
+                "warning": "Datele nu vor putea fi recuperate după ștergere.",
+                "delete_button": "Șterge"
+            },
+            "create_menu_popup": {
+                "headline": "Adaugă meniu",
+                "name": "Numele meniului",
+                "visible": "Vizibilitate",
+                "create_button": "Adaugă"
+            },
+            "update_menu_popup": {
+                "headline": "Editați meniu",
+                "name": "Numele meniului",
+                "visible": "Vizibilitate",
+                "save_button": "Salvează"
+            },
+            "delete_menu_popup": {
+                "headline": "Șterge meniu",
+                "text": "Sunteți sigur că doriți să ștergeți meniul?",
+                "warning": "Datele nu vor putea fi recuperate după ștergere.",
+                "delete_button": "Șterge"
+            },
+            "create_dish_popup": {
+                "headline": "Adaugă fel de mâncare",
+                "name": "Numele felului de mâncare",
+                "dish_type": "Tipul felului de mâncare",
+                "description": "Descriere",
+                "ingredients": "Ingrediente",
+                "text_color": "Culoare text",
+                "price": "Preț",
+                "visible": "Vizibilitate",
+                "category": "Categorie",
+                "create_button": "Adaugă"
+            },
+            "update_dish_popup": {
+                "headline": "Editează fel de mâncare",
+                "name": "Numele felului de mâncare",
+                "dish_type": "Tipul felului de mâncare",
+                "description": "Descriere",
+                "ingredients": "Ingrediente",
+                "text_color": "Culoare text",
+                "price": "Preț",
+                "visible": "Vizibilitate",
+                "category": "Categorie",
+                "save_button": "Salvează"
+            },
+            "delete_dish_popup": {
+                "headline": "Șterge fel de mâncare",
+                "text": "Sunteți sigur că doriți să ștergeți felul de mâncare?",
+                "warning": "Datele nu vor putea fi recuperate după ștergere.",
+                "delete_button": "Șterge"
+            }
+        }
+    }
+}
