@@ -12,28 +12,31 @@ const MenuList = ({ menus, selectedMenu, selectMenu }) => {
 
   // if there is no selected menu, select the first one
   useEffect(() => {
-      if(!filteredMenus) return;
-      if(filteredMenus.length === 0) return;
-      if(selectedMenu) return;
+    if (!filteredMenus) return;
+    if (filteredMenus.length === 0) return;
+    if (selectedMenu) return;
 
-      selectMenu(filteredMenus[0].id);
-  }, [filteredMenus, selectedMenu])
+    selectMenu(filteredMenus[0].id);
+  }, [filteredMenus, selectedMenu]);
 
   const flatListRef = useRef(null);
 
-
   // scroll to selected menu
   useEffect(() => {
-    if(!selectedMenu) return;
+    if (!selectedMenu) return;
 
     const index = filteredMenus.findIndex((menu) => menu.id === selectedMenu);
-    if(index === -1) return;
+    if (index === -1) return;
 
-    const wait = new Promise(resolve => setTimeout(resolve, 500));
+    const wait = new Promise((resolve) => setTimeout(resolve, 500));
     wait.then(() => {
-      flatListRef.current?.scrollToIndex({ index, animated: true, viewPosition: 0.5});
+      flatListRef.current?.scrollToIndex({
+        index,
+        animated: true,
+        viewPosition: 0.5,
+      });
     });
-  }, [selectedMenu])
+  }, [selectedMenu]);
 
   return (
     <SafeAreaView style={{ paddingLeft: 10 }} edges={[]}>

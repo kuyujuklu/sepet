@@ -18,13 +18,11 @@ const ClientInputs = () => {
     if(!clientData || !clientData.ok) {
       return;
     }
-    console.log("client data response: ", clientData)
   }, [clientData])
 
 
   useEffect(() => {
     if(!clientError) return;
-    console.log("client error: ", clientError)
     dispatch(pushError({errorKey: errorKeys.getClient, error: clientError}))
 
   }, [clientError])

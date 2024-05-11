@@ -1,42 +1,45 @@
 import { Spinner, Text, View } from "native-base";
-import { useGetNearbyPubsQuery, useGetPubInfoQuery } from "../../shared/api/pubs/pubsApi";
+import {
+  useGetNearbyPubsQuery,
+  useGetPubInfoQuery,
+} from "../../shared/api/pubs/pubsApi";
 import { useEffect } from "react";
 import { useSelector } from "react-redux";
 import { selectGeolocation } from "../../features/store/geolocation/geolocationSlice";
 import { AnonymousProBold } from "../../constants/styles-constants";
 import { pubStyles } from "./pubs.styles";
+import { useTranslation } from "react-i18next";
 
 const PubInfoHeader = ({ pubID }) => {
+  const { t } = useTranslation();
   const location = useSelector(selectGeolocation);
 
   // Is used to quickly show info for pub, while full pub info is loading
   const { data: nearPubsData, error: nearPubsError } = useGetNearbyPubsQuery(
     { coords: { lat: location?.lat, lng: location?.lng } },
-    { skip: !location }
+    { skip: !location },
   );
 
   useEffect(() => {
-    console.log("near pubs data: ", nearPubsData);
   }, [nearPubsData]);
 
   useEffect(() => {
-    console.log("near pubs error: ", nearPubsError);
   }, [nearPubsError]);
 
-  const {data: pubData, error: pubError, pubIsLoading} = useGetPubInfoQuery({ pubID }, { skip: !pubID });
+  const {
+    data: pubData,
+    error: pubError,
+    pubIsLoading,
+  } = useGetPubInfoQuery({ pubID }, { skip: !pubID });
 
   useEffect(() => {
-    console.log("pubData in pub info header: ", pubData);
-  }
-  , [pubData])
+  }, [pubData]);
 
   useEffect(() => {
-    console.log("pubError in pub info header: ", pubError);
-  }
-  , [pubError])
+  }, [pubError]);
 
-
-  const pub = pubData?.pub ?? nearPubsData?.pubs?.find((pub) => pub.id === pubID);
+  const pub =
+    pubData?.pub ?? nearPubsData?.pubs?.find((pub) => pub.id === pubID);
 
   return (
     <View>
@@ -55,11 +58,12 @@ const PubInfoHeader = ({ pubID }) => {
           </Text>
 
           <View gap={2}>
-          
             {/* ADDRESS */}
             {pub.address && (
               <Text>
-                <Text style={pubStyles.pubHeaderInfoRowName}>Address:</Text>
+                <Text style={pubStyles.pubHeaderInfoRowName}>
+                  {t("pub_info_page.pub_header.address")}:
+                </Text>
                 <Text style={pubStyles.pubHeaderInfoRowText}>
                   {pub.address}
                 </Text>
@@ -78,7 +82,7 @@ const PubInfoHeader = ({ pubID }) => {
             {pub.additional_info && (
               <Text>
                 <Text style={pubStyles.pubHeaderInfoRowName}>
-                  Additional info:
+                  {t("pub_info_page.pub_header.additional_info")}:
                 </Text>
                 <Text style={pubStyles.pubHeaderInfoRowText}>
                   {pub.additional_info}

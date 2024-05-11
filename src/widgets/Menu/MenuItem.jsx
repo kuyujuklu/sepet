@@ -9,7 +9,7 @@ const MenuItem = ({ isSelected, menu }) => {
   useEffect(() => {
     Animated.timing(selectedAnimation, {
       toValue: isSelected ? 1 : 0,
-      duration: 300,
+      duration: 500,
       useNativeDriver: false,
     }).start();
   }, [isSelected]);
@@ -21,11 +21,7 @@ const MenuItem = ({ isSelected, menu }) => {
           paddingVertical: 5,
           paddingHorizontal: 20,
           borderRadius: 10,
-          borderWidth: selectedAnimation.interpolate({
-            inputRange: [0, 1],
-            outputRange: [1, 0],
-          }),
-          borderColor: "#999",
+
           transform: [
             {
               scale: selectedAnimation.interpolate({
@@ -36,11 +32,21 @@ const MenuItem = ({ isSelected, menu }) => {
           ],
           backgroundColor: selectedAnimation.interpolate({
             inputRange: [0, 1],
-            outputRange: ["transparent", appColors.DarkRed],
+            outputRange: ["white", appColors.DarkRed],
           }),
         }}
       >
-        <Text color={isSelected ? "white" : "coolGray.700"}>{menu?.name}</Text>
+        <Animated.Text
+        color={"coolGray.200"}
+          style={{
+            color: selectedAnimation.interpolate({
+              inputRange: [0, 1],
+              outputRange: ["#374151", "#ffffff"],
+            }),
+          }}
+        >
+          {menu?.name}
+        </Animated.Text>
       </Animated.View>
     </View>
   );

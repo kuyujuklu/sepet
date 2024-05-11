@@ -1,41 +1,57 @@
-import { View } from "native-base";
+import { ScrollView, View } from "native-base";
 import { useEffect, useRef } from "react";
 import { Animated, TouchableOpacity } from "react-native";
 import CategoryNavbarImage from "./CategoryNavbarImage";
 import { categories } from "../../../app/static-data/data";
+import { images } from "../../../app/images/images";
+
+export const placeholderAllCategory = {
+  image: require("../../../../assets/images/all_foods.png"),
+  value: "",
+};
 
 export const placeholderCategories = {
-  [categories.Sushi]: {
-    image: require("../../../../assets/images/categories_sushi.png"),
-    value: "sushi",
+  [categories.Asian]: {
+    image: images.Sushi,
+    value: "asian",
   },
-  [categories.Drinks]: {
-    image: require("../../../../assets/images/categories_cup.png"),
-    value: "drinks",
+  [categories.FastFood]: {
+    image: images.FastFood,
+    value: "fast_food",
   },
-  [categories.Beer]: {
-    image: require("../../../../assets/images/categories_beer.png"),
-    value: "beer",
+  [categories.Breakfast]: {
+    image: images.Breakfast,
+    value: "breakfast",
   },
-  [categories.Burger]: {
-    image: require("../../../../assets/images/categories_burger.png"),
-    value: "burger",
+  [categories.Grill]: {
+    image: images.Grill,
+    value: "grill",
   },
-  All: {
-    image: require("../../../../assets/images/three_points.png"),
-    value: "",
+  [categories.Dessert]: {
+    image: images.Cupcake,
+    value: "dessert",
+  },
+  [categories.Pasta]: {
+    image: images.Spaghetti,
+    value: "pasta",
+  },
+  [categories.Pancakes]: {
+    image: images.Pancakes,
+    value: "pancakes",
+  },
+  [categories.Soup]: {
+    image: images.Soup,
+    value: "soup",
   },
 };
 
 const categoriesArray = Object.keys(placeholderCategories);
 
-const FoodCategoriesNavbar = ({ selectedCategory}) => {
+const FoodCategoriesNavbar = ({ selectedCategory }) => {
   const underScoreAnimation = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     if (!selectedCategory) return;
-
-    console.log("animating");
 
     underScoreAnimation.setValue(0);
     Animated.timing(underScoreAnimation, {
@@ -55,16 +71,29 @@ const FoodCategoriesNavbar = ({ selectedCategory}) => {
       bgColor={"#fff"}
       borderRadius={"3xl"}
     >
-      {categoriesArray.map((category) => (
-        <CategoryNavbarImage
-          key={category.key}
-          isSelected={
-            selectedCategory === placeholderCategories[category].value
-          }
-          imageSource={placeholderCategories[category].image}
-          category={placeholderCategories[category].value}
-        />
-      ))}
+      <View style={{ flex: 1, flexDirection: "row", gap: 20 }}>
+        <View py={2}>
+          <CategoryNavbarImage
+            isSelected={selectedCategory === placeholderAllCategory.value}
+            imageSource={placeholderAllCategory.image}
+            category={placeholderAllCategory.value}
+          />
+        </View>
+        <ScrollView horizontal>
+          <View style={{ flex: 1, flexDirection: "row", gap: 20, paddingVertical: 6}}>
+            {categoriesArray.map((category) => (
+              <CategoryNavbarImage
+                key={category.key}
+                isSelected={
+                  selectedCategory === placeholderCategories[category].value
+                }
+                imageSource={placeholderCategories[category].image}
+                category={placeholderCategories[category].value}
+              />
+            ))}
+          </View>
+        </ScrollView>
+      </View>
     </View>
   );
 };

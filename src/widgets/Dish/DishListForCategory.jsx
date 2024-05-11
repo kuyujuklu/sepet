@@ -10,7 +10,6 @@ const DishListForCategory = ({ pubID, categoryID }) => {
 
   const [shownDishes, setShownDishes] = useState([]);
 
-  console.log("cat id: ", categoryID)
 
   useEffect(() => {
     if (!categoryID) return;
@@ -22,9 +21,8 @@ const DishListForCategory = ({ pubID, categoryID }) => {
     setShownDishes(filteredDishes);
   }, [pubData, categoryID]);
 
-  console.log("Shown dishes: ", shownDishes);
 
-  return <DishList dishes={shownDishes} pubID={pubID}/>;
+  return <DishList dishes={shownDishes} pubID={pubID} pub={pubData?.pub}/>;
 };
 
 export default DishListForCategory;

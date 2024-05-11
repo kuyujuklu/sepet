@@ -1,4 +1,4 @@
-import MapView, { Marker } from "react-native-maps";
+import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import { Spinner, View } from "native-base";
 import { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
@@ -11,33 +11,24 @@ const PubsMap = ({ selectPub, selectedPub }) => {
   const location = useSelector(selectGeolocation);
   const [mapLoaded, setMapLoaded] = useState(false);
 
-  const defaultCenter = {
-    lat: 46.011036804716866,
-    lng: 28.661430476088285,
-  };
-
   const { data, error } = useGetNearbyPubsQuery({
-    coords: { lat: defaultCenter.lat, lng: defaultCenter.lng },
+    coords: { lat: location.lat, lng: location.lng },
   });
 
   // Log error on getting nearby pubs error from api
   useEffect(() => {
-    console.log("loading nearby pubs error: ", error);
   }, [error]);
 
   // Log info on getting nearby pubs data from api
   useEffect(() => {
-    console.log("loading nearby pubs data: ", data);
   }, [data]);
 
   const mapRef = useRef(null);
 
   // Animate map on changing selected pub
   useEffect(() => {
-    
     if (!selectedPub) return;
     if (!mapLoaded) return;
-    
 
     const pub = data?.pubs?.find((pub) => pub.id === selectedPub);
 
@@ -53,13 +44,13 @@ const PubsMap = ({ selectPub, selectedPub }) => {
         heading: 0, // Direction faced by the camera, in degrees clockwise from North.
         zoom: 13,
       },
-      { duration: 800 }
+      { duration: 800 },
     );
   }, [selectedPub, mapLoaded]);
 
   // Animate marker on changing geolocation
   useEffect(() => {
-    if(!mapLoaded) return;
+    if (!mapLoaded) return;
     if (!location) return;
     if (selectedPub) return;
 
@@ -73,7 +64,7 @@ const PubsMap = ({ selectPub, selectedPub }) => {
         heading: 0, // Direction faced by the camera, in degrees clockwise from North.
         zoom: 10,
       },
-      { duration: 800 }
+      { duration: 800 },
     );
   }, [location, selectedPub]);
 
@@ -87,9 +78,12 @@ const PubsMap = ({ selectPub, selectedPub }) => {
         borderColor={"#ddd"}
       >
         {!location && <Spinner size="lg" />}
-        {location && 
+        {location && (
           <MapView
-            onMapLoaded={() => {setMapLoaded(true)}}
+            provider={PROVIDER_GOOGLE}
+            onMapLoaded={() => {
+              setMapLoaded(true);
+            }}
             camera={{
               center: {
                 latitude: location.lat,
@@ -142,7 +136,7 @@ const PubsMap = ({ selectPub, selectedPub }) => {
               </Marker>
             )}
           </MapView>
-        }
+        )}
       </View>
     </View>
   );

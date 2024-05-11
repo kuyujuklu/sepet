@@ -1,4 +1,5 @@
 import { appErrors } from "../../../../app/errors/appErrors";
+import { orderValidationErrors } from "../../../../app/errors/validationErrors/order-validation-errors";
 import { validation } from "../validation-core";
 
 const townMinLength = 3;
@@ -11,9 +12,9 @@ export const validateTown = (town) => {
   const result = validation.ValidateLength(town, townMinLength, townMaxLength);
   switch (result) {
     case appErrors.min:
-      return `town min length is ${townMinLength}`;
+      return orderValidationErrors.townMinLengthIs3;
     case appErrors.max:
-      return `town max length is ${townMaxLength}`;
+      return orderValidationErrors.townMaxLengthIs100;
   }
 
   return null;
@@ -27,9 +28,9 @@ export const validateFullAddress = (fullAddress) => {
   const result = validation.ValidateLength(fullAddress, 10, 200);
   switch (result) {
     case appErrors.min:
-      return `full address min length is 10`;
+      return orderValidationErrors.fullAddressMinLengthIs10;
     case appErrors.max:
-      return `full address max length is 200`;
+      return orderValidationErrors.fullAddressMaxLengthIs100;
   }
 
   return null;

@@ -1,23 +1,13 @@
-import { useEffect } from "react"
-import { useGetAllOrdersForClientQuery } from "../../../shared/api/ordersApi/ordersApi"
-import OrderList from "./OrderList"
+import OrderList from "./OrderList";
+import { useSelector } from "react-redux";
+import { selectOrders } from "../../../features/store/orders/ordersSlice";
 
 export const OrderListWithAllClientOrders = () => {
-  const {data: ordersResponse, error: ordersError, isLoading} = useGetAllOrdersForClientQuery()
-  useEffect(() => {
-    if(!ordersError) return;
+  const orders = useSelector(selectOrders)
 
-    console.log("ordersResponse error", ordersError)    
-  }, [ordersError])
-
-  useEffect(() => {
-    console.log("ordersResponse: ", ordersResponse)
-  }, [ordersResponse])
-
-  
   return (
     <>
-      <OrderList orders={ordersResponse?.orders} />
+      <OrderList orders={orders} />
     </>
-  )
-}
+  );
+};

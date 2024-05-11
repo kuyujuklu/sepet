@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import Input from "./Input";
+import { useTranslation } from "react-i18next";
 
 const InputWithValidation = ({
   value,
@@ -11,15 +12,15 @@ const InputWithValidation = ({
   inputStyles,
   inputParams,
   validatedOutside,
-
+  secureTextEntry,
 }) => {
+  const {t} = useTranslation()
   const [error, setError] = useState(null);
   const [valueWasSet, setValueWasSet] = useState(false);
 
   useEffect(() => {
-    if(validatedOutside)
-      setValueWasSet(true);
-  }, [validatedOutside])
+    if (validatedOutside) setValueWasSet(true);
+  }, [validatedOutside]);
 
   useEffect(() => {
     if (!validators) return;
@@ -27,26 +28,27 @@ const InputWithValidation = ({
 
     const wasSetBefore = valueWasSet;
 
-    if(value) setValueWasSet(true);
+    if (value) setValueWasSet(true);
 
-    if(!wasSetBefore && !value) return;
+    if (!wasSetBefore && !value) return;
 
-    for (let validator of validators) {
+    for (const validator of validators) {
       const err = validator(value);
       if (err) {
-        setError(err);
+        setError(t(err));
         return;
       }
     }
 
     setError(null);
-  }, [value, valueWasSet]);
+  }, [value, valueWasSet, validators]);
 
   return (
     <Input
       value={value}
       setValue={setValue}
       label={label}
+      secureTextEntry={secureTextEntry}
       errorValue={error}
       keyboardType={keyboardType}
       inputStyles={inputStyles}

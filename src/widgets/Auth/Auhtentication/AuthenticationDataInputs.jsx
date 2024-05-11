@@ -1,8 +1,15 @@
 import { Text, View } from "native-base";
 import Input from "../../Inputs/Input";
 import { authStyles } from "../auth.styles";
+import { useTranslation } from "react-i18next";
 
-const AuthenticationDataInputs = ({ phoneNumber, setPhoneNumber }) => {
+const AuthenticationDataInputs = ({
+  phoneNumber,
+  setPhoneNumber,
+  password,
+  setPassword,
+}) => {
+  const { t } = useTranslation();
 
   return (
     <View style={authStyles.dataInputsContainer}>
@@ -11,15 +18,21 @@ const AuthenticationDataInputs = ({ phoneNumber, setPhoneNumber }) => {
           +373
         </Text>
         <View flex={1}>
-          <Input 
+          <Input
             value={phoneNumber}
             setValue={setPhoneNumber}
-            label={"Phone number"}
+            label={t("auth.inputs.phone_number.label")}
             keyboardType={"numeric"}
           />
         </View>
       </View>
 
+      <Input
+        value={password}
+        setValue={setPassword}
+        label={t("auth.inputs.password.label")}
+        secureTextEntry
+      />
     </View>
   );
 };

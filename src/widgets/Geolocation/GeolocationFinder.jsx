@@ -1,35 +1,34 @@
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
-  setGeolocation,
+  selectNearGeolocation,
+  setNearGeolocation,
 } from "../../features/store/geolocation/geolocationSlice";
 import * as Location from "expo-location";
 import { useEffect } from "react";
 
 const GeolocationFinder = () => {
   const dispatch = useDispatch();
-
+  const nearLocaiton = useSelector(selectNearGeolocation);
   useEffect(() => {
-    
-    setInterval(() => {
-      (async () => {
-        let { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== "granted") {
-          return;
-        }
-  
-        let location = await Location.getCurrentPositionAsync({
-          accuracy: Location.Accuracy.Low,
-          maximumAge: 10000,
-        });
-        
-        dispatch(
-          setGeolocation({
-            lng: location.coords.longitude,
-            lat: location.coords.latitude,
-          })
-        );
-      })();
-    }, 20000)
+    (async () => {
+      if (nearLocaiton) return;
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        return;
+      }
+
+      const location = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.BestForNavigation,
+        maximumAge: 10000,
+      });
+
+      dispatch(
+        setNearGeolocation({
+          lng: location.coords.longitude,
+          lat: location.coords.latitude,
+        }),
+      );
+    })();
   }, []);
   return <></>;
 };

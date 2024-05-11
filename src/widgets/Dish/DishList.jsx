@@ -2,13 +2,13 @@ import { FlatList, View } from "native-base";
 import { SafeAreaView } from "react-native";
 import DishCard from "./DishCard";
 
-const DishList = ({ dishes, pubID }) => {
+const DishList = ({ dishes, pubID, pub }) => {
   return (
-    <SafeAreaView edges={[]}>
+    <SafeAreaView edges={[]} style={{ marginBottom: 40 }}>
       <FlatList
-        contentContainerStyle={{ paddingHorizontal: 10 }}
+        contentContainerStyle={{ paddingHorizontal: 10, paddingBottom: 40 }}
         renderItem={({ item: dish }) => (
-            <DishCard key={dish?.id} pubID={pubID} dish={dish} />
+          <DishCard key={dish?.id} pubID={pubID} pub={pub} dish={dish} />
         )}
         data={dishes || []}
         ItemSeparatorComponent={() => <View height={5} />}
@@ -17,6 +17,4 @@ const DishList = ({ dishes, pubID }) => {
   );
 };
 
-
-
-export default DishList
+export default DishList;

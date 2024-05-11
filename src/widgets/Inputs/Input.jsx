@@ -7,16 +7,27 @@ import {
 import { inputStyles, inputStylesConstants } from "./inputs.styles";
 import { useEffect, useRef, useState } from "react";
 
-const Input = ({ value, setValue, label, errorValue, keyboardType, inputStyles: inputStyleFromParams, inputParams }) => {
+const Input = ({
+  value,
+  setValue,
+  label,
+  errorValue,
+  keyboardType,
+  inputStyles: inputStyleFromParams,
+  secureTextEntry,
+  inputParams,
+}) => {
   const [focusedAnimation] = useState(new Animated.Value(0));
   const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef(null);
 
-  let borderColor = 
-    errorValue ? inputStylesConstants.errorText :
-    isFocused ? "#080F9C" : 
-    value ? "#aaa" :
-    "#aaa";
+  let borderColor = errorValue
+    ? inputStylesConstants.errorText
+    : isFocused
+      ? "#080F9C"
+      : value
+        ? "#aaa"
+        : "#aaa";
 
   useEffect(() => {
     focusedAnimation.stopAnimation();
@@ -33,6 +44,7 @@ const Input = ({ value, setValue, label, errorValue, keyboardType, inputStyles: 
       <TextInput
         {...inputParams}
         ref={inputRef}
+        secureTextEntry={secureTextEntry}
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
         value={value}
@@ -41,9 +53,8 @@ const Input = ({ value, setValue, label, errorValue, keyboardType, inputStyles: 
         style={{
           ...inputStyles.inputField,
           borderWidth: 1,
-          backgroundColor:"#fff",
           borderColor: borderColor,
-          ...inputStyleFromParams
+          ...inputStyleFromParams,
         }}
         // placeholderTextColor="#444"
       />

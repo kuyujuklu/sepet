@@ -1,22 +1,22 @@
-import { createSlice } from '@reduxjs/toolkit'
+import { createSlice } from "@reduxjs/toolkit";
 
 export const navbarSlice = createSlice({
-  name: 'navbar',
+  name: "navbar",
   initialState: {
     isEnabled: true,
   },
   reducers: {
     disableNavbar(state) {
-        state.isEnabled = false;
+      state.isEnabled = false;
     },
     enableNavbar(state) {
-        state.isEnabled = true;
+      state.isEnabled = true;
     },
   },
-})
+});
 
-export const { enableNavbar, disableNavbar} = navbarSlice.actions
+export const { enableNavbar, disableNavbar } = navbarSlice.actions;
 
-export const navbarSelectIsEnabled = (state) => state.navbar.isEnabled
+export const navbarSelectIsEnabled = (state) => state.navbar.isEnabled;
 
-export default navbarSlice.reducer
+export default navbarSlice.reducer;

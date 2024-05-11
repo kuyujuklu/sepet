@@ -7,7 +7,6 @@ const Radio = ({ value, values, setValue }) => {
         <Button
           key={item.value}
           onPress={() => {
-            console.log("pressed");
             setValue(item.value);
           }}
           px="15"

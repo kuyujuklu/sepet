@@ -9,15 +9,23 @@ import {
 } from "../../features/store/basket/basketSlice";
 import AnimatedNumber from "react-native-animated-numbers";
 import { memo, useEffect, useState } from "react";
+import { ENV } from "../../constants/env/env";
+import { currencies } from "../../app/static-data/data";
 
-const DishCard = ({ dish, pubID }) => {
+const DishCard = ({ dish, pubID, pub }) => {
   const dispatch = useDispatch();
   const imagePath =
-    process.env.EXPO_PUBLIC_API_URL +
-    "/static/images/dishes/" +
+    ENV.API_HTTP_URL +
+    ENV.API_STATIC_PATH +
+    "/images/dishes/" +
     dish?.image_file_name;
 
   const dishInBasket = useSelector(selectDishFromBasket(dish?.id));
+
+
+  const currency = currencies.find(
+    (currency) => currency.id === pub?.currency_id
+)?.symbol ?? "Lei"
 
   const smallestPrice =
     dish?.sale_price && dish?.sale_price < dish?.price
@@ -43,13 +51,15 @@ const DishCard = ({ dish, pubID }) => {
           justifyContent: "center",
         }}
       >
-        {dish.image_file_name && (
+        {dish.image_file_name ? (
           <Image
             alt=""
             resizeMode="contain"
             style={{ width: "100%", aspectRatio: 1 / 8 }}
             source={{ uri: imagePath }}
           />
+        ) : (
+          <></>
         )}
         <View
           position={"absolute"}
@@ -99,7 +109,7 @@ const DishCard = ({ dish, pubID }) => {
             {/* Striked Higher price */}
             {
               //if there is sale, show real price with line-through
-              dish?.sale_price && (
+              !!dish?.sale_price && (
                 <Text
                   fontSize={"md"}
                   color={"red.500"}
@@ -109,13 +119,13 @@ const DishCard = ({ dish, pubID }) => {
                     textDecorationStyle: "solid",
                   }}
                 >
-                  {dish?.price} €
+                  {dish?.price} {currency}
                 </Text>
               )
             }
             {/* Lower price */}
             <Text fontSize={"md"} color="coolGray.700" fontWeight={"medium"}>
-              {smallestPrice} €
+              {smallestPrice} {currency}
             </Text>
           </View>
 
@@ -140,11 +150,8 @@ const DishCard = ({ dish, pubID }) => {
               </>
             )}
             {/* COUNTER */}
-            <View
-              opacity={dishInBasket?.count > 0 ? 1 : 0}
-            >
+            <View opacity={dishInBasket?.count > 0 ? 1 : 0}>
               <Number number={dishCount} />
-
             </View>
 
             {/* increase button */}
@@ -155,7 +162,7 @@ const DishCard = ({ dish, pubID }) => {
                     id: dish?.id,
                     pubID: pubID,
                     price: smallestPrice,
-                  })
+                  }),
                 )
               }
             >

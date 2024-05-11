@@ -1,9 +1,16 @@
 import { Animated, Text } from "react-native";
 import { styles } from "./navbar.style";
 import { useEffect, useState } from "react";
+import { Button, View } from "native-base";
+import { clearAuthenticationData } from "../../shared/api/auth/authBasedQuery";
+import { useNavigation } from "@react-navigation/native";
+import { useTranslation } from "react-i18next";
+import SwitchLanguage from "./SwitchLanguage";
 
 const NavbarExpandMore = ({ expanded }) => {
+  const {t} = useTranslation()
   //from 0 to 1
+  const navigator = useNavigation()
   const [expandedSize] = useState(new Animated.Value(0));
 
   useEffect(() => {
@@ -15,36 +22,42 @@ const NavbarExpandMore = ({ expanded }) => {
     }).start();
   }, [expanded]);
 
-  const [heightOfContainer, setHeightOfContainer] = useState(0)
+  const [heightOfContainer, setHeightOfContainer] = useState(0);
 
+  const logout = () => {
+    clearAuthenticationData()
+    navigator.navigate("Authentication")
+  }
   return (
     <Animated.View
-      onLayout={({nativeEvent}) => {setHeightOfContainer(nativeEvent.layout.height)}}
+      onLayout={({ nativeEvent }) => {
+        setHeightOfContainer(nativeEvent.layout.height);
+      }}
       style={{
         ...styles.expandMore(expanded),
         width: expandedSize.interpolate({
           inputRange: [0, 1],
           outputRange: ["0%", "80%"],
         }),
-        padding: expandedSize.interpolate({
-          inputRange: [0, 1],
-          outputRange: [0, 20],
-        }),
-        height: expandedSize.interpolate({
-            inputRange: [0, 1],
-            outputRange: [0, 150]
-        }),
-        top: expandedSize.interpolate({
-            inputRange: [0, 1],
-            outputRange: [0, -heightOfContainer]
-        })
+        // padding: expandedSize.interpolate({
+        //   inputRange: [0, 1],
+        //   outputRange: [0, 20],
+        // }),
+        padding: expanded ? 20 : 0,
+        // height: expandedSize.interpolate({
+        //   inputRange: [0, 1],
+        //   outputRange: [10, 150],
+        // }),
+        height: 150,
+        top: -150
       }}
     >
-      {expanded && <>
-        <Text style={{marginBottom: 4, fontWeight: "medium", color: "#666", borderWidth: 1, padding: 5, borderColor: "#999", borderRadius: 8, }}>SOME TEXT TTTTT TTT</Text>
-        <Text style={{marginBottom: 4, fontWeight: "medium", color: "#666", borderWidth: 1, padding: 5, borderColor: "#999", borderRadius: 8, }}>SOME TEXT TTTTT TTT</Text>
-        <Text style={{marginBottom: 4, fontWeight: "medium", color: "#666", borderWidth: 1, padding: 5, borderColor: "#999", borderRadius: 8, }}>SOME TEXT TTTTT TTT</Text>
-      </>}
+      {expanded && (
+        <View gap={4}>
+          <Button onPress={logout}>{t("auth.logout")}</Button>
+          <SwitchLanguage />
+        </View>
+      )}
     </Animated.View>
   );
 };

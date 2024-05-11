@@ -1,12 +1,15 @@
 import { Animated, Image } from "react-native";
 import Stars from "./Stars";
 import { Text, View } from "native-base";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { ENV } from "../../constants/env/env";
+import { images } from "../../app/images/images";
 
-const Pub = ({ pub, isViewable }) => {
+const Pub = ({ pub, isViewable, distance }) => {
   const bgPath =
-    process.env.EXPO_PUBLIC_API_URL +
-    "/static/images/pubs/bgs/" +
+    ENV.API_HTTP_URL +
+    ENV.API_STATIC_PATH +
+    "/images/pubs/bgs/" +
     pub.bg_image_file_name;
 
   const scaleAnimation = useRef(new Animated.Value(0)).current;
@@ -21,7 +24,7 @@ const Pub = ({ pub, isViewable }) => {
   }, [isViewable]);
 
   return (
-    <View style={{ width: 300}}>
+    <View style={{ width: 300 }}>
       {/* Image container */}
       <Animated.View
         style={{
@@ -35,12 +38,24 @@ const Pub = ({ pub, isViewable }) => {
           justifyContent: "center",
         }}
       >
+        {!pub.bg_image_file_name && (
+          <View
+            bg={"black"}
+            w="full"
+            position="absolute"
+            justifyContent="center"
+            alignItems="center"
+            h="full"
+          >
+            <Text color="white">{pub.name}</Text>
+          </View>
+        )}
         <Image
           resizeMode="contain"
           style={{ width: "120%", aspectRatio: 1 / 8 }}
           source={{ uri: bgPath }}
-          alt="smthng"
-          />
+          alt=""
+        />
       </Animated.View>
 
       {/* Info container */}
@@ -55,6 +70,21 @@ const Pub = ({ pub, isViewable }) => {
         }}
       >
         <Text style={{ fontSize: 18 }}>{pub.name}</Text>
+        <View
+          flex={1}
+          justifyContent="flex-end"
+          alignItems="center"
+          flexDir="row"
+          gap={1}
+        >
+          <View style={{ width: 15, height: 15 }}>
+            <Image
+              source={images.Locaiton}
+              style={{ width: "100%", height: "100%" }}
+            />
+          </View>
+          <Text style={{ fontSize: 14, fontWeight: "bold" }}>{(distance/ 1000).toFixed(1)} km</Text>
+        </View>
         {/* Stars and location */}
         <View>
           <Stars count={pub.rating} />

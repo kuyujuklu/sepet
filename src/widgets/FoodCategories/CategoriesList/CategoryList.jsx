@@ -1,5 +1,5 @@
 import { FlatList, View } from "native-base";
-import { useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import { Pressable, SafeAreaView } from "react-native";
 import { useGetPubInfoQuery } from "../../../shared/api/pubs/pubsApi";
 import CategoryCard from "./CategoryCard";
@@ -19,10 +19,7 @@ const CategoryList = ({
 
   // Set shown categories based on menuID
   useEffect(() => {
-    console.log("menu id: ", menuID);
     if (!menuID) return;
-
-    console.log("menu id: ", menuID);
 
     if(!pubData?.categories) return;
 
@@ -42,17 +39,15 @@ const CategoryList = ({
   }, [pubData, menuID]);
 
   useEffect(() => {
-    pubError && console.log("pubError in categories list: ", pubError);
   }, [pubError]);
 
   useEffect(() => {
-    console.log("pubData in categories list: ", pubData?.categories);
   }, [pubData]);
 
   return (
     <SafeAreaView edges={[]}>
       <FlatList
-        contentContainerStyle={{ paddingHorizontal: 10 }}
+        contentContainerStyle={{ paddingHorizontal: 10, paddingBottom: 80}}
         renderItem={({ item: category }) => (
           <Pressable onPress={() => selectCategory(category?.id)}>
             <CategoryCard
@@ -69,4 +64,4 @@ const CategoryList = ({
   );
 };
 
-export default CategoryList;
+export default memo(CategoryList);

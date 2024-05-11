@@ -23,7 +23,6 @@ const AuthWatcher = () => {
       (async function () {
         const resp = await refreshToken();
         if (!resp?.ok || !resp.accesstoken) {
-          console.log("to registration")
           navigator.dispatch(
             CommonActions.reset({
               index: 0,

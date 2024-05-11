@@ -1,14 +1,19 @@
 import { Text, View } from "native-base";
 import { Image } from "react-native";
+import { ENV } from "../../../constants/env/env";
+import { images } from "../../../app/images/images";
 
-const CategoryCardWithPubInfo = ({ category, pub }) => {
+const CategoryCardWithPubInfo = ({ category, pub, usePubBg, distance }) => {
+  console.log("use pub bg: ", usePubBg);
   const imagePath =
-    process.env.EXPO_PUBLIC_API_URL +
-    "/static/images/categories/" +
-    category?.image_file_name;
+    ENV.API_HTTP_URL +
+    ENV.API_STATIC_PATH +
+    (usePubBg
+      ? "/images/pubs/bgs/" + pub.bg_image_file_name
+      : "/images/categories/" + category?.image_file_name);
 
   return (
-    <View maxWidth={400} style={{width: "100%", alignSelf: "center"}}>
+    <View maxWidth={400} style={{ width: "100%", alignSelf: "center" }}>
       {/* Image container */}
       <View
         style={{
@@ -42,7 +47,7 @@ const CategoryCardWithPubInfo = ({ category, pub }) => {
           justifyContent={"center"}
         >
           <Text fontSize={"2xl"} fontWeight={"bold"} color={"#fff"}>
-            {category?.name}
+            {pub?.name}
           </Text>
         </View>
       </View>
@@ -58,9 +63,49 @@ const CategoryCardWithPubInfo = ({ category, pub }) => {
           flexDirection: "row",
         }}
       >
-        <Text fontSize={"lg"} fontWeight={"medium"}>
-          {pub?.name}
-        </Text>
+        <View flexDir="row" alignItems="center" gap="1">
+          <View style={{ width: 20, height: 20 }}>
+            {pub?.shipping?.shipping_time_from ||
+            pub?.shipping?.shipping_time_to ? (
+              <Image
+                source={images.ClockBlack}
+                style={{ width: "100%", height: "100%" }}
+                alt=""
+              />
+            ) : (
+              ""
+            )}
+          </View>
+          <Text fontSize={"lg"} fontWeight={"medium"}>
+            {pub?.shipping?.shipping_time_from
+              ? pub?.shipping?.shipping_time_from
+              : ""}
+            {pub?.shipping?.shipping_time_from &&
+            pub?.shipping?.shipping_time_to
+              ? " - "
+              : ""}
+            {pub?.shipping?.shipping_time_to
+              ? pub?.shipping?.shipping_time_to
+              : ""}
+          </Text>
+          <View
+            flex={1}
+            justifyContent="flex-end"
+            alignItems="center"
+            flexDir="row"
+            gap={1}
+          >
+            <View style={{ width: 15, height: 15 }}>
+              <Image
+                source={images.Locaiton}
+                style={{ width: "100%", height: "100%" }}
+              />
+            </View>
+            <Text style={{ fontSize: 14, fontWeight: "bold" }}>
+              {(distance / 1000).toFixed(1)} km
+            </Text>
+          </View>
+        </View>
       </View>
     </View>
   );

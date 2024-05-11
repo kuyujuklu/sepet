@@ -6,8 +6,10 @@ import {
 import { useEffect } from "react";
 import { pushAlert } from "../alerts/alertSlice";
 import { appErrors } from "../../../app/errors/appErrors";
+import { useTranslation } from "react-i18next";
 
 const StandardErrorHandler = () => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const error = useSelector(selectStandardHandlingError);
 
@@ -17,10 +19,10 @@ const StandardErrorHandler = () => {
     if (!error.text) {
       dispatch(
         pushAlert({
-          title: appErrors.something_went_wrong,
+          title: t(appErrors.something_went_wrong),
           status: "error",
           delay: 3000,
-        })
+        }),
       );
       dispatch(handleErrorStandard(null));
       return;
@@ -28,10 +30,10 @@ const StandardErrorHandler = () => {
 
     dispatch(
       pushAlert({
-        title: error.text,
+        title: t(error.text),
         status: "error",
         delay: 3000,
-      })
+      }),
     );
 
     dispatch(handleErrorStandard(null));

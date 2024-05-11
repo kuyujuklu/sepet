@@ -1,6 +1,11 @@
 import { Text, View } from "native-base";
 import InputWithValidation from "../../../Inputs/InputWithValidation";
-import { validateFullAddress, validatePhoneNumber, validateTown } from "../../../../shared/validation/validators/order/order-validator";
+import {
+  validateFullAddress,
+  validatePhoneNumber,
+  validateTown,
+} from "../../../../shared/validation/validators/order/order-validator";
+import { useTranslation } from "react-i18next";
 const CreateOrderInputs = ({
   town,
   setTown,
@@ -12,14 +17,15 @@ const CreateOrderInputs = ({
   setSecondPhoneNumber,
   comments,
   setComments,
-  validatedOutside
+  validatedOutside,
 }) => {
+  const { t } = useTranslation();
   return (
     <View gap="2">
       <InputWithValidation
         value={town}
         setValue={setTown}
-        label={"Town"}
+        label={t("create_order_page.additional_data.inputs.town.label")}
         keyboardType={"default"}
         validators={[validateTown]}
         validatedOutside={validatedOutside}
@@ -27,7 +33,7 @@ const CreateOrderInputs = ({
       <InputWithValidation
         value={fullAddress}
         setValue={setFullAddress}
-        label={"Full address"}
+        label={t("create_order_page.additional_data.inputs.full_address.label")}
         keyboardType={"default"}
         validators={[validateFullAddress]}
         validatedOutside={validatedOutside}
@@ -40,14 +46,16 @@ const CreateOrderInputs = ({
           <InputWithValidation
             value={phoneNumber}
             setValue={setPhoneNumber}
-            label={"Main phone number"}
+            label={t(
+              "create_order_page.additional_data.inputs.main_phone_number.label",
+            )}
             keyboardType={"number-pad"}
             validators={[validatePhoneNumber]}
             validatedOutside={validatedOutside}
-            />
+          />
         </View>
       </View>
-      
+
       <View flexDir={"row"} alignItems={"center"} gap={4}>
         <Text fontWeight={"bold"} fontSize={18} position={"relative"} top="6px">
           +373
@@ -56,25 +64,26 @@ const CreateOrderInputs = ({
           <InputWithValidation
             value={secondPhoneNumber}
             setValue={setSecondPhoneNumber}
-            label={"Additional phone number"}
+            label={t(
+              "create_order_page.additional_data.inputs.second_phone_number.label",
+            )}
             keyboardType={"number-pad"}
             validatedOutside={validatedOutside}
-            />
+          />
         </View>
       </View>
       <InputWithValidation
         value={comments}
         setValue={setComments}
-        label={"Comments to your order"}
+        label={t("create_order_page.additional_data.inputs.comments.label")}
         keyboardType={"default"}
-        validators={[validateFullAddress]}
         validatedOutside={validatedOutside}
         inputParams={{
           multiline: true,
-          numberOfLines: 4
+          numberOfLines: 4,
         }}
         inputStyles={{
-          textAlignVertical: "top"
+          textAlignVertical: "top",
         }}
       />
     </View>

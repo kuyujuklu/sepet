@@ -16,7 +16,7 @@ const CategoryWithPubInfoList = ({ foodFilter, selectCategory }) => {
     // isLoading: nearCategoriesIsLoading,
   } = useGetNearbyCategoriesQuery(
     { coords: { lat: location?.lat, lng: location?.lng } },
-    { skip: !location }
+    { skip: !location },
   );
 
   const {
@@ -24,7 +24,7 @@ const CategoryWithPubInfoList = ({ foodFilter, selectCategory }) => {
     // isLoading: nearPubsIsLoading,
   } = useGetNearbyPubsQuery(
     { coords: { lat: location?.lat, lng: location?.lng } },
-    { skip: !location }
+    { skip: !location },
   );
 
   // {category, pub} array
@@ -32,36 +32,36 @@ const CategoryWithPubInfoList = ({ foodFilter, selectCategory }) => {
     if (!nearCategoriesData?.categories) return [];
     if (!nearPubsData?.pubs) return [];
 
-    console.log("foodFilter: ", foodFilter);
     const filteredCategories = nearCategoriesData.categories.filter(
       (category) => {
         if (!foodFilter) return true;
         return category?.category_type === foodFilter;
-      }
+      },
     );
+
+    const alreadyAddedPubs = new Set();
 
     // for each category, find the pub that matches the pub_id
-    const rawCategoryPubData = filteredCategories.map(
-      (category) => {
-        const pub = nearPubsData.pubs.find((pub) => pub.id === category.pub_id);
+    let rawCategoryPubData = filteredCategories.map((category) => {
+      const pub = nearPubsData.pubs.find(
+        (pub) => pub.id === category.pub_id && !alreadyAddedPubs.has(pub.id),
+      );
 
-        if (!pub) return null; //skip categories without pubs
+      if (!pub) return null; //skip categories without pubs
 
-        return { category, pub };
-      },
-      [nearCategoriesData, nearPubsData, foodFilter]
-    );
+      alreadyAddedPubs.add(pub.id);
 
-    return rawCategoryPubData.filter((item) => item !== null);
-  });
+      return { category, pub };
+    });
 
-  useEffect(() => {
-    console.log("CATEGORIES: ", nearCategoriesData?.categories);
-  }, [nearCategoriesData]);
+    rawCategoryPubData = rawCategoryPubData.filter((item) => item !== null);
+    rawCategoryPubData.sort((a, b) => a.pub.distance - b.pub.distance);
+    return rawCategoryPubData;
+  }, [nearCategoriesData, nearPubsData, foodFilter]);
 
-  useEffect(() => {
-    console.log("nearCategoriesError", nearCategoriesError);
-  }, [nearCategoriesError]);
+  useEffect(() => {}, [nearCategoriesData]);
+
+  useEffect(() => {}, [nearCategoriesError]);
 
   return (
     <View gap={10}>
@@ -81,11 +81,13 @@ const CategoryWithPubInfoList = ({ foodFilter, selectCategory }) => {
                 key={item?.category?.id}
                 category={item?.category}
                 pub={item?.pub}
+                distance={item?.pub?.distance}
+                usePubBg={!foodFilter}
               />
             </TouchableOpacity>
           )}
           data={shownCategoriesAndPubs || []}
-          ItemSeparatorComponent={() => <View height={5} />}
+          ItemSeparatorComponent={() => <View height={2} />}
         />
       </SafeAreaView>
     </View>

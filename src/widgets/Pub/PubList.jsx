@@ -1,14 +1,13 @@
-import {
-  FlatList,
-  View,
-} from "react-native";
+import { FlatList, View } from "react-native";
 import Pub from "./Pub";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useGetNearbyPubsQuery } from "../../shared/api/pubs/pubsApi";
-import { useEffect, useRef, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import newDebounce from "../../shared/utils/debounce";
 import { Pressable } from "native-base";
 import { useNavigation } from "@react-navigation/native";
+import { useSelector } from "react-redux";
+import { selectGeolocation } from "../../features/store/geolocation/geolocationSlice";
 
 const viewabilityConfig = {
   waitForInteraction: true,
@@ -16,36 +15,45 @@ const viewabilityConfig = {
 };
 
 const PubList = ({ selectedPub, selectPub }) => {
-  const navigator = useNavigation()
+  const navigator = useNavigation();
 
   const [viewable, setViewable] = useState(0);
 
   const flatListRef = useRef(null);
 
-  const defaultCenter = {
-    lat: 46.00556,
-    lng: 28.8575,
-  };
+  const location = useSelector(selectGeolocation);
 
   const {
     data: pubsData,
     isLoading: pubsIsLoading,
     error: pubsError,
   } = useGetNearbyPubsQuery({
-    coords: { lat: defaultCenter.lat, lng: defaultCenter.lng },
+    coords: { lat: location.lat, lng: location.lng },
   });
+  useEffect(() => {
+    if (!pubsData) return;
+
+    console.log(pubsData?.pubs);
+  }, [pubsData]);
+
+  const pubs = useMemo(() => {
+    if (!pubsData || !pubsData?.pubs) return [];
+
+    const pubs = [...pubsData.pubs];
+    pubs.sort((a, b) => a.distance - b.distance);
+    return pubs;
+  }, [pubsData]);
 
   // Log error on getting error from api
   useEffect(() => {
     if (pubsError) {
-      console.log("loading nearby pubs error: ", pubsError);
     }
   }, [pubsError]);
 
   // Scroll flatlist on changing selected pub
   useEffect(() => {
     if (!selectedPub) return;
-    const pubIndex = pubsData?.pubs?.findIndex((pub) => pub.id === selectedPub);
+    const pubIndex = pubs?.findIndex((pub) => pub.id === selectedPub);
     if (pubIndex === -1) return;
 
     setViewable(pubIndex);
@@ -58,19 +66,19 @@ const PubList = ({ selectedPub, selectPub }) => {
   }, [selectedPub]);
 
   const handlePubPress = (id) => {
-    if(!id) return;
+    if (!id) return;
 
-    if(pubsData?.pubs.length === 0) return;
+    if (pubs.length === 0) return;
 
-    if(pubsData?.pubs.length <= viewable) return;
+    if (pubs.length <= viewable) return;
 
-    if(pubsData?.pubs[viewable]?.id !== id) {
+    if (pubs[viewable]?.id !== id) {
       selectPub(id);
       return;
     }
 
-    navigator.navigate("PubInfo", { pubID: id })
-  }
+    navigator.navigate("PubInfo", { pubID: id });
+  };
 
   const handleViewableItemsChange = ({ viewableItems }) => {
     const viewables = viewableItems.map((item) => item.index);
@@ -80,10 +88,8 @@ const PubList = ({ selectedPub, selectPub }) => {
     if (viewables.length > 0) {
       viewable = viewables[0];
       try {
-        currentPub = pubsData?.pubs[viewables[0]];
-      } catch (e) {
-        console.log("pub is not in list: ", e);
-      }
+        currentPub = pubs[viewables[0]];
+      } catch (e) {}
     }
 
     if (currentPub && currentPub.id !== selectedPub) {
@@ -93,19 +99,30 @@ const PubList = ({ selectedPub, selectPub }) => {
     setViewable(viewable);
   };
 
-  const debounceHandleViewableItemsChange = newDebounce(handleViewableItemsChange, 300)
+  const debounceHandleViewableItemsChange = newDebounce(
+    handleViewableItemsChange,
+    300,
+  );
 
   return (
-    <SafeAreaView style={{ paddingLeft: 10}} edges={[]} >
+    <SafeAreaView style={{ paddingLeft: 10 }} edges={[]}>
       <FlatList
         ref={flatListRef}
         renderItem={({ item, index }) => (
-          <Pressable onPress={() => {handlePubPress(item?.id)}} >
-            <Pub isViewable={index === viewable} pub={item} />
+          <Pressable
+            onPress={() => {
+              handlePubPress(item?.id);
+            }}
+          >
+            <Pub
+              isViewable={index === viewable}
+              pub={item}
+              distance={item.distance}
+            />
           </Pressable>
         )}
         viewabilityConfig={viewabilityConfig}
-        data={pubsData?.pubs}
+        data={pubs}
         horizontal
         onViewableItemsChanged={debounceHandleViewableItemsChange}
         ItemSeparatorComponent={() => <View style={{ width: 20 }} />}
@@ -114,4 +131,4 @@ const PubList = ({ selectedPub, selectPub }) => {
   );
 };
 
-export default PubList;
+export default memo(PubList);

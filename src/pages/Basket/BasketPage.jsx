@@ -1,5 +1,3 @@
-import { Text, View } from "native-base";
-import Wrapper from "../Wrapper";
 import DishList from "../../widgets/Dish/DishList";
 import { useGetPubInfoQuery } from "../../shared/api/pubs/pubsApi";
 import { useSelector } from "react-redux";
@@ -8,8 +6,12 @@ import {
   selectBasketPubID,
 } from "../../features/store/basket/basketSlice";
 import BasketCreateOrderButton from "../../widgets/Basket/BasketCreateOrderButton";
+import Wrapper from "../Wrapper";
+import { Text, View } from "native-base";
+import { useTranslation } from "react-i18next";
 
 const BasketPage = () => {
+  const { t } = useTranslation();
   const pubID = useSelector(selectBasketPubID);
   const { data: pubData } = useGetPubInfoQuery({ pubID }, { skip: !pubID });
 
@@ -24,20 +26,19 @@ const BasketPage = () => {
         textAlign={"center"}
         mb={10}
       >
-        Basket
+        {t("basket_page.headline")}
       </Text>
 
-    <View flex={1}>
-      <DishList
-        pubID={pubID}
-        dishes={pubData?.dishes?.filter(
-          (dish) => basket[dish.id]?.count && basket[dish.id]?.count > 0
-        )}
-      />
+      <View flex={1}>
+        <DishList
+          pubID={pubID}
+          dishes={pubData?.dishes?.filter(
+            (dish) => basket[dish.id]?.count && basket[dish.id]?.count > 0,
+          )}
+        />
+      </View>
 
-    </View>
-
-      <View px={2} mb={5} borderRadius={15}>
+      <View position="absolute" w="full" px="2" bottom="2" borderRadius={15}>
         <BasketCreateOrderButton />
       </View>
     </Wrapper>
