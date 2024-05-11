@@ -179,6 +179,10 @@ func (r *pubsRepo) GetAllCategoriesForPub(pubID int) ([]models.Category, error) 
 }
 
 func (r *pubsRepo) GetCategoriesWithPreloadedMenuForPubs(pubs []models.Pub) ([]models.Category, error) {
+	if len(pubs) == 0 {
+		return nil, nil
+	}
+
 	menus := make([]models.Menu, 0)
 	menusCondition := "pub_id in ("
 	for i, pub := range pubs {

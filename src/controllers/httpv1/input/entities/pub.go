@@ -109,6 +109,56 @@ func (p *PubOutput) FillFromModel(pub models.Pub) error {
 	return nil
 }
 
+type PubWithDishesAndDistanceOutput struct {
+	PubOutput
+	Distance int          `json:"distance"`
+	Dishes   []DishOutput `json:"dishes"`
+}
+
+func (p *PubWithDishesAndDistanceOutput) FillFromModel(pub models.Pub, distance int, dishes []models.Dish) error {
+	if time.Now().Unix() > pub.ExpirationTime.Unix() {
+		p.Expired = true
+	}
+
+	if pub.Shipping.Available {
+		shippingOutput := ShippingOutput{}
+		if err := shippingOutput.FillFromModel(pub.Shipping); err != nil {
+			return err
+		}
+
+		p.ShippingOutput = shippingOutput
+	}
+
+	p.ExpirationTime = helpers.ConvertToStandardApiTime(pub.ExpirationTime)
+	p.ID = int(pub.ID)
+	p.Name = pub.Name
+	p.UrlName = pub.UrlName
+	p.QrCodeFileName = pub.QrCodeFileName
+	p.ColorTheme = pub.ColorTheme
+	p.Color = pub.Color
+	p.BgImageFileName = pub.BgImageFileName
+	p.LogoFileName = pub.LogoFileName
+	p.WifiPassword = pub.WifiPassword
+	p.Address = pub.Address
+	p.AdditionalInfo = pub.AdditionalInfo
+	p.CurrencyID = int(pub.CurrencyID)
+	p.CompanyID = int(pub.CompanyID)
+	p.Lat = pub.Lat
+	p.Lng = pub.Lng
+
+	p.Dishes = make([]DishOutput, 0, len(dishes))
+
+	for _, dish := range dishes {
+		dishOutput := DishOutput{}
+		dishOutput.FillFromModel(dish)
+		p.Dishes = append(p.Dishes, dishOutput)
+	}
+
+	p.Distance = distance
+
+	return nil
+}
+
 type UpdateExpirationTimeInput struct {
 	Days int `json:"days" validate:"required,numeric" example:"30"`
 }

@@ -1,7 +1,6 @@
 package client
 
 import (
-	"errors"
 	"fmt"
 
 	h "github.com/alexkalak/qrmenu/src/controllers/httpv1/httphelpers"
@@ -10,26 +9,26 @@ import (
 	"github.com/alexkalak/qrmenu/src/errors/clienterrors"
 	"github.com/alexkalak/qrmenu/src/errors/jwterrors"
 	"github.com/alexkalak/qrmenu/src/errors/servererrors"
-	"github.com/alexkalak/qrmenu/src/helpers"
 	"github.com/alexkalak/qrmenu/src/services/jwtservice"
 	"github.com/gofiber/fiber/v2"
 )
 
-type CreateAuthenticationSessionOutput struct {
-	Ok              bool   `json:"ok" example:"true"`
-	NextSessionTime string `json:"next_session_time" example:"2006-01-24"`
-	Error           string `json:"err" example:"client not found"`
+type AuthenticateClientOutput struct {
+	Ok           bool   `json:"ok" example:"true"`
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+	Error        string `json:"err" example:"client not found"`
 }
 
-// @Summary      Create session for registration
-// @Description  return ok if sms was sended
+// @Summary      Authenticate client by password
+// @Description azadsf
 // @Tags         Registration
-// @Param input body entities.CreateAuthenticationSessionInput true "authentication input"
+// @Param input body entities.AuthenticateClientInput true "authentication input"
 // @Produce      json
-// @Success      200  {object}  CreateAuthenticationSessionOutput
+// @Success      200  {object}  AuthenticateClientOutput
 // @Router       /api/client/authentication [POST]
-func (c *clientController) CreateAuthenticationSession(ctx *fiber.Ctx) error {
-	input, validationErrors, err := input.ParseRequestBody[entities.CreateAuthenticationSessionInput](ctx)
+func (c *clientController) AuthenticateClient(ctx *fiber.Ctx) error {
+	input, validationErrors, err := input.ParseRequestBody[entities.AuthenticateClientInput](ctx)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
@@ -37,50 +36,8 @@ func (c *clientController) CreateAuthenticationSession(ctx *fiber.Ctx) error {
 		return h.SendValidationErrors(ctx, validationErrors)
 	}
 
-	nextSessionTime, err := c.ClientService.GenerateLoginSession(input.Phone)
+	client, err := c.ClientService.AuthenticateClient(input.Phone, input.Password)
 	if err != nil {
-		if errors.Is(err, clienterrors.ErrTooManyLoginSessions) {
-			h.SendErrorWithBody(
-				ctx,
-				err,
-				h.AUTOMATIC_STATUS_CODE,
-				fiber.Map{
-					"next_session_time": helpers.ConvertToStandardApiTime(nextSessionTime),
-				},
-			)
-		}
-
-		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
-	}
-
-	return h.SendSuccess(
-		ctx,
-		fiber.Map{
-			"next_session_time": helpers.ConvertToStandardApiTime(nextSessionTime),
-		},
-		fiber.StatusOK)
-}
-
-// @Summary      Handle validation for authentication
-// @Description  return ok and tokens if successfully authenticated
-// @Tags         Authentication
-// @Param input body entities.ValidateSessionInput true "validation input"
-// @Produce      json
-// @Success      200  {object}  ValidationOutput
-// @Router       /api/client/authentication/validation [POST]
-func (c *clientController) ValidateAuthentication(ctx *fiber.Ctx) error {
-	fmt.Println("in validation")
-	input, validationErrors, err := input.ParseRequestBody[entities.ValidateSessionInput](ctx)
-	if err != nil {
-		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
-	}
-	if len(validationErrors) > 0 {
-		return h.SendValidationErrors(ctx, validationErrors)
-	}
-
-	client, err := c.ClientService.HandleAuthenticationValidation(input.Phone, input.ValidationNumber)
-	if err != nil {
-		fmt.Println("error: ", err)
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
 
@@ -99,10 +56,12 @@ func (c *clientController) RefreshToken(ctx *fiber.Ctx) error {
 
 	userClaims, valid, err := c.JwtService.ParseJwtTokenString(reqInput.RefreshToken)
 	if err != nil {
+		fmt.Println("jwt error not equal to nil ")
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
 
 	if !valid {
+		fmt.Println("not valid")
 		return h.SendError(ctx, jwterrors.ErrNotValidSignature, h.AUTOMATIC_STATUS_CODE)
 	}
 

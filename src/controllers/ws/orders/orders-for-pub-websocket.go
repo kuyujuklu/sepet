@@ -3,7 +3,6 @@ package orders
 import (
 	"fmt"
 	"strconv"
-	"time"
 
 	h "github.com/alexkalak/qrmenu/src/controllers/httpv1/httphelpers"
 	"github.com/alexkalak/qrmenu/src/controllers/httpv1/locals"
@@ -12,11 +11,6 @@ import (
 	"github.com/alexkalak/qrmenu/src/services/orderservice"
 	"github.com/gofiber/contrib/websocket"
 )
-
-type Message struct {
-	MessageType int
-	Message     []byte
-}
 
 func (c *ordersController) ConnectToOrdersForPub(conn *websocket.Conn) {
 
@@ -59,12 +53,12 @@ func (c *ordersController) ConnectToOrdersForPub(conn *websocket.Conn) {
 	}
 	defer c.OrdersService.RemoveConnectionFromOrdersForPubConnections(pubID, conn)
 
-	message := make(chan Message)
+	message := make(chan wsutils.Message)
 	closed := make(chan bool)
 	gotPong := make(chan bool)
 
-	go readConnMessages(conn, message, closed)
-	go sendPing(conn, gotPong, closed)
+	go wsutils.ReadConnMessages(conn, message, closed)
+	go wsutils.SendPing(conn, gotPong, closed)
 
 	allOrders, err := c.OrdersService.GetOrdersForPub(pubID)
 	if err != nil {
@@ -102,57 +96,4 @@ loop:
 		}
 	}
 
-}
-
-func readConnMessages(conn *websocket.Conn, message chan<- Message, closed chan<- bool) {
-	for {
-		mt, msg, err := conn.ReadMessage()
-		if err != nil {
-			fmt.Println("Error message ", err)
-			closed <- true
-			break
-		}
-
-		message <- Message{
-			MessageType: mt,
-			Message:     msg,
-		}
-	}
-}
-
-func sendPing(conn *websocket.Conn, gotPong <-chan bool, closed chan<- bool) {
-	pingTicker := time.NewTicker(10 * time.Second)
-
-	for range pingTicker.C {
-		err := conn.WriteMessage(websocket.TextMessage, []byte(wsutils.PingMessage))
-		if err != nil {
-			closed <- true
-			return
-		}
-		go closeConnectionIfThereWillBeNoPong(conn, gotPong, closed, pingTicker, time.Second*9)
-	}
-}
-
-func closeConnectionIfThereWillBeNoPong(conn *websocket.Conn, gotPong <-chan bool, closed chan<- bool, pingTicker *time.Ticker, duration time.Duration) {
-	ticker := time.NewTicker(duration)
-	for {
-		select {
-		case b := <-gotPong:
-			if b {
-				return
-			}
-		case t := <-ticker.C:
-			fmt.Println("pong ticker for closing connection: ", t)
-			if conn != nil {
-				closed <- true
-			}
-
-			ticker.Stop()
-
-			if pingTicker != nil {
-				pingTicker.Stop()
-			}
-			return
-		}
-	}
 }

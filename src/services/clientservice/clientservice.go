@@ -1,23 +1,21 @@
 package clientservice
 
 import (
+	"errors"
 	"fmt"
 	"math/rand"
-	"slices"
-	"time"
 
 	"github.com/alexkalak/qrmenu/src/errors/clienterrors"
 	"github.com/alexkalak/qrmenu/src/models"
 	"github.com/alexkalak/qrmenu/src/repo/clientrepo"
 	"github.com/alexkalak/qrmenu/src/repo/rolerepo"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type ClientService interface {
 	GetClientByID(id int) (models.Client, error)
-	GenerateLoginSession(phone string) (time.Time, error)
-	GenerateRegistrationSession(phone string, name string) (time.Time, error)
-	HandleRegistrationValidation(phone string, validationNumber int) (models.Client, error)
-	HandleAuthenticationValidation(phone string, validationNumber int) (models.Client, error)
+	RegistrateClient(phone string, name string, password string) (models.Client, error)
+	AuthenticateClient(phone string, password string) (models.Client, error)
 }
 
 type clientService struct {
@@ -36,70 +34,41 @@ func (c *clientService) GetClientByID(id int) (models.Client, error) {
 	return c.ClientRepo.GetClientByID(id)
 }
 
-func (c *clientService) GenerateRegistrationSession(phone string, name string) (time.Time, error) {
-	sessions, err := c.ClientRepo.GetAllRegistrationSessionsInTimeRange(phone, time.Now().Add(-time.Hour), time.Now())
+func (c *clientService) RegistrateClient(phone string, name string, password string) (models.Client, error) {
+	_, err := c.ClientRepo.GetClientByPhoneNumber(phone)
+	if err == nil {
+		return models.Client{}, clienterrors.ErrClientWithTheSameNumberAlreadyExists
+	}
+	if err != clienterrors.ErrClientNotFound {
+		return models.Client{}, err
+	}
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), 10)
 	if err != nil {
-		return time.Time{}, err
+		return models.Client{}, errors.New("hashing error")
 	}
 
-	fmt.Println("got sessions length = ", len(sessions))
-
-	if len(sessions) >= 2 {
-		lastCreatedSession := slices.MaxFunc(sessions, func(a, b models.RegistrationSession) int {
-			return a.CreatedAt.Compare(b.CreatedAt)
-		})
-
-		return lastCreatedSession.CreatedAt.Add(time.Hour), clienterrors.ErrTooManyLoginSessions
-	}
-
-	session := models.RegistrationSession{
-		Phone:            phone,
-		Name:             name,
-		ValidationNumber: c.generateCode(),
-	}
-
-	newSession, err := c.ClientRepo.CreateRegistrationSession(session)
-	if err != nil {
-		return time.Time{}, err
-	}
-
-	sessions = append(sessions, newSession)
-
-	if len(sessions) >= 2 {
-		return time.Now().Add(time.Hour), nil
-	}
-
-	return time.Now().Add(time.Minute), nil
+	return c.CreateClient(models.Client{
+		Phone:          phone,
+		Name:           name,
+		HashedPassword: string(hashedPassword),
+	})
 }
 
-func (c *clientService) HandleRegistrationValidation(phone string, validationNumber int) (models.Client, error) {
-	sessions, err := c.ClientRepo.GetAllRegistrationSessionsInTimeRange(phone, time.Now().Add(-time.Hour), time.Now())
+func (c *clientService) AuthenticateClient(phone string, password string) (models.Client, error) {
+	client, err := c.ClientRepo.GetClientByPhoneNumber(phone)
 	if err != nil {
 		return models.Client{}, err
 	}
 
-	if len(sessions) == 0 {
-		return models.Client{}, clienterrors.ErrInvalidValidationNumber
+	fmt.Println("passwrd: ", password)
+	fmt.Println("phone: ", phone)
+
+	if err := bcrypt.CompareHashAndPassword([]byte(client.HashedPassword), []byte(password)); err != nil {
+		return models.Client{}, clienterrors.ErrClientInvalidPassword
 	}
 
-	isValid := false
-	validSession := models.RegistrationSession{}
-
-	for _, session := range sessions {
-		if session.ValidationNumber == validationNumber {
-			isValid = true
-			validSession = session
-		}
-	}
-
-	if !isValid {
-		return models.Client{}, clienterrors.ErrInvalidValidationNumber
-	}
-
-	return c.CreateClient(models.Client{
-		Phone: validSession.Phone,
-		Name:  validSession.Name,
-	})
+	return client, nil
 }
 
 func (c *clientService) CreateClient(client models.Client) (models.Client, error) {
@@ -113,67 +82,6 @@ func (c *clientService) CreateClient(client models.Client) (models.Client, error
 
 	return c.ClientRepo.CreateClient(client)
 }
-
-func (c *clientService) GenerateLoginSession(phone string) (time.Time, error) {
-	sessions, err := c.ClientRepo.GetAllLoginSessionsInTimeRange(phone, time.Now().Add(-time.Hour), time.Now())
-	if err != nil {
-		return time.Time{}, err
-	}
-
-	if len(sessions) >= 2 {
-		lastCreatedSession := slices.MaxFunc(sessions, func(a, b models.LoginSession) int {
-			return a.CreatedAt.Compare(b.CreatedAt)
-		})
-
-		return lastCreatedSession.CreatedAt.Add(time.Hour), clienterrors.ErrTooManyLoginSessions
-	}
-
-	session := models.LoginSession{
-		Phone:            phone,
-		ValidationNumber: c.generateCode(),
-	}
-
-	newSession, err := c.ClientRepo.CreateLoginSession(session)
-	if err != nil {
-		return time.Time{}, err
-	}
-
-	sessions = append(sessions, newSession)
-
-	if len(sessions) >= 2 {
-		return time.Now().Add(time.Hour), nil
-	}
-
-	return time.Now().Add(time.Minute), nil
-}
-
-func (c *clientService) HandleAuthenticationValidation(phone string, validationNumber int) (models.Client, error) {
-	fmt.Println("handling auth validation")
-	sessions, err := c.ClientRepo.GetAllLoginSessionsInTimeRange(phone, time.Now().Add(-time.Hour), time.Now())
-	if err != nil {
-		return models.Client{}, err
-	}
-
-	fmt.Println("sessions: ", sessions)
-
-	if len(sessions) == 0 {
-		return models.Client{}, clienterrors.ErrInvalidValidationNumber
-	}
-
-	isValid := false
-	for _, session := range sessions {
-		if session.ValidationNumber == validationNumber {
-			isValid = true
-		}
-	}
-
-	if !isValid {
-		return models.Client{}, clienterrors.ErrInvalidValidationNumber
-	}
-
-	return c.ClientRepo.GetClientByPhoneNumber(phone)
-}
-
 func (c *clientService) generateCode() int {
 	// from 100_000 up to 999_999
 	num := 100_000 + rand.Intn(899_999)

@@ -38,6 +38,12 @@ type ordersForPubConnections struct {
 	Connections map[int]connectionsSet
 }
 
+type ordersForClientConnections struct {
+	mu sync.Mutex
+	//User id contains websocket connections
+	Connections map[int]connectionsSet
+}
+
 type OrderService interface {
 	GetOrdersForPub(pubID int) ([]models.Order, error)
 	GetOrdersForClient(clientID int) ([]models.Order, error)
@@ -45,16 +51,21 @@ type OrderService interface {
 	CreateOrder(models.Order) (models.Order, error)
 	CreateOrderForUnknownClient(models.Order) (models.Order, error)
 	UpdateOrderStatus(orderID int, status string) error
+
 	AddConnectionToOrdersForPubConnections(pubID int, conn *websocket.Conn) error
+	AddConnectionToOrdersForClientConnections(pubID int, conn *websocket.Conn) error
+
 	RemoveConnectionFromOrdersForPubConnections(pubID int, conn *websocket.Conn) error
+	RemoveConnectionFromOrdersForClientConnections(pubID int, conn *websocket.Conn) error
 }
 
 type orderService struct {
-	OrderRepo               orderrepo.OrderRepo
-	ClientRepo              clientrepo.ClientRepo
-	WebSocketPubConnections ordersForPubConnections
-	PubsRepo                pubsrepo.PubsRepo
-	RoleRepo                rolerepo.RoleRepo
+	OrderRepo                  orderrepo.OrderRepo
+	ClientRepo                 clientrepo.ClientRepo
+	WebSocketPubConnections    ordersForPubConnections
+	WebSocketClientConnections ordersForClientConnections
+	PubsRepo                   pubsrepo.PubsRepo
+	RoleRepo                   rolerepo.RoleRepo
 }
 
 var singleton OrderService = nil
@@ -67,6 +78,9 @@ func New() OrderService {
 			ClientRepo: clientrepo.New(),
 			RoleRepo:   rolerepo.New(),
 			WebSocketPubConnections: ordersForPubConnections{
+				Connections: map[int]connectionsSet{},
+			},
+			WebSocketClientConnections: ordersForClientConnections{
 				Connections: map[int]connectionsSet{},
 			},
 		}
@@ -97,13 +111,22 @@ func (s *orderService) CreateOrder(order models.Order) (models.Order, error) {
 		return models.Order{}, err
 	}
 
-	err = s.SendSingleOrderMessage(order.PubID, order, CREATE_EVENT_TYPE)
+	//sending for admin panel
+	err = s.SendSingleOrderMessageForPubConnections(order.PubID, order, CREATE_EVENT_TYPE)
+	if err != nil {
+		fmt.Println("sending notification error")
+		return models.Order{}, err
+	}
+
+	//sending for clients
+	err = s.SendSingleOrderMessageForClientConnections(order.ClientID, order, CREATE_EVENT_TYPE)
 	if err != nil {
 		fmt.Println("sending notification error")
 		return models.Order{}, err
 	}
 
 	tx.Commit()
+
 	return order, nil
 }
 
@@ -158,7 +181,15 @@ func (s *orderService) UpdateOrderStatus(orderID int, status string) error {
 		return err
 	}
 
-	err = s.SendSingleOrderMessage(order.PubID, order, UPDATE_EVENT_TYPE)
+	//sending for admin panel
+	err = s.SendSingleOrderMessageForPubConnections(order.PubID, order, UPDATE_EVENT_TYPE)
+	if err != nil {
+		fmt.Println("sending notification error")
+		return err
+	}
+
+	//sending for clients
+	err = s.SendSingleOrderMessageForClientConnections(order.ClientID, order, UPDATE_EVENT_TYPE)
 	if err != nil {
 		fmt.Println("sending notification error")
 		return err
@@ -168,9 +199,18 @@ func (s *orderService) UpdateOrderStatus(orderID int, status string) error {
 	return nil
 }
 
-func (s *orderService) SendSingleOrderMessage(pubID int, order models.Order, eventType EventType) error {
+func (s *orderService) SendSingleOrderMessageForPubConnections(pubID int, order models.Order, eventType EventType) error {
 	connections := s.WebSocketPubConnections.Connections[pubID]
-	fmt.Println("connections: ", s.WebSocketPubConnections.Connections)
+	return s.SendSingleOrderMessage(pubID, order, eventType, connections)
+}
+
+func (s *orderService) SendSingleOrderMessageForClientConnections(pubID int, order models.Order, eventType EventType) error {
+	connections := s.WebSocketClientConnections.Connections[pubID]
+	return s.SendSingleOrderMessage(pubID, order, eventType, connections)
+}
+
+func (s *orderService) SendSingleOrderMessage(pubID int, order models.Order, eventType EventType, connections connectionsSet) error {
+	fmt.Println("connections: ", connections)
 	fmt.Println("sending notifications for ", len(connections), " connections")
 	for conn := range connections {
 		outputOrder := WSOrderOutput{}
@@ -210,9 +250,29 @@ func (s *orderService) AddConnectionToOrdersForPubConnections(pubID int, conn *w
 	}
 
 	existingConnections.Add(conn)
-	fmt.Println("added new connection, allConnections: ", s.WebSocketPubConnections.Connections[pubID])
+	fmt.Println("added new pub connection, allConnections: ", s.WebSocketPubConnections.Connections[pubID])
 
 	s.WebSocketPubConnections.mu.Unlock()
+	return nil
+}
+
+func (s *orderService) AddConnectionToOrdersForClientConnections(clientID int, conn *websocket.Conn) error {
+	_, err := s.ClientRepo.GetClientByID(clientID)
+	if err != nil {
+		return err
+	}
+
+	s.WebSocketClientConnections.mu.Lock()
+	existingConnections, ok := s.WebSocketClientConnections.Connections[clientID]
+	if !ok {
+		existingConnections = connectionsSet{}
+		s.WebSocketClientConnections.Connections[clientID] = existingConnections
+	}
+
+	existingConnections.Add(conn)
+	fmt.Println("added new client connection, allConnections: ", s.WebSocketClientConnections.Connections[clientID])
+
+	s.WebSocketClientConnections.mu.Unlock()
 	return nil
 }
 
@@ -220,5 +280,12 @@ func (s *orderService) RemoveConnectionFromOrdersForPubConnections(pubID int, co
 	s.WebSocketPubConnections.mu.Lock()
 	s.WebSocketPubConnections.Connections[pubID].Remove(conn)
 	s.WebSocketPubConnections.mu.Unlock()
+	return nil
+}
+
+func (s *orderService) RemoveConnectionFromOrdersForClientConnections(clientID int, conn *websocket.Conn) error {
+	s.WebSocketClientConnections.mu.Lock()
+	s.WebSocketClientConnections.Connections[clientID].Remove(conn)
+	s.WebSocketClientConnections.mu.Unlock()
 	return nil
 }

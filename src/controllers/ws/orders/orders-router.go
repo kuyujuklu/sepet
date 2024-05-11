@@ -58,6 +58,7 @@ func (c *ordersController) AuthorizeByCookie(ctx *fiber.Ctx) error {
 
 func (c *ordersController) AuthorizedRouter(router fiber.Router) {
 	router.Use("/", func(ctx *fiber.Ctx) error {
+		fmt.Println("hi")
 		err := c.AuthorizeByCookie(ctx)
 		if err != nil {
 			fmt.Println("WS authorization error: ", err)
@@ -80,4 +81,5 @@ func (c *ordersController) AuthorizedRouter(router fiber.Router) {
 	})
 
 	router.Get("/company/:companyID/pub/:pubID", websocket.New(c.ConnectToOrdersForPub))
+	router.Get("/client", websocket.New(c.ConnectToOrdersForClient))
 }

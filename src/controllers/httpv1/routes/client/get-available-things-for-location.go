@@ -7,6 +7,7 @@ import (
 	h "github.com/alexkalak/qrmenu/src/controllers/httpv1/httphelpers"
 	"github.com/alexkalak/qrmenu/src/controllers/httpv1/input/entities"
 	"github.com/alexkalak/qrmenu/src/errors/clienterrors"
+	"github.com/alexkalak/qrmenu/src/errors/servererrors"
 	"github.com/alexkalak/qrmenu/src/models"
 	"github.com/gofiber/fiber/v2"
 )
@@ -39,11 +40,21 @@ func (c *clientController) GetAvailableForShippingPubs(ctx *fiber.Ctx) error {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
 
-	outputPubs := make([]entities.PubOutput, 0, len(pubs))
+	distances, err := c.GoogleMapsService.GetDistanceToPubs(ctx.Context(), lat, lng, pubs)
 
-	for _, pub := range pubs {
-		outputPub := entities.PubOutput{}
-		if err := outputPub.FillFromModel(pub); err != nil {
+	if len(distances) != len(pubs) {
+		return h.SendError(ctx, servererrors.ErrInternalServerError, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	outputPubs := make([]entities.PubWithDishesAndDistanceOutput, 0, len(pubs))
+
+	for i, pub := range pubs {
+		dishes, err := c.PubService.GetAllDishesForPub(int(pub.ID))
+		if err != nil {
+			return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+		}
+		outputPub := entities.PubWithDishesAndDistanceOutput{}
+		if err := outputPub.FillFromModel(pub, distances[i], dishes); err != nil {
 			return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 		}
 
@@ -86,6 +97,15 @@ func (c *clientController) GetAvailableForShippingPubCategories(ctx *fiber.Ctx) 
 	pubs, err := c.PubService.GetPubsWithShippingAvailableForPoint(models.Vertex{Lat: lat, Lng: lng})
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	if len(pubs) == 0 {
+		return h.SendSuccess(
+			ctx,
+			fiber.Map{
+				"categories": []models.Category{},
+			},
+			fiber.StatusOK)
 	}
 
 	categories, err := c.PubService.GetCategoriesWithPreloadedMenuForPubs(pubs)

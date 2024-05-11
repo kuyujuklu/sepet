@@ -123,13 +123,10 @@ var errors = map[error]int{
 	//clienterror
 	clienterrors.ErrClientNotFound:                       fiber.StatusNotFound,
 	clienterrors.ErrClientWithTheSameNumberAlreadyExists: fiber.StatusConflict,
-	clienterrors.ErrUnableToCreateSession:                fiber.StatusInternalServerError,
 	clienterrors.ErrUnableToGetClient:                    fiber.StatusInternalServerError,
 	clienterrors.ErrUnableToDeleteClient:                 fiber.StatusInternalServerError,
 	clienterrors.ErrUnableToUpdateClient:                 fiber.StatusInternalServerError,
-	clienterrors.ErrUnableToGetSession:                   fiber.StatusInternalServerError,
-	clienterrors.ErrTooManyLoginSessions:                 fiber.StatusTooManyRequests,
-	clienterrors.ErrInvalidValidationNumber:              fiber.StatusUnauthorized,
+	clienterrors.ErrClientInvalidPassword:                fiber.StatusForbidden,
 	clienterrors.ErrInvalidLatitude:                      fiber.StatusBadRequest,
 	clienterrors.ErrInvalidLongitude:                     fiber.StatusBadRequest,
 }
