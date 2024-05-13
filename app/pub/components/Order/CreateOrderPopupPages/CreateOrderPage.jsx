@@ -1,5 +1,5 @@
-import Textarea from "@/app/admin/components/Inputs/Textarea";
-import { currencies } from "@/app/admin/static-data/data";
+import Textarea from "@/app/shared-components/Inputs/Textarea";
+import { currencies } from "@/app/static-data/data";
 import { selectDishes } from "@/app/pub/store/basketSlice";
 import { selectData } from "@/app/pub/store/pubInfoSlice";
 import { Button } from "@mui/material";

@@ -5,7 +5,6 @@ import PubPage from "../components/PubPage/PubPage";
 
 async function PubWithMenusLayout({ children, params }) {
     let data = await getPubInfo(params?.pubID);
-
     if (!data) {
         return (
             <div>
@@ -13,6 +12,7 @@ async function PubWithMenusLayout({ children, params }) {
             </div>
         );
     }
+    
     return (
         <PubPage
             data={data}

@@ -1,4 +1,4 @@
-import { orderTypes } from "@/app/admin/static-data/data";
+import { orderTypes } from "@/app/static-data/data";
 import React from "react";
 import { useTranslation } from "react-i18next";
 

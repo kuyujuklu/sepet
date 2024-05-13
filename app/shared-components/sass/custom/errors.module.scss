@@ -1,0 +1,14 @@
+@import "../vendor/var.module.scss";
+
+.error {
+    color: $red;
+    font-size: .8rem;
+    max-height: 0px;
+    overflow: hidden;
+    transition: max-height .5s ease-in-out;
+
+    &.active {
+        max-height: 100px;
+        height:fit-content;
+    }
+}

@@ -149,10 +149,14 @@
         "categories": {
             "add_category_button": "Добавить категорию",
             "category_types": {
-                "burger": "Бургер",
-                "pizza": "Пицца",
-                "drinks": "Напиток",
-                "sushi": "Суши",
+                "asian": "Азиатская кухня",
+                "fast_food": "Фастфуд",
+                "breakfast": "Завтрак",
+                "grill": "Грилль",
+                "dessert": "Дессерты",
+                "pasta": "Паста",
+                "pancakes": "Блины",
+                "soup": "Супы",
                 "other": "Другое"
             }
         },

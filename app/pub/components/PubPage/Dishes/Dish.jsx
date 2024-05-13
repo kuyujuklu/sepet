@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import { ThemeContext } from "../PubPage";
-import { currencies } from "@/app/admin/static-data/data";
+import { currencies } from "@/app/static-data/data";
 import Image from "next/image";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -8,7 +8,7 @@ import {
     increaseDishAmount,
     selectDish,
 } from "@/app/pub/store/basketSlice";
-import BlackSpinner from "@/app/admin/components/loaders/BlackSpinner";
+import BlackSpinner from "@/app/shared-components/loaders/BlackSpinner";
 
 const Dish = ({ dish, currencyID }) => {
     const dispatch = useDispatch();

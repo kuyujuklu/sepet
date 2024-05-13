@@ -8,7 +8,7 @@ import { useCreateOrderMutation } from "../../api/rtk-query/orders";
 import { useCallback, useEffect, useState } from "react";
 import Popup from "@/app/shared-components/Popup/Popup";
 import SelectOrderTypePage from "./CreateOrderPopupPages/SelectOrderTypePage";
-import { orderPaymentTypes, orderTypes } from "@/app/admin/static-data/data";
+import { orderPaymentTypes, orderTypes } from "@/app/static-data/data";
 import { Button } from "@mui/material";
 import TableNumberInput from "./CreateOrderPopupPages/TableNumberInput";
 import AddressAndPhoneInputs from "./CreateOrderPopupPages/AddressAndPhoneInputs";

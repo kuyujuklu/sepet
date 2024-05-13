@@ -1,5 +1,5 @@
 "use client";
-import BlackSpinner from "@/app/admin/components/loaders/BlackSpinner";
+import BlackSpinner from "@/app/shared-components/loaders/BlackSpinner";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
