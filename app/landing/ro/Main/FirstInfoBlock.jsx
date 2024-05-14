@@ -15,23 +15,21 @@ const FirstInfoBlock = () => {
                         <div className="md:flex justify-evenly bg-white rounded-xl md:bg-transparent">
                             <div className="left  md:w-1/2 p-2 ">
                                 <span className="prehead p-4">
-                                    {/* Обработка заказов в админ панели */}
-                                    Принимай онлайн заказы
-                                    {/* <!-- Первый продукт в сфере услуг --> */}
+                                    Luați comenzi online
                                 </span>
                                 <h1 className="heading p-4 md:text-7xl text-5xl">
-                                    Terminal оптимизирует процессы 
+                                    Terminalul optimizează procesele 
                                 </h1>
                                 <p className="description p-4">
-                                    С функцией оповещений и обновления списка заказов в "реал тайм", работники никогда не пропустят новый заказ.
+                                    Cu alerte "în timp real" și actualizări ale listei de comenzi, lucrătorii nu vor rata niciodată o nouă comandă.
                                 </p>
                                 <p className="description p-4">
-                                    Все для упрощения процессов работы.
+                                    Totul pentru a simplifica procesele de lucru.
                                 </p>
                                     <ul className="p-4 m-2">
-                                        <li className="mb-6">Повара мгновенно оценивают доступность ингридиентов для приготовления заказа и сразу начинают ее готовить...</li>
-                                        <li className="mb-6">Курьеры видят когда готовка подойдет к концу и нужно приехать за заказом...</li>
-                                        <li className="mb-6">Администратор следит за качеством и скоростью приготовления и доставки заказов...</li>
+                                        <li className="mb-6">Bucătarii evaluează instantaneu disponibilitatea ingredientelor pentru a pregăti comanda și încep să o gătească imediat....</li>
+                                        <li className="mb-6">Curierii văd când se termină gătitul și trebuie să vină să ridice comanda....</li>
+                                        <li className="mb-6">Administratorul monitorizează calitatea și viteza de pregătire și de livrare a comenzilor....</li>
                                     </ul>
                                     
                                 <div className="actionBtn p-4 mt-2">
@@ -47,7 +45,7 @@ const FirstInfoBlock = () => {
                                 </div>
                             </div>
                             <div className="right md:w-1/2 p-2">
-                                <img alt="Обработка онлайн заказов в админ панели" className="m-auto border rounded-2xl shadow-2xl"
+                                <img alt="Procesarea comenzilor online în panoul de administrare" className="m-auto border rounded-2xl shadow-2xl"
                                     src="/images/png/order_admin.png" />
                             </div>
                         </div>
@@ -57,12 +55,12 @@ const FirstInfoBlock = () => {
                     <section className="max-w-6xl m-auto my-20 md:my-20 p-2 ">
                         <div className="">
                             <div className="text-center text-2xl slogan">
-                                Мы объединяем работников в админ панели
+                                Noi aducem lucrătorii împreună în panoul de administrare
                             </div>
                             <div className="text-center logoWide p-2 m-auto">
                                 <div className=" mind"></div>
                                 {/* <!-- <img alt=""className="p-4 h-20" src="/" /> --> */}
-                                Повара могут уделять больше времени деталям блюда. Курьеры тщательнее планировать доставку чтобы доставить все в срок и недорого.
+                                Bucătarii pot dedica mai mult timp detaliilor unui fel de mâncare. Curierii își planifică livrările cu mai multă atenție pentru a livra totul la timp și la costuri reduse.
                             </div>
                         </div>
 
@@ -74,12 +72,12 @@ const FirstInfoBlock = () => {
                         <div className=" md:flex justify-evenly bg-white rounded-xl">
                             <div className="1/2part md:w-1/2 p-2">
                                 <h1 className="heading p-4 md:text-6xl text-5xl">
-                                    Умная доставка
+                                    Livrare inteligentă
                                 </h1>
-                                <div className="description p-4">Настрой радиус доставки куда доставляют ваши курьеры.
+                                <div className="description p-4">Setați raza de livrare la care livrează curierii dumneavoastră.
                                 </div>
                                 <p className="description p-4">
-                                    Отмечай доступные методы оплаты и время доставки.
+                                    Rețineți metodele de plată și termenele de livrare disponibile.
 
                                 </p>
                                 <p className="description p-4"></p>
@@ -92,7 +90,7 @@ const FirstInfoBlock = () => {
                                 </div>
                             </div>
                             <div className="1/2part md:w-1/2 p-2" >
-                                <img alt="Настройка зоны и времени доставки ресторана" className="m-auto p-4 md:relative -z-1 -top-16 border rounded-2xl shadow-2xl"
+                                <img alt="Configurarea zonei și a orei de livrare a restaurantului" className="m-auto p-4 md:relative -z-1 -top-16 border rounded-2xl shadow-2xl"
                                     src="/images/png/shipping_admin.png"></img>
                                     {/* <Image
                                     className="rounded-2xl bg-red-600 w-100 h-100"
@@ -109,30 +107,30 @@ const FirstInfoBlock = () => {
                     <section className="max-w-6xl m-auto my-20 md:my-20 p-2 ">
                         <div className="md:flex justify-evenly bg-white rounded-xl md:bg-transparent">
                             <div className="right md:w-1/2 p-2 ">
-                                <img alt="Заполнение и настройка электронного меню" className="m-auto border rounded-2xl shadow-2xl"
+                                <img alt="Completarea și personalizarea meniului electronic" className="m-auto border rounded-2xl shadow-2xl"
                                     src="/images/png/menu_admin.png" />
                             </div>
                             <div className="left md:w-1/2 p-2 ">
                                 <span className="prehead p-4"></span>
                                 <h1 className="heading p-4 text-5xl">
-                                    Удобное меню
+                                    Meniu ușor de utilizat
                                 </h1>
                                 <p className="description p-4">
-                                    Удобное редактирование позиций и обновление фотографий блюд когда угодно
+                                    Editați cu ușurință articolele și actualizați fotografiile alimentelor oricând doriți
 
                                 </p>
                                 <p className="description p-4">
-                                    Кастомизация цветов и тем оформления меню
+                                    Personalizarea culorilor și a temelor din designul meniului
                                     </p>
 
                                 <p className="description p-4">
 
-                                    Меню доступно как в веб версии так и в приложении Android и Iphone
+                                    Meniul este disponibil atât în versiunea web, cât și în aplicația pentru Android și Iphone.
                                 </p>
                                 <div className="actionBtn p-4 mt-2">
                                     <button id="openLeaveMessage4"
                                         className=" openLeaveMessage mr-4 p-3 rounded-xl border-2 border-gray-800">
-                                        Скачать приложение (скоро)
+                                        Descărcați aplicația (în curând)
                                     </button>
                                 </div>
                             </div>
@@ -147,22 +145,22 @@ const FirstInfoBlock = () => {
                                     {/* <!-- Lets try for free --> */}
                                 </span>
                                 <h1 className="heading p-4 text-5xl">
-                                    Доступно везде
+                                    Disponibil peste tot
                                 </h1>
-                                <p className="description p-4">Доступ и управление с любого устройства</p>
-                                <p className="description p-4">Работает на нескольких языках</p>
+                                <p className="description p-4">Acces și control de pe orice dispozitiv</p>
+                                <p className="description p-4">Funcționează în mai multe limbi</p>
                                 <p className="description p-4">
-                                    Синхронизация данных между всеми устройствами
+                                    Sincronizarea datelor între toate dispozitivele
                                 </p>
                                 <div className="actionBtn p-4 mt-2">
                                     <button id="openLeaveMessage5"
                                         className="hidden  openLeaveMessage mr-4 p-3 rounded-xl border-2 border-gray-800">
-                                        Узнать больше
+                                        Citește mai mult
                                     </button>
                                 </div>
                             </div>
                             <div className="right md:w-1/2">
-                                <img alt="Доступ к админ панели с любого устройства" className="md:p-4 m-auto border rounded-2xl shadow-2xl"
+                                <img alt="Acces la panoul de administrare de pe orice dispozitiv" className="md:p-4 m-auto border rounded-2xl shadow-2xl"
                                     src="images/png/multilanguage_admin.png " />
                             </div>
 
@@ -174,17 +172,16 @@ const FirstInfoBlock = () => {
                         <div className=" md:flex justify-evenly bg-white rounded-xl">
                             <div className="1/2part md:w-1/2 p-2">
                                 <div className="relative -z-1 -top-36">
-                                    <img alt="Оптимизировано для управления с любого устройства" className="p-4 m-auto rounded-2xl border" src="/images/png/optimization_admin.png"></img>
+                                    <img alt="Optimizat pentru control de pe orice dispozitiv" className="p-4 m-auto rounded-2xl border" src="/images/png/optimization_admin.png"></img>
                                     <h1 className="heading p-4 md:text-7xl text-4xl">
-                                        {/* <!-- Три простых шага чтобы начать пользоваться преемуществом перед конкурентами --> */}
-                                        Просто и понятно
+                                        Simplu și clar
                                     </h1>
                                     <div className="description p-4">
-                                        Админка имеет все что необходимо для работы, без излишеств
+                                        Administratorul are tot ce ai nevoie pentru a lucra, fără complicații.
                                     </div>
-                                    <p className="description p-4">Оптимизировано под любые устройства
+                                    <p className="description p-4">Optimizat pentru toate dispozitivele
                                     </p>
-                                    <p className="description p-4">Бесплатная консультация по любым вопроса по телефону ниже
+                                    <p className="description p-4">Consultanță gratuită pentru orice întrebare la numărul de telefon de mai jos
                                     </p>
                                     <div className="actionBtn p-4 mt-2">
                                         <button id="openLeaveMessage6"
@@ -197,27 +194,28 @@ const FirstInfoBlock = () => {
 
                             <div className="1/2part md:w-1/2 md:px-10 md:pt-10">
                                 <h1 className="heading p-4 text-5xl">
-                                    Шаг 1
+                                    Pasul 1
                                 </h1>
-                                <div className="description p-4">Выбери локацию твоего ресторана</div>
+                                <div className="description p-4">Alegeți locația restaurantului dvs.</div>
                                 {/* <hr className="md:mb-20"> */}
                                 <h1 className="heading p-4 text-5xl">
-                                    Шаг 2
+                                    Pasul 2
                                 </h1>
-                                <div className="description p-4">Настрой время и зону доставки</div>
+                                <div className="description p-4">Stabiliți ora și zona de livrare</div>
                                 {/* <hr className="md:mb-20"> */}
                                 <h1 className="heading p-4 text-5xl">
-                                    Шаг 3
+                                    Pasul 3
                                 </h1>
-                                <div className="description p-4">Заполни меню вручную либо возпользуйся API если уже есть меню в элекронном варианте</div>
+                                <div className="description p-4">Completați meniul manual sau utilizați API dacă există deja un meniu electronic.</div>
                                 <h1 className="heading p-4 text-5xl">
-                                    Шаг 4
+                                    Pasul 4
                                 </h1>
-                                <div className="description p-4">Принимай заказы клиентов, из приложения или веб версии вашего меню.</div>
+                                <div className="description p-4">Acceptați comenzile clienților, din aplicația sau versiunea web a meniului dumneavoastră.</div>
                                 {/* <hr className="md:mb-20"> */}
                             </div>
                         </div>
                     </section>
+
 
                 </div>
                 </div>
