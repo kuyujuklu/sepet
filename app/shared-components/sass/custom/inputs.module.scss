@@ -1,0 +1,36 @@
+@import "../vendor/var.module.scss";
+
+.input {
+    min-height: 10px;
+    width: 100%;
+    max-width: 430px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    box-shadow: 1px 1px 2px 1px #ccc;
+    padding: 3px 20px;
+
+    @media (max-width: 768px) {
+        font-size: .7rem;
+    }
+}
+
+.select {
+    padding: 10px 10px;
+    background: $gray-light;
+    color: white;
+    border-radius: 10px;
+}
+
+.textarea {
+    width: 100%;
+    max-width: 430px;
+    min-height: 100px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    box-shadow: 1px 1px 2px 1px #ccc;
+    padding: 3px 20px;
+
+    @media (max-width: 768px) {
+        font-size: .7rem;
+    }
+}

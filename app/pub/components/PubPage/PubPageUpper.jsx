@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import { ThemeContext } from "./PubPage";
-import BlackSpinner from "@/app/admin/components/loaders/BlackSpinner";
+import BlackSpinner from "@/app/shared-components/loaders/BlackSpinner";
 
 const PubPageUpper = ({ pub }) => {
     const themeContext = useContext(ThemeContext);

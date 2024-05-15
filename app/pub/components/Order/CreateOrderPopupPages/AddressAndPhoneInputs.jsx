@@ -1,5 +1,5 @@
-import InputWithLabel from "@/app/admin/components/Inputs/InputWithLabel"
-import PhoneNumberInput from "@/app/admin/components/Inputs/PhoneNumberInput"
+import InputWithLabel from "@/app/shared-components/Inputs/InputWithLabel"
+import PhoneNumberInput from "@/app/shared-components/Inputs/PhoneNumberInput"
 import { validateFullAddress, validatePhone, validateTown } from "../validators"
 import { useTranslation } from "react-i18next"
 

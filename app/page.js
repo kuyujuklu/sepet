@@ -3,7 +3,7 @@ import CarouselSection from "./landing/Carousel/CarouselSection"
 import FirstInfoBlock from "./landing/Main/FirstInfoBlock"
 import SecondInfoBlock from "./landing/Main/SecondInfoBlock"
 
-import style from './admin/sass/components/company-inline-select/company-inline-select.module.scss'
+import style from './landing/sass/components/company-inline-select/company-inline-select.module.scss'
 import Link from "next/link"
 
 const page = () => {

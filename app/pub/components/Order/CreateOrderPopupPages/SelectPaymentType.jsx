@@ -1,4 +1,4 @@
-import { orderPaymentTypes } from "@/app/admin/static-data/data";
+import { orderPaymentTypes } from "@/app/static-data/data";
 import React from "react";
 import { useTranslation } from "react-i18next";
 

@@ -1,4 +1,4 @@
-import Input from "@/app/admin/components/Inputs/Input";
+import Input from "@/app/shared-components/Inputs/Input";
 import React from "react";
 import { validateTableNumber } from "../validators";
 import { useTranslation } from "react-i18next";

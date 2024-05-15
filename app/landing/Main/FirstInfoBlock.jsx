@@ -1,4 +1,3 @@
-import Image from "next/image";
 import style from "../sass/index.module.scss";
 const FirstInfoBlock = () => {
     return (

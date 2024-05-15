@@ -1,7 +1,7 @@
 const {
     orderTypes,
     orderPaymentTypes,
-} = require("@/app/admin/static-data/data");
+} = require("@/app/static-data/data");
 
 export const validateOrderType = (orderType) => {
     if (orderType !== orderTypes.inPlace && orderType !== orderTypes.delivery)

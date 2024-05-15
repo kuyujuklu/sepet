@@ -2,7 +2,7 @@ import { ConvertQrMenuApiTimeToLocal } from "@/app/utils/time";
 import React, { useContext } from "react";
 import { useTranslation } from "react-i18next";
 import { ThemeContext } from "../PubPage/PubPage";
-import { currencies, orderTypes } from "@/app/admin/static-data/data";
+import { currencies, orderTypes } from "@/app/static-data/data";
 
 const LastOrder = ({ order, currencyID }) => {
     const { t, i18n } = useTranslation();

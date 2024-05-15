@@ -1,6 +1,4 @@
-"use client"
-
-import { closePopupAreaClickHandler } from "@/app/utils/popupCloseAreaClickHandler";
+import { closePopupAreaClickHandler } from "@/utils/popupCloseAreaClickHandler";
 import style from "./popup.module.scss";
 
 const Popup = ({ opened, closeCallback, children }) => {
