@@ -9,6 +9,9 @@ import BasketCreateOrderButton from "../../widgets/Basket/BasketCreateOrderButto
 import Wrapper from "../Wrapper";
 import { Text, View } from "native-base";
 import { useTranslation } from "react-i18next";
+import { memo } from "react";
+import AnimatedNumber from "react-native-animated-numbers";
+import { AnonymousProBold } from "../../constants/styles-constants";
 
 const BasketPage = () => {
   const { t } = useTranslation();
@@ -17,17 +20,33 @@ const BasketPage = () => {
 
   const basket = useSelector(selectBasket);
 
+  const itemsPrice = Object.keys(basket).reduce((acc, key) => {
+    const dish = basket[key];
+    return acc + dish.count * dish.price;
+  }, 0);
+
   return (
     <Wrapper>
-      <Text
-        fontSize={25}
-        textTransform={"uppercase"}
-        fontWeight={"bold"}
-        textAlign={"center"}
+      <View
         mb={10}
+        mt={10}
+        flexDir="row"
+        justifyContent="center"
+        alignItems="center"
       >
-        {t("basket_page.headline")}
-      </Text>
+        <Text
+          textAlign="center"
+          fontSize={25}
+          textTransform="uppercase"
+          fontWeight="bold"
+        >
+          {t("basket_page.headline")} (
+        </Text>
+        {itemsPrice ? <Number number={itemsPrice} /> : <></>}
+        <Text textAlign="center" fontSize={25} fontWeight="bold">
+          {itemsPrice ? " Lei" : t("basket_page.empty")})
+        </Text>
+      </View>
 
       <View flex={1}>
         <DishList
@@ -39,10 +58,26 @@ const BasketPage = () => {
       </View>
 
       <View position="absolute" w="full" px="2" bottom="2" borderRadius={15}>
-        <BasketCreateOrderButton />
+        <BasketCreateOrderButton itemsPrice={itemsPrice} />
       </View>
     </Wrapper>
   );
 };
+
+const Number = memo(function Number({ number }) {
+  return (
+    <AnimatedNumber
+      includeComma
+      animateToNumber={number}
+      animationDuration={500}
+      fontStyle={{
+        fontSize: 25,
+        fontFamily: AnonymousProBold,
+        fontWeight: "bold",
+        textAlign: "center",
+      }}
+    />
+  );
+});
 
 export default BasketPage;

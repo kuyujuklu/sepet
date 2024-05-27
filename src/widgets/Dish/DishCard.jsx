@@ -1,7 +1,8 @@
-import { Image, Text, View } from "native-base";
+import { Text, View } from "native-base";
 import { AnonymousProBold } from "../../constants/styles-constants";
 import { TouchableOpacity } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
+import { Image } from "expo-image";
 import {
   decreaseDish,
   increaseDish,
@@ -22,10 +23,9 @@ const DishCard = ({ dish, pubID, pub }) => {
 
   const dishInBasket = useSelector(selectDishFromBasket(dish?.id));
 
-
-  const currency = currencies.find(
-    (currency) => currency.id === pub?.currency_id
-)?.symbol ?? "Lei"
+  const currency =
+    currencies.find((currency) => currency.id === pub?.currency_id)?.symbol ??
+    "Lei";
 
   const smallestPrice =
     dish?.sale_price && dish?.sale_price < dish?.price

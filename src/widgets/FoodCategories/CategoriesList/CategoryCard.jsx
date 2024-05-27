@@ -26,7 +26,7 @@ const CategoryCard = ({ category }) => {
         {category.image_file_name && (
           <Image
             alt=""
-            resizeMode="contain"
+            contentFit="contain"
             style={{ width: "100%", aspectRatio: 1 / 8 }}
             source={{ uri: imagePath }}
           />

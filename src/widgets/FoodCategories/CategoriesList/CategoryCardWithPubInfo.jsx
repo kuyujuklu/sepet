@@ -1,5 +1,5 @@
 import { Text, View } from "native-base";
-import { Image } from "react-native";
+import { Image } from "expo-image";
 import { ENV } from "../../../constants/env/env";
 import { images } from "../../../app/images/images";
 

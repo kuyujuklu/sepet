@@ -118,6 +118,7 @@ const configureSocket = async () => {
 setInterval(() => {
   if (socketsAccessToken !== accesstoken) {
     configureSocket();
+    return;
   }
 
   if (socket === null) {

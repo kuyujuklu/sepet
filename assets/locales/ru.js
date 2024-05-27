@@ -1,3 +1,5 @@
+import { categories } from "../../src/app/static-data/data";
+
 export default {
   errors: {
     something_went_wrong: "Что-то пошло не так",
@@ -100,6 +102,7 @@ export default {
   },
   basket_page: {
     headline: "Корзина",
+    empty: "Пустая",
     create_order_button: "Создать заказ",
   },
   create_order_page: {
@@ -154,5 +157,16 @@ export default {
   },
   near_categories_page: {
     headline: "Рестораны",
+  },
+  categories: {
+    asian: "азиатск.",
+    fast_food: "фаст-фуд",
+    breakfast: "завтраки",
+    grill: "грилль",
+    dessert: "дессерты",
+    pasta: "паста",
+    pancakes: "блины",
+    soup: "супы",
+    all: "все",
   },
 };

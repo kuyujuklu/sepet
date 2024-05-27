@@ -34,9 +34,9 @@ const CreateOrder = ({
   const { t } = useTranslation();
   const navigator = useNavigation();
   const dispatch = useDispatch();
-  const [town, setTown] = useState("THIS IS TOWN");
-  const [fullAddress, setFullAddress] = useState(" THIS IS FULL ADDRESS");
-  const [phoneNumber, setPhoneNumber] = useState("67507188");
+  const [town, setTown] = useState();
+  const [fullAddress, setFullAddress] = useState();
+  const [phoneNumber, setPhoneNumber] = useState();
   const [secondPhoneNumber, setSecondPhoneNumber] = useState("");
   const [comments, setComments] = useState("");
   const [paymentType, setPaymentType] = useState("cash");
@@ -185,13 +185,13 @@ const CreateOrder = ({
                 setValue={setPaymentType}
                 values={[
                   {
-                    value: orderPaymentTypes.cardOffline,
+                    value: orderPaymentTypes.cash,
                     text: t(
                       "create_order_page.additional_data.inputs.payment_type.values.cash",
                     ),
                   },
                   {
-                    value: orderPaymentTypes.cash,
+                    value: orderPaymentTypes.cardOffline,
                     text: t(
                       "create_order_page.additional_data.inputs.payment_type.values.card_offline",
                     ),

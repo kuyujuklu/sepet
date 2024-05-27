@@ -87,6 +87,7 @@ export default {
   },
   basket_page: {
     headline: "Coșul de cumpărături",
+    empty: "gol",
     create_order_button: "Creați comanda",
   },
   create_order_page: {
@@ -127,4 +128,15 @@ export default {
     },
   },
   near_categories_page: { headline: "Restaurante" },
+  categories: {
+    asian: "asiatice",
+    fast_food: "fast-food",
+    breakfast: "mic dejun",
+    grill: "grătar",
+    dessert: "deserturi",
+    pasta: "paste",
+    pancakes: "clătite",
+    soup: "supe",
+    all: "toate",
+  },
 };

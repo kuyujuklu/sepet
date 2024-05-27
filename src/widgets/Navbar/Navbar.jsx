@@ -88,14 +88,9 @@ const Navbar = ({ routeName }) => {
           to={"Orders"}
           isSelected={routeName === "Orders"}
         />
-        <NavbarLink
-          imageSource={images.Locaiton}
-          to={"SelectGeolocationPage"}
-          isSelected={routeName === "SelectGeolocationPage"}
-        />
         <NavbarExpandMoreButton setExpanded={setExpanded} expanded={expanded} />
       </View>
-      <NavbarExpandMore expanded={expanded} />
+      <NavbarExpandMore setExpanded={setExpanded} expanded={expanded} />
     </View>
   );
 };

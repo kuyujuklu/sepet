@@ -110,6 +110,7 @@ const PubList = ({ selectedPub, selectPub }) => {
         ref={flatListRef}
         renderItem={({ item, index }) => (
           <Pressable
+            // id={index}
             onPress={() => {
               handlePubPress(item?.id);
             }}

@@ -1,7 +1,7 @@
 import { Text, View } from "native-base";
 import { Marker } from "react-native-maps";
 
-const PubMarker = ({isSelected, lat, lng, name, id, onPress }) => {
+const PubMarker = ({ isSelected, lat, lng, name, id, onPress }) => {
   return (
     <Marker
       onPress={onPress}
@@ -10,7 +10,7 @@ const PubMarker = ({isSelected, lat, lng, name, id, onPress }) => {
         longitude: lng,
       }}
       zIndex={isSelected ? 100 : 0}
-      title={"You are here"}
+      tracksViewChanges={false}
     >
       <View style={{ minHeight: 6 }}>
         <View

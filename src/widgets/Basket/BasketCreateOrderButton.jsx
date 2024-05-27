@@ -8,7 +8,7 @@ import {
 import { useGetPubInfoQuery } from "../../shared/api/pubs/pubsApi";
 import { useTranslation } from "react-i18next";
 
-const BasketCreateOrderButton = () => {
+const BasketCreateOrderButton = ({itemsPrice}) => {
   const { t } = useTranslation();
   const basket = useSelector(selectBasket);
   const pubID = useSelector(selectBasketPubID);
@@ -16,18 +16,13 @@ const BasketCreateOrderButton = () => {
 
   const basketIsEmpty = !basket || Object.keys(basket).length === 0;
 
-  const itemsPrice = Object.keys(basket).reduce((acc, key) => {
-    const dish = basket[key];
-    return acc + dish.count * dish.price;
-  }, 0);
-
   const {
     data: pubData,
     error: gettingPubError,
     isLoading,
-  } = useGetPubInfoQuery({ pubID: pubID }, { skip: !pubID });
+  } = useGetPubInfoQuery({ pubID }, { skip: !pubID });
 
-  const deliveryPrice = 5;
+  const deliveryPrice = pubData?.pub?.shipping?.shipping_price || 0;
   const smallOrderFee = 3;
 
   return (
@@ -42,7 +37,7 @@ const BasketCreateOrderButton = () => {
           itemsPrice,
           deliveryPrice,
           smallOrderFee,
-          pubID: pubID,
+          pubID,
           shippingTimeFrom: pubData?.pub?.shipping?.shipping_time_from,
           shippingTimeTo: pubData?.pub?.shipping?.shipping_time_to,
         });

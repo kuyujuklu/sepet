@@ -1,9 +1,10 @@
-import { Animated, Image } from "react-native";
+import { Animated } from "react-native";
 import Stars from "./Stars";
 import { Text, View } from "native-base";
-import { useEffect, useRef, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { ENV } from "../../constants/env/env";
 import { images } from "../../app/images/images";
+import { Image } from "expo-image";
 
 const Pub = ({ pub, isViewable, distance }) => {
   const bgPath =
@@ -51,8 +52,8 @@ const Pub = ({ pub, isViewable, distance }) => {
           </View>
         )}
         <Image
-          resizeMode="contain"
-          style={{ width: "120%", aspectRatio: 1 / 8 }}
+          contentFit="contain"
+          style={{ width: 340, aspectRatio: 1 / 8 }}
           source={{ uri: bgPath }}
           alt=""
         />
@@ -94,4 +95,4 @@ const Pub = ({ pub, isViewable, distance }) => {
   );
 };
 
-export default Pub;
+export default memo(Pub);

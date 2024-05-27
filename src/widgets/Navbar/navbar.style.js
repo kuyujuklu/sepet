@@ -27,7 +27,6 @@ export const styles = {
     color: expanded ? "#000" : "#fff",
     position: "absolute",
     top: "-100%",
-    maxHeight: 150,
     right: 0,
     borderTopRightRadius: 20,
     borderTopLeftRadius: 20,
