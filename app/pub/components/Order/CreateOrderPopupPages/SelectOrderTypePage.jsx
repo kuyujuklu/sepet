@@ -2,7 +2,7 @@ import { orderTypes } from "@/app/static-data/data";
 import React from "react";
 import { useTranslation } from "react-i18next";
 
-const SelectOrderTypePage = ({ orderType, setOrderType }) => {
+const SelectOrderTypePage = ({ orderType, setOrderType, hasDelivery, hasInPlaceOrder }) => {
     const { t } = useTranslation();
     return (
         <div className="flex flex-col gap-y-3">
@@ -11,8 +11,11 @@ const SelectOrderTypePage = ({ orderType, setOrderType }) => {
             </span>
             <div className="flex gap-x-5">
                 <button
+                    disabled={!hasInPlaceOrder}
                     onClick={() => setOrderType(orderTypes.inPlace)}
                     className={`${
+                        !hasInPlaceOrder ?
+                            "bg-gray-400 border-none text-gray-300":
                         orderType === orderTypes.inPlace
                             ? "bg-gray-900 border-none text-white"
                             : "bg-none border-gray-900 text-gray-900"
@@ -21,8 +24,11 @@ const SelectOrderTypePage = ({ orderType, setOrderType }) => {
                     {t("client.popups.create_order.in_place_order")}
                 </button>
                 <button
+                    disabled={!hasDelivery}
                     onClick={() => setOrderType(orderTypes.delivery)}
                     className={`${
+                        !hasDelivery ?
+                        "bg-gray-400 border-none text-gray-300":
                         orderType === orderTypes.delivery
                             ? "bg-gray-900 border-none text-white"
                             : "bg-none border-gray-900 text-gray-900"

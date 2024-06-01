@@ -11,7 +11,7 @@ const LastOrder = ({ order, currencyID }) => {
     
     const currency = currencies.find(
       (currency) => currency.id === currencyID
-  )?.symbol ?? "Lei"
+    )?.symbol ?? "Lei"
 
 
     return (
@@ -24,7 +24,7 @@ const LastOrder = ({ order, currencyID }) => {
             className="flex justify-between rounded-xl border-white gap-x-5 text-xs sm:text-base"
         >
             <div>
-                <div>{t("client.basket.last_order.headline")}</div>
+                <div>{t("client.basket.last_order.headline")} {" "}№{order?.id}</div>
                 <div>
                     {order.order_type === orderTypes.inPlace
                         ? t("client.basket.last_order.in_place_order")

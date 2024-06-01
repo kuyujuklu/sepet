@@ -10,6 +10,7 @@ import { openCreateOrderPopup } from "../../store/orderSlice";
 import { useTranslation } from "react-i18next";
 import SwitchLang from "./SwitchLang";
 import { selectDishes } from "../../store/basketSlice";
+import { selectData } from "../../store/pubInfoSlice";
 
 const DownPanel = ({ reference, pubID }) => {
     const themeContext = useContext(ThemeContext);
@@ -19,6 +20,9 @@ const DownPanel = ({ reference, pubID }) => {
     const count = Object.keys(selectedDishes)
         .reduce((acc, id) => (acc += selectedDishes[id].count ?? 0), 0);
 
+    const pub = useSelector(selectData)?.pub
+
+    const hasOrder = pub?.shipping?.available || pub?.has_in_place_order; 
     return (
         <div
             className={downPanelStyle.wrapper}
@@ -38,7 +42,7 @@ const DownPanel = ({ reference, pubID }) => {
                             <div className="w-full px-5 left-0 right-0 mx-auto bottom-0 flex items-center justify-center">
                                 <Button
                                     variant="contained"
-                                    disabled={!count}
+                                    disabled={!count || !hasOrder}
                                     sx={{
                                         color: "white",
                                         bgcolor: "rgb(31 41 55)",

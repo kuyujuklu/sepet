@@ -15,7 +15,7 @@ import AddressAndPhoneInputs from "./CreateOrderPopupPages/AddressAndPhoneInputs
 import SelectPaymentType from "./CreateOrderPopupPages/SelectPaymentType";
 import CreateOrderPage from "./CreateOrderPopupPages/CreateOrderPage";
 import { selectData } from "../../store/pubInfoSlice";
-import { validateOrderByPage } from "./validators";
+import { validateOrder, validateOrderByPage } from "./validators";
 import {
     clearBasket,
     selectDishes,
@@ -30,13 +30,28 @@ const CreateOrderPopup = () => {
     const pub = useSelector(selectData)?.pub;
     const pubDishes = useSelector(selectData)?.dishes;
 
-    const [
-        createOrder,
-        { data: createOrderResp, isLoading, error: createOrderError },
-    ] = useCreateOrderMutation();
+    const [createOrder, { data: createOrderResp }] = useCreateOrderMutation();
 
     const [page, setPage] = useState(1);
-    const [orderType, setOrderType] = useState(orderTypes.inPlace);
+    const [orderType, setOrderType] = useState(
+        pub?.has_in_place_order
+            ? orderTypes.inPlace
+            : pub?.shipping?.available
+            ? orderTypes.delivery
+            : null
+    );
+    useEffect(() => {
+        if (orderType) return;
+        if (!pub) return;
+        setOrderType(
+            pub?.has_in_place_order
+                ? orderTypes.inPlace
+                : pub?.shipping?.available
+                ? orderTypes.delivery
+                : null
+        );
+    }, [orderType, pub]);
+
     const [comments, setComments] = useState("");
     const [town, setTown] = useState("");
     const [fullAddress, setFullAddress] = useState("");
@@ -63,68 +78,38 @@ const CreateOrderPopup = () => {
             }
         });
 
-        const amount = createOrderResp.order.dishes.reduce(
+        let amount = createOrderResp.order.dishes.reduce(
             (acc, dish) => (acc += dishPrices[dish.dish_id] * dish.count),
             0
         );
+
+        if (
+            createOrderResp.order.order_type === orderTypes.delivery &&
+            +pub?.shipping?.shipping_price
+        )
+            amount += pub?.shipping?.shipping_price;
 
         const lastOrder = {
             id: createOrderResp.order.id,
             pub_id: createOrderResp.order.pub_id,
             order_type: createOrderResp.order.order_type,
             created_time: createOrderResp.order.created_time,
-            amount: amount
+            amount: amount,
         };
-        dispatch(setLastOrder({order: lastOrder}))
+
+        dispatch(setLastOrder({ order: lastOrder }));
         dispatch(clearBasket());
         closePopup();
     }, [closePopup, createOrderResp, dispatch, pubDishes]);
 
-    const maxPage = orderType === orderTypes.inPlace ? 3 : 4;
-    const minPage = 1;
-
     const [isValidatedWithError, setIsValidatedWithError] = useState(false);
 
-    const canGoToNextPage = useCallback(() => {
-        const order = {
-            town: town,
-            comments: comments,
-            fullAddress: fullAddress,
-            tableNumber: tableNumber,
-            mainPhoneNumber: phone,
-            paymentType: paymentType,
-            orderType: orderType,
-        };
-        let error = validateOrderByPage(order, page);
-        if (error) setIsValidatedWithError(true);
-        return !error;
-    }, [
-        town,
-        comments,
-        fullAddress,
-        tableNumber,
-        phone,
-        paymentType,
-        orderType,
-        page,
-    ]);
-
-    const goToNextPage = () => {
-        if (!canGoToNextPage()) return;
-        if (page >= maxPage) return;
-        const newPage = page + 1;
-
-        setPage(newPage);
-    };
-    const goToPrevPage = () => {
-        if (page <= minPage) return;
-        setPage((prev) => prev - 1);
-    };
 
     const handleCreateOrderButton = useCallback(() => {
         if (!pub?.real_id) {
             return;
         }
+
 
         const dishIDs = Object.keys(basket);
         if (!dishIDs) return;
@@ -144,6 +129,14 @@ const CreateOrderPopup = () => {
             dishes: dishesForRequest,
             orderType: orderType,
         };
+
+        const validationErrors = validateOrder(order)
+        if(validationErrors && validationErrors.length > 0)
+        {
+            setIsValidatedWithError(true)
+            return;
+        }
+
         console.log("createOdrer", order);
         createOrder({ order });
     }, [
@@ -168,141 +161,43 @@ const CreateOrderPopup = () => {
                     </h1>
                 </header>
                 <main className="flex flex-col gap-6 mb-6">
-                    <div className="overflow-hidden relative">
-                        <div
-                            className="relative flex"
-                            style={{
-                                left: -(page - 1) * 100 + "%",
-                                transition: "all .3s ease",
-                            }}
-                        >
-                            {/* FIRST PAGE */}
-                            <div
-                                style={{ minWidth: "100%", maxWidth: "100%" }}
-                                className="flex items-center px-2"
-                            >
-                                <SelectOrderTypePage
-                                    orderType={orderType}
-                                    setOrderType={setOrderType}
-                                />
-                            </div>
-                            {/* SECOND PAGE */}
-                            <div
-                                style={{ minWidth: "100%", maxWidth: "100%" }}
-                                className="flex items-center px-2"
-                            >
-                                {orderType === orderTypes.inPlace && (
-                                    <div className="w-full">
-                                        <TableNumberInput
-                                            tableNumber={tableNumber}
-                                            setTableNumber={setTableNumber}
-                                        />
-                                    </div>
-                                )}
-                                {orderType === orderTypes.delivery && (
-                                    <div className="w-full">
-                                        <AddressAndPhoneInputs
-                                            fullAddress={fullAddress}
-                                            setFullAddress={setFullAddress}
-                                            town={town}
-                                            setTown={setTown}
-                                            phone={phone}
-                                            setPhone={setPhone}
-                                            isValidatedOutside={
-                                                isValidatedWithError
-                                            }
-                                        />
-                                    </div>
-                                )}
-                            </div>
-                            {/* THIRD PAGE */}
-                            <div
-                                style={{ minWidth: "100%", maxWidth: "100%" }}
-                                className="flex items-center px-2"
-                            >
-                                {orderType === orderTypes.inPlace && (
-                                    <CreateOrderPage
-                                        comments={comments}
-                                        setComments={setComments}
-                                        createOrder={handleCreateOrderButton}
-                                    />
-                                )}
-                                {orderType === orderTypes.delivery && (
-                                    <SelectPaymentType
-                                        paymentType={paymentType}
-                                        setPaymentType={setPaymentType}
-                                    />
-                                )}
-                            </div>
+                    <div className="overflow-hidden relative flex flex-col gap-10">
+                        <SelectOrderTypePage
+                            hasDelivery={pub?.shipping?.available}
+                            hasInPlaceOrder={pub?.has_in_place_order}
+                            orderType={orderType}
+                            setOrderType={setOrderType}
+                        />
+                        {orderType == orderTypes.inPlace && (
+                            <TableNumberInput
+                                tableNumber={tableNumber}
+                                setTableNumber={setTableNumber}
+                            />
+                        )}
 
-                            {/* FOURTH PAGE */}
-                            <div
-                                style={{ minWidth: "100%", maxWidth: "100%" }}
-                                className="flex items-center px-2"
-                            >
-                                {orderType === orderTypes.delivery && (
-                                    <CreateOrderPage
-                                        comments={comments}
-                                        setComments={setComments}
-                                        createOrder={handleCreateOrderButton}
-                                    />
-                                )}
-                            </div>
-                        </div>
+                        {orderType == orderTypes.delivery && (
+                            <AddressAndPhoneInputs
+                                fullAddress={fullAddress}
+                                setFullAddress={setFullAddress}
+                                town={town}
+                                setTown={setTown}
+                                phone={phone}
+                                setPhone={setPhone}
+                                isValidatedOutside={isValidatedWithError}
+                            />
+                        )}
+                        <CreateOrderPage
+                            deliveryPrice={
+                                orderType === orderTypes.delivery
+                                    ? pub?.shipping?.shipping_price
+                                    : 0
+                            }
+                            comments={comments}
+                            setComments={setComments}
+                            createOrder={handleCreateOrderButton}
+                        />
                     </div>
                 </main>
-                <footer className="flex gap-x-5">
-                    <Button
-                        variant="contained"
-                        sx={{
-                            color: "white",
-                            bgcolor:
-                                page <= minPage
-                                    ? "rgb(55 65 81)"
-                                    : "rgb(17 24 39)",
-                            fontSize: ".7rem",
-                            fontWeight: "medium",
-                            padding: ".4rem .5rem",
-                            borderRadius: "10px",
-                            width: "30%",
-                            ":hover": {
-                                bgcolor:
-                                    page <= minPage
-                                        ? "rgb(55 65 81)"
-                                        : "rgb(17 24 39)",
-                            },
-                        }}
-                        onClick={goToPrevPage}
-                    >
-                        {t("client.popups.create_order.back")}
-                    </Button>
-                    {page < maxPage && (
-                        <Button
-                            variant="contained"
-                            sx={{
-                                color: "white",
-                                bgcolor:
-                                    page >= maxPage
-                                        ? "rgb(55 65 81)"
-                                        : "rgb(17 24 39)",
-                                fontSize: ".7rem",
-                                fontWeight: "medium",
-                                padding: ".4rem .5rem",
-                                borderRadius: "10px",
-                                width: "30%",
-                                ":hover": {
-                                    bgcolor:
-                                        page >= maxPage
-                                            ? "rgb(55 65 81)"
-                                            : "rgb(17 24 39)",
-                                },
-                            }}
-                            onClick={goToNextPage}
-                        >
-                            {t("client.popups.create_order.next")}
-                        </Button>
-                    )}
-                </footer>
             </div>
         </Popup>
     );

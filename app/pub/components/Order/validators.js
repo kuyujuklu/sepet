@@ -70,7 +70,7 @@ export const validateOrderByPage = (order, pageNumber) => {
 export const validateOrder = (order) => {
     const errors = [];
 
-    if (!+order.pubID) return "errors.something_went_wrong";
+    if (!+order.pubID) return ["errors.something_went_wrong"];
 
     if (validateOrderType(order.orderType))
         errors.push(validateOrderType(order.orderType));
@@ -90,4 +90,6 @@ export const validateOrder = (order) => {
         if (validatePhone(order.mainPhoneNumber))
             errors.push(validatePhone(order.mainPhoneNumber));
     }
+
+    return errors
 };

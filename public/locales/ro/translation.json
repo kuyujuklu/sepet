@@ -57,7 +57,8 @@
                 "cash_for_courier": "Plată în numerar curierului",
                 "card_for_courier": "Plată cu cardul curierului",
                 "table_number": "Numărul mesei",
-                "final_price": "Prețul final",
+                "delivery_price": "Preț de livrare",
+                "final_price": "Prețul total",
                 "comments": "Comentarii",
                 "create_order_button": "Comandă"
 

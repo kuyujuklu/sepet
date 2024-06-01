@@ -31,9 +31,7 @@ const Header = () => {
     </div>
 </header> */}
 
-
-
-{/* <!-- <header id="burgerMenu" className="burgerMenu lg:hidden z-30 bg-[#ededed] m-auto mt-0 p-2 fixed top-0 left-0 w-full">
+            {/* <!-- <header id="burgerMenu" className="burgerMenu lg:hidden z-30 bg-[#ededed] m-auto mt-0 p-2 fixed top-0 left-0 w-full">
     <div className="logo-sign-toggle flex justify-between items-center">
         <a href="./index.html" className="mr-4 p-2 text-xl font-semibold">Sandex</a>
         <span>
@@ -46,33 +44,47 @@ const Header = () => {
 
 </header> --> */}
 
-{/* <!-- Navbar goes here --> */}
-<nav className="bg-white shadow-lg">
-    <div className="max-w-6xl mx-auto px-4">
-        <div className="flex justify-between">
-            <div className="flex space-x-7">
-                <div>
-                    {/* <!-- Website Logo --> */}
-                    <a href="#" className="flex items-center py-4 px-2">
-                        {/* <!-- <img alt=""src="logo.png" alt="Logo" className="h-8 w-8 mr-2"> --> */}
-                        <span className="font-semibold text-gray-500 text-lg">Sandex Terminal</span>
-                    </a>
+            {/* <!-- Navbar goes here --> */}
+            <nav className="bg-white shadow-lg">
+                <div className="max-w-6xl mx-auto px-4">
+                    <div className="flex justify-between">
+                        <div className="flex space-x-7">
+                            <div>
+                                {/* <!-- Website Logo --> */}
+                                <a
+                                    href="#"
+                                    className="flex items-center py-4 px-2"
+                                >
+                                    {/* <!-- <img alt=""src="logo.png" alt="Logo" className="h-8 w-8 mr-2"> --> */}
+                                    <span className="font-semibold text-gray-500 text-lg">
+                                        Sandex Terminal
+                                    </span>
+                                </a>
+                            </div>
+                            {/* <!-- Primary Navbar items --> */}
+                        </div>
+                        {/* <!-- Secondary Navbar items --> */}
+                        <div className=" flex items-center space-x-3">
+                            <a
+                                href="/admin/company"
+                                id="openSignUp-1"
+                                className=" py-2 px-2 font-medium text-gray-500 rounded-xl hover:bg-blue-500 hover:text-white
+                    transition duration-300 "
+                            >
+                                Log In
+                            </a>
+                            <a
+                                href="/admin/auth/registration"
+                                id="openSignUp-02"
+                                className="  py-2 px-2 font-medium text-white bg-blue-500 rounded-xl hover:bg-blue-400 transition
+                    duration-300"
+                            >
+                                Sign Up
+                            </a>
+                        </div>
+                    </div>
                 </div>
-                {/* <!-- Primary Navbar items --> */}
-            
-            </div>
-            {/* <!-- Secondary Navbar items --> */}
-            <div className=" flex items-center space-x-3">
-                <a href="https://qrmenu.sandex.md/admin/auth/authentication" id="openSignUp-1" className=" py-2 px-2 font-medium text-gray-500 rounded-xl hover:bg-blue-500 hover:text-white
-                    transition duration-300 ">Log
-                    In</a>
-                <a href="https://qrmenu.sandex.md/admin/auth/registration" id="openSignUp-02" className="  py-2 px-2 font-medium text-white bg-blue-500 rounded-xl hover:bg-blue-400 transition
-                    duration-300">Sign
-                    Up</a>
-            </div>
-        </div>
-    </div>
-</nav>
+            </nav>
         </div>
     );
 };

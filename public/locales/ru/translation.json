@@ -57,7 +57,8 @@
                 "cash_for_courier": "Наличными курьеру",
                 "card_for_courier": "Картой курьеру",
                 "table_number": "Номер столика",
-                "final_price" : "Цена заказа",
+                "delivery_price" : "Цена доставки",
+                "final_price" : "Общая цена",
                 "comments": "Комментарии",
 
                 "create_order_button": "Заказать"

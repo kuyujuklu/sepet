@@ -7,7 +7,12 @@ import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
-const CreateOrderPage = ({ comments, setComments, createOrder }) => {
+const CreateOrderPage = ({
+    comments,
+    setComments,
+    createOrder,
+    deliveryPrice,
+}) => {
     const { t } = useTranslation();
     const basket = useSelector(selectDishes);
 
@@ -35,51 +40,64 @@ const CreateOrderPage = ({ comments, setComments, createOrder }) => {
         });
 
         let amount = 0;
+
         for (let dishID of dishIDs) {
             if (prices[dishID]) amount += prices[dishID] * basket[dishID].count;
             else return "unable to count price please reload page";
         }
 
-        console.log("amount: ", amount);
+        if(+deliveryPrice)
+            amount+=deliveryPrice
 
         return amount;
-    }, [basket, dishes]);
+    }, [basket, deliveryPrice, dishes]);
 
     return (
         <div className="flex justify-center flex-col gap-y-5 w-full">
-            {" "}
-            <div>
-                {" "}
-                <span className="text-xl font-medium">
-                    {t("client.popups.create_order.final_price")}:
-                </span>{" "}
-                <span className="font-bold text-lg">
-                    {price} {currency}
-                </span>
+        <div>
+            <div
+                className="text-xs sm:text-base text-gray-500 font-medium px-2"
+                stlye={{ marginBottom: ".1rem" }}
+            >
+                {t("client.popups.create_order.comments")}
             </div>
+            <Textarea
+                style={{ fontSize: "1rem" }}
+                value={comments}
+                setValue={setComments}
+            />
+        </div>
             <div>
-                <div
-                    className="text-xs sm:text-base text-gray-500 font-medium px-2"
-                    stlye={{ marginBottom: ".1rem" }}
-                >
-                    {t("client.popups.create_order.comments")}
+                {deliveryPrice ? 
+                    <div>
+                        <span className="text-xl font-medium">
+                            {t("client.popups.create_order.delivery_price")}:
+                        </span>{" "}
+                        <span className="font-bold text-lg">
+                            {deliveryPrice} Lei
+                        </span>
+                    </div>
+                    : <></>
+                }
+                <div>
+                    <span className="text-xl font-medium">
+                        {t("client.popups.create_order.final_price")}:
+                    </span>{" "}
+                    <span className="font-bold text-lg">
+                        {price} {currency}
+                    </span>
                 </div>
-                <Textarea
-                    style={{ fontSize: "1rem" }}
-                    value={comments}
-                    setValue={setComments}
-                />
             </div>
             <Button
                 variant="contained"
                 sx={{
+                    width: "100%",
                     color: "white",
                     bgcolor: "rgb(17 24 39)",
                     fontSize: ".7rem",
                     fontWeight: "medium",
                     padding: ".7rem 1rem",
                     borderRadius: "10px",
-                    width: "50%",
                     ":hover": {
                         bgcolor: "rgb(17 24 39)",
                     },

@@ -1,6 +1,6 @@
 "use client"
 
-import { closePopupAreaClickHandler } from "@/app/admin/eventHandlers/popupCloseAreaClickHandler";
+import { closePopupAreaClickHandler } from "@/app/utils/popupCloseAreaClickHandler";
 import Image from "next/image";
 
 const CarouselImageFullscreen = ({
