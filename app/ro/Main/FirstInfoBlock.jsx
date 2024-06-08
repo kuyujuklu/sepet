@@ -1,5 +1,4 @@
-import Image from "next/image";
-import style from "../sass/index.module.scss";
+import style from "../../landing/sass/index.module.scss";
 const FirstInfoBlock = () => {
     return (
         <div className={`${style.wrap} text-center md:text-left`}>

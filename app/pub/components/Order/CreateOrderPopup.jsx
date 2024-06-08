@@ -5,17 +5,15 @@ import {
     selectCreateOrderPopupState,
 } from "../../store/orderSlice";
 import { useCreateOrderMutation } from "../../api/rtk-query/orders";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Popup from "@/app/shared-components/Popup/Popup";
 import SelectOrderTypePage from "./CreateOrderPopupPages/SelectOrderTypePage";
 import { orderPaymentTypes, orderTypes } from "@/app/static-data/data";
-import { Button } from "@mui/material";
 import TableNumberInput from "./CreateOrderPopupPages/TableNumberInput";
 import AddressAndPhoneInputs from "./CreateOrderPopupPages/AddressAndPhoneInputs";
-import SelectPaymentType from "./CreateOrderPopupPages/SelectPaymentType";
 import CreateOrderPage from "./CreateOrderPopupPages/CreateOrderPage";
 import { selectData } from "../../store/pubInfoSlice";
-import { validateOrder, validateOrderByPage } from "./validators";
+import { validateOrder } from "./validators";
 import {
     clearBasket,
     selectDishes,
@@ -33,20 +31,30 @@ const CreateOrderPopup = () => {
     const [createOrder, { data: createOrderResp }] = useCreateOrderMutation();
 
     const [page, setPage] = useState(1);
+    
+    const now = new Date()
+    const currentDayTimeInMinutes = now.getHours() * 60 + now.getMinutes() 
+    const isDeliveryAvailable = pub?.shipping?.available && (currentDayTimeInMinutes > pub?.shipping?.shipping_work_start && currentDayTimeInMinutes < pub?.shipping?.shipping_work_end)
+
     const [orderType, setOrderType] = useState(
         pub?.has_in_place_order
             ? orderTypes.inPlace
-            : pub?.shipping?.available
+            : isDeliveryAvailable
             ? orderTypes.delivery
             : null
     );
+
     useEffect(() => {
         if (orderType) return;
         if (!pub) return;
+        const now = new Date()
+        const currentDayTimeInMinutes = now.getHours() * 60 + now.getMinutes() 
+        const isDeliveryAvailable = pub?.shipping?.available && (currentDayTimeInMinutes > pub?.shipping?.shipping_work_start && currentDayTimeInMinutes < pub?.shipping?.shipping_work_end)
+
         setOrderType(
             pub?.has_in_place_order
                 ? orderTypes.inPlace
-                : pub?.shipping?.available
+                : (isDeliveryAvailable)
                 ? orderTypes.delivery
                 : null
         );
@@ -163,6 +171,10 @@ const CreateOrderPopup = () => {
                 <main className="flex flex-col gap-6 mb-6">
                     <div className="overflow-hidden relative flex flex-col gap-10">
                         <SelectOrderTypePage
+                            shippingWorkHours={{
+                                start: pub?.shipping?.shipping_work_start,
+                                end: pub?.shipping?.shipping_work_end,
+                            }}
                             hasDelivery={pub?.shipping?.available}
                             hasInPlaceOrder={pub?.has_in_place_order}
                             orderType={orderType}

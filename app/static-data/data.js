@@ -80,6 +80,7 @@ export const orderStatuses = {
     handled: "handled",
     preparing: "preparing",
     completed: "completed",
+    canceled: "canceled"
 };
 
 export const tariffs = {

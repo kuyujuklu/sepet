@@ -22,7 +22,10 @@ const DownPanel = ({ reference, pubID }) => {
 
     const pub = useSelector(selectData)?.pub
 
-    const hasOrder = pub?.shipping?.available || pub?.has_in_place_order; 
+    const now = new Date()
+    const currentDayTimeInMinutes = now.getHours() * 60 + now.getMinutes() 
+    const isDeliveryAvailable = pub?.shipping?.available && (currentDayTimeInMinutes > pub?.shipping?.shipping_work_start && currentDayTimeInMinutes < pub?.shipping?.shipping_work_end)
+    const hasOrder = isDeliveryAvailable || pub?.has_in_place_order; 
     return (
         <div
             className={downPanelStyle.wrapper}
