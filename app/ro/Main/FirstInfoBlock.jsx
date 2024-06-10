@@ -45,7 +45,7 @@ const FirstInfoBlock = () => {
                             </div>
                             <div className="right md:w-1/2 p-2">
                                 <img alt="Procesarea comenzilor online în panoul de administrare" className="m-auto border rounded-2xl shadow-2xl"
-                                    src="/images/png/order_admin.png" />
+                                    src="/images/png/admin_orders_ro.png" />
                             </div>
                         </div>
                     </section>
@@ -90,7 +90,7 @@ const FirstInfoBlock = () => {
                             </div>
                             <div className="1/2part md:w-1/2 p-2" >
                                 <img alt="Configurarea zonei și a orei de livrare a restaurantului" className="m-auto p-4 md:relative -z-1 -top-16 border rounded-2xl shadow-2xl"
-                                    src="/images/png/shipping_admin.png"></img>
+                                    src="/images/png/admin_delivery_setting_ro.png"></img>
                                     {/* <Image
                                     className="rounded-2xl bg-red-600 w-100 h-100"
                                     style={{ objectFit: "cover" }}
@@ -107,7 +107,7 @@ const FirstInfoBlock = () => {
                         <div className="md:flex justify-evenly bg-white rounded-xl md:bg-transparent">
                             <div className="right md:w-1/2 p-2 ">
                                 <img alt="Completarea și personalizarea meniului electronic" className="m-auto border rounded-2xl shadow-2xl"
-                                    src="/images/png/menu_admin.png" />
+                                    src="/images/png/admin_menu_edit_ro.png" />
                             </div>
                             <div className="left md:w-1/2 p-2 ">
                                 <span className="prehead p-4"></span>
@@ -160,7 +160,7 @@ const FirstInfoBlock = () => {
                             </div>
                             <div className="right md:w-1/2">
                                 <img alt="Acces la panoul de administrare de pe orice dispozitiv" className="md:p-4 m-auto border rounded-2xl shadow-2xl"
-                                    src="images/png/multilanguage_admin.png " />
+                                    src="images/png/admin_acount_ro.png " />
                             </div>
 
                         </div>
@@ -171,7 +171,7 @@ const FirstInfoBlock = () => {
                         <div className=" md:flex justify-evenly bg-white rounded-xl">
                             <div className="1/2part md:w-1/2 p-2">
                                 <div className="relative -z-1 -top-36">
-                                    <img alt="Optimizat pentru control de pe orice dispozitiv" className="p-4 m-auto rounded-2xl border" src="/images/png/optimization_admin.png"></img>
+                                    <img alt="Optimizat pentru control de pe orice dispozitiv" className="p-4 m-auto rounded-2xl border" src="/images/png/admin_menu_ro.png"></img>
                                     <h1 className="heading p-4 md:text-7xl text-4xl">
                                         Simplu și clar
                                     </h1>

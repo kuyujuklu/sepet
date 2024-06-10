@@ -7,48 +7,48 @@ import style from '../landing/sass/components/company-inline-select/company-inli
 import Link from "next/link"
 
 const page = () => {
-    return (
-      <div style={{maxWidth: 1280}} className="mx-auto pb-10">
-        <header className="block mb-16 sm:mb-20">
-          <Header />
-        </header>
-        <section>
-          <CarouselSection />
-        </section>
-        <section className="block mt-4 sm:mt-16">
-          <FirstInfoBlock />
-        </section>
-        <section className="block mt-4 sm:mt-16">
-          <SecondInfoBlock />
-        </section>
+  return (
+    <div style={{ maxWidth: 1280 }} className="mx-auto pb-10">
+      <header className="block mb-16 sm:mb-20">
+        <Header />
+      </header>
+      <section>
+        <CarouselSection />
+      </section>
+      <section className="block mt-4 sm:mt-16">
+        <FirstInfoBlock />
+      </section>
+      <section className="block mt-4 sm:mt-16">
+        <SecondInfoBlock />
+      </section>
 
-        <section className="block mt-4 sm:mt-16">
+      <section className="block mt-4 sm:mt-16">
         <div className="flex flex-col items-center w-fit m-auto">
-            <h1 className="text-center text-2xl text-gray-800 font-bold mb-4">Зарегистрируйся и получи любой тариф на месяц абсолютно бесплатно</h1>
-            <div className="text-center flex flex-col sm:flex-row items-center gap-x-6 gap-y-2">
-                <div className="flex gap-4 ">
-                    <Link href="/admin/auth/registration?tariff=basic"
-                        className={`${style.inlineSelectItem} border-2 border-gray-800 shadow-2xl`}
-                    >
-                      Basic
-                    </Link>
-                    <Link  href="/admin/auth/registration?tariff=pro"
-                        className={`${style.inlineSelectItem} border-2 border-gray-800 shadow-2xl`}
-                    >
-                      Pro
-                    </Link>
+          <h1 className="text-center text-2xl text-gray-800 font-bold mb-4">Înscrieți-vă și primiți orice tarif pentru o lună absolut gratuit</h1>
+          <div className="text-center flex flex-col sm:flex-row items-center gap-x-6 gap-y-2">
+            <div className="flex gap-4 ">
+              <Link href="/admin/auth/registration?tariff=basic"
+                className={`${style.inlineSelectItem} border-2 border-gray-800 shadow-2xl`}
+              >
+                Basic
+              </Link>
+              <Link href="/admin/auth/registration?tariff=pro"
+                className={`${style.inlineSelectItem} border-2 border-gray-800 shadow-2xl`}
+              >
+                Pro
+              </Link>
 
-                    <Link  href="/admin/auth/registration?tariff=business"
-                        className={`${style.inlineSelectItem} border-2 border-gray-800 shadow-2xl`}
-                    >
-                      Business
-                    </Link>
-                </div>
+              <Link href="/admin/auth/registration?tariff=business"
+                className={`${style.inlineSelectItem} border-2 border-gray-800 shadow-2xl`}
+              >
+                Business
+              </Link>
             </div>
+          </div>
         </div>
-        </section>
-      </div>
-    )
-  }
-  
-  export default page
+      </section>
+    </div>
+  )
+}
+
+export default page
