@@ -107,9 +107,9 @@ const DownPanel = ({ reference, pubID }) => {
                                 <BasketCount count={count} />
                             </div>
                         </Link>
-                        <div className="flex flex-col justify-center items-center">
+                        {/* <div className="flex flex-col justify-center items-center">
                             <SwitchLang />
-                        </div>
+                        </div> */}
                     </div>
                 </div>
             </div>

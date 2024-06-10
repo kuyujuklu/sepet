@@ -23,7 +23,7 @@ const CreateOrderPage = ({
         currencies.find((currency) => currency.id === pub?.currency_id)
             ?.symbol ?? "lei";
 
-    const price = useMemo(() => {
+    const productPrice = useMemo(() => {
         if (!dishes) return;
 
         const dishIDs = Object.keys(basket);
@@ -46,45 +46,58 @@ const CreateOrderPage = ({
             else return "unable to count price please reload page";
         }
 
-        if(+deliveryPrice)
-            amount+=deliveryPrice
+        if (+deliveryPrice) amount += deliveryPrice;
 
         return amount;
     }, [basket, deliveryPrice, dishes]);
 
+    const totalPrice = deliveryPrice + productPrice;
+
     return (
         <div className="flex justify-center flex-col gap-y-5 w-full">
-        <div>
-            <div
-                className="text-xs sm:text-base text-gray-500 font-medium px-2"
-                stlye={{ marginBottom: ".1rem" }}
-            >
-                {t("client.popups.create_order.comments")}
-            </div>
-            <Textarea
-                style={{ fontSize: "1rem" }}
-                value={comments}
-                setValue={setComments}
-            />
-        </div>
             <div>
-                {deliveryPrice ? 
-                    <div>
-                        <span className="text-xl font-medium">
-                            {t("client.popups.create_order.delivery_price")}:
-                        </span>{" "}
-                        <span className="font-bold text-lg">
-                            {deliveryPrice} Lei
-                        </span>
-                    </div>
-                    : <></>
-                }
+                <div
+                    className="text-xs sm:text-base text-gray-500 font-medium px-2"
+                    stlye={{ marginBottom: ".1rem" }}
+                >
+                    {t("client.popups.create_order.comments")}
+                </div>
+                <Textarea
+                    style={{ fontSize: "1rem" }}
+                    value={comments}
+                    setValue={setComments}
+                />
+            </div>
+            <div>
+                {deliveryPrice ? (
+                    <>
+                        <div>
+                            <span className="text-xl font-medium">
+                                {t("client.popups.create_order.delivery_price")}
+                                :
+                            </span>{" "}
+                            <span className="font-bold text-lg">
+                                {deliveryPrice} Lei
+                            </span>
+                        </div>
+                        <div>
+                            <span className="text-xl font-medium">
+                                {t("client.popups.create_order.product_price")}:
+                            </span>{" "}
+                            <span className="font-bold text-lg">
+                                {productPrice} Lei
+                            </span>
+                        </div>
+                    </>
+                ) : (
+                    <></>
+                )}
                 <div>
                     <span className="text-xl font-medium">
                         {t("client.popups.create_order.final_price")}:
                     </span>{" "}
                     <span className="font-bold text-lg">
-                        {price} {currency}
+                        {totalPrice} {currency}
                     </span>
                 </div>
             </div>

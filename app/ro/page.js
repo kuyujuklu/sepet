@@ -24,6 +24,7 @@ const page = () => {
 
       <section className="block mt-4 sm:mt-16">
         <div className="flex flex-col items-center w-fit m-auto">
+<<<<<<< HEAD
           <h1 className="text-center text-2xl text-gray-800 font-bold mb-4">Înscrieți-vă și primiți orice tarif pentru o lună absolut gratuit</h1>
           <div className="text-center flex flex-col sm:flex-row items-center gap-x-6 gap-y-2">
             <div className="flex gap-4 ">
@@ -37,6 +38,21 @@ const page = () => {
               >
                 Pro
               </Link>
+=======
+            <h1 className="text-center text-2xl text-gray-800 font-bold mb-4">Înregistrează-te și obține orice tarif pentru o lună absolut gratuit</h1>
+            <div className="text-center flex flex-col sm:flex-row items-center gap-x-6 gap-y-2">
+                <div className="flex gap-4 ">
+                    <Link href="/admin/auth/registration?tariff=basic"
+                        className={`${style.inlineSelectItem} border-2 border-gray-800 shadow-2xl`}
+                    >
+                      Basic
+                    </Link>
+                    <Link  href="/admin/auth/registration?tariff=pro"
+                        className={`${style.inlineSelectItem} border-2 border-gray-800 shadow-2xl`}
+                    >
+                      Pro
+                    </Link>
+>>>>>>> d02dc7a (before pull)
 
               <Link href="/admin/auth/registration?tariff=business"
                 className={`${style.inlineSelectItem} border-2 border-gray-800 shadow-2xl`}

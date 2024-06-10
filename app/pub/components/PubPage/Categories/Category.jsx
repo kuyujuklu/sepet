@@ -1,7 +1,7 @@
 "use client";
 import BlackSpinner from "@/app/shared-components/loaders/BlackSpinner";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import {  useEffect, useState } from "react";
 
 const Category = ({ category, pubID }) => {
     const [imageIsLoaded, setImageIsLoaded] = useState(false);

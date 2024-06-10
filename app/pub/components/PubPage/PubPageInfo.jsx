@@ -3,18 +3,39 @@
 import { useContext } from "react";
 import { PubColorContext, ThemeContext } from "./PubPage";
 import { useTranslation } from "react-i18next";
+import SwitchLang from "../DownPanel/SwitchLang";
 
 const PubPageInfo = ({ pub }) => {
     const themeContext = useContext(ThemeContext);
     const pubColorContext = useContext(PubColorContext);
     const {t} = useTranslation()
 
+    const shippingWorkHours= {start: pub?.shipping?.shipping_work_start, end: pub?.shipping?.shipping_work_start}
+
+    const startRoundedHours = parseInt(shippingWorkHours.start / 60);
+    const startRoundedMinutes = parseInt(shippingWorkHours.start % 60);
+    const endRoundedHours = parseInt(shippingWorkHours.end / 60);
+    const endRoundedMinutes = parseInt(shippingWorkHours.end % 60);
+    const shippingTimeString = `${
+        startRoundedHours > 9 ? startRoundedHours : "0" + startRoundedHours
+    }:${
+        startRoundedMinutes > 9
+            ? startRoundedMinutes
+            : "0" + startRoundedMinutes
+    } - 
+    ${endRoundedHours > 9 ? endRoundedHours : "0" + endRoundedHours}:${
+        endRoundedMinutes > 9 ? endRoundedMinutes : "0" + endRoundedMinutes
+    }`;
+
     return (
         <div style={{ color: pubColorContext }}>
-            <header>
+            <header className="flex justify-between">
                 <h1 className="text-3xl font-bold mb-4" style={{color: themeContext.textColor}}>{pub.name}</h1>
+                <div className="px-5">
+                    <SwitchLang />
+                </div>
             </header>
-            <div className="flex items-center gap-y-2 justify-between flex-wrap text-sm sm:text-base">
+            <div className="flex items-center gap-y justify-between flex-wrap text-sm sm:text-base">
                 {
                     pub.wifi_password &&
                     <div style={{ width: "100%", maxWidth: 300}} className="flex gap-2">
@@ -27,6 +48,13 @@ const PubPageInfo = ({ pub }) => {
                     <div style={{ width: "100%", maxWidth: 300}} className="flex items-center gap-2">
                         <span>{t("client.pub_info.address")}: </span>
                         <span>{pub.address}</span>
+                    </div>
+                }
+                {
+                    pub.shipping.shipping_work_start &&
+                    <div style={{ width: "100%" }} className="flex flex-wrap gap-x-2 mt-2">
+                        <span>{t("client.pub_info.work_hours")}: </span>
+                        <span>{shippingTimeString}</span>
                     </div>
                 }
                 {
