@@ -2,6 +2,10 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
     orders: null,
+    ordersPreloader: {
+      companyID: null,
+      pubID: null,
+    }
 };
 
 export const ordersSlice = createSlice({
@@ -41,12 +45,21 @@ export const ordersSlice = createSlice({
           return;
         }
         state.orders[orderFromStateIndex] = order
+      },
+      setOrdersPreloader(state, action) {
+        if(!action.payload.companyID || !action.payload.pubID) {
+          return;
+        }
+
+        state.ordersPreloader.companyID = action.payload.companyID
+        state.ordersPreloader.pubID = action.payload.pubID
       }
     }
 });
 
-export const { setOrders, addOrder,updateOrder } = ordersSlice.actions;
+export const { setOrders, addOrder,updateOrder, setOrdersPreloader } = ordersSlice.actions;
 
 export const selectOrders = state => state.orders.orders;
+export const selectOrdersPreloader = state => state.orders.ordersPreloader
 
 export default ordersSlice.reducer;

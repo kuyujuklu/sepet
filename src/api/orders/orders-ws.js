@@ -1,6 +1,8 @@
 import { appErrors } from "../../errors/errors";
-import { accesstoken } from "../auth/authBasedQuery";
+import { accesstoken, setaccesstoken } from "../auth/authBasedQuery";
+import { refreshToken } from "../auth/refreshToken";
 
+let socketsAccessToken = "";
 let socket = null
 let socketsPubID = null
 let socketsCompanyID = null;
@@ -18,6 +20,8 @@ export const GET_ALL_EVENT_TYPE = "GET_ALL"
 export const UPDATE_EVENT_TYPE = "UPDATE_EVENT"
 
 const handlePing = () => {
+  if(!socket) return;
+  
   if(socket.readyState === 1)
     socket.send("PONG")
   
@@ -74,9 +78,18 @@ const setConnection = (connectionState) => {
 }
 
 const configureSocket = (companyID, pubID) => {
-  if(!accesstoken) return;
+  if(!accesstoken) {
+    const resp = refreshToken();
+    console.log("REFRESHIIIIIIIIIIIIIIIIIIIIIIIING")
+    if(resp.ok) {
+      console.log("REFRESHED")
+      setaccesstoken(resp.accesstoken)
+    }
+  };
+
 
   console.log("SOCKET CONF: ENV: ", process.env.NODE_ENV)
+  console.log("SOCKET ACCCCCCCCCC", accesstoken)
 
   // socket = new WebSocket(`ws://${document.location.host}/ws/orders/company/${companyID}/pub/${pubID}`);
   socket = new WebSocket(`${process.env.NODE_ENV === "production" ? "wss" : "ws"}://${process.env.API_SERV ?? window.location.host}/ws/orders/company/${companyID}/pub/${pubID}?access_token=${accesstoken}`);
@@ -84,19 +97,48 @@ const configureSocket = (companyID, pubID) => {
 
   socket.onopen = (e) => {
     console.log("Connection opened")
+    socketsAccessToken = accesstoken;
     setConnection({state: SOCKET_CONNECTED_STATE, error: null})
   };
 
   socket.onmessage = onMessage
 
   socket.onclose = (event) => {
+    socket = null
     setConnection({state: SOCKET_ERROR_STATE, error: appErrors.unknown_error})
   };
 
   socket.onerror = (error) => {
+    socket = null
     setConnection({state: SOCKET_ERROR_STATE, error: appErrors.unknown_error})
   };
 }
+
+
+const counterToReload = (counter) => () => {
+  counter++
+  console.log(counter)
+
+  if(counter === 100) {
+    window.location.reload() 
+  }
+
+  if (socketsAccessToken !== accesstoken) {
+    if(!socketsPubID || !socketsCompanyID) return;
+
+    configureSocket(socketsCompanyID, socketsPubID);
+    return
+  }
+
+  if (socket === null) {
+    console.log("CHECK SOCKET NULL");
+    if(!socketsPubID || !socketsCompanyID) return;
+    
+    configureSocket(socketsCompanyID, socketsPubID);
+  }
+}
+
+setInterval(counterToReload(2), 100 * 1000);
 
 //On successfully receive data uses callback from parameters
 export const subscribeOnOrdersWebSocket = (companyID, pubID, /*callback*/uploadReceivedData, /*callback*/setConnection) => {

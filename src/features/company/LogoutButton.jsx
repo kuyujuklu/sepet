@@ -6,11 +6,12 @@ import { useLazyLogoutQuery } from '../../api/auth/authQuery'
 import { requireAuthentication, setAuthenticated } from '../auth/authSlice'
 import WhiteSpinner from '../../components/loaders/WhiteSpinner'
 import { errorKeys, setReceivingError } from '../errorHandlers/errorHandlerSlice'
+import { useNavigate } from 'react-router-dom'
 
 const LogoutButton = () => {
     const {t} = useTranslation()
     const dispatch = useDispatch()
-
+    const navigate = useNavigate()
     const [logoutQuery, { data, error, isLoading }] = useLazyLogoutQuery();
 
     const handleButtonClick = () => {
@@ -24,8 +25,7 @@ const LogoutButton = () => {
 
     useEffect(() => {
         if (!data?.ok) return;
-            dispatch(setAuthenticated(false));
-            dispatch(requireAuthentication());
+        window.location.pathname = "/"
     }, [data, dispatch])
 
     return (

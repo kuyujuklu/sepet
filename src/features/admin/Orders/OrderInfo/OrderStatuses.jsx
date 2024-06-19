@@ -1,18 +1,22 @@
 import { useUpdateOrderStatusMutation } from "@/api/orders/orders";
 import React, { useCallback, useEffect } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
     errorKeys,
     setReceivingError,
 } from "../../../errorHandlers/errorHandlerSlice";
 import { appErrors } from "@/errors/errors";
 import BlackSpinner from "@/components/loaders/BlackSpinner";
-import { orderStatuses } from "@/static-data/data";
 import { useTranslation } from "react-i18next";
+import { orderStatuses } from "../../../../static-data/data";
+import { selectOrders, updateOrder } from "../ordersSlice";
+
 
 const OrderStatuses = ({ companyID, pubID, orderID, status }) => {
-    const {t} = useTranslation()
+    const { t } = useTranslation();
     const dispatch = useDispatch();
+    const orders = useSelector(selectOrders)
+
     const [
         updateStatusQuery,
         {
@@ -41,6 +45,11 @@ const OrderStatuses = ({ companyID, pubID, orderID, status }) => {
             );
         }
 
+        const order = orders.find(order => orderID === order.id)
+        if(!order) return;
+
+        dispatch(updateOrder({order: {...order, status: updateStatusQueryResp.status}}))
+
         console.log("resp: ", updateStatusQueryResp);
     }, [dispatch, updateStatusQueryResp]);
 
@@ -66,7 +75,9 @@ const OrderStatuses = ({ companyID, pubID, orderID, status }) => {
                     }`}
                     onClick={() => setOrderStatus(orderStatuses.notHandled)}
                 >
-                    {t("admin.admin_panel.order_page.order_statuses.not_handled")}
+                    {t(
+                        "admin.admin_panel.order_page.order_statuses.not_handled"
+                    )}
                 </button>
                 <button
                     className={`text-3xs sm:text-base px-1 sm:px-3 py-0 sm:py-2 rounded-lg border border-black ${
@@ -98,7 +109,17 @@ const OrderStatuses = ({ companyID, pubID, orderID, status }) => {
                 >
                     {t("admin.admin_panel.order_page.order_statuses.completed")}
                 </button>
-            {isLoading && <BlackSpinner />}
+                <button
+                    className={`text-3xs sm:text-base px-1 sm:px-3 py-0 sm:py-2 rounded-lg border border-black ${
+                        status === orderStatuses.canceled
+                            ? "bg-black text-white"
+                            : "bg-transparent text-black"
+                    }`}
+                    onClick={() => setOrderStatus(orderStatuses.canceled)}
+                >
+                    {t("admin.admin_panel.order_page.order_statuses.canceled")}
+                </button>
+                {isLoading && <BlackSpinner />}
             </div>
         </>
     );

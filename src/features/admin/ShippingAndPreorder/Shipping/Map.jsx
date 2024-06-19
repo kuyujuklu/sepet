@@ -213,7 +213,7 @@ const Map = ({ pub }) => {
                     >
                         <span>
                             {t(
-                                "admin.admin_panel.shipping.shipping_map.no_selected_geolocation"
+                                "admin.admin_panel.shipping.shipping_map.not_selected_geolocation_warning"
                             )}
                         </span>
                         <Link

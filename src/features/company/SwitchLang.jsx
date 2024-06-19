@@ -26,8 +26,7 @@ const SwitchLang = () => {
     }, [i18n]);
 
     return (
-        <div className="w-fit flex gap-4 flex-wrap">
-            <div style={{minWidth: "50px"}}>{t("admin.language")}</div>
+        <div className="">
             <div className="flex gap-2">
                 <div>
                     <Button

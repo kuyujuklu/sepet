@@ -15,9 +15,11 @@ import {
 } from "../../../errorHandlers/errorHandlerSlice";
 import TimeInput from "./TimeInput";
 import { useTranslation } from "react-i18next";
+import DeliveryPriceInput from "./DeliveryPriceInput";
+import WorkHoursInput from "./WorkHoursInput";
 
 const Inputs = ({ pub }) => {
-    const {t} = useTranslation()
+    const { t } = useTranslation();
     const shipping = useSelector(selectShipping);
 
     const [shippingChecked, setShippingChecked] = useState(null);
@@ -43,23 +45,19 @@ const Inputs = ({ pub }) => {
     }, [pub.company_id, pub.id, setShippingAvailability, shippingChecked]);
 
     return (
-        <div className="mt-4">
-            <div style={{ maxWidth: "600px" }} className="m-auto mb-10">
-                {/* Time input */}
-                <div>
-                    <TimeInput
-                        shipping_time_from={pub?.shipping?.shipping_time_from}
-                        shipping_time_to={pub?.shipping?.shipping_time_to}
-                        companyID={pub?.company_id}
-                        pubID={pub?.id}
-                    />
-                </div>
-                <hr className="border-gray-300 my-4" />
+        <div className="mt-4 mb-20">
+            <div style={{ maxWidth: "750px" }} className="m-auto mb-10">
                 <div>
                     <div className="font-normal text-lg">
-                        {t("admin.admin_panel.shipping.shipping_map.checkmark_headline")}
+                        {t(
+                            "admin.admin_panel.shipping.shipping_map.checkmark_headline"
+                        )}
                     </div>
-                    <span className="font-medium text-lg">{t("admin.admin_panel.shipping.shipping_map.checkmark_label")}</span>
+                    <span className="font-medium text-lg">
+                        {t(
+                            "admin.admin_panel.shipping.shipping_map.checkmark_label"
+                        )}
+                    </span>
                     <Checkbox
                         checked={shippingChecked}
                         onChange={() => {
@@ -68,6 +66,49 @@ const Inputs = ({ pub }) => {
                         }}
                     />
                 </div>
+                <hr className="border-gray-300 my-4" />
+                {shippingChecked && (
+                    <>
+                        {/* Time input */}
+                        <div>
+                            <TimeInput
+                                shipping_time_from={
+                                    pub?.shipping?.shipping_time_from
+                                }
+                                shipping_time_to={
+                                    pub?.shipping?.shipping_time_to
+                                }
+                                companyID={pub?.company_id}
+                                pubID={pub?.id}
+                            />
+                        </div>
+                        <hr className="border-gray-300 my-4" />
+                        <div>
+                            <WorkHoursInput
+                                shipping_start={
+                                    pub?.shipping?.shipping_work_start
+                                }
+                                shipping_end={pub?.shipping?.shipping_work_end}
+                                companyID={pub?.company_id}
+                                pubID={pub?.id}
+                            />
+                        </div>
+                        <hr className="border-gray-300 my-4" />
+                        {/* Delivery price input */}
+                        <div>
+                            <div className="font-medium text-lg">
+                                {t(
+                                    "admin.admin_panel.shipping.shipping_price.headline"
+                                )}
+                            </div>
+                            <DeliveryPriceInput
+                                companyID={pub?.company_id}
+                                pubID={pub?.id}
+                                deliveryPrice={pub?.shipping?.shipping_price}
+                            />
+                        </div>
+                    </>
+                )}
             </div>
 
             {shippingChecked && <Map pub={pub} />}

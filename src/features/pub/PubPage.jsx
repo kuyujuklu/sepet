@@ -123,13 +123,6 @@ const PubPage = () => {
                             }}
                             className="rounded-2xl p-5"
                         >
-                            <PubPageHeader
-                                pubName={pubData.pub.name}
-                                pubUrlName={pubData.pub.url_name}
-                                pubImageFileName={pubData.pub.qr_code_file_name}
-                                companyID={companyData.company.id}
-                                pubID={pubData.pub.id}
-                            />
                             <Routes>
                                 <Route
                                     path="/"

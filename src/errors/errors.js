@@ -21,6 +21,7 @@ export const appErrors = {
     //limit exceeded
     pubLimitExceeded: "errors.pub_limit_exceeded",
 
+
     //file uploading
     fileIsTooLarge: "errors.file_is_too_large",
     invalidFileExtension: "errors.invalid_file_extension",

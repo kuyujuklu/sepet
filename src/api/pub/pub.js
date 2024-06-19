@@ -32,6 +32,8 @@ export const pub = createApi({
                     address: data.address,
                     additional_info: data.additionalInfo,
                     currency_id: data.currencyID,
+                    telegram_username: data.telegramUsername,
+                    has_in_place_order: data.hasInPlaceOrder,
                 },
                 headers: {
                     "Content-Type": "application/json",
@@ -106,7 +108,7 @@ export const pub = createApi({
                     "Content-Type": "application/json",
                 },
             }),
-            invalidatesTags: ["Shipping"],
+            invalidatesTags: ["Shipping", "Pub"],
         }),
         getPreorder: builder.query({
             query: ({ pubID }) => ({
@@ -164,6 +166,33 @@ export const pub = createApi({
             }),
             invalidatesTags: ["Pub"],
         }), 
+        setShippingWorkHours: builder.mutation({
+            query: ({ companyID, pubID, start, end }) => ({
+                url: `/api/company/${companyID}/pubs/${pubID}/shipping-work-hours`,
+                method: "POST",
+                body: {
+                    "shipping_work_start": +start,
+                    "shipping_work_end": +end
+                },
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }),
+            invalidatesTags: ["Pub"],
+        }), 
+        setShippingPrice: builder.mutation({
+            query: ({ companyID, pubID, price }) => ({
+                url: `/api/company/${companyID}/pubs/${pubID}/shipping-price`,
+                method: "POST",
+                body: {
+                    "price": +price,
+                },
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }),
+            invalidatesTags: ["Pub"],
+        }), 
     }),
 });
 
@@ -183,5 +212,7 @@ export const {
     useGetGeolocationQuery,
     useLazyGetGeolocationQuery,
     useSetGeolocationMutation,
-    useSetShippingTimeMutation
+    useSetShippingTimeMutation,
+    useSetShippingWorkHoursMutation,
+    useSetShippingPriceMutation,
 } = pub;

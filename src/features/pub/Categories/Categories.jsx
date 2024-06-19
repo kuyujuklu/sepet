@@ -4,7 +4,7 @@ import { selectMenuID } from "../Menus/menuSlice";
 import { selectPubID } from "../pubSlice";
 import { selectCompanyID } from "../../company/companySlice";
 import { useGetCategoriesQuery } from "@/api/categories/category";
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useMemo } from "react";
 import AddCategoryButton from "./AddCategoryButton";
 import { ThemeContext } from "../PubPage";
 import Category from "./Category";
@@ -32,6 +32,13 @@ const Categories = () => {
         );
     }, [dispatch, error]);
 
+    const sortedCategories = useMemo(() => {
+        if (!categoriesData?.categories) return [];
+        const sortedCategories = [...categoriesData?.categories];
+        sortedCategories.sort((a, b) => a.place - b.place);
+        return sortedCategories;
+    }, [categoriesData?.categories]);
+
     return (
         <div
             style={{
@@ -40,11 +47,9 @@ const Categories = () => {
         >
             {menuID && <AddCategoryButton />}
             <div className="mt-5 flex flex-col gap-4">
-                {categoriesData?.categories
-                    ?.toSorted((a, b) => a.place - b.place)
-                    .map((category) => (
-                        <Category key={category.id} category={category} />
-                    ))}
+                {sortedCategories.map((category) => (
+                    <Category key={category.id} category={category} />
+                ))}
             </div>
         </div>
     );

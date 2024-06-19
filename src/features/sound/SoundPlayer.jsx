@@ -7,14 +7,14 @@ const SoundPlayer = () => {
     const dispatch = useDispatch()
     const playingSounds = useSelector(selectPlayingSounds);
     const newOrderSound = playingSounds[soundNames.newOrderSound];
-    const [playNewOrderSound] = useSound("/admin/sounds/notification.mp3")
+    const [playNewOrderSound] = useSound("/static/admin/sounds/notification.mp3")
     useEffect(() => {
         if (newOrderSound && playNewOrderSound) {
             console.log("PLAYING NEW ORDER SOUND")
             playNewOrderSound()
             dispatch(setSoundToPlayed(soundNames.newOrderSound))
         }
-    }, [newOrderSound, playNewOrderSound]);
+    }, [dispatch, newOrderSound, playNewOrderSound]);
     return <></>;
 };
 

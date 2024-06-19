@@ -1,4 +1,4 @@
-import { GoogleMap, Marker } from "@react-google-maps/api";
+import { GoogleMap, Marker, MarkerF } from "@react-google-maps/api";
 import React, { useEffect } from "react";
 import BlackSpinner from "../../components/loaders/BlackSpinner";
 import {
@@ -28,12 +28,12 @@ const PinPubsGeolocation = () => {
     );
 
     const isGeolocationValid =
-        geolocationData && geolocationData.lat && geolocationData.lng;
-
+        !!(geolocationData && geolocationData.lat && geolocationData.lng);
+        console.log("is geo valid: ",  isGeolocationValid)
     useEffect(() => {
         if (!geolocationData) return;
 
-        console.log(geolocationData);
+        console.log("GEO DATA: ",geolocationData);
     }, [geolocationData]);
 
     useEffect(() => {
@@ -128,12 +128,12 @@ const PinPubsGeolocation = () => {
                         }}
                     >
                         {isGeolocationValid && (
-                            <Marker
+                            <MarkerF
                                 position={{
                                     lat: geolocationData.lat,
                                     lng: geolocationData.lng,
                                 }}
-                            ></Marker>
+                            />
                         )}
                     </GoogleMap>
                 </div>

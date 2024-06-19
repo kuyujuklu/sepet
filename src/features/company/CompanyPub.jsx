@@ -49,7 +49,7 @@ const CompanyPub = ({ pub }) => {
             }}
             className="cursor-pointer border p-6 rounded-lg shadow-xl hover:shadow-2xl flex flex-col justify-between"
         >
-            <header className="flex justify-between mb-2">
+            <header className="flex justify-between">
                 <div className="cursor-pointer">
                     <img
                         onClick={handleOpenQrCode}
@@ -58,24 +58,6 @@ const CompanyPub = ({ pub }) => {
                         width={25}
                         height={25}
                     />
-                </div>
-                <div className="flex gap-2">
-                    <div className="cursor-pointer" onClick={handleEditClick}>
-                        <img
-                            src="/static/admin/images/svg/settings-black.svg"
-                            alt="settings"
-                            width={25}
-                            height={25}
-                        />
-                    </div>
-                    <div className="cursor-pointer" onClick={handleDeleteClick}>
-                        <img
-                            src="/static/admin/images/svg/trash-can-black.svg"
-                            alt="trash-can"
-                            width={25}
-                            height={25}
-                        />
-                    </div>
                 </div>
             </header>
             <main className="block mb-2">

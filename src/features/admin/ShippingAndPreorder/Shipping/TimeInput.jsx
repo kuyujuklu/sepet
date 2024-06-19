@@ -6,7 +6,7 @@ import { fixedCacheKeys } from "@/api/fixedCacheKeys";
 import { useTranslation } from "react-i18next";
 
 const TimeInput = ({pubID, companyID, shipping_time_from, shipping_time_to}) => {
-  const {t} = useTranslation()
+  const {t, i18n} = useTranslation()
   const [from, setFrom] = useState(0);
     const [to, setTo] = useState(0);
 
@@ -38,7 +38,7 @@ const TimeInput = ({pubID, companyID, shipping_time_from, shipping_time_to}) => 
                     placeholder="min"
                     style={{ width: 50, height: 20 }}
                     className="px-2 py-2 border border-gray-400 shadow-2xl rounded-md text-gray-600"
-                ></input>
+                ></input>{i18n.language === "ru" ? "мин" : "min"}
                 <span>- {t("admin.admin_panel.shipping.shipping_time.to")}</span>
                 <input
                 value={to}
@@ -46,7 +46,7 @@ const TimeInput = ({pubID, companyID, shipping_time_from, shipping_time_to}) => 
                     placeholder="min"
                     style={{ width: 50, height: 20 }}
                     className="px-2 py-2 border border-gray-400 shadow-2xl rounded-md text-gray-600"
-                ></input>
+                ></input>{i18n.language === "ru" ? "мин" : "min"}
                 { (from && to && (from !== shipping_time_from || to !== shipping_time_to)) && 
                   <Button
                           variant="contained"

@@ -10,7 +10,6 @@ import authenticationReducer from "../features/auth/authSlice"
 import errorHandlerReducer from "../features/errorHandlers/errorHandlerSlice"
 import alertsReducer from "../features/alerts/alertSlice"
 import shippingReducer from "../features/admin/ShippingAndPreorder/Shipping/shippingSlice"
-import preorderReducer from "../features/admin/ShippingAndPreorder/Preorder/preorderSlice"
 import googleMapReducer from "../features/GoogleMapsLoader/googleMapsSlice"
 import ordersReducer from "../features/admin/Orders/ordersSlice"
 import soundReducer from "../features/sound/soundSlice"
@@ -31,7 +30,6 @@ export const store = configureStore({
         errorHandlerSlice: errorHandlerReducer,
         alerts: alertsReducer,
         shippingSlice: shippingReducer,
-        preorderSlice: preorderReducer,
         googleMaps: googleMapReducer,
         orders: ordersReducer,
         sound: soundReducer,

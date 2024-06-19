@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { useDispatch, useSelector } from "react-redux";
 import Popup from "@/components/Popup/Popup";
 import { closeUpdatePubPopup, selectUpdatePubPopupState } from "./pubSlice";
@@ -20,7 +20,9 @@ const UpdatePubPopup = () => {
     const dispatch = useDispatch();
     const popupState = useSelector(selectUpdatePubPopupState);
 
-    const [updatePub, { data, isLoading }] = useUpdatePubMutation({fixedCacheKey: fixedCacheKeys.pubs.update_pub});
+    const [updatePub, { data, isLoading }] = useUpdatePubMutation({
+        fixedCacheKey: fixedCacheKeys.pubs.update_pub,
+    });
 
     const closePopup = useCallback(() => {
         dispatch(closeUpdatePubPopup());
@@ -31,6 +33,8 @@ const UpdatePubPopup = () => {
     const [color, setColor] = useState("#ffffff");
     const [wifiPassword, setWifiPassword] = useState("");
     const [address, setAddress] = useState("");
+    const [telegramUsername, setTelegramUsername] = useState("");
+    const [hasInPlaceOrder, setHasInPlaceOrder] = useState(false);
     const [additionalInfo, setAdditionalInfo] = useState("");
     const [currencyID, setCurrencyID] = useState(1);
 
@@ -44,6 +48,8 @@ const UpdatePubPopup = () => {
         setAddress(popupState?.initialPub?.address ?? "");
         setAdditionalInfo(popupState?.initialPub?.additional_info ?? "");
         setCurrencyID(popupState?.initialPub?.currency_id ?? 1);
+        setTelegramUsername(popupState?.initialPub?.telegram_username ?? "")
+        setHasInPlaceOrder(popupState?.initialPub?.has_in_place_order ?? "")
     }, [popupState.initialPub]);
 
     useEffect(() => {
@@ -62,6 +68,8 @@ const UpdatePubPopup = () => {
             additionalInfo,
             currencyID: +currencyID,
             languageID: 1,
+            telegramUsername,
+            hasInPlaceOrder
         };
 
         let validationErrors = ValidatePub(pub);
@@ -129,6 +137,28 @@ const UpdatePubPopup = () => {
                         }))}
                     />
 
+
+                    <SelectWithLabel
+                        wrapperClass="flex items-center gap-4"
+                        label={t("admin.popups.update_pub_popup.has_in_place_order")}
+                        labelClassName={
+                            "text-sm sm:text-base text-gray-500 font-medium"
+                        }
+                        selectClassName={"text-xs sm:text-sm"}
+                        value={hasInPlaceOrder}
+                        setValue={(value) => setHasInPlaceOrder(value === "true")}
+                        values={[
+                            {
+                                value:   true,
+                                text: t("admin.popups.update_pub_popup.yes")
+                            },
+                            {
+                                value: false,
+                                text: t("admin.popups.update_pub_popup.no")
+                            },
+                        ]}
+                    />
+
                     {/* Pick color */}
                     <div>
                         <div className="flex items-center gap-10">
@@ -191,6 +221,28 @@ const UpdatePubPopup = () => {
                         value={address}
                         setValue={setAddress}
                     />
+                    <div className="flex items-end">
+                        <div className="flex justify-center items-end mr-5">
+                            <img
+                                width={40}
+                                height={40}
+                                src="/static/admin/images/png/telegram_logo.png"
+                            />
+
+                        </div>
+                        <div className=" w-4/5">
+                            <InputWithLabel
+                                label={t(
+                                    "admin.popups.update_pub_popup.telegram_username"
+                                )}
+                                labelClassName={
+                                    "text-xs sm:text-base text-gray-500 font-medium"
+                                }
+                                value={telegramUsername}
+                                setValue={setTelegramUsername}
+                            />
+                        </div>
+                    </div>
                     {/* additional info */}
                     <div className="flex flex-col">
                         <span className="ml-2 text-xs sm:text-base text-gray-500 font-medium">

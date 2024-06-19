@@ -5,36 +5,55 @@ import {
     subscribeOnOrdersWebSocket,
 } from "@/api/orders/orders-ws";
 import { useCallback, useEffect } from "react";
-import { useDispatch } from "react-redux";
-import { addOrder, setOrders, updateOrder } from "./ordersSlice";
+import { useDispatch, useSelector } from "react-redux";
+import {
+    addOrder,
+    selectOrdersPreloader,
+    setOrders,
+    updateOrder,
+} from "./ordersSlice";
 
 const OrdersPreloader = ({ companyID, pubID }) => {
     const dispatch = useDispatch();
 
-    const handleWebSocketData = useCallback((ordersData) => {
-        if (!ordersData) return;
+    const ordersPreloaderState = useSelector(selectOrdersPreloader);
 
-        const eventType = ordersData.event_type;
-        switch (eventType) {
-            case CREATE_EVENT_TYPE:
-                dispatch(addOrder({ order: ordersData.order }));
-                break;
-            case GET_ALL_EVENT_TYPE:
-                dispatch(setOrders({ orders: ordersData.orders }));
-                break;
-            case UPDATE_EVENT_TYPE:
-                dispatch(updateOrder({ order: ordersData.order }));
-                break;
-        }
-    }, [dispatch]);
+    const handleWebSocketData = useCallback(
+        (ordersData) => {
+            if (!ordersData) return;
+
+            const eventType = ordersData.event_type;
+            switch (eventType) {
+                case CREATE_EVENT_TYPE:
+                    dispatch(addOrder({ order: ordersData.order }));
+                    break;
+                case GET_ALL_EVENT_TYPE:
+                    dispatch(setOrders({ orders: ordersData.orders }));
+                    break;
+                case UPDATE_EVENT_TYPE:
+                    dispatch(updateOrder({ order: ordersData.order }));
+                    break;
+            }
+        },
+        [dispatch]
+    );
 
     const setConnectionState = (connectionState) => {
-        console.log("connection state", connectionState)
-    }
+        console.log("connection state", connectionState);
+    };
 
     useEffect(() => {
-        subscribeOnOrdersWebSocket(companyID, pubID, handleWebSocketData, setConnectionState);
-    }, [companyID, handleWebSocketData, pubID]);
+        subscribeOnOrdersWebSocket(
+            ordersPreloaderState.companyID,
+            ordersPreloaderState.pubID,
+            handleWebSocketData,
+            setConnectionState
+        );
+    }, [
+        ordersPreloaderState.companyID,
+        handleWebSocketData,
+        ordersPreloaderState.pubID,
+    ]);
 
     return <></>;
 };

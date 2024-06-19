@@ -15,6 +15,7 @@ const PubErrorsHandler = () => {
     const [, {error: pubSetShippingAvailibilityError }] = useDeletePubMutation({fixedCacheKey: fixedCacheKeys.pubs.set_shipping_availability})
     const [, {error: pubSetPreorderError }] = useSetPreorderMutation({fixedCacheKey: fixedCacheKeys.pubs.set_preorder})
     const [, {error: pubSetShippingTimeError }] = useSetPreorderMutation({fixedCacheKey: fixedCacheKeys.pubs.set_shipping_time})
+    const [, {error: pubSetShippingWorkHoursError }] = useSetPreorderMutation({fixedCacheKey: fixedCacheKeys.pubs.set_shipping_work_hours})
     
     const pubGetByIDError = useSelector(selectReceivingError(errorKeys.get_pub_by_id))
     const getPubsError = useSelector(selectReceivingError(errorKeys.get_pubs))
@@ -70,6 +71,13 @@ const PubErrorsHandler = () => {
 
         dispatch(handleErrorStandardWay(pubSetShippingTimeError))
     }, [dispatch, pubSetShippingTimeError])
+
+    useEffect(() => {
+        if (!pubSetShippingWorkHoursError)
+            return
+
+        dispatch(handleErrorStandardWay(pubSetShippingWorkHoursError))
+    }, [dispatch, pubSetShippingWorkHoursError])
     
 
     useEffect(() => {

@@ -3,7 +3,6 @@ import { Route, Routes, useNavigate } from "react-router-dom"
 import Registration from "./features/auth/Registration"
 import Authentication from "./features/auth/Authentication"
 import CompanyPage from "./features/company/CompanyPage"
-import PubPage from "./features/pub/PubPage"
 import AdminPanel from "./features/admin/AdminPanel"
 import Alerts from "./features/alerts/Alerts"
 import ErrorHandlers from "./features/errorHandlers/ErrorHandlers"
@@ -52,19 +51,15 @@ const AppInner = () => {
     <div 
       style={{
         maxWidth: 1280,
-        padding:"10px 20px 200px",
-        margin: "40px auto",
-        minHeight: 500,
+        padding: "0 10px",
+        margin: "0 auto",
       }}
-      className="shadow-2xl height-fit rounded-xl"
+      className=""
     >
       <Routes>
         <Route path="/auth/registration" element={<Registration />} />
         <Route path="/auth/authentication" element={<Authentication />} />
         <Route path="/company" element={<CompanyPage />} />
-        {/* Edit menu  */}
-        {/* <Route path="/company/pub/:pubID/*" element={<PubPage />} /> */}
-        {/* Admin panel */}
         <Route path="/pub/:pubID/*" element={<AdminPanel />} />
       </Routes>
       

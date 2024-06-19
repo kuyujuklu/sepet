@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import Menu from "./Menu";
 import { useDispatch, useSelector } from "react-redux";
 import CreateMenuButton from "./CreateMenuButton";
@@ -27,18 +27,28 @@ const MenuList = () => {
         dispatch(setReceivingError({errorKey: errorKeys.get_menus, error}))
     }, [dispatch, error]);
 
+    const sortedMenus = useMemo(() => {
+        if(!menuData?.menus) {
+            return [];
+        }
+
+        const sortedMenus = [...menuData.menus]
+        sortedMenus.sort((a, b) => a.place - b.place)
+        return sortedMenus
+    })
+
     useEffect(() => {
-        if(!menuData?.menus || menuData?.menus?.length === 0) {
+        if(!sortedMenus || sortedMenus?.length === 0) {
             return
         }
 
         //checing if there is selected menu and it exists
-        if(selectedMenuID && menuData.menus.find(menu => menu.id === selectedMenuID)) {
+        if(selectedMenuID && sortedMenus.find(menu => menu.id === selectedMenuID)) {
             return
         }
 
-        dispatch(setMenuID(menuData.menus.toSorted((a, b) => a.place - b.place)[0].id))
-    }, [dispatch, menuData, selectedMenuID])
+        dispatch(setMenuID(sortedMenus[0].id))
+    }, [dispatch, selectedMenuID,sortedMenus])
 
     useEffect(() => {
         return () => {
@@ -48,7 +58,7 @@ const MenuList = () => {
 
     return (
         <div className="flex flex-wrap gap-6">
-            {menuData?.menus?.toSorted((a, b) => a.place - b.place).map((menu) => (
+            {sortedMenus.map((menu) => (
                 <div key={menu.id} className="flex gap-6">
                     <CreateMenuButton place={menu.place} />
                     <Menu key={menu.id} menu={menu} />

@@ -1,9 +1,10 @@
 import { useTranslation } from "react-i18next";
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 
 const Header = ({ name, pubID }) => {
     const { t } = useTranslation();
     const location = useLocation();
+    const navigate = useNavigate()
     console.log("LOCATIONL: ", location);
 
     const isOnAdminHomePage =
@@ -18,19 +19,16 @@ const Header = ({ name, pubID }) => {
                 </div>
             </NavLink>
             {!isOnAdminHomePage && (
-                <NavLink to={`/admin/pub/${pubID}`}>
+                <button onClick={() => navigate(-1)}>
                     <div style={{ width: 35, height: 35 }}>
                         <img
                             src="/static/admin/images/svg/arrow-left-violet.svg"
                             alt="lkajsdf"
                         />
                     </div>
-                </NavLink>
+                </button>
             )}
             <div>
-                <span className="font-medium">
-                    {t("admin.admin_panel.main_page.headline")}{" "}
-                </span>{" "}
                 <span className="font-bold">{name}</span>{" "}
             </div>
         </h1>

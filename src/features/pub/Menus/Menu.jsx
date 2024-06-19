@@ -53,7 +53,7 @@ const Menu = ({ menu }) => {
             {/* Menu name */}
             <div
                 onClick={selectMenu}
-                className={`border-2 cursor-pointer w-fit py-2 px-8 rounded-3xl text-lg font-medium break-words`}
+                className={`border-2 cursor-pointer w-fit py-1 px-4 rounded-3xl text-lg font-medium break-words`}
                 style={{
                     opacity: menu.visible ? 1 : 0.3,
                     color: color,
