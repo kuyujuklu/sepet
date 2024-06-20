@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from "react-redux";
-import { selectOrders } from "../ordersSlice";
+import { selectOrders, setDeleteFromOrderDishPopupState } from "../ordersSlice";
 import { useEffect, useMemo } from "react";
 import OrderCard from "../OrderCard";
 import { useParams } from "react-router-dom";
@@ -13,6 +13,8 @@ import OrderStatuses from "./OrderStatuses";
 import BlackSpinner from "@/components/loaders/BlackSpinner";
 import { orderTypes } from "@/static-data/data";
 import { useTranslation } from "react-i18next";
+import { pub } from "../../../../api/pub/pub";
+import AddDishToOrderButton from "./AddDishToOrderButton";
 
 const OrderInfoPage = ({ pubUrlName }) => {
     const { t } = useTranslation();
@@ -94,6 +96,27 @@ const OrderInfoPage = ({ pubUrlName }) => {
 
 
     const finalPrice = isNaN(+pubData?.pub?.shipping?.shipping_price) ? orderItemsPrice : pubData?.pub?.shipping?.shipping_price + orderItemsPrice 
+
+    const deletePosition = (dishID) => {
+        if(!dishID || !pubData?.pub.id || !pubUrlName || !pubData?.pub?.company_id) {
+            console.log("INVALID DATA func call")
+            return;
+        }
+        console.log("dishID: ", dishID)
+        console.log("old dishes: ", order?.dishes)
+        const newDishes = order?.dishes.filter((dish) => dish.dish_id !== dishID)
+        console.log("new dishes : ", newDishes)
+
+        dispatch(setDeleteFromOrderDishPopupState({
+            opened: true,
+            pubUrlName,
+            pubID: pubData?.pub?.id,
+            newDishes: newDishes,
+            companyID: pubData?.pub?.company_id,
+            orderID,
+        }))
+        
+    }
 
     return (
         <div className="flex flex-col items-center m-auto">
@@ -220,6 +243,7 @@ const OrderInfoPage = ({ pubUrlName }) => {
                                         </div>
                                         <div className="col-span-11">
                                             <OrderPosition
+                                                deletePosition={() => deletePosition(item.dish?.id)}
                                                 pub={pubData?.pub}
                                                 dish={item.dish}
                                                 count={item.count}
@@ -227,6 +251,7 @@ const OrderInfoPage = ({ pubUrlName }) => {
                                         </div>
                                     </div>
                                 ))}
+                            <AddDishToOrderButton currentDishes={order?.dishes} pubUrlName={pubUrlName} pubID={pubData?.pub?.id} companyID={pubData?.pub?.company_id} orderID={orderID} />
                                 <div className="w-full px-20 py-5">
                                     <div>
                                         {t(

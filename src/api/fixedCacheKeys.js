@@ -47,5 +47,9 @@ export const fixedCacheKeys = {
     auth: {
         registrate: 'auth.registrate',
         authenticate: 'auth.authenticate',
+    },
+    order :{ 
+        deleteDishFromOrder: 'order.delete_dish_from_order',
+        addDishToOrder: 'order.add_dish_to_order'
     }
 }

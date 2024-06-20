@@ -19,10 +19,21 @@ export const orders = createApi({
                     method: "PUT",
                 }),
                 invalidatesTags: ["Orders"],
+        }),
+        updateOrderDishes: builder.mutation({
+                query: ({ companyID, pubID, orderID, dishes }) => ({
+                    url: `/api/company/${companyID}/pubs/${pubID}/orders/${orderID}/update-dishes`,
+                    method: "PUT",
+                    body: {
+                        dishes
+                    },
+                }),
+                invalidatesTags: ["Orders"],
         })
     }),
 });
 
 export const {
-    useUpdateOrderStatusMutation
+    useUpdateOrderStatusMutation,
+    useUpdateOrderDishesMutation,
 } = orders;

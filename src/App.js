@@ -27,6 +27,8 @@ import "./i18n"
 import NewOrdersListener from "./features/admin/Orders/NewOrdersListener"
 import SoundPlayer from "./features/sound/SoundPlayer"
 import PayForPubPopup from "./features/company/PayForPubPopup"
+import DeleteDishFromOrderPopup from "./features/admin/Orders/OrderInfo/DeleteDishFromOrderPopup"
+import AddDishToOrderPopup from "./features/admin/Orders/OrderInfo/AddDishToOrderPopup"
 
 const App = () => {
   return (
@@ -97,6 +99,9 @@ const Popups =() => {
       <DeleteDishPopup />
 
       <QrCodePopup />
+
+      <DeleteDishFromOrderPopup />
+      <AddDishToOrderPopup />
     </>
   )
 }

@@ -3,7 +3,7 @@ import { ExpandMore } from "@mui/icons-material";
 import { Accordion, AccordionDetails, AccordionSummary, Button } from "@mui/material";
 import { useTranslation } from "react-i18next";
 
-const OrderPosition = ({ pub, dish, count }) => {
+const OrderPosition = ({ pub, dish, count, deletePosition }) => {
   const {t} = useTranslation()
   const actualDishPrice =dish.sale_price ?  Math.min(dish.sale_price, dish.price) : dish.price
   const currency = currencies.find(
@@ -44,8 +44,7 @@ const OrderPosition = ({ pub, dish, count }) => {
                                 "rgb(239 68 68)",
                         },
                     }}
-                    onClick={() => {
-                    }}
+                    onClick={deletePosition}
                 >
                     {t(
                         "Удалить"

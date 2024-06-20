@@ -193,7 +193,8 @@
                     "not_proceeded": "Не указан"
                 },
                 "order_position": {
-                    "pieces_shortcut": "шт"
+                    "pieces_shortcut": "шт",
+                    "add_dish_button":"Добавить блюдо"
                 },
                 "table_number": "Номер столика",
                 "town": "Город",

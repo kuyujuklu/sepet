@@ -193,7 +193,8 @@
                     "not_proceeded": "Nespecificat"
                 },
                 "order_position": {
-                    "pieces_shortcut": "buc"
+                    "pieces_shortcut": "buc",
+                    "add_dish_button":"Adăugați o poziție"
                 },
                 "table_number": "Numărul mesei",
                 "town": "Oraș",
