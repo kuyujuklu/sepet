@@ -6,8 +6,9 @@ export const basketSlice = createSlice({
     clearBasketPopup: {
       isOpened: false,
       confirmingAction: null,
-      text: "Are you sure you want to clear your basket?",
-      buttonText: "OK",
+      text: "basket_popup.another_pub_warning",
+      okButtonText: "basket_popup.ok_button",
+      cancelButtonText: "basket_popup.cancel_button",
     },
     basket: {},
     pubID: null,
@@ -16,15 +17,16 @@ export const basketSlice = createSlice({
   reducers: {
     clearBasket(state) {
       state.basket = {};
+      state.pubID = null;
     },
     openClearBasketPopup(state) {
       state.clearBasketPopup.isOpened = true;
     },
     closeClearBasketPopup(state) {
       state.clearBasketPopup.confirmingAction = null;
-      state.clearBasketPopup.text =
-        "Are you sure you want to clear your basket?";
-      state.clearBasketPopup.buttonText = "OK";
+      state.clearBasketPopup.text = "basket_popup.another_pub_warning";
+      state.clearBasketPopup.okButtonText = "basket_popup.ok_button";
+      state.clearBasketPopup.cancelButtonText = "basket_popup.cancel_button";
       state.clearBasketPopup.isOpened = false;
     },
     doClearPopupConfirmingAction(state) {
@@ -60,8 +62,9 @@ export const basketSlice = createSlice({
       // If the dish is from another pub
       if (state.pubID && state.pubID !== pubID) {
         state.clearBasketPopup.isOpened = true;
-        state.clearBasketPopup.text =
-          "Вы уверены что хотите добавить блюдо из другого заведения? Ваша корзина будет очищена";
+        state.clearBasketPopup.text = "basket_popup.another_pub_warning";
+        state.clearBasketPopup.okButtonText = "basket_popup.ok_button";
+        state.clearBasketPopup.cancelButtonText = "basket_popup.cancel_button";
         state.clearBasketPopup.confirmingAction = {
           type: "increaseDish",
           pubID: pubID,
@@ -105,7 +108,7 @@ export const {
   closeClearBasketPopup,
   doClearPopupConfirmingAction,
   setBasket,
-  clearBasket
+  clearBasket,
 } = basketSlice.actions;
 
 export const selectBasket = (state) => state.basket.basket;

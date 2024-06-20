@@ -5,7 +5,9 @@ import SelectGeolocation from "../../widgets/Geolocation/SelectGeolocation";
 import { useDispatch, useSelector } from "react-redux";
 import {
   selectGeolocation,
+  selectHasGeolocationPerm,
   selectNearGeolocation,
+  selectNearGeolocationState,
 } from "../../features/store/geolocation/geolocationSlice";
 import { useEffect } from "react";
 import {
@@ -18,6 +20,7 @@ const SelectGeolocationPage = () => {
   const {t} = useTranslation()
   const location = useSelector(selectGeolocation);
   const nearLocaiton = useSelector(selectNearGeolocation);
+  const hasPerm = useSelector(selectHasGeolocationPerm)
 
   const dispatch = useDispatch();
   useEffect(() => {
@@ -29,10 +32,12 @@ const SelectGeolocationPage = () => {
   return (
     <Wrapper>
       <View flexDir={"row"} justifyContent={"center"}>
-        <Text fontFamily={AnonymousProBold} fontSize={22}>
+        <Text fontFamily={AnonymousProBold} fontSize={22} px={5}>
           {location || nearLocaiton
             ? t("select_geolocation.headline")
-            : t("select_geolocation.wait_geolocation_is_loading")}
+            : hasPerm 
+            ? t("select_geolocation.wait_geolocation_is_loading")
+            : t("select_geolocation.we_cannot_load_your_geolocaiton")}
         </Text>
       </View>
       <View flex={1}>

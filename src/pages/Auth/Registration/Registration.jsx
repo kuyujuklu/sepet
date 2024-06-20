@@ -10,7 +10,7 @@ const Registration = () => {
     dispatch(disableNavbar());
   }, [dispatch])
   return (
-    <Wrapper>
+    <Wrapper style={{paddingBottom: 0}}>
       <RegistrationForm />
     </Wrapper>
   );

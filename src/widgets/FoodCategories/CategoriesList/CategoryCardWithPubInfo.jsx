@@ -2,15 +2,25 @@ import { Text, View } from "native-base";
 import { Image } from "expo-image";
 import { ENV } from "../../../constants/env/env";
 import { images } from "../../../app/images/images";
+import { GetShippingTimeString } from "../../../shared/utils/time";
+import { useTranslation } from "react-i18next";
 
 const CategoryCardWithPubInfo = ({ category, pub, usePubBg, distance }) => {
   console.log("use pub bg: ", usePubBg);
+  const { t } = useTranslation();
   const imagePath =
     ENV.API_HTTP_URL +
     ENV.API_STATIC_PATH +
     (usePubBg
       ? "/images/pubs/bgs/" + pub.bg_image_file_name
       : "/images/categories/" + category?.image_file_name);
+
+  const shippingWorkHours = {
+    start: pub?.shipping?.shipping_work_start,
+    end: pub?.shipping?.shipping_work_end,
+  };
+
+  const shippingTimeString = GetShippingTimeString(shippingWorkHours);
 
   return (
     <View maxWidth={400} style={{ width: "100%", alignSelf: "center" }}>
@@ -29,6 +39,19 @@ const CategoryCardWithPubInfo = ({ category, pub, usePubBg, distance }) => {
           justifyContent: "center",
         }}
       >
+        {!pub.isOpen && (
+          <View
+            bg={"black"}
+            w="full"
+            position="absolute"
+            py={8}
+            justifyContent="flex-end"
+            alignItems="center"
+            zIndex={10}
+            opacity={0.7}
+            style={{ height: "110%" }}
+          ></View>
+        )}
         {category.image_file_name && (
           <Image
             alt=""
@@ -49,6 +72,16 @@ const CategoryCardWithPubInfo = ({ category, pub, usePubBg, distance }) => {
           <Text fontSize={"2xl"} fontWeight={"bold"} color={"#fff"}>
             {pub?.name}
           </Text>
+          {!pub.isOpen && (
+            <>
+              <Text color="white" fontSize={18}>
+                {t("home_page.pub_is_closed")}
+              </Text>
+              <Text color="white" fontSize={18}>
+                {shippingTimeString}
+              </Text>
+            </>
+          )}
         </View>
       </View>
 
@@ -76,7 +109,7 @@ const CategoryCardWithPubInfo = ({ category, pub, usePubBg, distance }) => {
               ""
             )}
           </View>
-          <Text fontSize={"lg"} fontWeight={"medium"}>
+          <Text fontSize={"md"} fontWeight={"medium"}>
             {pub?.shipping?.shipping_time_from
               ? pub?.shipping?.shipping_time_from
               : ""}
@@ -86,7 +119,8 @@ const CategoryCardWithPubInfo = ({ category, pub, usePubBg, distance }) => {
               : ""}
             {pub?.shipping?.shipping_time_to
               ? pub?.shipping?.shipping_time_to
-              : ""}
+              : ""}{" "}
+            min
           </Text>
           <View
             flex={1}

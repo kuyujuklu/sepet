@@ -16,6 +16,9 @@ import { enableNavbar } from "../../../features/store/navbar/navbarSlice";
 import { useTranslation } from "react-i18next";
 import { ENV } from "../../../constants/env/env";
 import { validateRegistrationData } from "../../../shared/validation/validators/client/client-validation";
+import { Image } from "expo-image";
+import { images } from "../../../app/images/images";
+import { Keyboard } from "react-native";
 
 const RegistrationForm = () => {
   const { t } = useTranslation();
@@ -42,15 +45,14 @@ const RegistrationForm = () => {
       phone,
       name,
       password,
-      repeatPassword
+      repeatPassword,
     };
     const validationError = validateRegistrationData(registrationData);
     if (validationError) {
       return;
     }
 
-
-    registrationQuery({phone, name, password});
+    registrationQuery({ phone, name, password });
   };
 
   //Handling registration data sending success
@@ -59,11 +61,12 @@ const RegistrationForm = () => {
 
     SecureStore.setItemAsync(
       "refresh_token",
-      registrationQueryData.refresh_token,
+      registrationQueryData.refresh_token
     );
 
     setaccesstoken(registrationQueryData.access_token);
     dispatch(enableNavbar());
+    dispatch(setRefetchClient(true));
     navigator.navigate("SelectGeolocationPage");
   }, [registrationQueryData]);
 
@@ -76,7 +79,7 @@ const RegistrationForm = () => {
       pushError({
         errorKey: errorKeys.registration,
         error: registrationQueryError.data.err,
-      }),
+      })
     );
   }, [registrationQueryError]);
 
@@ -84,9 +87,16 @@ const RegistrationForm = () => {
 
   return (
     <View style={authStyles.authContainer}>
-      <Text style={authStyles.authHeadline}>{t("registration.headline")}</Text>
       {/* Form */}
-      <View style={authStyles.authFormContainer}>
+      <View
+        style={{
+          height: "100%",
+          justifyContent: "center",
+          padding: 30,
+          gap: 2,
+          width: "100%",
+        }}
+      >
         <RegistrationDataInputs
           phoneNumber={phone}
           setPhoneNumber={setPhone}
@@ -99,7 +109,7 @@ const RegistrationForm = () => {
         />
 
         <Button
-          primary
+          background="emerald.600"
           mt={"10"}
           onPress={sendRegistration}
           rightIcon={

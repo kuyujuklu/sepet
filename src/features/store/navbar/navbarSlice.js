@@ -17,6 +17,6 @@ export const navbarSlice = createSlice({
 
 export const { enableNavbar, disableNavbar } = navbarSlice.actions;
 
-export const navbarSelectIsEnabled = (state) => state.navbar.isEnabled;
+export const selectNavbarIsEnabled = (state) => state.navbar.isEnabled;
 
 export default navbarSlice.reducer;

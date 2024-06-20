@@ -1,7 +1,7 @@
 import { useNavigation } from "@react-navigation/native";
 import { Pressable, View } from "native-base";
 import React, { useEffect, useRef } from "react";
-import { Animated, Image } from "react-native";
+import { Animated, Image, TouchableOpacity } from "react-native";
 import Underscore from "./Underscore";
 
 const Category = ({ isSelected, imageSource, category }) => {
@@ -18,8 +18,8 @@ const Category = ({ isSelected, imageSource, category }) => {
   }, [isSelected]);
 
   return (
-    <Pressable
-      flex={1}
+    <TouchableOpacity
+      style={{ height: "100%" }}
       onPress={() =>
         navigator.navigate("FoodCategories", { foodCategory: category })
       }
@@ -28,7 +28,7 @@ const Category = ({ isSelected, imageSource, category }) => {
         <Animated.View
           style={{
             height: animationValue.interpolate({
-                inputRange: [0, 1],
+              inputRange: [0, 1],
               outputRange: ["90%", "100%"],
             }),
             width: "100%",
@@ -48,7 +48,7 @@ const Category = ({ isSelected, imageSource, category }) => {
           {isSelected && <Underscore animationValue={animationValue} />}
         </Animated.View>
       </View>
-    </Pressable>
+    </TouchableOpacity>
   );
 };
 

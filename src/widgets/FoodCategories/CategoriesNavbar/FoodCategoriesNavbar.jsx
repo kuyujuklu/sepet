@@ -1,53 +1,53 @@
-import { ScrollView, View } from "native-base";
-import { useEffect, useRef } from "react";
+import { FlatList, ScrollView, View } from "native-base";
+import { useCallback, useEffect, useRef } from "react";
 import { Animated, TouchableOpacity } from "react-native";
 import CategoryNavbarImage from "./CategoryNavbarImage";
 import { categories } from "../../../app/static-data/data";
 import { images } from "../../../app/images/images";
 
 export const placeholderAllCategory = {
-  image: require("../../../../assets/images/all_foods.png"),
+  image: images.AllFood,
   value: "",
 };
 
 export const placeholderCategories = {
   [categories.Asian]: {
     image: images.Sushi,
-    value: "asian",
+    value: categories.Asian,
   },
   [categories.FastFood]: {
     image: images.FastFood,
-    value: "fast_food",
+    value: categories.FastFood,
   },
   [categories.Breakfast]: {
     image: images.Breakfast,
-    value: "breakfast",
+    value: categories.Breakfast,
   },
   [categories.Grill]: {
     image: images.Grill,
-    value: "grill",
+    value: categories.Grill,
   },
   [categories.Dessert]: {
     image: images.Cupcake,
-    value: "dessert",
+    value: categories.Dessert,
   },
   [categories.Pasta]: {
     image: images.Spaghetti,
-    value: "pasta",
+    value: categories.Pasta,
   },
   [categories.Pancakes]: {
     image: images.Pancakes,
-    value: "pancakes",
+    value: categories.Pancakes,
   },
   [categories.Soup]: {
     image: images.Soup,
-    value: "soup",
+    value: categories.Soup,
   },
 };
 
-const categoriesArray = Object.keys(placeholderCategories);
+export const categoryNamesArray = Object.keys(placeholderCategories);
 
-const FoodCategoriesNavbar = ({ selectedCategory }) => {
+const FoodCategoriesNavbar = ({ selectedCategory, possibleCategoryNames = [] }) => {
   const underScoreAnimation = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -59,6 +59,33 @@ const FoodCategoriesNavbar = ({ selectedCategory }) => {
       duration: 300,
       useNativeDriver: false,
     }).start();
+
+    scrollFlatListToActiveIndex();
+  }, [selectedCategory]);
+
+  const flatListRef = useRef(null);
+
+  const scrollFlatListToActiveIndex = useCallback(() => {
+    if (!flatListRef?.current) return;
+    if (!possibleCategoryNames) return;
+
+    console.log("selectedCategory: ", selectedCategory);
+
+    const indexOfSelectedCategory = possibleCategoryNames.findIndex(
+      (categoryName) =>
+        placeholderCategories[categoryName].value === selectedCategory,
+    );
+    console.log("indexOfSelectedCategory: ", indexOfSelectedCategory);
+
+    if (indexOfSelectedCategory < 0) return;
+
+    console.log("scrolling to: ", indexOfSelectedCategory);
+
+    flatListRef.current.scrollToIndex({
+      index: indexOfSelectedCategory,
+      animated: true,
+      viewPosition: 0.5,
+    });
   }, [selectedCategory]);
 
   return (
@@ -79,20 +106,46 @@ const FoodCategoriesNavbar = ({ selectedCategory }) => {
             category={placeholderAllCategory.value}
           />
         </View>
-        <ScrollView horizontal>
-          <View style={{ flex: 1, flexDirection: "row", gap: 20, paddingVertical: 6}}>
-            {categoriesArray.map((category) => (
-              <CategoryNavbarImage
-                key={category.key}
-                isSelected={
-                  selectedCategory === placeholderCategories[category].value
-                }
-                imageSource={placeholderCategories[category].image}
-                category={placeholderCategories[category].value}
-              />
-            ))}
-          </View>
-        </ScrollView>
+
+        <View style={{ flex: 1, paddingTop: 2 }}>
+          <FlatList
+            ref={flatListRef}
+            contentContainerStyle={{ paddingHorizontal: 10 }}
+            horizontal
+            onScrollToIndexFailed={() => {
+              const wait = new Promise((resolve) => setTimeout(resolve, 250));
+              wait.then(() => {
+                scrollFlatListToActiveIndex();
+              });
+            }}
+            renderItem={({ item: categoryName, index }) => (
+              <View flex={1} style={{ height: "90%" }}>
+                <CategoryNavbarImage
+                  key={categoryName}
+                  isSelected={
+                    selectedCategory ===
+                    placeholderCategories[categoryName]?.value
+                  }
+                  imageSource={placeholderCategories[categoryName]?.image}
+                  category={placeholderCategories[categoryName]?.value}
+                />
+              </View>
+            )}
+            data={possibleCategoryNames || []}
+            ItemSeparatorComponent={() => <View width={4} />}
+          />
+        </View>
+
+        {/* <ScrollView horizontal>
+          <View
+            style={{
+              flex: 1,
+              flexDirection: "row",
+              gap: 20,
+              paddingVertical: 6,
+            }}
+          ></View>
+        </ScrollView> */}
       </View>
     </View>
   );

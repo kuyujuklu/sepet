@@ -22,7 +22,7 @@ export default {
     client_not_found: "Clientul nu a fost găsit",
     field_is_required: "Câmpul este obligatoriu",
     this_pub_is_not_delivering_in_your_area:
-      "Acest restaurant nu livrează în zona dvs.",
+      "Acest restaurant nu livrează momentan la adresa dvs.",
     validation: {
       client: {
         name_is_required: "Numele este obligatoriu",
@@ -74,11 +74,17 @@ export default {
     },
   },
   select_geolocation: {
+    select_by_yourself_button: "Selectați manual",
     headline: "Selectați locația dvs.",
     wait_geolocation_is_loading: "Așteptați, încărcăm locația dvs.",
     pin_geolocation: "Marcați locația",
+    we_cannot_load_your_geolocaiton:
+      "Nu am putut încărca locația, vă rugăm să o selectați manual",
   },
-  home_page: { pubs_near_you: "Restaurante aproape de dvs." },
+  home_page: {
+    pubs_near_you: "Restaurante din apropiere",
+    pub_is_closed: "Închis. Timp de lucru",
+  },
   pub_info_page: {
     pub_header: {
       address: "Adresă",
@@ -86,9 +92,10 @@ export default {
     },
   },
   basket_page: {
-    headline: "Coșul de cumpărături",
+    headline: "Coșul",
     empty: "gol",
     create_order_button: "Creați comanda",
+    pub_is_closed_error: "Acest restaurant este în prezent închis, vă rugăm să încercați mai târziu sau să comandați de la altul.",
   },
   create_order_page: {
     headline: "Creați comanda",
@@ -105,7 +112,7 @@ export default {
           values: { cash: "Numerar", card_offline: "Card la curier" },
         },
       },
-      delivery_time: "Timpul estimat de livrare",
+      delivery_time: "Timpul de livrare",
       items_price: "Prețul produselor",
       delivery_price: "Prețul livrării",
       total_sum: "Total",
@@ -113,21 +120,27 @@ export default {
     },
   },
   order_page: {
-    headline: "Ultimele dvs. comenzi",
+    headline: "Ultimele comenzi",
     headline_no_orders: "Nu ați făcut încă nicio comandă",
     order_card: {
+      unable_to_repeat_order: "Din păcate, nu putem repeta această comanda.",
       positions: "Poziții",
       rate_button: "Evaluați",
       repeat_button: "Repetă",
+      order: "Comanda",
       order_statuses: {
         not_handled: "În așteptare",
-        handled: "Rezolvat",
-        preparing: "Pregătit",
-        completed: "Livrare finalizată",
+        handled: "Se pregătește",
+        preparing: "La curier",
+        completed: "Livrat",
+        canceled: "Anulat",
       },
     },
   },
-  near_categories_page: { headline: "Restaurante" },
+  near_categories_page: {
+    headline: "Restaurante",
+    pub_is_closed: "Închis. Timp de lucru",
+  },
   categories: {
     asian: "asiatice",
     fast_food: "fast-food",

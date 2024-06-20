@@ -2,7 +2,10 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   authSelectIsAuthRequiredAtApplicationStart,
   authSelectSetIsRequiringAuthentication,
+  selectRefetchClient,
+  setClient,
   setIsRequiringAuthentication,
+  setRefetchClient,
 } from "./authSlice";
 import { useEffect } from "react";
 import { CommonActions, useNavigation } from "@react-navigation/native";
@@ -13,13 +16,14 @@ const AuthWatcher = () => {
   const dispatch = useDispatch();
   const navigator = useNavigation();
 
+  const refetchClient = useSelector(selectRefetchClient);
   const isAuthRequiredAtApplicationStart = useSelector(
     authSelectIsAuthRequiredAtApplicationStart
   );
 
   //Check on startup if authentication is required
   useEffect(() => {
-    if (isAuthRequiredAtApplicationStart) {
+    if (isAuthRequiredAtApplicationStart || refetchClient) {
       (async function () {
         const resp = await refreshToken();
         if (!resp?.ok || !resp.accesstoken) {
@@ -28,15 +32,19 @@ const AuthWatcher = () => {
               index: 0,
               routes: [{ name: "Registration" }],
             })
-          )
+          );
           return;
         }
 
         setaccesstoken(resp.accesstoken);
+        dispatch(
+          setClient({ phone: resp.client?.phone, name: resp.client?.phone })
+        );
+        dispatch(setRefetchClient(false));
       })();
     }
-  }, [isAuthRequiredAtApplicationStart]);
-  
+  }, [isAuthRequiredAtApplicationStart, refetchClient]);
+
   const isRequiringAuthentication = useSelector(
     authSelectSetIsRequiringAuthentication
   );

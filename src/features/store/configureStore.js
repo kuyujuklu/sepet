@@ -27,8 +27,8 @@ export const store = configureStore({
     basket: basketReducer,
     errorHandling: errorHandlingReducer,
     alerts: alertReducer,
-    auth: authReducer,
     geolocation: geolocationReducer,
+    auth: authReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware()

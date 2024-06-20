@@ -1,6 +1,6 @@
 import { FlatList, View } from "native-base";
 import { useGetNearbyCategoriesQuery } from "../../../shared/api/categories/categoriesApi";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useSelector } from "react-redux";
 import { selectGeolocation } from "../../../features/store/geolocation/geolocationSlice";
 import CategoryCardWithPubInfo from "./CategoryCardWithPubInfo";
@@ -16,7 +16,7 @@ const CategoryWithPubInfoList = ({ foodFilter, selectCategory }) => {
     // isLoading: nearCategoriesIsLoading,
   } = useGetNearbyCategoriesQuery(
     { coords: { lat: location?.lat, lng: location?.lng } },
-    { skip: !location },
+    { skip: !location, pollingInterval: 20000, skipPollingIfUnfocused: true },
   );
 
   const {
@@ -24,7 +24,7 @@ const CategoryWithPubInfoList = ({ foodFilter, selectCategory }) => {
     // isLoading: nearPubsIsLoading,
   } = useGetNearbyPubsQuery(
     { coords: { lat: location?.lat, lng: location?.lng } },
-    { skip: !location },
+    { skip: !location, pollingInterval: 20000, skipPollingIfUnfocused: true },
   );
 
   // {category, pub} array
@@ -43,7 +43,7 @@ const CategoryWithPubInfoList = ({ foodFilter, selectCategory }) => {
 
     // for each category, find the pub that matches the pub_id
     let rawCategoryPubData = filteredCategories.map((category) => {
-      const pub = nearPubsData.pubs.find(
+      const pub = nearPubsData.pubs?.find(
         (pub) => pub.id === category.pub_id && !alreadyAddedPubs.has(pub.id),
       );
 
@@ -56,6 +56,10 @@ const CategoryWithPubInfoList = ({ foodFilter, selectCategory }) => {
 
     rawCategoryPubData = rawCategoryPubData.filter((item) => item !== null);
     rawCategoryPubData.sort((a, b) => a.pub.distance - b.pub.distance);
+    rawCategoryPubData.sort((a, b) =>
+      a.pub.isOpen === b.pub.isOpen ? 0 : a.pub.isOpen ? -1 : 1,
+    );
+
     return rawCategoryPubData;
   }, [nearCategoriesData, nearPubsData, foodFilter]);
 
@@ -67,15 +71,17 @@ const CategoryWithPubInfoList = ({ foodFilter, selectCategory }) => {
     <View gap={10}>
       <SafeAreaView style={{ paddingHorizontal: 10 }} edges={[]}>
         <FlatList
+          contentContainerStyle={{ paddingBottom: 120 }}
           renderItem={({ item }) => (
             <TouchableOpacity
-              onPress={() =>
+              disabled={!item.pub.isOpen}
+              onPress={() => {
                 selectCategory({
                   id: item?.category?.id,
                   menu_id: item?.category?.menu_id,
                   pub_id: item?.pub?.id,
-                })
-              }
+                });
+              }}
             >
               <CategoryCardWithPubInfo
                 key={item?.category?.id}

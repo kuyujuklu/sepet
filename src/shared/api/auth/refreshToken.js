@@ -47,6 +47,7 @@ export const refreshToken = async () => {
     return {
       ok: true,
       accesstoken: body.accesstoken,
+      client: body.client
     };
   }
 

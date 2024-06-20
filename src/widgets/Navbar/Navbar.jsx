@@ -7,7 +7,7 @@ import { useSelector } from "react-redux";
 import { selectBasket } from "../../features/store/basket/basketSlice";
 import { Text, View } from "native-base";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import { Image, Pressable } from "react-native";
+import { Image, Pressable, TouchableOpacity } from "react-native";
 import { images } from "../../app/images/images";
 
 const Navbar = ({ routeName }) => {
@@ -34,7 +34,7 @@ const Navbar = ({ routeName }) => {
           isSelected={routeName === "Home"}
         />
         <View>
-          <Pressable
+          <TouchableOpacity
             style={styles.navbarButton}
             onPress={() => {
               navigator.navigate("FoodCategories", { foodCategory: "" });
@@ -56,7 +56,7 @@ const Navbar = ({ routeName }) => {
                 alt="smthng"
               />
             </View>
-          </Pressable>
+          </TouchableOpacity>
         </View>
         <View>
           {basketCount > 0 && (

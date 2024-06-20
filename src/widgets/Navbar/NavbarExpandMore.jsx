@@ -7,18 +7,21 @@ import { useNavigation } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import SwitchLanguage from "./SwitchLanguage";
 import { images } from "../../app/images/images";
+import { useSelector } from "react-redux";
+import { selectClient } from "../../features/store/auth/authSlice";
 
 const NavbarExpandMore = ({ expanded, setExpanded }) => {
   const { t } = useTranslation();
   //from 0 to 1
   const navigator = useNavigation();
   const [expandedSize] = useState(new Animated.Value(0));
+  const client = useSelector(selectClient);
 
   useEffect(() => {
     expandedSize.stopAnimation();
     Animated.timing(expandedSize, {
       toValue: expanded ? 1 : 0,
-      duration: 200,
+      duration: 500,
       useNativeDriver: false,
     }).start();
   }, [expanded]);
@@ -43,45 +46,63 @@ const NavbarExpandMore = ({ expanded, setExpanded }) => {
       // }}
       style={{
         ...styles.expandMore(expanded),
-        width: expandedSize.interpolate({
+        width: "70%",
+        right: expandedSize.interpolate({
           inputRange: [0, 1],
-          outputRange: ["0%", "60%"],
+          outputRange: ["-100%", "0%"],
         }),
-        padding: expanded ? 20 : 0,
+        padding: 20,
         height: 200,
         top: -200,
       }}
     >
-      {expanded && (
-        <View gap={4}>
-          <SwitchLanguage />
-          <Pressable
+      <View gap={4}>
+        <SwitchLanguage />
+        <Pressable
+          style={{
+            width: 50,
+            height: 50,
+          }}
+          onPress={goToSelectGeolocation}
+        >
+          <View
             style={{
-              width: 50,
-              height: 50,
+              flex: 1,
+              alignItems: "center",
+              justifyContent: "center",
             }}
-            onPress={goToSelectGeolocation}
           >
-            <View
+            <Image
               style={{
-                flex: 1,
-                alignItems: "center",
-                justifyContent: "center",
+                width: "60%",
+                height: "60%",
               }}
-            >
-              <Image
-                style={{
-                  width: "60%",
-                  height: "60%",
-                }}
-                source={images.Locaiton}
-                alt="smthng"
-              />
-            </View>
-          </Pressable>
-          <Button onPress={logout}>{t("auth.logout")}</Button>
-        </View>
-      )}
+              source={images.Locaiton}
+              alt="smthng"
+            />
+          </View>
+        </Pressable>
+        <Button backgroundColor="red.600" h={10} onPress={logout}>
+          <Text
+            style={{
+              color: "#fff",
+              fontSize: 12,
+              textAlign: "center",
+            }}
+          >
+            <Text>{t("auth.logout")}</Text>
+          </Text>
+          <Text
+            style={{
+              color: "#fff",
+              fontSize: 12,
+              textAlign: "center",
+            }}
+          >
+            +373{client?.phone}
+          </Text>
+        </Button>
+      </View>
     </Animated.View>
   );
 };

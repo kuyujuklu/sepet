@@ -1,22 +1,27 @@
-const navbarZIndex = 100
 
 export const styles = {
   navbarWrapper: {
-    backgroundColor: "rgb(242, 242, 242)",
-    position: "relative",
+    position: "absolute",
+    width: "100%",
+    height: 50,
+    bottom: 0,
     flex: 1,
   },
   navbarContainer: {
+    position: "relative",
+    backgroundColor: "#fff",
+    paddingVertical: 10,
+
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-around",
     height: 20,
+    width: "100%",
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: "#fff",
     borderTopRightRadius: 10,
     borderTopLeftRadius: 10,
-    backgroundColor: "#fff",
   },
   navbarButton: {
     width: 50,

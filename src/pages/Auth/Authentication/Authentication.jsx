@@ -10,7 +10,7 @@ const Authentication = () => {
     dispatch(disableNavbar());
   }, [dispatch]);
   return (
-    <Wrapper>
+    <Wrapper style={{paddingBottom: 0}}>
       <AuthenticationForm />
     </Wrapper>
   );

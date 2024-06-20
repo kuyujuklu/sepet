@@ -2,12 +2,14 @@ import OrderList from "./OrderList";
 import { useSelector } from "react-redux";
 import { selectOrders } from "../../../features/store/orders/ordersSlice";
 
-export const OrderListWithAllClientOrders = () => {
+export const OrderListWithAllClientOrders = ({upperComponent}) => {
   const orders = useSelector(selectOrders)
 
   return (
     <>
-      <OrderList orders={orders} />
+      <OrderList orders={orders} upperComponent={upperComponent}/>
     </>
   );
 };
+
+export default OrderListWithAllClientOrders

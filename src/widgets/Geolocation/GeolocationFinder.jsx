@@ -1,6 +1,8 @@
 import { useDispatch, useSelector } from "react-redux";
 import {
   selectNearGeolocation,
+  selectNearGeolocationState,
+  setHasPermission,
   setNearGeolocation,
 } from "../../features/store/geolocation/geolocationSlice";
 import * as Location from "expo-location";
@@ -14,8 +16,11 @@ const GeolocationFinder = () => {
       if (nearLocaiton) return;
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
+        dispatch(setHasPermission(false))
         return;
       }
+      dispatch(setHasPermission(true))
+
 
       const location = await Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.BestForNavigation,

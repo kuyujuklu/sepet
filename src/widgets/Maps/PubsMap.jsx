@@ -1,6 +1,6 @@
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import { Spinner, View } from "native-base";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { selectGeolocation } from "../../features/store/geolocation/geolocationSlice";
 import PubMarker from "./PubMarker";
@@ -11,16 +11,20 @@ const PubsMap = ({ selectPub, selectedPub }) => {
   const location = useSelector(selectGeolocation);
   const [mapLoaded, setMapLoaded] = useState(false);
 
-  const { data, error } = useGetNearbyPubsQuery({
-    coords: { lat: location.lat, lng: location.lng },
-  });
+  const { data, error } = useGetNearbyPubsQuery(
+    {
+      coords: { lat: location.lat, lng: location.lng },
+    },
+    { pollingInterval: 20000, skipPollingIfUnfocused: true },
+  );
 
   // Log error on getting nearby pubs error from api
-  useEffect(() => {
-  }, [error]);
+  useEffect(() => {}, [error]);
 
-  // Log info on getting nearby pubs data from api
-  useEffect(() => {
+  const pubs = useMemo(() => {
+    if (!data?.pubs) return [];
+    const pubs = data.pubs;
+    return pubs;
   }, [data]);
 
   const mapRef = useRef(null);
@@ -30,9 +34,11 @@ const PubsMap = ({ selectPub, selectedPub }) => {
     if (!selectedPub) return;
     if (!mapLoaded) return;
 
-    const pub = data?.pubs?.find((pub) => pub.id === selectedPub);
+    const pub = pubs?.find((pub) => pub.id === selectedPub);
 
     if (!pub) return;
+
+    console.log("Animating to pub: ", pub);
 
     mapRef.current.animateCamera(
       {
@@ -42,31 +48,31 @@ const PubsMap = ({ selectPub, selectedPub }) => {
         },
         pitch: 0, // Change this value to set the desired pitch
         heading: 0, // Direction faced by the camera, in degrees clockwise from North.
-        zoom: 13,
+        zoom: 15,
       },
       { duration: 800 },
     );
-  }, [selectedPub, mapLoaded]);
+  }, [selectedPub, mapLoaded, pubs]);
 
   // Animate marker on changing geolocation
-  useEffect(() => {
-    if (!mapLoaded) return;
-    if (!location) return;
-    if (selectedPub) return;
+  // useEffect(() => {
+  //   if (!mapLoaded) return;
+  //   if (!location) return;
+  //   if (!selectedPub) return;
 
-    mapRef.current.animateCamera(
-      {
-        center: {
-          latitude: location.lat,
-          longitude: location.lng,
-        },
-        pitch: 0, // Change this value to set the desired pitch
-        heading: 0, // Direction faced by the camera, in degrees clockwise from North.
-        zoom: 10,
-      },
-      { duration: 800 },
-    );
-  }, [location, selectedPub]);
+  //   mapRef.current.animateCamera(
+  //     {
+  //       center: {
+  //         latitude: location.lat,
+  //         longitude: location.lng,
+  //       },
+  //       pitch: 0, // Change this value to set the desired pitch
+  //       heading: 0, // Direction faced by the camera, in degrees clockwise from North.
+  //       zoom: 10,
+  //     },
+  //     { duration: 800 },
+  //   );
+  // }, [location, selectedPub]);
 
   return (
     <View px="4" w="full">
@@ -96,7 +102,7 @@ const PubsMap = ({ selectPub, selectedPub }) => {
             ref={mapRef}
             style={mapStyle.map}
           >
-            {data?.pubs?.map((pub) => {
+            {pubs?.map((pub) => {
               if (!pub.lat || !pub.lng) return <></>;
 
               return (
@@ -114,6 +120,7 @@ const PubsMap = ({ selectPub, selectedPub }) => {
             {/* Client geolocation marker */}
             {location && (
               <Marker
+                tracksViewChanges={false}
                 coordinate={{
                   latitude: location.lat,
                   longitude: location.lng,

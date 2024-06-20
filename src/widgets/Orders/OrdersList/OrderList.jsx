@@ -1,12 +1,12 @@
-import { FlatList, Text, View } from "native-base";
+import { FlatList, Spinner, Text, View } from "native-base";
 import OrderCard from "./OrderCard";
 import { GetTimeFromApiTimeString } from "../../../shared/utils/time";
-import { useMemo } from "react";
+import { Suspense, useMemo } from "react";
 import { images } from "../../../app/images/images";
 import { Image, TouchableOpacity } from "react-native";
 import { AnonymousProBold } from "../../../constants/styles-constants";
 
-const OrderList = ({ orders }) => {
+const OrderList = ({ orders, upperComponent }) => {
   const filteredOrders = useMemo(() => {
     let filteredOrders = [...orders];
 
@@ -20,7 +20,6 @@ const OrderList = ({ orders }) => {
       filteredOrders = filteredOrders.slice(0, 6);
     }
 
-
     return filteredOrders;
   }, [orders]);
 
@@ -28,8 +27,11 @@ const OrderList = ({ orders }) => {
     <>
       <FlatList
         contentContainerStyle={{ paddingHorizontal: 10, paddingVertical: 10 }}
-        renderItem={({ item: order }) => (
-          <OrderCard key={order?.id} order={order} />
+        renderItem={({ item: order, index }) => (
+          <>
+            {index === 0 && upperComponent}
+            <OrderCard key={order?.id} order={order} />
+          </>
         )}
         data={filteredOrders || []}
         ItemSeparatorComponent={() => <View height={5} />}

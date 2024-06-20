@@ -137,22 +137,20 @@ const CreateOrder = ({
     dispatch(addOrder(createOrderResponse.order));
     dispatch(clearBasket());
     navigator.navigate("Orders");
-
   }, [createOrderResponse]);
 
   return (
-    <ScrollView>
+    <ScrollView keyboardShouldPersistTaps={"handled"}>
+      <Text
+        fontSize={25}
+        textTransform={"uppercase"}
+        fontWeight={"bold"}
+        textAlign={"center"}
+        mb={5}
+      >
+        {t("create_order_page.headline")}
+      </Text>
       <View justifyContent={"center"} flex={1}>
-        <Text
-          fontSize={15}
-          textTransform={"uppercase"}
-          fontWeight={"bold"}
-          textAlign={"center"}
-          mb={2}
-        >
-          {t("create_order_page.additional_data.headline")}
-        </Text>
-
         <View px={10} gap="4" flex={1} overflow={"hidden"}>
           <CreateOrderInputs
             town={town}
@@ -202,15 +200,7 @@ const CreateOrder = ({
           </View>
 
           {isShippingTimeAvailable && (
-            <View
-              alignItems={"center"}
-              flexDirection={"row"}
-              justifyContent={"center"}
-              gap="2"
-            >
-              <Text fontSize={20} fontWeight={"medium"}>
-                {t("create_order_page.additional_data.delivery_time")}
-              </Text>
+            <View alignItems={"center"} flexDirection={"row"} gap="2">
               <View style={{ width: 25, height: 25 }}>
                 <Image
                   source={images.ClockBlack}
@@ -218,8 +208,11 @@ const CreateOrder = ({
                   alt=""
                 />
               </View>
-              <Text fontWeight={"medium"} fontSize={20}>
-                {shippingTimeFrom} - {shippingTimeTo}
+              <Text fontSize={16} fontWeight={"medium"}>
+                {t("create_order_page.additional_data.delivery_time")}
+              </Text>
+              <Text fontWeight={"medium"} fontSize={16}>
+                {shippingTimeFrom} - {shippingTimeTo} min
               </Text>
             </View>
           )}
@@ -230,7 +223,7 @@ const CreateOrder = ({
               fontFamily={AnonymousProRegular}
               fontSize={15}
             >
-              {t("create_order_page.additional_data.items_price")}: {itemsPrice}
+              {t("create_order_page.additional_data.items_price")}: {itemsPrice} Lei
             </Text>
             <Text
               color="gray.600"
@@ -238,10 +231,10 @@ const CreateOrder = ({
               fontSize={15}
             >
               {t("create_order_page.additional_data.delivery_price")}:{" "}
-              {deliveryPrice}
+              {deliveryPrice} Lei
             </Text>
             <Text color="gray.600" fontFamily={AnonymousProBold} fontSize={18}>
-              {t("create_order_page.additional_data.total_sum")}: {totalSum}
+              {t("create_order_page.additional_data.total_sum")}: {totalSum} Lei
             </Text>
           </View>
         </View>

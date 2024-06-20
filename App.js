@@ -4,8 +4,10 @@ import {
   useNavigationContainerRef,
   useRoute,
 } from "@react-navigation/native";
+
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import Navbar from "./src/widgets/Navbar/Navbar";
+import AsyncStorage from  "@react-native-async-storage/async-storage";
 import { Provider, useDispatch, useSelector } from "react-redux";
 import { store } from "./src/features/store/configureStore";
 import Registration from "./src/pages/Auth/Registration/Registration";
@@ -22,7 +24,7 @@ import PubInfoPage from "./src/pages/PubInfo/PubInfoPage";
 import ClearBasketPopup from "./src/widgets/Basket/ClearBasketPopup";
 import BasketPage from "./src/pages/Basket/BasketPage";
 import CreateOrderPage from "./src/pages/CreateOrder/CreateOrderPage";
-import { navbarSelectIsEnabled } from "./src/features/store/navbar/navbarSlice";
+import { selectNavbarIsEnabled } from "./src/features/store/navbar/navbarSlice";
 import OrdersPage from "./src/pages/Orders/OrdersPage";
 import SelectGeolocationPage from "./src/pages/Geolocation/SelectGeolocationPage";
 import OrdersPreloader from "./src/features/store/orders/OrdersPreloader";
@@ -30,6 +32,8 @@ import OrdersPreloader from "./src/features/store/orders/OrdersPreloader";
 import "./src/i18n/i18n.config";
 
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import NotificationHandler from "./src/features/store/notifications/NotificationHandler";
 
 export default function App() {
   return (
@@ -42,7 +46,9 @@ export default function App() {
 }
 
 const AppInner = () => {
-  const isNavbarEnabled = useSelector(navbarSelectIsEnabled);
+  const isNavbarEnabled = useSelector(selectNavbarIsEnabled);
+
+  const { i18n } = useTranslation();
 
   useFonts({
     AnonymousProBold: require("./assets/fonts/AnonymousPro-Bold.ttf"),
@@ -51,11 +57,26 @@ const AppInner = () => {
   const Stack = createNativeStackNavigator();
 
   const navigationRef = useNavigationContainerRef();
-  const [routeName, setRouteName] = useState()
+  const [routeName, setRouteName] = useState();
+
+  //i18n set language
+  useEffect(() => {
+    (async function () {
+      try {
+        const value = await AsyncStorage.getItem("lang");
+        if (value !== null) {
+          console.log("GOT VALUE FROM LOCAL ST: ", value);
+          i18n.changeLanguage(value);
+        }
+      } catch (e) {
+        console.log("getting lang error: ", e);
+      }
+    })();
+  }, []);
 
   useEffect(() => {
-    console.log("ROUTE NAME: ", routeName)
-  }, [routeName])
+    console.log("ROUTE NAME: ", routeName);
+  }, [routeName]);
 
   return (
     <NavigationContainer
@@ -110,6 +131,8 @@ const AppInner = () => {
       <AuthWatcher />
 
       <GeolocationFinder />
+
+      <NotificationHandler />
 
       <ClearBasketPopup />
     </NavigationContainer>

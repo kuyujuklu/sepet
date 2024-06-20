@@ -17,15 +17,6 @@ const CreateOrderPage = ({ route }) => {
 
   return (
     <Wrapper>
-      <Text
-        fontSize={25}
-        textTransform={"uppercase"}
-        fontWeight={"bold"}
-        textAlign={"center"}
-        mb={5}
-      >
-        {t("create_order_page.headline")}
-      </Text>
 
       <View flex={1}>
         <CreateOrder

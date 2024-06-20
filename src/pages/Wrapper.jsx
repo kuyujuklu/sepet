@@ -1,16 +1,25 @@
+import { Image } from "expo-image";
 import { View } from "native-base";
-import { Image, ScrollView } from "react-native";
+import { ScrollView } from "react-native";
+import { useSelector } from "react-redux";
+import { selectNavbarIsEnabled } from "../features/store/navbar/navbarSlice";
 
-const Wrapper = ({ children }) => {
+const Wrapper = ({ children, style }) => {
+  const isNavbarOpened = useSelector(selectNavbarIsEnabled)
+
   return (
-    <View style={{ paddingTop: 25, flex: 1, gap: 0 }}>
+    <View
+      style={{
+        paddingTop: 5,
+        paddingBottom: isNavbarOpened ? 50 : 10,
+        flex: 1,
+        gap: 0,
+        backgroundColor: "#CFCFCF4C",
+        ...style,
+      }}
+    >
       <View position={"absolute"} width={"100%"} height={"100%"}>
-        <Image
-          source={require("../../assets/images/bg4.jpeg")}
-          alt="smthng"
-          contentFit=""
-          style={{ width: "100%" }}
-        ></Image>
+        
       </View>
       {children}
     </View>

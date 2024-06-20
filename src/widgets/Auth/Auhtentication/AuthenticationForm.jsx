@@ -15,6 +15,9 @@ import AuthenticationDataInputs from "./AuthenticationDataInputs";
 import { enableNavbar } from "../../../features/store/navbar/navbarSlice";
 
 import { useTranslation } from "react-i18next";
+import { Image } from "expo-image";
+import { images } from "../../../app/images/images";
+import { setRefetchClient } from "../../../features/store/auth/authSlice";
 
 const AuthenticationForm = () => {
   const dispatch = useDispatch();
@@ -44,6 +47,7 @@ const AuthenticationForm = () => {
 
     setaccesstoken(authenticationQueryData.access_token);
     dispatch(enableNavbar());
+    dispatch(setRefetchClient(true))
 
     SecureStore.setItemAsync(
       "refresh_token",
@@ -69,7 +73,11 @@ const AuthenticationForm = () => {
 
   return (
     <View style={authStyles.authContainer}>
-      <Text style={authStyles.authHeadline}>{t("auth.headline")}</Text>
+      <View height="40%" style={{aspectRatio: 1}}>
+
+        <Image contentFit="contain" source={images.AllFoodHighQuality} style={{width: "100%", height: "100%"}} />
+        
+      </View>
       {/* Form */}
       <View style={authStyles.authFormContainer}>
         <AuthenticationDataInputs
@@ -80,8 +88,8 @@ const AuthenticationForm = () => {
         />
 
         <Button
-          primary
-          mt={"10"}
+          backgroundColor="emerald.600"
+          mt="10"
           onPress={sendAuthentication}
           rightIcon={
             isLoading ? (

@@ -26,7 +26,6 @@ const CategoriesScreen = memo(() => {
         pubID={contextValue?.pubID}
         menuID={contextValue?.selectedMenu}
       />
-
     </View>
   );
 });
@@ -37,7 +36,6 @@ const DishesScreen = () => {
 
   return (
     <>
-      {!route?.params?.categoryID && <Text>FUUUUUUUUUUUCK</Text>}
       <DishListForCategory
         pubID={contextValue?.pubID}
         categoryID={route?.params?.categoryID}
@@ -58,15 +56,16 @@ const PubInfoPage = () => {
     data: pubData,
     error: pubError,
     pubIsLoading,
-  } = useGetPubInfoQuery({ pubID }, { skip: !pubID });
+  } = useGetPubInfoQuery(
+    { pubID },
+    { skip: !pubID, pollingInterval: 20000, skipPollingIfUnfocused: true },
+  );
 
   const Stack = createNativeStackNavigator();
 
   return (
     <Wrapper>
-      <View>
-        <PubInfoHeader pubID={pubID} />
-      </View>
+      <View></View>
 
       <PubInfoRouteContext.Provider
         value={{
@@ -98,7 +97,7 @@ const PubInfoPage = () => {
             component={DishesScreen}
           />
         </Stack.Navigator>
-        <View mb={5} position={"absolute"} bottom={0}>
+        <View mb={52} position={"absolute"} bottom={0}>
           <MenuListForPub
             pubID={pubID}
             menus={pubData?.menus}

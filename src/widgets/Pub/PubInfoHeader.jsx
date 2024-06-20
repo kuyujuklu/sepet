@@ -3,7 +3,7 @@ import {
   useGetNearbyPubsQuery,
   useGetPubInfoQuery,
 } from "../../shared/api/pubs/pubsApi";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
 import { selectGeolocation } from "../../features/store/geolocation/geolocationSlice";
 import { AnonymousProBold } from "../../constants/styles-constants";
@@ -16,15 +16,15 @@ const PubInfoHeader = ({ pubID }) => {
 
   // Is used to quickly show info for pub, while full pub info is loading
   const { data: nearPubsData, error: nearPubsError } = useGetNearbyPubsQuery(
-    { coords: { lat: location?.lat, lng: location?.lng } },
-    { skip: !location },
+    {
+      coords: { lat: location?.lat, lng: location?.lng },
+    },
+    { skip: !location, pollingInterval: 20000, skipPollingIfUnfocused: true },
   );
 
-  useEffect(() => {
-  }, [nearPubsData]);
+  useEffect(() => {}, [nearPubsData]);
 
-  useEffect(() => {
-  }, [nearPubsError]);
+  useEffect(() => {}, [nearPubsError]);
 
   const {
     data: pubData,
@@ -32,11 +32,9 @@ const PubInfoHeader = ({ pubID }) => {
     pubIsLoading,
   } = useGetPubInfoQuery({ pubID }, { skip: !pubID });
 
-  useEffect(() => {
-  }, [pubData]);
+  useEffect(() => {}, [pubData]);
 
-  useEffect(() => {
-  }, [pubError]);
+  useEffect(() => {}, [pubError]);
 
   const pub =
     pubData?.pub ?? nearPubsData?.pubs?.find((pub) => pub.id === pubID);
@@ -45,14 +43,13 @@ const PubInfoHeader = ({ pubID }) => {
     <View>
       {!pub && <Spinner color={"black"} size={40} />}
       {pub && (
-        <View px="10" pb="10">
+        <View px="10" pb="5">
           {/* NAME */}
           <Text
             fontFamily={AnonymousProBold}
             color={"#dc4444"}
             fontSize={32}
             textAlign={"center"}
-            mb={5}
           >
             {pub.name}
           </Text>

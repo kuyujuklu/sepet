@@ -16,7 +16,7 @@ import { AnonymousProBold } from "../../constants/styles-constants";
 const BasketPage = () => {
   const { t } = useTranslation();
   const pubID = useSelector(selectBasketPubID);
-  const { data: pubData } = useGetPubInfoQuery({ pubID }, { skip: !pubID });
+  const { data: pubData } = useGetPubInfoQuery({ pubID }, { pollingInterval: 20000, skip: !pubID });
 
   const basket = useSelector(selectBasket);
 
@@ -27,29 +27,29 @@ const BasketPage = () => {
 
   return (
     <Wrapper>
-      <View
-        mb={10}
-        mt={10}
-        flexDir="row"
-        justifyContent="center"
-        alignItems="center"
-      >
-        <Text
-          textAlign="center"
-          fontSize={25}
-          textTransform="uppercase"
-          fontWeight="bold"
-        >
-          {t("basket_page.headline")} (
-        </Text>
-        {itemsPrice ? <Number number={itemsPrice} /> : <></>}
-        <Text textAlign="center" fontSize={25} fontWeight="bold">
-          {itemsPrice ? " Lei" : t("basket_page.empty")})
-        </Text>
-      </View>
-
       <View flex={1}>
         <DishList
+          upperElement={
+            <View
+              mt={3}
+              flexDir="row"
+              justifyContent="center"
+              alignItems="center"
+            >
+              <Text
+                textAlign="center"
+                fontSize={25}
+                textTransform="uppercase"
+                fontWeight="bold"
+              >
+                {t("basket_page.headline")} (
+              </Text>
+              {itemsPrice ? <Number number={itemsPrice} /> : <></>}
+              <Text textAlign="center" fontSize={25} fontWeight="bold">
+                {itemsPrice ? " Lei" : t("basket_page.empty")})
+              </Text>
+            </View>
+          }
           pubID={pubID}
           dishes={pubData?.dishes?.filter(
             (dish) => basket[dish.id]?.count && basket[dish.id]?.count > 0,
@@ -57,8 +57,8 @@ const BasketPage = () => {
         />
       </View>
 
-      <View position="absolute" w="full" px="2" bottom="2" borderRadius={15}>
-        <BasketCreateOrderButton itemsPrice={itemsPrice} />
+      <View position="absolute" w="full" px="2" bottom="60" borderRadius={15}>
+        <BasketCreateOrderButton itemsPrice={itemsPrice} isClosed={!pubData?.pub.isOpen} />
       </View>
     </Wrapper>
   );

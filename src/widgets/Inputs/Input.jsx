@@ -24,7 +24,7 @@ const Input = ({
   let borderColor = errorValue
     ? inputStylesConstants.errorText
     : isFocused
-      ? "#080F9C"
+      ? "#059669"
       : value
         ? "#aaa"
         : "#aaa";
@@ -39,7 +39,7 @@ const Input = ({
   }, [isFocused]);
 
   return (
-    <Animated.View style={{ marginTop: 12 }}>
+    <Animated.View style={{ marginTop: 18 }}>
       {/* INPUT */}
       <TextInput
         {...inputParams}
@@ -51,8 +51,8 @@ const Input = ({
         onChangeText={setValue}
         keyboardType={keyboardType}
         style={{
+          backgroundColor: "#fff",
           ...inputStyles.inputField,
-          borderWidth: 1,
           borderColor: borderColor,
           ...inputStyleFromParams,
         }}
@@ -60,7 +60,13 @@ const Input = ({
       />
 
       {/* LABEL */}
-      <TouchableWithoutFeedback onPress={() => inputRef.current?.focus()}>
+      <TouchableWithoutFeedback
+        onPress={() => {
+          inputRef.current?.focus();
+          console.log("PRESSED ON TOUCHABLE OPACITY");
+        }}
+        style={{ borderWidth: 1, borderColor: "#000", backgroundColor: "#000" }}
+      >
         <Animated.View
           style={[
             inputStyles.labelContainer,
@@ -75,7 +81,7 @@ const Input = ({
                 {
                   translateY: focusedAnimation.interpolate({
                     inputRange: [0, 1],
-                    outputRange: [12, -24],
+                    outputRange: [12, -30],
                   }),
                 },
                 {

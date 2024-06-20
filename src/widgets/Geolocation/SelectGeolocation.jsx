@@ -1,11 +1,13 @@
 import MapView, { PROVIDER_GOOGLE } from "react-native-maps";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  selectGeolocation,
+  selectHasGeolocationPerm,
   selectNearGeolocation,
+  selectNearGeolocationState,
   setGeolocation,
+  setNearGeolocation,
 } from "../../features/store/geolocation/geolocationSlice";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button, Spinner, Text, View } from "native-base";
 import { Image } from "react-native";
 import { useNavigation } from "@react-navigation/native";
@@ -17,21 +19,55 @@ const mapStyle = {
     height: "100%",
   },
 };
-
 const SelectGeolocation = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const navigator = useNavigation();
   const [mapLoaded, setMapLoaded] = useState(false);
 
+  const [zoom, setZoom] = useState(0);
+
   const nearLocation = useSelector(selectNearGeolocation);
+  const hasPerm = useSelector(selectHasGeolocationPerm);
   const [center, setCenter] = useState(null);
+
+  const handleSelectLocationByYourself = () => {
+    dispatch(setNearGeolocation({ lat: 47.00367, lng: 28.907089 }));
+    setZoom(10);
+  };
 
   const handleSetLocationButtonClick = () => {
     if (!center) return;
     dispatch(setGeolocation({ lat: center.lat, lng: center.lng }));
     navigator.navigate("Home");
   };
+
+  useEffect(() => {
+    if (!mapLoaded || !zoom) return;
+    if (!mapRef?.current) return;
+
+    mapRef.current.animateCamera(
+      {
+        zoom,
+      },
+      { duration: 800 },
+    );
+  }, [zoom, mapLoaded]);
+
+  useEffect(() => {
+    const unsubscribe = navigator.addListener("focus", () => {
+      if (!mapRef?.current) return;
+      mapRef.current.animateCamera(
+        {
+          zoom: 18,
+        },
+        { duration: 800 },
+      );
+    });
+
+    // Return the function to unsubscribe from the event so it gets removed on unmount
+    return unsubscribe;
+  }, [navigator]);
 
   const mapRef = useRef(null);
 
@@ -49,15 +85,32 @@ const SelectGeolocation = () => {
           justifyContent="center"
           alignItems="center"
         >
+          {/* No near location screen */}
           {!nearLocation && (
             <View
               style={{ width: "100%", height: "100%" }}
               justifyContent="center"
               alignItems="center"
             >
-              <Spinner size="xl" />
+              {hasPerm && (
+                <View h="53%" justifyContent="flex-end">
+                  <Spinner size="xl" />
+                </View>
+              )}
+              <View h="47%">
+                <Button
+                  background={"emerald.600"}
+                  borderRadius={15}
+                  mt={8}
+                  mb={4}
+                  onPress={handleSelectLocationByYourself}
+                >
+                  {t("select_geolocation.select_by_yourself_button")}
+                </Button>
+              </View>
             </View>
           )}
+          {/* Mark to center */}
           <View zIndex={100} position="absolute">
             <View
               style={{
@@ -73,6 +126,7 @@ const SelectGeolocation = () => {
               />
             </View>
           </View>
+          {/* Map */}
           {nearLocation && (
             <MapView
               provider={PROVIDER_GOOGLE}
@@ -91,7 +145,7 @@ const SelectGeolocation = () => {
                 },
                 pitch: 0, // Change this value to set the desired pitch
                 heading: 0, // Direction faced by the camera, in degrees clockwise from North.
-                zoom: 14,
+                zoom: 18,
               }}
             />
           )}

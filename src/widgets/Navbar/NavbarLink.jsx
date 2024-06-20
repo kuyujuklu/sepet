@@ -1,5 +1,5 @@
 import { useNavigation } from "@react-navigation/native";
-import { Image, Pressable, View } from "react-native";
+import { Image, Pressable, TouchableOpacity, View } from "react-native";
 import { styles } from "./navbar.style";
 
 const NavbarLink = ({ to, imageSource, isSelected }) => {
@@ -8,7 +8,7 @@ const NavbarLink = ({ to, imageSource, isSelected }) => {
     navigator.navigate(to);
   };
   return (
-    <Pressable style={styles.navbarButton} onPress={goTo}>
+    <TouchableOpacity style={styles.navbarButton} onPress={goTo}>
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
         <Image
           style={{
@@ -19,7 +19,7 @@ const NavbarLink = ({ to, imageSource, isSelected }) => {
           alt="smthng"
         />
       </View>
-    </Pressable>
+    </TouchableOpacity>
   );
 };
 

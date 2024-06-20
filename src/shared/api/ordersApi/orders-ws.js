@@ -36,6 +36,7 @@ const onMessage = (event) => {
   let body;
   try {
     body = JSON.parse(event.data);
+    console.log("MESSAGE BODY: ", body)
   } catch (e) {
     error = e;
   }
@@ -125,7 +126,7 @@ setInterval(() => {
     console.log("CHECK SOCKET NULL");
     configureSocket();
   }
-}, 2000);
+}, 10000);
 
 //On successfully receive data uses callback from parameters
 export const subscribeOnOrdersWebSocket = (

@@ -24,7 +24,7 @@ export default {
     client_not_found: "Пользователь не найден",
     field_is_required: "Поле обязательно для заполнения",
     this_pub_is_not_delivering_in_your_area:
-      "Этот ресторан не доставляет до вашего адреса",
+      "В данный момент этот ресторан не доставляет до вашего адреса",
     validation: {
       client: {
         name_is_required: "Имя обязательно для заполнения",
@@ -88,11 +88,15 @@ export default {
   },
   select_geolocation: {
     headline: "Выберите свое местоположение",
-    wait_geolocation_is_loading: "Подождите, мы загружем ваше местоположение",
+    select_by_yourself_button: "Выбрать самому",
+    wait_geolocation_is_loading: "Подождите, мы загружаем ваше местоположение",
     pin_geolocation: "Отметить местоположение",
+    we_cannot_load_your_geolocaiton:
+      "Мы не смогли загрузить ваше местоположение, выберите его сами",
   },
   home_page: {
     pubs_near_you: "Рестораны возле вас",
+    pub_is_closed: "Закрыто. Время работы",
   },
   pub_info_page: {
     pub_header: {
@@ -104,6 +108,13 @@ export default {
     headline: "Корзина",
     empty: "Пустая",
     create_order_button: "Создать заказ",
+    pub_is_closed_error: "Этот ресторан сейчас закрыт попробуйте позже или сделайте заказ в другом",
+  },
+  basket_popup: {
+    another_pub_warning:
+      "Вы пытаетесь добавить товар из другого ресторана.  Корзина будет очищена.",
+    cancel_button: "Отмена",
+    ok_button: "Ok",
   },
   create_order_page: {
     headline: "Создать заказ",
@@ -133,30 +144,34 @@ export default {
           },
         },
       },
-      delivery_time: "Приблизительное время доставки",
-      items_price: "Цена товара",
+      delivery_time: "Время доставки",
+      items_price: "Сумма товаров",
       delivery_price: "Цена доставки",
-      total_sum: "Суммарно",
+      total_sum: "Сумма к оплате",
       create_order_button: "Создать заказ",
     },
   },
   order_page: {
-    headline: "Ваши последние заказы",
+    headline: "Ваши заказы",
     headline_no_orders: "Вы еще ничего не заказывали",
     order_card: {
+      unable_to_repeat_order: "К сожалению мы не можем повторить этот заказ",
       positions: "Позиций",
       rate_button: "Оценить",
       repeat_button: "Повторить",
+      order: "Заказ",
       order_statuses: {
-        not_handled: "Ожидание",
-        handled: "Рассмотрен",
-        preparing: "Приготовлен",
+        not_handled: "Рассматривается",
+        handled: "Готовится",
+        preparing: "У курьера",
         completed: "Доставлен",
+        canceled: "Отменен",
       },
     },
   },
   near_categories_page: {
     headline: "Рестораны",
+    pub_is_closed: "Закрыто. Время работы",
   },
   categories: {
     asian: "азиатск.",

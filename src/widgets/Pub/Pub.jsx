@@ -5,8 +5,11 @@ import { memo, useEffect, useRef, useState } from "react";
 import { ENV } from "../../constants/env/env";
 import { images } from "../../app/images/images";
 import { Image } from "expo-image";
+import { GetShippingTimeString } from "../../shared/utils/time";
+import { useTranslation } from "react-i18next";
 
 const Pub = ({ pub, isViewable, distance }) => {
+  const {t} = useTranslation()
   const bgPath =
     ENV.API_HTTP_URL +
     ENV.API_STATIC_PATH +
@@ -14,6 +17,13 @@ const Pub = ({ pub, isViewable, distance }) => {
     pub.bg_image_file_name;
 
   const scaleAnimation = useRef(new Animated.Value(0)).current;
+
+  const shippingWorkHours = {
+    start: pub?.shipping?.shipping_work_start,
+    end: pub?.shipping?.shipping_work_end,
+  };
+
+  const shippingTimeString = GetShippingTimeString(shippingWorkHours)
 
   // Animate the image when it becomes visible
   useEffect(() => {
@@ -39,6 +49,21 @@ const Pub = ({ pub, isViewable, distance }) => {
           justifyContent: "center",
         }}
       >
+        {!pub.isOpen && (
+          <View
+            bg={"black"}
+            w="full"
+            position="absolute"
+            justifyContent="center"
+            alignItems="center"
+            zIndex={10}
+            opacity={0.8}
+            h="full"
+          >
+            <Text color="white" fontSize={18}>{t("home_page.pub_is_closed")}</Text>
+            <Text color="white" fontSize={18}>{shippingTimeString}</Text>
+          </View>
+        )}
         {!pub.bg_image_file_name && (
           <View
             bg={"black"}
@@ -84,7 +109,9 @@ const Pub = ({ pub, isViewable, distance }) => {
               style={{ width: "100%", height: "100%" }}
             />
           </View>
-          <Text style={{ fontSize: 14, fontWeight: "bold" }}>{(distance/ 1000).toFixed(1)} km</Text>
+          <Text style={{ fontSize: 14, fontWeight: "bold" }}>
+            {(distance / 1000).toFixed(1)} km
+          </Text>
         </View>
         {/* Stars and location */}
         <View>

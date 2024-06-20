@@ -2,7 +2,7 @@ import { FlatList, View } from "react-native";
 import Pub from "./Pub";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useGetNearbyPubsQuery } from "../../shared/api/pubs/pubsApi";
-import { memo, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import newDebounce from "../../shared/utils/debounce";
 import { Pressable } from "native-base";
 import { useNavigation } from "@react-navigation/native";
@@ -27,35 +27,50 @@ const PubList = ({ selectedPub, selectPub }) => {
     data: pubsData,
     isLoading: pubsIsLoading,
     error: pubsError,
-  } = useGetNearbyPubsQuery({
-    coords: { lat: location.lat, lng: location.lng },
-  });
+  } = useGetNearbyPubsQuery(
+    {
+      coords: { lat: location.lat, lng: location.lng },
+    },
+    { skip: !location, pollingInterval: 20000, skipPollingIfUnfocused: true },
+  );
   useEffect(() => {
     if (!pubsData) return;
 
     console.log(pubsData?.pubs);
   }, [pubsData]);
 
-  const pubs = useMemo(() => {
+  const sortedPubs = useMemo(() => {
     if (!pubsData || !pubsData?.pubs) return [];
 
     const pubs = [...pubsData.pubs];
+    //.filter((pub) => pub.isOpen);
+
     pubs.sort((a, b) => a.distance - b.distance);
+    pubs.sort((a, b) => (a.isOpen === b.isOpen ? 0 : a.isOpen ? -1 : 1));
+
     return pubs;
   }, [pubsData]);
 
-  // Log error on getting error from api
   useEffect(() => {
-    if (pubsError) {
-    }
-  }, [pubsError]);
+    if (!sortedPubs || sortedPubs.length === 0) return;
+    selectPub(sortedPubs[0].id);
+  }, [sortedPubs]);
+
+  // Log error on getting error from api
+  useEffect(() => {}, [pubsError]);
 
   // Scroll flatlist on changing selected pub
   useEffect(() => {
-    if (!selectedPub) return;
-    const pubIndex = pubs?.findIndex((pub) => pub.id === selectedPub);
+    scrollPubListToActiveIndex();
+  }, [selectedPub]);
+
+  const scrollPubListToActiveIndex = useCallback(() => {
+    if (!selectedPub || !sortedPubs) return;
+
+    const pubIndex = sortedPubs?.findIndex((pub) => pub.id === selectedPub);
     if (pubIndex === -1) return;
 
+    console.log("Scrolling to pubIndex: ", pubIndex);
     setViewable(pubIndex);
 
     flatListRef.current.scrollToIndex({
@@ -63,16 +78,16 @@ const PubList = ({ selectedPub, selectPub }) => {
       animated: true,
       viewPosition: 0.5,
     });
-  }, [selectedPub]);
+  }, [selectedPub, sortedPubs]);
 
   const handlePubPress = (id) => {
     if (!id) return;
 
-    if (pubs.length === 0) return;
+    if (!sortedPubs || sortedPubs.length === 0) return;
 
-    if (pubs.length <= viewable) return;
+    if (sortedPubs.length <= viewable) return;
 
-    if (pubs[viewable]?.id !== id) {
+    if (sortedPubs[viewable]?.id !== id) {
       selectPub(id);
       return;
     }
@@ -88,8 +103,10 @@ const PubList = ({ selectedPub, selectPub }) => {
     if (viewables.length > 0) {
       viewable = viewables[0];
       try {
-        currentPub = pubs[viewables[0]];
-      } catch (e) {}
+        currentPub = sortedPubs[viewables[0]];
+      } catch (e) {
+        return;
+      }
     }
 
     if (currentPub && currentPub.id !== selectedPub) {
@@ -111,6 +128,7 @@ const PubList = ({ selectedPub, selectPub }) => {
         renderItem={({ item, index }) => (
           <Pressable
             // id={index}
+            disabled={!item.isOpen}
             onPress={() => {
               handlePubPress(item?.id);
             }}
@@ -122,8 +140,15 @@ const PubList = ({ selectedPub, selectPub }) => {
             />
           </Pressable>
         )}
+        onScrollToIndexFailed={() => {
+          const wait = new Promise((resolve) => setTimeout(resolve, 250));
+          console.log("Scroll failed");
+          wait.then(() => {
+            scrollPubListToActiveIndex();
+          });
+        }}
         viewabilityConfig={viewabilityConfig}
-        data={pubs}
+        data={sortedPubs}
         horizontal
         onViewableItemsChanged={debounceHandleViewableItemsChange}
         ItemSeparatorComponent={() => <View style={{ width: 20 }} />}
