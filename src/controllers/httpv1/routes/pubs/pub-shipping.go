@@ -190,6 +190,126 @@ func (c *pubController) SetShippingTime(ctx *fiber.Ctx) error {
 		fiber.StatusOK)
 }
 
+type SetShippingWorkingHours struct {
+	Ok bool `json:"ok" example:"true"`
+}
+
+// @Summary      Set shipping day time
+// @Description  sets shipping hours of working
+// @Tags         pub
+// @Param companyID path int true "company id"
+// @Param pubID path int true "pub id"
+// @Param input body entities.SetShippingWorkingHours true "time params"
+// @Accept       json
+// @Produce      json
+// @Success      200  {object} SetShippingWorkingHours
+// @Router       /company/{companyID}/pubs/{pubID}/shipping-work-hours [POST]
+// @Security ApiKeyAuth
+// @Param AccessToken header string  true "accesstoken"
+func (c *pubController) SetShippingWorkHours(ctx *fiber.Ctx) error {
+	userID, userSignificance, err := h.GetUserIDAndSignificanceFromLocals(ctx)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	companyID, err := strconv.Atoi(ctx.Params("companyID"))
+	if err != nil {
+		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	pubID, err := strconv.Atoi(ctx.Params("pubID"))
+	if err != nil {
+		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	//Checking access for action with pub for company
+	err = h.CheckAccess(userID, companyID, userSignificance, models.PUB_COMPANY_ENTITY, pubID)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	input, validationErrors, err := input.ParseRequestBody[entities.SetShippingWorkHours](ctx)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	if len(validationErrors) > 0 {
+		return h.SendValidationErrors(ctx, validationErrors)
+	}
+
+	err = c.PubService.SetShippingWorkingTime(pubID, input.Start, input.End)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	return h.SendSuccess(
+		ctx,
+		fiber.Map{
+			"ok": true,
+		},
+		fiber.StatusOK)
+}
+
+type SetShippingPrice struct {
+	Ok bool `json:"ok" example:"true"`
+}
+
+// @Summary      Set shipping price
+// @Description  sets shipping price
+// @Tags         pub
+// @Param companyID path int true "company id"
+// @Param pubID path int true "pub id"
+// @Param input body entities.SetShippingPrice true "time params"
+// @Accept       json
+// @Produce      json
+// @Success      200  {object} SetShippingPrice
+// @Router       /company/{companyID}/pubs/{pubID}/shipping-price [POST]
+// @Security ApiKeyAuth
+// @Param AccessToken header string  true "accesstoken"
+func (c *pubController) SetShippingPrice(ctx *fiber.Ctx) error {
+	userID, userSignificance, err := h.GetUserIDAndSignificanceFromLocals(ctx)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	companyID, err := strconv.Atoi(ctx.Params("companyID"))
+	if err != nil {
+		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	pubID, err := strconv.Atoi(ctx.Params("pubID"))
+	if err != nil {
+		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	//Checking access for action with pub for company
+	err = h.CheckAccess(userID, companyID, userSignificance, models.PUB_COMPANY_ENTITY, pubID)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	input, validationErrors, err := input.ParseRequestBody[entities.SetShippingPrice](ctx)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	if len(validationErrors) > 0 {
+		return h.SendValidationErrors(ctx, validationErrors)
+	}
+
+	err = c.PubService.SetShippingPrice(pubID, input.Price)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	return h.SendSuccess(
+		ctx,
+		fiber.Map{
+			"ok": true,
+		},
+		fiber.StatusOK)
+}
+
 type GetShippingShapes struct {
 	Ok        bool           `json:"ok" example:"true"`
 	Available bool           `json:"available"`

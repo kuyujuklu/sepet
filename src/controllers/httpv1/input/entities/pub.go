@@ -1,6 +1,7 @@
 package entities
 
 import (
+	"strings"
 	"time"
 
 	"github.com/alexkalak/qrmenu/src/helpers"
@@ -26,27 +27,32 @@ func (p *CreatePubInput) ConvertToModel(companyID int) models.Pub {
 }
 
 type UpdatePubInput struct {
-	Name           string `json:"name" validate:"required,min=2" example:"My pub name"`
-	ColorTheme     string `json:"color_theme" validate:"" example:"light"`
-	Color          string `json:"color" validate:"" example:"#ffffff"`
-	WifiPassword   string `json:"wifi_password" validate:"" example:"12345678"`
-	Address        string `json:"address" validate:"" example:"My pub address"`
-	AdditionalInfo string `json:"additional_info" validate:"" example:"My pub additional info"`
+	Name             string `json:"name" validate:"required,min=2" example:"My pub name"`
+	ColorTheme       string `json:"color_theme" validate:"" example:"light"`
+	Color            string `json:"color" validate:"" example:"#ffffff"`
+	WifiPassword     string `json:"wifi_password" validate:"" example:"12345678"`
+	Address          string `json:"address" validate:"" example:"My pub address"`
+	AdditionalInfo   string `json:"additional_info" validate:"" example:"My pub additional info"`
+	TelegramUsername string `json:"telegram_username" validate:"" example:"@my_username"`
+	HasInPlaceOrder  bool   `json:"has_in_place_order" validate:"" example:"true"`
 
 	CurrencyID int `json:"currency_id" example:"22"`
 	CompanyID  int `json:"company_id" example:"1"`
 }
 
 func (p *UpdatePubInput) ConvertToModel(companyID int, pubID int) models.Pub {
+	telegramUsernameWithoutAtSign := strings.Replace(p.TelegramUsername, "@", "", 1)
 	pub := models.Pub{
-		CompanyID:      uint(companyID),
-		CurrencyID:     uint(p.CurrencyID),
-		Name:           p.Name,
-		ColorTheme:     p.ColorTheme,
-		Color:          p.Color,
-		WifiPassword:   p.WifiPassword,
-		Address:        p.Address,
-		AdditionalInfo: p.AdditionalInfo,
+		CompanyID:        uint(companyID),
+		CurrencyID:       uint(p.CurrencyID),
+		Name:             p.Name,
+		ColorTheme:       p.ColorTheme,
+		Color:            p.Color,
+		WifiPassword:     p.WifiPassword,
+		Address:          p.Address,
+		AdditionalInfo:   p.AdditionalInfo,
+		TelegramUsername: telegramUsernameWithoutAtSign,
+		HasInPlaceOrder:  p.HasInPlaceOrder,
 	}
 
 	pub.ID = uint(p.CompanyID)
@@ -55,24 +61,26 @@ func (p *UpdatePubInput) ConvertToModel(companyID int, pubID int) models.Pub {
 }
 
 type PubOutput struct {
-	ID              int            `json:"id" example:"1"`
-	Expired         bool           `json:"expired" example:"false"`
-	ExpirationTime  string         `json:"expiration_time_utc" example:""`
-	Name            string         `json:"name" example:"My pub name"`
-	UrlName         string         `json:"url_name" example:"my-pub-name"`
-	QrCodeFileName  string         `json:"qr_code_file_name" example:"my-pub-name.png"`
-	ColorTheme      string         `json:"color_theme" example:"light"`
-	Color           string         `json:"color" example:"#ffffff"`
-	BgImageFileName string         `json:"bg_image_file_name" example:"my-pub-name-bg.png"`
-	LogoFileName    string         `json:"logo_file_name" example:"my-pub-name-logo.png"`
-	WifiPassword    string         `json:"wifi_password" example:"12345678"`
-	Address         string         `json:"address" example:"My pub address"`
-	AdditionalInfo  string         `json:"additional_info" example:"My pub additional info"`
-	ShippingOutput  ShippingOutput `json:"shipping"`
-	Lat             float64        `json:"lat" example:"55.7558"`
-	Lng             float64        `json:"lng" example:"37.6176"`
-	CurrencyID      int            `json:"currency_id"`
-	CompanyID       int            `json:"company_id"`
+	ID               int            `json:"id" example:"1"`
+	Expired          bool           `json:"expired" example:"false"`
+	ExpirationTime   string         `json:"expiration_time_utc" example:""`
+	Name             string         `json:"name" example:"My pub name"`
+	UrlName          string         `json:"url_name" example:"my-pub-name"`
+	QrCodeFileName   string         `json:"qr_code_file_name" example:"my-pub-name.png"`
+	ColorTheme       string         `json:"color_theme" example:"light"`
+	Color            string         `json:"color" example:"#ffffff"`
+	BgImageFileName  string         `json:"bg_image_file_name" example:"my-pub-name-bg.png"`
+	LogoFileName     string         `json:"logo_file_name" example:"my-pub-name-logo.png"`
+	WifiPassword     string         `json:"wifi_password" example:"12345678"`
+	Address          string         `json:"address" example:"My pub address"`
+	AdditionalInfo   string         `json:"additional_info" example:"My pub additional info"`
+	ShippingOutput   ShippingOutput `json:"shipping"`
+	Lat              float64        `json:"lat" example:"55.7558"`
+	Lng              float64        `json:"lng" example:"37.6176"`
+	CurrencyID       int            `json:"currency_id"`
+	CompanyID        int            `json:"company_id"`
+	TelegramUserName string         `json:"telegram_username"`
+	HasInPlaceOrder  bool           `json:"has_in_place_order"`
 }
 
 func (p *PubOutput) FillFromModel(pub models.Pub) error {
@@ -105,6 +113,8 @@ func (p *PubOutput) FillFromModel(pub models.Pub) error {
 	p.CompanyID = int(pub.CompanyID)
 	p.Lat = pub.Lat
 	p.Lng = pub.Lng
+	p.TelegramUserName = pub.TelegramUsername
+	p.HasInPlaceOrder = pub.HasInPlaceOrder
 
 	return nil
 }

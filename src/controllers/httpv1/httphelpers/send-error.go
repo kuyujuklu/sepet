@@ -12,6 +12,7 @@ import (
 	"github.com/alexkalak/qrmenu/src/errors/httperrors"
 	"github.com/alexkalak/qrmenu/src/errors/jwterrors"
 	"github.com/alexkalak/qrmenu/src/errors/menuerrors"
+	"github.com/alexkalak/qrmenu/src/errors/notificationerrors"
 	"github.com/alexkalak/qrmenu/src/errors/oserrors"
 	"github.com/alexkalak/qrmenu/src/errors/puberrors"
 	"github.com/alexkalak/qrmenu/src/errors/roleerrors"
@@ -129,6 +130,13 @@ var errors = map[error]int{
 	clienterrors.ErrClientInvalidPassword:                fiber.StatusForbidden,
 	clienterrors.ErrInvalidLatitude:                      fiber.StatusBadRequest,
 	clienterrors.ErrInvalidLongitude:                     fiber.StatusBadRequest,
+
+	//notificationerror
+	notificationerrors.ErrNotificationNotFound:       fiber.StatusNotFound,
+	notificationerrors.ErrUnableToCreateNotification: fiber.StatusInternalServerError,
+	notificationerrors.ErrUnableToGetNotification:    fiber.StatusInternalServerError,
+	notificationerrors.ErrUnableToUpdateNotification: fiber.StatusInternalServerError,
+	notificationerrors.ErrUnableToDeleteNotification: fiber.StatusInternalServerError,
 }
 
 func SendError(ctx *fiber.Ctx, err error, statusCode int) error {

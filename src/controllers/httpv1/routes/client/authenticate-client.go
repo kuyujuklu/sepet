@@ -83,10 +83,14 @@ func (c *clientController) RefreshToken(ctx *fiber.Ctx) error {
 		return h.SendError(ctx, servererrors.ErrInternalServerError, h.AUTOMATIC_STATUS_CODE)
 	}
 
+	clientOutput := entities.ClientOutput{}
+	clientOutput.FillFromModel(client)
+
 	return h.SendSuccess(
 		ctx,
 		fiber.Map{
 			"accesstoken": accessToken,
+			"client":      clientOutput,
 		},
 		fiber.StatusOK)
 }

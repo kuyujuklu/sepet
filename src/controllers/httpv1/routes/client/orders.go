@@ -1,6 +1,9 @@
 package client
 
 import (
+	"fmt"
+	"strconv"
+
 	h "github.com/alexkalak/qrmenu/src/controllers/httpv1/httphelpers"
 	"github.com/alexkalak/qrmenu/src/controllers/httpv1/input"
 	"github.com/alexkalak/qrmenu/src/controllers/httpv1/input/entities"
@@ -105,6 +108,57 @@ func (c *clientController) CreateOrder(ctx *fiber.Ctx) error {
 		ctx,
 		fiber.Map{
 			"order": output,
+		},
+		fiber.StatusOK)
+}
+
+// @Summary      Rate order
+// @Description  Rate order
+// @Tags         Order
+// @Param input body entities.RateOrderInput true "order input"
+// @Param orderID path int true "order id"
+// @Produce      json
+// @Success      200  {object}  CreateOrderOutput
+// @Router       /api/client/orders/{orderID}/rate [POST]
+// @Param AccessToken header string  true "accesstoken"
+func (c *clientController) RateOrder(ctx *fiber.Ctx) error {
+	fmt.Println("In rate order request")
+	clientID, _, err := h.GetUserIDAndSignificanceFromLocals(ctx)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	orderID, err := strconv.Atoi(ctx.Params("orderID"))
+	if err != nil {
+		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	order, err := c.OrderService.GetOrderByID(orderID)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	if order.ClientID != clientID {
+		return h.SendError(ctx, httperrors.ErrForbidden, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	input, validationErrors, err := input.ParseRequestBody[entities.RateOrderInput](ctx)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+	if len(validationErrors) > 0 {
+		return h.SendValidationErrors(ctx, validationErrors)
+	}
+
+	err = c.OrderService.RateOrder(orderID, input.Rating)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	return h.SendSuccess(
+		ctx,
+		fiber.Map{
+			"ok": true,
 		},
 		fiber.StatusOK)
 }

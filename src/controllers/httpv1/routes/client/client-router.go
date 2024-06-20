@@ -8,6 +8,7 @@ import (
 	"github.com/alexkalak/qrmenu/src/services/googlemapsservice"
 	"github.com/alexkalak/qrmenu/src/services/jwtservice"
 	"github.com/alexkalak/qrmenu/src/services/menuservice"
+	"github.com/alexkalak/qrmenu/src/services/notificationservice"
 	"github.com/alexkalak/qrmenu/src/services/orderservice"
 	"github.com/alexkalak/qrmenu/src/services/pubservice"
 	"github.com/alexkalak/qrmenu/src/services/roleservice"
@@ -15,28 +16,30 @@ import (
 )
 
 type clientController struct {
-	JwtService        jwtservice.JwtService
-	PubService        pubservice.PubService
-	MenuService       menuservice.MenuService
-	CategoryService   categoryservice.CategoryService
-	DishService       dishesservice.DishesService
-	ClientService     clientservice.ClientService
-	RoleService       roleservice.RoleService
-	OrderService      orderservice.OrderService
-	GoogleMapsService googlemapsservice.GoogleMapsService
+	JwtService         jwtservice.JwtService
+	PubService         pubservice.PubService
+	MenuService        menuservice.MenuService
+	CategoryService    categoryservice.CategoryService
+	DishService        dishesservice.DishesService
+	ClientService      clientservice.ClientService
+	NotificationSevice notificationservice.NotificationService
+	RoleService        roleservice.RoleService
+	OrderService       orderservice.OrderService
+	GoogleMapsService  googlemapsservice.GoogleMapsService
 }
 
 func New() *clientController {
 	return &clientController{
-		JwtService:        jwtservice.New(),
-		PubService:        pubservice.New(),
-		MenuService:       menuservice.New(),
-		CategoryService:   categoryservice.New(),
-		DishService:       dishesservice.New(),
-		ClientService:     clientservice.New(),
-		RoleService:       roleservice.New(),
-		OrderService:      orderservice.New(),
-		GoogleMapsService: googlemapsservice.New(),
+		JwtService:         jwtservice.New(),
+		PubService:         pubservice.New(),
+		MenuService:        menuservice.New(),
+		CategoryService:    categoryservice.New(),
+		DishService:        dishesservice.New(),
+		ClientService:      clientservice.New(),
+		RoleService:        roleservice.New(),
+		OrderService:       orderservice.New(),
+		GoogleMapsService:  googlemapsservice.New(),
+		NotificationSevice: notificationservice.New(),
 	}
 }
 
@@ -48,6 +51,7 @@ func (c *clientController) UnauthorizedRouter(router fiber.Router) {
 	router.Post("/registration", c.RegistrateClient)
 	router.Post("/authentication", c.AuthenticateClient)
 	router.Post("/authentication/refresh-token", c.RefreshToken)
+	router.Post("/notifications/subscribe", c.SubscribeToNotification)
 	router.Get("/get-available-pubs", c.GetAvailableForShippingPubs)
 	router.Get("/get-available-categories", c.GetAvailableForShippingPubCategories)
 }
@@ -58,5 +62,6 @@ func (c *clientController) AuthorizedRouter(router fiber.Router) {
 
 	//Orders
 	router.Post("/orders", c.CreateOrder)
+	router.Post("/orders/:orderID<int>/rate", c.RateOrder)
 	router.Get("/orders", c.GetAllOrdersForClient)
 }

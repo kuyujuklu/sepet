@@ -30,4 +30,5 @@ func (c *ordersController) AuthorizedRouter(router fiber.Router) {
 	router.Use(middleware.StrictAuthMW)
 	router.Get("/", c.GetAllOrdersForPub)
 	router.Put("/:orderID<int>/update-status", c.UpdateOrderStatus)
+	router.Put("/:orderID<int>/update-dishes", c.UpdateOrderDishes)
 }

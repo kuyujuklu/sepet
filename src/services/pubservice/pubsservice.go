@@ -48,6 +48,8 @@ type PubService interface {
 	GetShapes(pubID int) ([]models.Shape, error)
 	GetShipping(pubID int) (models.Shipping, error)
 	SetShippingTime(pubID int, shippingTimeFrom int, shippingTimeTo int) error
+	SetShippingWorkingTime(pubID int, start int, end int) error
+	SetShippingPrice(pubID int, shippingPrice int) error
 
 	SetCardPreorder(pubID int, available bool) error
 	SetCashPreorder(pubID int, available bool) error
@@ -131,7 +133,7 @@ func (s *pubsService) CreatePub(pub models.Pub) (models.Pub, error) {
 	if err == nil {
 		return models.Pub{}, puberrors.ErrPubURLNameAlreadyExists
 	}
-	if err != nil && !errors.Is(err, puberrors.ErrPubNotFound) {
+	if !errors.Is(err, puberrors.ErrPubNotFound) {
 		return models.Pub{}, err
 	}
 
@@ -304,15 +306,26 @@ func (s *pubsService) SetShippingTime(pubID int, shippingTimeFrom int, shippingT
 	return s.PubsRepo.SetShippingTime(pubID, shippingTimeFrom, shippingTimeTo)
 }
 
+func (s *pubsService) SetShippingWorkingTime(pubID int, start int, end int) error {
+	return s.PubsRepo.SetShippingWorkingTime(pubID, start, end)
+}
+
+func (s *pubsService) SetShippingPrice(pubID int, shippingTimePrice int) error {
+	return s.PubsRepo.SetShippingPrice(pubID, shippingTimePrice)
+}
+
 func (s *pubsService) GetPubsWithShippingAvailableForPoint(point models.Vertex) ([]models.Pub, error) {
 	pubs, err := s.PubsRepo.GetPubsWithAvailableShipping()
 	if err != nil {
 		return nil, err
 	}
-
 	var availablePubs []models.Pub
 	fmt.Println("pubs len: ", len(pubs))
 	for _, pub := range pubs {
+		if pub.IsExpired() {
+			continue
+		}
+
 		shapes, err := pub.Shipping.GetShapes()
 		if err != nil {
 			fmt.Println("error getting shapes While getting pubs with shipping available for point: ", err)

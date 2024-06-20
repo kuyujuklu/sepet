@@ -8,9 +8,10 @@ import (
 type EventType string
 
 const (
-	CREATE_EVENT_TYPE  EventType = "CREATE_EVENT"
-	UPDATE_EVENT_TYPE  EventType = "UPDATE_EVENT"
-	GET_ALL_EVENT_TYPE EventType = "GET_ALL"
+	CREATE_EVENT_TYPE        EventType = "CREATE_EVENT"
+	UPDATE_EVENT_TYPE        EventType = "UPDATE_EVENT"
+	UPDATE_RATING_EVENT_TYPE EventType = "UPDATE_RATING_EVENT"
+	GET_ALL_EVENT_TYPE       EventType = "GET_ALL"
 )
 
 type WSMessageOrderArray struct {
@@ -40,6 +41,7 @@ type WSOrderOutput struct {
 	Dishes               []OrderDish `json:"dishes"`
 	TableForInPlaceOrder int         `json:"table_for_in_place_order"`
 	Status               string      `json:"status"`
+	Rating               int         `json:"rating"`
 }
 
 func (o *WSOrderOutput) FillFromModel(order models.Order) error {
@@ -63,6 +65,7 @@ func (o *WSOrderOutput) FillFromModel(order models.Order) error {
 	o.TableForInPlaceOrder = order.TableForInPlaceOrder
 	o.OrderType = order.OrderType
 	o.Status = order.Status
+	o.Rating = order.Rating
 
 	for _, modelOrder := range orderDishes {
 		o.Dishes = append(o.Dishes, OrderDish{Count: modelOrder.Count, DishID: modelOrder.DishID})

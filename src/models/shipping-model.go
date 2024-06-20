@@ -15,11 +15,14 @@ type Shape struct {
 }
 
 type Shipping struct {
-	ID               uint
-	Available        bool
-	ShapesJSON       string //this is json of structure []Shape
-	ShippingTimeFrom int
-	ShippingTimeTo   int
+	ID                    uint
+	Available             bool
+	ShapesJSON            string //this is json of structure []Shape
+	ShippingPrice         int
+	ShippingTimeFrom      int
+	ShippingTimeTo        int
+	ShippingStartWorkTime int //in minutes, for example 360 - 06:00
+	ShippingEndWorkTime   int //in minutes, for example 1080 - 18:00
 }
 
 func (s *Shipping) GetShapes() ([]Shape, error) {

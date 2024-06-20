@@ -4,6 +4,8 @@ import (
 	"strconv"
 
 	h "github.com/alexkalak/qrmenu/src/controllers/httpv1/httphelpers"
+	"github.com/alexkalak/qrmenu/src/controllers/httpv1/input"
+	"github.com/alexkalak/qrmenu/src/controllers/httpv1/input/entities"
 	"github.com/alexkalak/qrmenu/src/errors/httperrors"
 	"github.com/alexkalak/qrmenu/src/models"
 	"github.com/gofiber/fiber/v2"
@@ -63,6 +65,84 @@ func (c *ordersController) UpdateOrderStatus(ctx *fiber.Ctx) error {
 	}
 	return h.SendSuccess(
 		ctx,
-		fiber.Map{},
+		fiber.Map{
+			"status": status,
+		},
+		fiber.StatusOK)
+}
+
+type UpdateOrderDishesInput struct {
+	Dishes []entities.OrderDish `json:"dishes"`
+}
+
+type UpdateOrderDishesOutput struct {
+	Ok     bool                 `json:"ok" example:"true"`
+	Err    string               `json:"err" example:""`
+	Dishes []entities.OrderDish `json:"dishes"`
+}
+
+// @Summary      Update order status
+// @Description  updates order status
+// @Tags         Pub
+// @Param companyID path int true "company id"
+// @Param pubID path int true "pub id"
+// @Param input body UpdateOrderDishesInput true "pub params"
+// @Produce      json
+// @Success      200  {object}  UpdateOrderDishesOutput
+// @Router       /api/company/{companyID}/pubs/{pubID}/orders/update-dishes [PUT]
+// @Param AccessToken header string  true "accesstoken"
+func (c *ordersController) UpdateOrderDishes(ctx *fiber.Ctx) error {
+	userID, userSignificance, err := h.GetUserIDAndSignificanceFromLocals(ctx)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	companyID, err := strconv.Atoi(ctx.Params("companyID"))
+	if err != nil {
+		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	pubID, err := strconv.Atoi(ctx.Params("pubID"))
+	if err != nil {
+		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	orderID, err := strconv.Atoi(ctx.Params("orderID"))
+	if err != nil {
+		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	//Checking access for action with pub for company
+	err = h.CheckAccess(userID, companyID, userSignificance, models.PUB_COMPANY_ENTITY, pubID)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	input, validationErrors, err := input.ParseRequestBody[UpdateOrderDishesInput](ctx)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+	if len(validationErrors) > 0 {
+		return h.SendValidationErrors(ctx, validationErrors)
+	}
+
+	dishes := make([]models.OrderDish, 0, len(input.Dishes))
+
+	for _, inputDish := range input.Dishes {
+		dishes = append(dishes, models.OrderDish{
+			Count:  inputDish.Count,
+			DishID: inputDish.DishID,
+		})
+	}
+
+	err = c.OrderService.UpdateOrderDishes(orderID, dishes)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+	return h.SendSuccess(
+		ctx,
+		fiber.Map{
+			"dishes": dishes,
+		},
 		fiber.StatusOK)
 }

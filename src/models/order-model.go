@@ -23,7 +23,40 @@ const (
 	HANDLED_ORDER_STATUS     = "handled"
 	PREPARING_ORDER_STATUS   = "preparing"
 	COMPLETED_ORDER_STATUS   = "completed"
+	CANCELED_ORDER_STATUS    = "canceled"
 )
+
+func TranslateStatus(status string, lang string) string {
+	if lang == "ru" {
+		switch status {
+		case NOT_HANDLED_ORDER_STATUS:
+			return "Рассматривается"
+		case HANDLED_ORDER_STATUS:
+			return "Готовится"
+		case PREPARING_ORDER_STATUS:
+			return "У курьера"
+		case COMPLETED_ORDER_STATUS:
+			return "Доставлен"
+		case CANCELED_ORDER_STATUS:
+			return "Отменен"
+		}
+	}
+	if lang == "ro" {
+		switch status {
+		case NOT_HANDLED_ORDER_STATUS:
+			return "Nouă"
+		case HANDLED_ORDER_STATUS:
+			return "În pregătire"
+		case PREPARING_ORDER_STATUS:
+			return "La curier"
+		case COMPLETED_ORDER_STATUS:
+			return "Livrată"
+		case CANCELED_ORDER_STATUS:
+			return "Anulat"
+		}
+	}
+	return "unknown"
+}
 
 func CheckOrderTypeCorrectness(orderType string) error {
 	if orderType != DELIVERY_ORDER_TYPE && orderType != IN_PLACE_ORDER_TYPE && orderType != PREORDER_ORDER_TYPE {
@@ -40,7 +73,7 @@ func CheckOrderPaymentTypeCorrectness(paymentType string) error {
 }
 
 func CheckOrderStatusCorrectness(status string) error {
-	if status != NOT_HANDLED_ORDER_STATUS && status != HANDLED_ORDER_STATUS && status != PREPARING_ORDER_STATUS && status != COMPLETED_ORDER_STATUS {
+	if status != NOT_HANDLED_ORDER_STATUS && status != HANDLED_ORDER_STATUS && status != PREPARING_ORDER_STATUS && status != COMPLETED_ORDER_STATUS && status != CANCELED_ORDER_STATUS {
 		return ordererrors.ErrUnkonwnOrderStatus
 	}
 	return nil
@@ -67,6 +100,7 @@ type Order struct {
 	OrderType            string
 	TableForInPlaceOrder int
 	Status               string
+	Rating               int //from 1 to 5
 }
 
 func (m *Order) GetDishes() ([]OrderDish, error) {

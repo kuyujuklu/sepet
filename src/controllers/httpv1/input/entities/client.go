@@ -26,6 +26,12 @@ type ClientOutput struct {
 	Name      string `json:"name" example:"Vladimir Zhirinovskiy"`
 }
 
+type NotificationSubscriptionInput struct {
+	Phone string `json:"phone" example:"12312312"`
+	Token string `json:"token" example:"ExpoNotification[xxxxx]"`
+	Lang  string `json:"lang" example:"ru"`
+}
+
 func (o *ClientOutput) FillFromModel(client models.Client) {
 	o.CreatedAt = helpers.ConvertToStandardApiTime(client.CreatedAt)
 	o.Phone = client.Phone

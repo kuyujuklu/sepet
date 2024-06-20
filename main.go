@@ -11,6 +11,7 @@ import (
 	"github.com/alexkalak/qrmenu/src/db/postgresql"
 	"github.com/alexkalak/qrmenu/src/logs"
 	"github.com/alexkalak/qrmenu/src/repo"
+	"github.com/alexkalak/qrmenu/src/services/telegramservice"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/swagger"
@@ -29,6 +30,7 @@ func main() {
 	configureTime()
 	configure()
 	initiatePostgresDB()
+	configureTelegram()
 
 	//create app
 	app := createApp()
@@ -61,10 +63,17 @@ func configureSWAG(app *fiber.App) {
 }
 
 func initiatePostgresDB() {
-	if db := postgresql.Init(); db == nil {
+	if db := postgresql.InitializeDatabase(); db == nil {
 		log.Fatal("Failed to connect to database")
 		time.Sleep(2 * time.Second)
 		initiatePostgresDB()
+	}
+}
+
+func configureTelegram() {
+	_, err := telegramservice.New()
+	if err != nil {
+		panic(err)
 	}
 }
 

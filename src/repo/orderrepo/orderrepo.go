@@ -24,6 +24,9 @@ type OrderRepo interface {
 	CreateOrderWithinTransaction(tx *gorm.DB, order models.Order) (models.Order, error)
 	UpdateOrderStatus(orderID int, status string) error
 	UpdateOrderStatusWithinTransaction(tx *gorm.DB, orderID int, status string) error
+	UpdateOrderDishes(orderID int, dishesJSON string) error
+	UpdateOrderDishesWithinTransaction(tx *gorm.DB, orderID int, dishesJSON string) error
+	RateOrderWithinTransaction(tx *gorm.DB, orderID int, rating int) error
 }
 
 type orderRepo struct {
@@ -123,11 +126,26 @@ func (r *orderRepo) CreateOrderWithinTransaction(tx *gorm.DB, order models.Order
 }
 
 func (r *orderRepo) UpdateOrderStatus(orderID int, status string) error {
-	err := r.Database.Model(&models.Pub{}).Where("id = ?", orderID).UpdateColumn("status", status).Error
+	err := r.Database.Model(&models.Order{}).Where("id = ?", orderID).UpdateColumn("status", status).Error
 	return err
 }
 
 func (r *orderRepo) UpdateOrderStatusWithinTransaction(tx *gorm.DB, orderID int, status string) error {
 	err := tx.Model(&models.Order{}).Where("id = ?", orderID).UpdateColumn("status", status).Error
+	return err
+}
+
+func (r *orderRepo) UpdateOrderDishes(orderID int, dishesJSON string) error {
+	err := r.Database.Model(&models.Order{}).Where("id = ?", orderID).UpdateColumn("dishes_json", dishesJSON).Error
+	return err
+}
+
+func (r *orderRepo) UpdateOrderDishesWithinTransaction(tx *gorm.DB, orderID int, dishesJSON string) error {
+	err := tx.Model(&models.Order{}).Where("id = ?", orderID).UpdateColumn("dishes_json", dishesJSON).Error
+	return err
+}
+
+func (r *orderRepo) RateOrderWithinTransaction(tx *gorm.DB, orderID int, rating int) error {
+	err := tx.Model(&models.Order{}).Where("id = ?", orderID).UpdateColumn("rating", rating).Error
 	return err
 }

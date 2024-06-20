@@ -22,6 +22,15 @@ type SetShippingTime struct {
 	To   int `json:"to" example:"50"`
 }
 
+type SetShippingWorkHours struct {
+	Start int `json:"shipping_work_start" example:"360"`
+	End   int `json:"shipping_work_end" example:"1080"`
+}
+
+type SetShippingPrice struct {
+	Price int `json:"price" example:"30"`
+}
+
 type VertexOutput struct {
 	Lat float64 `json:"lat"`
 	Lng float64 `json:"lng"`
@@ -44,11 +53,14 @@ func (s *ShapeOutput) FillFromModel(shape models.Shape) error {
 }
 
 type ShippingOutput struct {
-	ID               int           `json:"id"`
-	Available        bool          `json:"available"`
-	ShippingTimeFrom int           `json:"shipping_time_from"`
-	ShippingTimeTo   int           `json:"shipping_time_to"`
-	Shapes           []ShapeOutput `json:"shapes"`
+	ID                    int           `json:"id"`
+	Available             bool          `json:"available"`
+	ShippingTimeFrom      int           `json:"shipping_time_from"`
+	ShippingTimeTo        int           `json:"shipping_time_to"`
+	ShippingStartWorkTime int           `json:"shipping_work_start"`
+	ShippingEndWorkTime   int           `json:"shipping_work_end"`
+	ShippingPrice         int           `json:"shipping_price"`
+	Shapes                []ShapeOutput `json:"shapes"`
 }
 
 func (s *ShippingOutput) FillFromModel(shipping models.Shipping) error {
@@ -72,6 +84,9 @@ func (s *ShippingOutput) FillFromModel(shipping models.Shipping) error {
 	s.Shapes = shapesOutput
 	s.ShippingTimeFrom = shipping.ShippingTimeFrom
 	s.ShippingTimeTo = shipping.ShippingTimeTo
+	s.ShippingPrice = shipping.ShippingPrice
+	s.ShippingStartWorkTime = shipping.ShippingStartWorkTime
+	s.ShippingEndWorkTime = shipping.ShippingEndWorkTime
 
 	return nil
 }

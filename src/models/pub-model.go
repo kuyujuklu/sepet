@@ -45,4 +45,11 @@ type Pub struct {
 	PubType string
 
 	ExpirationTime time.Time
+
+	TelegramUsername string
+	HasInPlaceOrder  bool
+}
+
+func (p *Pub) IsExpired() bool {
+	return p.ExpirationTime.Before(time.Now()) || p.ExpirationTime.Equal(time.Now())
 }

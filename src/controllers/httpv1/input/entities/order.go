@@ -48,6 +48,10 @@ func (i *CreateOrderInput) ConvertToModel() (models.Order, error) {
 	}, nil
 }
 
+type RateOrderInput struct {
+	Rating int `json:"rating"`
+}
+
 type OrderOutput struct {
 	ID                   int         `json:"id" example:"12"`
 	PubName              string      `json:"pub_name" example:"Big star"`
@@ -64,6 +68,7 @@ type OrderOutput struct {
 	OrderType            string      `json:"order_type" example:"delivery"`
 	TableForInPlaceOrder int         `json:"table_for_in_place_order" example:"2"`
 	Status               string      `json:"status"`
+	Rating               int         `json:"rating"`
 }
 
 func (o *OrderOutput) FillFromModel(order models.Order) error {
@@ -86,6 +91,7 @@ func (o *OrderOutput) FillFromModel(order models.Order) error {
 	o.OrderType = order.OrderType
 	o.TableForInPlaceOrder = order.TableForInPlaceOrder
 	o.Status = order.Status
+	o.Rating = order.Rating
 
 	for _, modelOrder := range orderDishes {
 		o.Dishes = append(o.Dishes, OrderDish{Count: modelOrder.Count, DishID: modelOrder.DishID})

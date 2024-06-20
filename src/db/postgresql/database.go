@@ -14,7 +14,7 @@ import (
 
 var database *gorm.DB
 
-func Init() *gorm.DB {
+func InitializeDatabase() *gorm.DB {
 	godotenv.Load()
 	dbUser := os.Getenv("DB_USR")
 	dbPass := os.Getenv("DB_PASS")
@@ -46,13 +46,16 @@ func Init() *gorm.DB {
 		&models.PreorderInfo{},
 		&models.Client{},
 		&models.Order{},
+		&models.TelegramChat{},
+		&models.NotificationSubscription{},
 	)
 	return db
 }
 
 func GetDB() *gorm.DB {
 	if database == nil {
-		database = Init()
+		fmt.Println("initializtion database")
+		database = InitializeDatabase()
 		for database == nil {
 			var sleep = time.Second
 			sleep = sleep * 2
