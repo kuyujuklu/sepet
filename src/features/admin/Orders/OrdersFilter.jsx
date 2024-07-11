@@ -17,7 +17,7 @@ const getFilterColor = (orderStatus) => {
         case orderFilters.handled:
             return "#ed5e21";
         case orderFilters.preparing:
-            return "#173bcf";
+            return "#3b82f6";
         case orderFilters.completed:
             return "#059669";
         case orderStatuses.canceled:

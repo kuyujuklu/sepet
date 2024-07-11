@@ -99,7 +99,7 @@ const AdminPanel = () => {
     return (
         <>
             {!pubData && (
-                <div className="flex justify-center items-center">
+                <div style={{width: "100vw",height: "100vh"}} className="absolute flex justify-center items-center">
                     <BlackSpinner />
                 </div>
             )}

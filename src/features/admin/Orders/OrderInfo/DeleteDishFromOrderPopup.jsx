@@ -62,14 +62,12 @@ const DeleteDishFromOrderPopup = () => {
       <div className="py-4">
         <header>
           <h1 className="font-bold text-center text-xl mb-10">
-            {t("admin.popups.delete_pub_popup.headline")}
+            {t("admin.popups.delete_dish_from_order_popup.headline")}
           </h1>
         </header>
         <main className="mb-10">
           <p className="text-center">
-            {t("admin.popups.delete_pub_popup.text")}
-            <br />
-            {t("admin.popups.delete_pub_popup.warning")}
+            {t("admin.popups.delete_dish_from_order_popup.warning")}
           </p>
         </main>
         <footer className="text-center">
@@ -92,7 +90,7 @@ const DeleteDishFromOrderPopup = () => {
             {updateDishesQueryIsLoading ? (
               <WhiteSpinner />
             ) : (
-              t("admin.popups.delete_pub_popup.delete_button")
+              t("admin.popups.delete_dish_from_order_popup.delete_button")
             )}
           </Button>
         </footer>

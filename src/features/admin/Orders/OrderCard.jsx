@@ -9,7 +9,7 @@ const getOrderColor = (orderStatus) => {
         case orderStatuses.handled:
             return "#ed5e21";
         case orderStatuses.preparing:
-            return "#173bcf";
+            return "#3b82f6";
         case orderStatuses.completed:
             return "#059669";
         case orderStatuses.canceled:

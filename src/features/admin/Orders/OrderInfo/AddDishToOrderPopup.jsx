@@ -72,7 +72,6 @@ const AddDishToOrderPopup = () => {
       !companyID ||
       !orderID ||
       !pubID ||
-      !popupState?.currentDishes ||
       !selectedDishID ||
       !intCount
     ) {
@@ -80,7 +79,7 @@ const AddDishToOrderPopup = () => {
       return;
     }
 
-    const newDishes = [...popupState.currentDishes];
+    const newDishes = popupState?.currentDishes ? [...popupState.currentDishes] : [];
 
 
     const index = newDishes.findIndex((item) => item.dish_id === selectedDishID)
@@ -101,8 +100,8 @@ const AddDishToOrderPopup = () => {
     <Popup opened={popupState.opened} closeCallback={closePopup}>
       <div className="py-4">
         <header>
-          <h1 className="font-bold text-center text-xl mb-10">
-            SelectDishToAdd
+          <h1 className="font-bold text-center text-xl mb-10 mr-20">
+            {t("admin.popups.add_dish_to_order_popup.headline")}
           </h1>
         </header>
         <main className="mb-10">
@@ -147,7 +146,8 @@ const AddDishToOrderPopup = () => {
                 }}
                 onClick={handleButtonClick}
               >
-                <span>Add dish</span>
+                <span>
+                {t("admin.popups.add_dish_to_order_popup.add_dish")}</span>
               </Button>
             </>
           )}

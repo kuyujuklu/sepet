@@ -33,22 +33,20 @@ const OrderPosition = ({ pub, dish, count, deletePosition }) => {
                     variant="contained"
                     sx={{
                         color: "white",
-                        bgcolor: "rgb(239 68 68)",
+                        bgcolor:"transparent",
+                        height: 50,
+                        width: 50,
                         fontSize: ".7rem",
                         fontWeight: "medium",
                         padding: ".7rem 1rem",
                         borderRadius: "10px",
-                        width: "fit-content%",
                         ":hover": {
-                            bgcolor: 
-                                "rgb(239 68 68)",
+                            bgcolor: "transparent"
                         },
                     }}
                     onClick={deletePosition}
                 >
-                    {t(
-                        "Удалить"
-                    )}
+                    <img src="/static/admin/images/svg/trash-can-red.svg" />
                 </Button>
       </div>
     );
