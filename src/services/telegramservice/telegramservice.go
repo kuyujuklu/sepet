@@ -5,6 +5,7 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/alexkalak/qrmenu/src/errors/servererrors"
 	"github.com/alexkalak/qrmenu/src/models"
 	"github.com/alexkalak/qrmenu/src/repo/pubsrepo"
 	"github.com/alexkalak/qrmenu/src/repo/telegramrepo"
@@ -19,17 +20,20 @@ type telegramSerivce struct {
 	PubsRepo     pubsrepo.PubsRepo
 	botToken     string
 	bot          *telego.Bot
+	suTelegram   string
 }
 
 var singleton *telegramSerivce
 
 func New() (TelegramService, error) {
 	if singleton == nil {
+
 		fmt.Println("TOKEN : ", os.Getenv("TELEGRAM_QRMENU_BOT_TOKEN"))
 		singleton = &telegramSerivce{
 			PubsRepo:     pubsrepo.New(),
 			TelegramRepo: telegramrepo.New(),
 			botToken:     os.Getenv("TELEGRAM_QRMENU_BOT_TOKEN"),
+			suTelegram:   os.Getenv("SUPER_USER_TELEGRAM"),
 		}
 
 		err := singleton.setup()
@@ -132,6 +136,66 @@ func (s *telegramSerivce) SendCreateOrderMessageForPub(pubID int, order models.O
 		return err
 	}
 
+	pubDishes, err := s.PubsRepo.GetAllDishesForPub(pubID)
+	if err != nil {
+		return err
+	}
+
+	dishCounts, err := order.GetDishes()
+	if err != nil {
+		return servererrors.ErrInternalServerError
+	}
+
+	var totalPrice float64 = 0
+	for _, dishCount := range dishCounts {
+		foundDish := models.Dish{}
+		for _, dish := range pubDishes {
+			if dish.ID == uint(dishCount.DishID) {
+				foundDish = dish
+			}
+		}
+
+		if foundDish.ID == 0 {
+			continue
+		}
+
+		dishPrice := foundDish.Price
+		if foundDish.SalePrice != 0 && foundDish.SalePrice < foundDish.Price {
+			dishPrice = foundDish.SalePrice
+		}
+
+		totalPrice += float64(dishCount.Count) * dishPrice
+	}
+
+	hasSuperUser := true
+	suChat, err := s.TelegramRepo.GetChatByUsername(s.suTelegram)
+	if err != nil {
+		hasSuperUser = false
+		fmt.Println("No super user chat")
+	}
+
+	orderTextForSuperUser := fmt.Sprintf("Pub name: %s \n New order number: %d \n Full name: %s \n Address: %s \n Phone: %s \n Total products price:  %.2f Lei", pub.Name, order.ID, order.Client.Name, order.FullAddress, order.MainPhoneNumber, totalPrice)
+	if order.OrderType == models.IN_PLACE_ORDER_TYPE {
+		orderTextForSuperUser = fmt.Sprintf("Pub name: %s \n New order number: %d \n In place order \n Table number: %d \n Total products price: %.2f Lei", pub.Name, order.ID, order.TableForInPlaceOrder, totalPrice)
+	}
+
+	suChatID, err := strconv.Atoi(suChat.ChatID)
+	if err != nil {
+		hasSuperUser = false
+	}
+
+	if hasSuperUser {
+		s.bot.SendMessage(
+			&telego.SendMessageParams{
+				ChatID: telego.ChatID{
+					ID:       int64(suChatID),
+					Username: suChat.Username,
+				},
+				Text: orderTextForSuperUser,
+			},
+		)
+	}
+
 	chat, err := s.TelegramRepo.GetChatByUsername(pub.TelegramUsername)
 	if err != nil {
 		return err
@@ -142,13 +206,18 @@ func (s *telegramSerivce) SendCreateOrderMessageForPub(pubID int, order models.O
 		return err
 	}
 
+	orderText := fmt.Sprintf("New order number: %d \n Full name: %s \n Address: %s \n Phone: %s \n Total products price:  %.2f Lei", order.ID, order.Client.Name, order.FullAddress, order.MainPhoneNumber, totalPrice)
+	if order.OrderType == models.IN_PLACE_ORDER_TYPE {
+		orderText = fmt.Sprintf("New order number: %d \n In place order \n Table number: %d \n Total products price: %.2f Lei", order.ID, order.TableForInPlaceOrder, totalPrice)
+	}
+
 	s.bot.SendMessage(
 		&telego.SendMessageParams{
 			ChatID: telego.ChatID{
 				ID:       int64(chatID),
 				Username: chat.Username,
 			},
-			Text: fmt.Sprintf("New order id: %d, full_name: %s, address: %s, main_phone_number: %s", order.ID, order.Client.Name, order.FullAddress, order.MainPhoneNumber),
+			Text: orderText,
 		},
 	)
 
