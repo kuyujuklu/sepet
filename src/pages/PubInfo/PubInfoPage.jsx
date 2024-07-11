@@ -82,7 +82,7 @@ const PubInfoPage = () => {
           <Stack.Screen
             name="PubInfo/Categories"
             options={{
-              contentStyle: { backgroundColor: "transparent" },
+              contentStyle: { backgroundColor: "#f5f5f5" },
               headerShown: false,
             }}
             component={CategoriesScreen}
@@ -91,7 +91,7 @@ const PubInfoPage = () => {
           <Stack.Screen
             name="PubInfo/Dishes"
             options={{
-              contentStyle: { backgroundColor: "transparent" },
+              contentStyle: { backgroundColor: "#f5f5f5" },
               headerShown: false,
             }}
             component={DishesScreen}

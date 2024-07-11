@@ -71,7 +71,7 @@ const CategoryWithPubInfoList = ({ foodFilter, selectCategory }) => {
     <View gap={10}>
       <SafeAreaView style={{ paddingHorizontal: 10 }} edges={[]}>
         <FlatList
-          contentContainerStyle={{ paddingBottom: 120 }}
+          contentContainerStyle={{ paddingBottom: 120, gap: 10 }}
           renderItem={({ item }) => (
             <TouchableOpacity
               disabled={!item.pub.isOpen}

@@ -1,7 +1,13 @@
-import { Animated, Pressable, Text, Image } from "react-native";
+import {
+  Animated,
+  Pressable,
+  Image,
+  Linking,
+  TouchableOpacity,
+} from "react-native";
 import { styles } from "./navbar.style";
 import { useEffect, useState } from "react";
-import { Button, View } from "native-base";
+import { Button, View, Text } from "native-base";
 import { clearAuthenticationData } from "../../shared/api/auth/authBasedQuery";
 import { useNavigation } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
@@ -52,36 +58,53 @@ const NavbarExpandMore = ({ expanded, setExpanded }) => {
           outputRange: ["-100%", "0%"],
         }),
         padding: 20,
-        height: 200,
-        top: -200,
+        height: 220,
+        top: -220,
       }}
     >
       <View gap={4}>
-        <SwitchLanguage />
-        <Pressable
-          style={{
-            width: 50,
-            height: 50,
-          }}
-          onPress={goToSelectGeolocation}
-        >
-          <View
-            style={{
-              flex: 1,
-              alignItems: "center",
-              justifyContent: "center",
+        <View flexDir="row">
+          <SwitchLanguage />
+        </View>
+
+        <View gap={1}>
+          <TouchableOpacity
+            onPress={() => {
+              Linking.openURL(`tel:+373 605 49 995`);
             }}
           >
-            <Image
-              style={{
-                width: "60%",
-                height: "60%",
-              }}
-              source={images.Locaiton}
-              alt="smthng"
-            />
-          </View>
-        </Pressable>
+            <View flexDir="row" gap={2} alignItems="center">
+              <View style={{ height: 30, width: 30 }}>
+                <Image
+                  style={{ height: 30, width: 30 }}
+                  source={images.TechSupport}
+                />
+              </View>
+
+              <Text  color="emerald.600"style={{ fontSize: 16, fontWeight: "medium" }}>
+                +373 605 49 995
+              </Text>
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              Linking.openURL(`http://t.me/AlternativeGE`);
+            }}
+          >
+            <View flexDir="row" gap={2} alignItems="center">
+              <View style={{ height: 30, width: 30 }}>
+                <Image
+                  style={{ height: 30, width: 30 }}
+                  source={images.Telegram}
+                />
+              </View>
+
+              <Text color="emerald.600" style={{ fontSize: 16, fontWeight: "medium" }}>
+                @AlternativeGE
+              </Text>
+            </View>
+          </TouchableOpacity>
+        </View>
         <Button backgroundColor="red.600" h={10} onPress={logout}>
           <Text
             style={{

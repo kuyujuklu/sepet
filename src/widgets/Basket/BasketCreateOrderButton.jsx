@@ -31,6 +31,7 @@ const BasketCreateOrderButton = ({ itemsPrice, isClosed}) => {
   const smallOrderFee = 3;
 
   const handleButtonPress = () => {
+    console.log("LKSJDFLKDSJFL")
     if (isClosed) {
       dispatch(
         pushAlert({

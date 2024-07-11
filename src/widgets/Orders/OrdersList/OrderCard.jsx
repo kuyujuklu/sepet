@@ -79,11 +79,13 @@ const OrderCard = ({ order, allPubs }) => {
     if (!pubData || !pubData.dishes) return;
 
     if (!order.dishes || order.dishes.length === 0) {
-      dispatch(pushAlert({
-        status: alertStatuses.warning,
-        delay: 2000,
-        title: t("order_page.order_card.unable_to_repeat_order")
-      }))
+      dispatch(
+        pushAlert({
+          status: alertStatuses.warning,
+          delay: 2000,
+          title: t("order_page.order_card.unable_to_repeat_order"),
+        }),
+      );
       return;
     }
 
@@ -125,11 +127,13 @@ const OrderCard = ({ order, allPubs }) => {
       }
       console.log("Dish id: ", dish_id, " count: ", count);
       if (!dishFound) {
-        dispatch(pushAlert({
-          status: alertStatuses.warning,
-          delay: 2000,
-          title: t("order_page.order_card.unable_to_repeat_order")
-        }))
+        dispatch(
+          pushAlert({
+            status: alertStatuses.warning,
+            delay: 2000,
+            title: t("order_page.order_card.unable_to_repeat_order"),
+          }),
+        );
         return;
       }
 
@@ -193,7 +197,11 @@ const OrderCard = ({ order, allPubs }) => {
             </View>
           </View>
           <View flex={1} justifyContent="center">
-            <RateOrderButton rating={order.rating} orderID={order.id} />
+            <RateOrderButton
+              orderStatus={order.status}
+              rating={order.rating}
+              orderID={order.id}
+            />
           </View>
         </View>
         <View w="90%" h="full" justifyContent="space-between">

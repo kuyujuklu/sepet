@@ -7,7 +7,7 @@ const AlertWrapper = () => {
   const alerts = useSelector(selectAlerts)
 
   return (
-    <VStack position={"absolute"} width={"100%"} height={"100%"} space="2" flexDir={"column-reverse"} pb="20" pl={"1"} maxW={400}>
+    <VStack position={"absolute"} space="2" bottom={0}  flexDir={"column-reverse"} pb="20" pl={"1"} maxW={400}>
         {alerts?.map(alert => {
           return <MyAlert key={alert.id} id={alert.id} status={alert.status} title={alert.title} delay={alert.delay}/>
         })}

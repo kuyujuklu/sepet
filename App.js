@@ -34,6 +34,7 @@ import "./src/i18n/i18n.config";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import NotificationHandler from "./src/features/store/notifications/NotificationHandler";
+import { TouchableOpacity } from "react-native";
 
 export default function App() {
   return (
@@ -79,7 +80,7 @@ const AppInner = () => {
   }, [routeName]);
 
   return (
-    <NavigationContainer
+    <NavigationContainer 
       ref={navigationRef}
       onReady={() => {
         setRouteName(navigationRef.getCurrentRoute().name);
@@ -100,9 +101,7 @@ const AppInner = () => {
         }
       }}
     >
-      <View style={{ flex: 14 }}>
-        <Stack.Navigator
-          onRady
+      <Stack.Navigator
           initialRouteName="SelectGeolocationPage"
           screenOptions={{ headerShown: false }}
         >
@@ -119,8 +118,7 @@ const AppInner = () => {
           <Stack.Screen name="CreateOrder" component={CreateOrderPage} />
           <Stack.Screen name="Orders" component={OrdersPage} />
         </Stack.Navigator>
-      </View>
-      {isNavbarEnabled && <Navbar routeName={routeName} />}
+    { isNavbarEnabled && <Navbar routeName={routeName} />}
 
       <ErrorHandlers />
 

@@ -2,7 +2,7 @@
   "expo": {
     "name": "Sepet",
     "slug": "camelapp",
-    "version": "1.2.0",
+    "version": "1.2.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -11,11 +11,15 @@
       "resizeMode": "contain",
       "backgroundColor": "#f2e8d8"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.camelapp.app"
     },
     "android": {
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#f2e8d8"
@@ -25,7 +29,7 @@
         "android.permission.ACCESS_FINE_LOCATION",
         "android.permission.FOREGROUND_SERVICE"
       ],
-      "versionCode": 2,
+      "versionCode": 4,
       "package": "com.camelapp.app",
       "config": {
         "googleMaps": {
@@ -37,7 +41,9 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      ["expo-localization"],
+      [
+        "expo-localization"
+      ],
       [
         "expo-location",
         {

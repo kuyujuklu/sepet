@@ -86,6 +86,7 @@ const DishCard = ({ dish, pubID, pub }) => {
           justifyContent: "space-between",
         }}
       >
+        {!!dish?.ingredients && 
         <Text
           fontSize={"sm"}
           textAlign={"right"}
@@ -95,7 +96,7 @@ const DishCard = ({ dish, pubID, pub }) => {
           fontFamily={AnonymousProBold}
         >
           {dish?.ingredients}
-        </Text>
+        </Text>}
 
         <View
           flexDir="row"
@@ -140,8 +141,8 @@ const DishCard = ({ dish, pubID, pub }) => {
                 >
                   <Image
                     style={{
-                      width: 23,
-                      height: 23,
+                      width: 30,
+                      height: 30,
                     }}
                     alt=""
                     source={require("../../../assets/images/minus-in-circle-black.png")}
@@ -168,8 +169,8 @@ const DishCard = ({ dish, pubID, pub }) => {
             >
               <Image
                 style={{
-                  width: 23,
-                  height: 23,
+                  width: 30,
+                  height: 30,
                 }}
                 alt=""
                 source={require("../../../assets/images/plus-in-circle-black.png")}

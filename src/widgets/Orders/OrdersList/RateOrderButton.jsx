@@ -7,8 +7,15 @@ import { Pressable, TouchableOpacity } from "react-native";
 import { useEffect, useState } from "react";
 import Stars from "../../Pub/Stars";
 import Star from "./Star";
+import { orderStatuses } from "../../../app/static-data/data";
+import { useDispatch } from "react-redux";
+import {
+  alertStatuses,
+  pushAlert,
+} from "../../../features/store/alerts/alertSlice";
 
-const RateOrderButton = ({ orderID, rating }) => {
+const RateOrderButton = ({ orderStatus, orderID, rating }) => {
+  const dispatch = useDispatch();
   const { t } = useTranslation();
   const [
     rateOrderRequest,
@@ -26,6 +33,17 @@ const RateOrderButton = ({ orderID, rating }) => {
   }, [rating]);
 
   const handleRateClick = () => {
+    if (orderStatus !== orderStatuses.completed) {
+      dispatch(
+        pushAlert({
+          status: alertStatuses.warning,
+          delay: 2000,
+          title: t("order_page.order_card.order_is_not_completed_alert"),
+        }),
+      );
+      return;
+    }
+
     if (!rating || rating === 0) {
       setIsRatingShown(true);
     }
@@ -74,9 +92,11 @@ const RateOrderButton = ({ orderID, rating }) => {
             </View>
           )}
 
-          {isRateOrderLoading && <View flexDir="row" justifyContent="flex-start">
+          {isRateOrderLoading && (
+            <View flexDir="row" justifyContent="flex-start">
               <Spinner />
-            </View>}
+            </View>
+          )}
         </View>
       )}
     </>

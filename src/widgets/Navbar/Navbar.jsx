@@ -82,12 +82,18 @@ const Navbar = ({ routeName }) => {
             to={"Basket"}
             isSelected={routeName === "Basket"}
           />
-        </View>
+          </View>
         <NavbarLink
           imageSource={images.OrderList}
           to={"Orders"}
           isSelected={routeName === "Orders"}
-        />
+          />
+          <NavbarLink
+            imageSource={images.Locaiton}
+            to={"SelectGeolocationPage"}
+            isSelected={routeName === "SelectGeolocationPage"}
+          />
+          
         <NavbarExpandMoreButton setExpanded={setExpanded} expanded={expanded} />
       </View>
       <NavbarExpandMore setExpanded={setExpanded} expanded={expanded} />

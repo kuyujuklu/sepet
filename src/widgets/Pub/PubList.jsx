@@ -1,4 +1,4 @@
-import { FlatList, View } from "react-native";
+import { FlatList, Platform, View } from "react-native";
 import Pub from "./Pub";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useGetNearbyPubsQuery } from "../../shared/api/pubs/pubsApi";
@@ -118,7 +118,7 @@ const PubList = ({ selectedPub, selectPub }) => {
 
   const debounceHandleViewableItemsChange = newDebounce(
     handleViewableItemsChange,
-    300,
+    500,
   );
 
   return (
@@ -127,6 +127,7 @@ const PubList = ({ selectedPub, selectPub }) => {
         ref={flatListRef}
         renderItem={({ item, index }) => (
           <Pressable
+            key={item.id}
             // id={index}
             disabled={!item.isOpen}
             onPress={() => {
@@ -134,7 +135,7 @@ const PubList = ({ selectedPub, selectPub }) => {
             }}
           >
             <Pub
-              isViewable={index === viewable}
+              isViewable={Platform.OS === 'android' ? index === viewable : false}
               pub={item}
               distance={item.distance}
             />

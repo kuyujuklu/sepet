@@ -6,6 +6,9 @@ import { refreshToken } from "../auth/refreshToken";
 let socketsAccessToken = "";
 let socket = null;
 let socketsPubID = null;
+let isSocketConnecting = false;
+let isSocketConnected = false;
+
 const subscribedCallbacks = [];
 
 const PING_MESSAGE = "PING";
@@ -20,7 +23,7 @@ export const GET_ALL_EVENT_TYPE = "GET_ALL";
 export const UPDATE_EVENT_TYPE = "UPDATE_EVENT";
 
 const handlePing = () => {
-  if(!socket) return;
+  if (!socket) return;
   if (socket.readyState === 1) socket.send("PONG");
 };
 
@@ -36,7 +39,7 @@ const onMessage = (event) => {
   let body;
   try {
     body = JSON.parse(event.data);
-    console.log("MESSAGE BODY: ", body)
+    console.log("MESSAGE BODY: ", body);
   } catch (e) {
     error = e;
   }
@@ -76,6 +79,11 @@ const setConnection = (connectionState) => {
 };
 
 const configureSocket = async () => {
+  console.log("CONF");
+  if (isSocketConnecting || isSocketConnected) {
+    return;
+  }
+
   if (!accesstoken) {
     const resp = await refreshToken();
     if (!resp || !resp.ok) return;
@@ -87,10 +95,13 @@ const configureSocket = async () => {
 
   // socket = new WebSocket(`ws://${document.location.host}/ws/orders/company/${companyID}/pub/${pubID}`);
   socket = new WebSocket(host);
+  isSocketConnecting = true;
   setConnection({ state: SOCKET_IS_CONNECTING_STATE, error: null });
 
   socket.onopen = (e) => {
     socketsAccessToken = accesstoken;
+    isSocketConnected = true;
+    isSocketConnecting = false;
     console.log("CONNECTION OPENED");
     setConnection({ state: SOCKET_CONNECTED_STATE, error: null });
   };
@@ -99,6 +110,8 @@ const configureSocket = async () => {
 
   socket.onclose = (event) => {
     console.log("CONNECTION CLOSED");
+    isSocketConnected = false;
+    isSocketConnecting = false;
     setConnection({
       state: SOCKET_ERROR_STATE,
       error: appErrors.unknown_error,
@@ -108,6 +121,8 @@ const configureSocket = async () => {
 
   socket.onerror = (error) => {
     console.log("CONNECTION ERROR");
+    isSocketConnected = false;
+    isSocketConnecting = false;
     setConnection({
       state: SOCKET_ERROR_STATE,
       error: appErrors.unknown_error,
@@ -118,15 +133,15 @@ const configureSocket = async () => {
 
 setInterval(() => {
   if (socketsAccessToken !== accesstoken) {
+    socket = null;
+    isSocketConnecting = false;
+    isSocketConnected = false;
     configureSocket();
     return;
   }
 
-  if (socket === null) {
-    console.log("CHECK SOCKET NULL");
-    configureSocket();
-  }
-}, 10000);
+  configureSocket();
+}, 3000);
 
 //On successfully receive data uses callback from parameters
 export const subscribeOnOrdersWebSocket = (

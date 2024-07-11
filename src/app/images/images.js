@@ -25,6 +25,10 @@ export const images = {
   Pancakes: require("../../../assets/images/pancakes.png"),
   Soup: require("../../../assets/images/soup.png"),
 
+  //Telegram
+  Telegram: require("../../../assets/images/telegram.png"),
+  TechSupport: require("../../../assets/images/tech-support.png"),
+
   //Gif
   PackmanLoaderGif: require("../../../assets/images/gif/loader.gif")
 };

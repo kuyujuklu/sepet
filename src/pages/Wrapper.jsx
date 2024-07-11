@@ -14,7 +14,7 @@ const Wrapper = ({ children, style }) => {
         paddingBottom: isNavbarOpened ? 50 : 10,
         flex: 1,
         gap: 0,
-        backgroundColor: "#CFCFCF4C",
+        backgroundColor: "#f5f5f5",
         ...style,
       }}
     >

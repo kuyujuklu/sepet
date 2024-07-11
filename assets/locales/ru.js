@@ -156,6 +156,7 @@ export default {
     headline_no_orders: "Вы еще ничего не заказывали",
     order_card: {
       unable_to_repeat_order: "К сожалению мы не можем повторить этот заказ",
+      order_is_not_completed_alert: "Заказ еще не доставлен",
       positions: "Позиций",
       rate_button: "Оценить",
       repeat_button: "Повторить",

@@ -95,7 +95,8 @@ export default {
     headline: "Coșul",
     empty: "gol",
     create_order_button: "Creați comanda",
-    pub_is_closed_error: "Acest restaurant este în prezent închis, vă rugăm să încercați mai târziu sau să comandați de la altul.",
+    pub_is_closed_error:
+      "Acest restaurant este în prezent închis, vă rugăm să încercați mai târziu sau să comandați de la altul.",
   },
   create_order_page: {
     headline: "Creați comanda",
@@ -124,6 +125,7 @@ export default {
     headline_no_orders: "Nu ați făcut încă nicio comandă",
     order_card: {
       unable_to_repeat_order: "Din păcate, nu putem repeta această comanda.",
+      order_is_not_completed_alert: "Comanda nu a fost încă livrată",
       positions: "Poziții",
       rate_button: "Evaluați",
       repeat_button: "Repetă",

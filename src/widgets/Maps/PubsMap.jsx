@@ -5,7 +5,12 @@ import { useSelector } from "react-redux";
 import { selectGeolocation } from "../../features/store/geolocation/geolocationSlice";
 import PubMarker from "./PubMarker";
 import { useGetNearbyPubsQuery } from "../../shared/api/pubs/pubsApi";
-import { Image } from "react-native";
+import { Image, Platform } from "react-native";
+
+const defaultCenter = {
+  lat: 0,
+  lng: 0,
+};
 
 const PubsMap = ({ selectPub, selectedPub }) => {
   const location = useSelector(selectGeolocation);
@@ -17,6 +22,13 @@ const PubsMap = ({ selectPub, selectedPub }) => {
     },
     { pollingInterval: 20000, skipPollingIfUnfocused: true },
   );
+
+  const [selectedRegion, setSelectedRegion] = useState({
+    latitude: 37.78825,
+    longitude: -122.4324,
+    latitudeDelta: 0.0922,
+    longitudeDelta: 0.0421,
+  });
 
   // Log error on getting nearby pubs error from api
   useEffect(() => {}, [error]);
@@ -31,27 +43,41 @@ const PubsMap = ({ selectPub, selectedPub }) => {
 
   // Animate map on changing selected pub
   useEffect(() => {
-    if (!selectedPub) return;
-    if (!mapLoaded) return;
+    console.log("selected pub: ", selectedPub);
+
+    if (!mapRef.current) return;
+    //on fucking ios mapLoaded not working
+    if (Platform.OS === "android" && !mapLoaded) return;
+    console.log("selected pub: ", selectedPub);
 
     const pub = pubs?.find((pub) => pub.id === selectedPub);
 
-    if (!pub) return;
+    if (!pub || !pub.lat || !pub.lng) return;
 
     console.log("Animating to pub: ", pub);
 
-    mapRef.current.animateCamera(
-      {
-        center: {
-          latitude: pub.lat,
-          longitude: pub.lng,
+    if (Platform.OS === "android") {
+      mapRef.current.animateCamera(
+        {
+          center: {
+            latitude: pub.lat,
+            longitude: pub.lng,
+          },
+          pitch: 0, // Change this value to set the desired pitch
+          heading: 0, // Direction faced by the camera, in degrees clockwise from North.
+          zoom: 16,
         },
-        pitch: 0, // Change this value to set the desired pitch
-        heading: 0, // Direction faced by the camera, in degrees clockwise from North.
-        zoom: 15,
-      },
-      { duration: 800 },
-    );
+        { duration: 800 },
+      );
+    } 
+    //ios
+    else {
+      console.log("TIPA ANIMATING 1");
+      mapRef.current.animateToRegion(
+        getRegion(15, { lat: pub.lat, lng: pub.lng }),
+        800
+      );
+    }
   }, [selectedPub, mapLoaded, pubs]);
 
   // Animate marker on changing geolocation
@@ -60,18 +86,23 @@ const PubsMap = ({ selectPub, selectedPub }) => {
   //   if (!location) return;
   //   if (!selectedPub) return;
 
-  //   mapRef.current.animateCamera(
-  //     {
-  //       center: {
-  //         latitude: location.lat,
-  //         longitude: location.lng,
+  //   if (Platform.OS === "android") {
+  //     mapRef.current.animateCamera(
+  //       {
+  //         center: {
+  //           latitude: location.lat,
+  //           longitude: location.lng,
+  //         },
+  //         pitch: 0, // Change this value to set the desired pitch
+  //         heading: 0, // Direction faced by the camera, in degrees clockwise from North.
+  //         zoom: 10,
   //       },
-  //       pitch: 0, // Change this value to set the desired pitch
-  //       heading: 0, // Direction faced by the camera, in degrees clockwise from North.
-  //       zoom: 10,
-  //     },
-  //     { duration: 800 },
-  //   );
+  //       { duration: 800 }
+  //     );
+  //   } else {
+  //     console.log("TIPA ANIMATING 1");
+  //     setSelectedRegion(getRegion(zoom, location));
+  //   }
   // }, [location, selectedPub]);
 
   return (
@@ -86,19 +117,21 @@ const PubsMap = ({ selectPub, selectedPub }) => {
         {!location && <Spinner size="lg" />}
         {location && (
           <MapView
-            provider={PROVIDER_GOOGLE}
+            provider={Platform.OS === "android" ? PROVIDER_GOOGLE : undefined}
             onMapLoaded={() => {
+              console.log("MAP LOADED");
               setMapLoaded(true);
             }}
             camera={{
               center: {
-                latitude: location.lat,
-                longitude: location.lng,
+                latitude: location?.lat || defaultCenter,
+                longitude: location?.lng || defaultCenter,
               },
               pitch: 0, // Change this value to set the desired pitch
               heading: 0, // Direction faced by the camera, in degrees clockwise from North.
-              zoom: 7,
+              zoom: 10,
             }}
+            region={Platform.OS === "android" ? undefined : selectedRegion}
             ref={mapRef}
             style={mapStyle.map}
           >
@@ -147,6 +180,26 @@ const PubsMap = ({ selectPub, selectedPub }) => {
       </View>
     </View>
   );
+};
+
+const getRegion = (zoom, location) => {
+  return {
+    latitude: location.lat,
+    longitude: location.lng,
+    latitudeDelta: getLatLongDelta(zoom, location.lat)[1],
+    longitudeDelta: getLatLongDelta(zoom, location.lat)[0],
+  };
+};
+
+const getLatLongDelta = (zoom, latitude) => {
+  const LONGITUDE_DELTA = Math.exp(Math.log(360) - zoom * Math.LN2);
+  const ONE_LATITUDE_DEGREE_IN_METERS = 111.32 * 1000;
+  const accurateRegion =
+    LONGITUDE_DELTA *
+    (ONE_LATITUDE_DEGREE_IN_METERS * Math.cos(latitude * (Math.PI / 180)));
+  const LATITUDE_DELTA = accurateRegion / ONE_LATITUDE_DEGREE_IN_METERS;
+
+  return [LONGITUDE_DELTA, LATITUDE_DELTA];
 };
 
 const mapStyle = {

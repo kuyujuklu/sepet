@@ -27,14 +27,10 @@ const CategoryCardWithPubInfo = ({ category, pub, usePubBg, distance }) => {
       {/* Image container */}
       <View
         style={{
-          height: 160,
+          height: 160, 
+          paddingVertical: 10,
           overflow: "hidden",
           borderRadius: 26,
-          borderBottomWidth: 12,
-          borderTopWidth: 4,
-          borderRightWidth: 2,
-          borderLeftWidth: 2,
-          borderColor: "#333",
           alignItems: "center",
           justifyContent: "center",
         }}

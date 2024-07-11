@@ -55,6 +55,7 @@ const MyAlert = ({ status, title, delay, id }) => {
                     inputRange: [0, 1],
                     outputRange: ["-100%", "0%"],
                 }),
+                zIndex: 100
             }}
         >
             <Alert
