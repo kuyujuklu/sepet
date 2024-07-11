@@ -3,8 +3,8 @@ import "./globals.css";
 // const inter = Inter({ subsets: ['latin'] })
 
 export const metadata = {
-    title: "Qr-меню Молдова",
-    description: "Sandex md Qr code Молдова. Меню для вашего заведения. Удобно, быстро, красиво, дешево.",
+    title: "Sandex POS Молдова",
+    description: "Sandex POS. Быстрый сайт доставки для кафе. Курьер для ресторана. Админстрирование ресторана. Оптимизация работы заведения.",
 };
 
 function RootLayout({ children }) {
@@ -30,6 +30,8 @@ function RootLayout({ children }) {
                   />{" "}
                 <meta httpEquiv="Content-Type" content="text/html; charset=utf-8" />
                 <meta httpEquiv="Content-Language" content="ro,ru" />
+                <script async src="https://www.googletagmanager.com/gtag/js?id=AW-973112552"></script>
+                <script type="text/javascript" dangerouslySetInnerHTML={{ __html: "window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());gtag('config', 'AW-973112552');" }}></script>
               </head>
             <body>{children}</body>
         </html>

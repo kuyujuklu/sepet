@@ -1,7 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
+import SwitchLang from "./SwitchLang";
 
-const Header = () => {
+const Header = ({lang}) => {
     return (
         <div>
             {/* <header className="hidden lg:flex m-auto mt-4 p-2  justify-between max-w-6xl">
@@ -63,8 +64,9 @@ const Header = () => {
                             </div>
                             {/* <!-- Primary Navbar items --> */}
                         </div>
-                        {/* <!-- Secondary Navbar items --> */}
+          {/* <!-- Secondary Navbar items --> */}
                         <div className=" flex items-center space-x-3">
+                            <SwitchLang lang={lang}/>
                             <a
                                 href="/admin/company"
                                 id="openSignUp-1"

@@ -68,7 +68,7 @@ const FirstInfoBlock = () => {
                     </section>
 
                     {/* <!-- third block  --> */}
-                    <section className="max-w-6xl m-auto my-36 p-2 ">
+                    <section className="max-w-6xl m-auto p-2 ">
                         <div className=" md:flex justify-evenly bg-white rounded-xl">
                             <div className="1/2part md:w-1/2 p-2">
                                 <h1 className="heading p-4 md:text-6xl text-5xl">
@@ -104,7 +104,7 @@ const FirstInfoBlock = () => {
                     </section>
 
                     {/* <!-- four block  --> */}
-                    <section className="max-w-6xl m-auto my-20 md:my-20 p-2 ">
+                    <section className="max-w-6xl m-auto p-2 ">
                         <div className="md:flex justify-evenly bg-white rounded-xl md:bg-transparent">
                             <div className="right md:w-1/2 p-2 ">
                                 <img alt="Заполнение и настройка электронного меню" className="m-auto border rounded-2xl shadow-2xl"

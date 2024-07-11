@@ -40,10 +40,6 @@ module.exports = (phase) => {
             API_SERV: process.env.API_SERV,
             IS_DEV: process.env.IS_DEV,
         },
-        i18n: {
-            locales: ['ru', 'ro'],
-            defaultLocale: 'ru',
-        },
         async rewrites() {
                 return [
                     // {

@@ -6,11 +6,16 @@ import Header from "../landing/Header"
 import style from '../landing/sass/components/company-inline-select/company-inline-select.module.scss'
 import Link from "next/link"
 
+export const metadata = {
+  title: "Sandex POS  Moldova",
+  description: "Sandex POS. Site de livrare rapida pentru cafenele. Curier pentru un restaurant. Administrarea restaurantului. Optimizarea functionarii unitatii.",
+}
+
 const page = () => {
   return (
     <div style={{ maxWidth: 1280 }} className="mx-auto pb-10">
       <header className="block mb-16 sm:mb-20">
-        <Header />
+        <Header lang="ro" />
       </header>
       <section>
         <CarouselSection />
@@ -18,13 +23,12 @@ const page = () => {
       <section className="block mt-4 sm:mt-16">
         <FirstInfoBlock />
       </section>
-      <section className="block mt-4 sm:mt-16">
+      <section className="block mt-4">
         <SecondInfoBlock />
       </section>
 
       <section className="block mt-4 sm:mt-16">
         <div className="flex flex-col items-center w-fit m-auto">
-<<<<<<< HEAD
           <h1 className="text-center text-2xl text-gray-800 font-bold mb-4">Înscrieți-vă și primiți orice tarif pentru o lună absolut gratuit</h1>
           <div className="text-center flex flex-col sm:flex-row items-center gap-x-6 gap-y-2">
             <div className="flex gap-4 ">
@@ -38,22 +42,6 @@ const page = () => {
               >
                 Pro
               </Link>
-=======
-            <h1 className="text-center text-2xl text-gray-800 font-bold mb-4">Înregistrează-te și obține orice tarif pentru o lună absolut gratuit</h1>
-            <div className="text-center flex flex-col sm:flex-row items-center gap-x-6 gap-y-2">
-                <div className="flex gap-4 ">
-                    <Link href="/admin/auth/registration?tariff=basic"
-                        className={`${style.inlineSelectItem} border-2 border-gray-800 shadow-2xl`}
-                    >
-                      Basic
-                    </Link>
-                    <Link  href="/admin/auth/registration?tariff=pro"
-                        className={`${style.inlineSelectItem} border-2 border-gray-800 shadow-2xl`}
-                    >
-                      Pro
-                    </Link>
->>>>>>> d02dc7a (before pull)
-
               <Link href="/admin/auth/registration?tariff=business"
                 className={`${style.inlineSelectItem} border-2 border-gray-800 shadow-2xl`}
               >

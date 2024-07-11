@@ -67,7 +67,7 @@ const FirstInfoBlock = () => {
                     </section>
 
                     {/* <!-- third block  --> */}
-                    <section className="max-w-6xl m-auto my-36 p-2 ">
+                    <section className="max-w-6xl m-auto p-2 ">
                         <div className=" md:flex justify-evenly bg-white rounded-xl">
                             <div className="1/2part md:w-1/2 p-2">
                                 <h1 className="heading p-4 md:text-6xl text-5xl">
@@ -167,7 +167,7 @@ const FirstInfoBlock = () => {
                     </section>
 
                     {/* <!-- six big block  --> */}
-                    <section className="max-w-6xl m-auto mb- 20 mt-48 md:my-48 p-2 ">
+                    <section className="max-w-6xl m-auto mt-48 p-2 ">
                         <div className=" md:flex justify-evenly bg-white rounded-xl">
                             <div className="1/2part md:w-1/2 p-2">
                                 <div className="relative -z-1 -top-36">
@@ -214,7 +214,6 @@ const FirstInfoBlock = () => {
                             </div>
                         </div>
                     </section>
-
 
                 </div>
                 </div>

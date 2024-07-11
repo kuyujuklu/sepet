@@ -1,8 +1,8 @@
-import { getPubInfo } from "@/app/[locale]/pub/api/pub";
-import initTranslations from "@/app/i18n";
 import SomethingWentWrong from "@/app/shared-components/Errors/SomethingWentWrong";
-import TransProvider from "@/app/[locale]/pub/components/TransProvider";
-import PubPage from "@/app/[locale]/pub/components/PubPage/PubPage";
+import { getPubInfo } from "../api/pub";
+import PubPage from "../components/PubPage/PubPage";
+import initTranslations from "@/app/i18n";
+import TransProvider from "../components/TransProvider";
 
 export async function generateMetadata(
     {params, searchParams},
@@ -33,11 +33,11 @@ async function PubWithMenusLayout({ children, params }) {
         );
     }
 
-    const { t, resources } = await initTranslations("ru", ['translation']);
+    const { t, resources } = await initTranslations(params.locale, ['translation']);
 
 
     return (
-        <TransProvider locale={"ru"} namespaces={['translation']} resources={resources} >
+        <TransProvider locale={params?.locale} namespaces={['translation']} resources={resources} >
             <PubPage
                 data={data}
                 pub={data.pub}

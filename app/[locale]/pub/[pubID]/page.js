@@ -1,9 +1,8 @@
 "use client"
 
-import Categories from "@/app/[locale]/pub/components/PubPage/Categories/Categories"
-import { selectData } from "@/app/[locale]/pub/store/pubInfoSlice"
-import { useSelector } from "react-redux"
-
+import { useSelector } from "react-redux";
+import Categories from "../components/PubPage/Categories/Categories";
+import { selectData } from "../store/pubInfoSlice";
 
 const PubPage = () => {
   const data = useSelector(selectData)

@@ -6,11 +6,12 @@ import SecondInfoBlock from "./landing/Main/SecondInfoBlock"
 import style from './landing/sass/components/company-inline-select/company-inline-select.module.scss'
 import Link from "next/link"
 
+
 const page = () => {
     return (
       <div style={{maxWidth: 1280}} className="mx-auto pb-10">
         <header className="block mb-16 sm:mb-20">
-          <Header />
+          <Header lang="ru" />
         </header>
         <section>
           <CarouselSection />
@@ -18,7 +19,7 @@ const page = () => {
         <section className="block mt-4 sm:mt-16">
           <FirstInfoBlock />
         </section>
-        <section className="block mt-4 sm:mt-16">
+        <section className="block mt-4">
           <SecondInfoBlock />
         </section>
 
