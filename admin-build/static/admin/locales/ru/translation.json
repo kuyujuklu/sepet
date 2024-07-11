@@ -31,16 +31,15 @@
             "max_full_address_length_is_100": "Максимум 100 букв",
             "phone_is_required": "Телефон является обязательным полем",
             "min_phone_length_is_8": "Минимум 8 цифр"
-
         },
         "basket": {
             "headline": "Корзина",
             "last_order": {
                 "headline": "Последний заказ",
                 "delivery": "Доставка на дом",
-                "in_place_order":"Заказ в ресторане"
+                "in_place_order": "Заказ в ресторане"
             },
-            "create_order_button": "Заказать" 
+            "create_order_button": "Заказать"
         },
         "popups": {
             "create_order": {
@@ -57,16 +56,14 @@
                 "cash_for_courier": "Наличными курьеру",
                 "card_for_courier": "Картой курьеру",
                 "table_number": "Номер столика",
-                "final_price" : "Цена заказа",
+                "final_price": "Цена заказа",
                 "comments": "Комментарии",
-
                 "create_order_button": "Заказать"
-
             }
         }
     },
     "admin": {
-        "logout": "Выйти из аккаунта",
+        "logout": "Выход",
         "language": "Язык",
         "images": {
             "upload": "Загрузить",
@@ -161,11 +158,14 @@
                     },
                     "orders": {
                         "headline": "Заказы"
+                    },
+                    "settings": {
+                        "headline": "Настройки"
                     }
                 }
             },
             "orders_page": {
-                "no_orders": "У вас еще не заказов",
+                "no_orders": "У вас еще нет заказов",
                 "headline": "Заказы",
                 "active_orders": "Активных заказов"
             },
@@ -173,13 +173,28 @@
                 "order": "Заказ",
                 "order_not_found": "Заказ не найден, попробуйте позже",
                 "order_statuses": {
-                    "not_handled": "Не рассмотрен",
-                    "handled": "Рассмотрен",
-                    "preparing": "Приготовлен",
-                    "completed": "Доставлен"
+                    "not_handled": "Новый",
+                    "handled": "Готовится",
+                    "preparing": "У курьера",
+                    "completed": "Доставлен",
+                    "canceled": "Отменен"
+                },
+                "order_filters": {
+                    "all": "Активные",
+                    "not_handled": "Новые",
+                    "handled": "Готовятся",
+                    "preparing": "У курьера",
+                    "completed": "Доставлены",
+                    "canceled": "Отменены"
+                },
+                "order_payment_types": {
+                    "cash": "Наличными",
+                    "card_offline": "Картой курьеру",
+                    "not_proceeded": "Не указан"
                 },
                 "order_position": {
-                    "pieces_shortcut": "шт"
+                    "pieces_shortcut": "шт",
+                    "add_dish_button":"Добавить блюдо"
                 },
                 "table_number": "Номер столика",
                 "town": "Город",
@@ -187,16 +202,25 @@
                 "main_phone": "Основной телефон",
                 "second_phone": "Дополнительный телефон",
                 "payment_type": "Способ оплаты",
+                "total_price_of_products": "Сумма товаров",
+                "price_of_shipping": "Цена доставки",
+                "final_price" : "Итого",
                 "comments": "Комментарии"
-                
             },
             "shipping": {
                 "headline": "Доставка",
+                "shipping_price": {
+                    "headline": "Стоимость доставки в вашем заведении",
+                    "input_placeholder": "кол-во"
+                },
                 "shipping_time": {
-                    "label": "Время доставки",
+                    "label": "Приблизительное время доставки",
                     "from": "От",
                     "to": "До",
                     "save": "Сохранить"
+                },
+                "shipping_work_hours": {
+                    "label": "Часы работы доставки"
                 },
                 "shipping_map": {
                     "checkmark_headline": "Если ваше заведение имеет доставку поставьте галочку",
@@ -206,14 +230,13 @@
                     "go_to_admin_panel": "Перейти к главной странице",
                     "buttons": {
                         "select_and_delete_area": "Выбрать и удалить область",
-                        "save_all" :"Сохранить все"
+                        "save_all": "Сохранить все"
                     }
                 }
-                
             }
         },
         "pub": {},
-        "categories": {
+        "categories": { 
             "add_category_button": "Добавить категорию",
             "category_types": {
                 "asian": "Азиатская кухня",
@@ -264,12 +287,16 @@
                 "wifi_password": "Пароль от Wi-Fi",
                 "currency": "Валюта",
                 "favorite_color": "Предпочитаемый цвет",
+                "has_in_place_order": "Заказ внутри ресторана",
+                "yes": "Да",
+                "no": "Нет",
                 "theme": {
                     "title": "Тема",
                     "light": "Светлая",
                     "dark": "Темная"
                 },
                 "address": "Адрес",
+                "telegram_username": "Username в телеграме",
                 "additional_info": "Дополнительная информация",
                 "save_button": "Сохранить"
             },
@@ -348,6 +375,15 @@
                 "headline": "Удалить блюдо",
                 "text": "Вы уверены, что хотите удалить блюдо?",
                 "warning": "После удаления нельзя будет восстановить данные.",
+                "delete_button": "Удалить"
+            },
+            "add_dish_to_order_popup": {
+                "headline": "Выберите блюдо, затем укажите количество",
+                "add_dish": "Добавить"
+            },
+            "delete_dish_from_order_popup": {
+                "headline": "Удалить блюдо из заказа",
+                "warning": "Вы уверены, что хотите удалить блюдо из заказа?",
                 "delete_button": "Удалить"
             }
         }

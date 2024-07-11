@@ -14,6 +14,11 @@
         "pub_limit_exceeded": "A fost depășită limita de localități. Actualizați tariful pentru a adăuga noi localități."
     },
     "client": {
+        "pub_info": {
+            "wifi_password": "Parolă Wi-Fi",
+            "address": "Adresă",
+            "additional_info": "Informații suplimentare"
+        },
         "errors": {
             "unknown_order_type": "Tip de comandă necunoscut",
             "unknown_payment_type": "Tip de plată necunoscut",
@@ -26,21 +31,15 @@
             "max_full_address_length_is_100": "Maxim 100 de litere",
             "phone_is_required": "Telefonul este un câmp obligatoriu",
             "min_phone_length_is_8": "Minim 8 cifre"
-
-        },
-        "pub_info": {
-            "wifi_password": "Parolă Wi-Fi",
-            "address": "Adresă",
-            "additional_info": "Informații suplimentare"
         },
         "basket": {
             "headline": "Coș",
             "last_order": {
                 "headline": "Ultima comandă",
                 "delivery": "Livrare la domiciliu",
-                "in_place_order":"Comandă la local"
+                "in_place_order": "Comandă la local"
             },
-            "create_order_button": "Сomanda" 
+            "create_order_button": "Сomanda"
         },
         "popups": {
             "create_order": {
@@ -60,12 +59,11 @@
                 "final_price": "Prețul final",
                 "comments": "Comentarii",
                 "create_order_button": "Comandă"
-
             }
         }
     },
     "admin": {
-        "logout": "Deconectați de la cont",
+        "logout": "Ieşire",
         "language": "Limba",
         "images": {
             "upload": "Încărca",
@@ -141,17 +139,114 @@
                 "address": "Adresă",
                 "expiration_time": "Plătită până la",
                 "expired": "Neplătită",
-                "edit_button": "Management"
+                "edit_button": "Management",
+                "pay_button": "A plati"
+            }
+        },
+        "admin_panel": {
+            "main_page": {
+                "headline": "Panoul de administrare",
+                "sections": {
+                    "geolocation": {
+                        "headline": "Selectați locația unității printr-un dublu clic pe hartă"
+                    },
+                    "food_shipping": {
+                        "headline": "Livrare"
+                    },
+                    "edit_menu": {
+                        "headline": "Editați meniul"
+                    },
+                    "orders": {
+                        "headline": "Comenzi"
+                    },
+                    "settings": {
+                        "headline": "Setări"
+                    }
+                }
+            },
+            "orders_page": {
+                "no_orders": "Nu aveți încă comenzi",
+                "headline": "Comenzi",
+                "active_orders": "Comenzi active"
+            },
+            "order_page": {
+                "order": "Comandă",
+                "order_not_found": "Comanda nu a fost găsită, încercați mai târziu",
+                "order_statuses": {
+                    "not_handled": "Nouă",
+                    "handled": "În pregătire",
+                    "preparing": "La curier",
+                    "completed": "Livrată",
+                    "canceled": "Anulat"
+                },
+                "order_filters": {
+                    "all": "Active",
+                    "not_handled": "Noi",
+                    "handled": "În pregătire",
+                    "preparing": "La curier",
+                    "completed": "Livrate",
+                    "canceled": "Anulate"
+                },
+                "order_payment_types": {
+                    "cash": "Numerar",
+                    "card_offline": "Cu cardul la curier",
+                    "not_proceeded": "Nespecificat"
+                },
+                "order_position": {
+                    "pieces_shortcut": "buc",
+                    "add_dish_button":"Adăugați o poziție"
+                },
+                "table_number": "Numărul mesei",
+                "town": "Oraș",
+                "full_address": "Adresa completă",
+                "main_phone": "Telefon principal",
+                "second_phone": "Telefon secundar",
+                "payment_type": "Metoda de plată",
+                "total_price_of_products": "Pretul produselor",
+                "price_of_shipping": "Pret de livrare",
+                "final_price" : "Prețul final",
+                "comments": "Comentarii"
+            },
+            "shipping": {
+                "headline": "Livrare",
+                "shipping_price": {
+                    "headline": "Costul de livrare la sediul dvs",
+                    "input_placeholder": "preţ"
+                },
+                "shipping_time": {
+                    "label": "Timpul de livrare",
+                    "from": "De la",
+                    "to": "Până la",
+                    "save": "Salvați"
+                },
+                "shipping_work_hours": {
+                    "label": "Orele de livrare"
+                },
+                "shipping_map": {
+                    "checkmark_headline": "Dacă unitatea dvs. oferă servicii de livrare, bifați această opțiune",
+                    "checkmark_label": "Livrare",
+                    "headline": "Selectați zonele în care efectuați livrări",
+                    "not_selected_geolocation_warning": "Vă rugăm să marcați locația unității pe pagina principală a panoului de administrare",
+                    "go_to_admin_panel": "Accesați pagina principală",
+                    "buttons": {
+                        "select_and_delete_area": "Selectați și ștergeți zona",
+                        "save_all": "Salvați toate"
+                    }
+                }
             }
         },
         "pub": {},
         "categories": {
             "add_category_button": "Adăugați categorie",
             "category_types": {
-                "burger": "Burger",
-                "pizza": "Pizza",
-                "drinks": "Băuturi",
-                "sushi": "Sushi",
+                "asian": "Bucătărie asiatică",
+                "fast_food": "Fast food",
+                "breakfast": "Mic dejun",
+                "grill": "Grătar",
+                "dessert": "Deserturi",
+                "pasta": "Paste",
+                "pancakes": "Clătite",
+                "soup": "Supe",
                 "other": "Altele"
             }
         },
@@ -176,10 +271,14 @@
                 "header": "Actualizați tariful",
                 "main_headline": "Pentru a schimba tariful, vă rugăm să contactați administratorul"
             },
+            "pay_for_pub_popup": {
+                "header": "Plătiți pentru acces",
+                "main_headline": "Pentru a plăti, contactați administratorul"
+            },
             "create_pub_popup": {
                 "headline": "Adăugați locație",
                 "name": "Numele locației",
-                "url_name": "Nume scurt pentru URL", 
+                "url_name": "Nume scurt pentru URL",
                 "create_button": "Adăugați"
             },
             "update_pub_popup": {
@@ -188,12 +287,17 @@
                 "wifi_password": "Parola Wi-Fi",
                 "currency": "Valută",
                 "favorite_color": "Culoare preferată",
+                "has_in_place_order": "Comanda in interiorul restaurantului",
+                "yes": "Da",
+                "no": "Nu",
+                
                 "theme": {
                     "title": "Tema",
                     "light": "Luminoasă",
                     "dark": "Întunecată"
                 },
                 "address": "Adresă",
+                "telegram_username": "Username în telegram",
                 "additional_info": "Informații suplimentare",
                 "save_button": "Salvează"
             },
@@ -251,6 +355,7 @@
                 "ingredients": "Ingrediente",
                 "text_color": "Culoare text",
                 "price": "Preț",
+                "sale_price": "Preț cu reducere (dacă nu există reducere, lăsați câmpul necompletat)",
                 "visible": "Vizibilitate",
                 "category": "Categorie",
                 "create_button": "Adaugă"
@@ -271,6 +376,15 @@
                 "headline": "Șterge fel de mâncare",
                 "text": "Sunteți sigur că doriți să ștergeți felul de mâncare?",
                 "warning": "Datele nu vor putea fi recuperate după ștergere.",
+                "delete_button": "Șterge"
+            },
+            "add_dish_to_order_popup": {
+                "headline": "Selectați un fel de mâncare, apoi specificați cantitatea",
+                "add_dish": "Adăuga"
+            },
+            "delete_dish_from_order_popup": {
+                "headline": "Scoateți un fel de mâncare din comandă",
+                "warning": "Sigur doriți să eliminați un fel de mâncare din comandă?",
                 "delete_button": "Șterge"
             }
         }
