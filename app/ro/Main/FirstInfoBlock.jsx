@@ -45,7 +45,7 @@ const FirstInfoBlock = () => {
                             </div>
                             <div className="right md:w-1/2 p-2">
                                 <img alt="Procesarea comenzilor online în panoul de administrare" className="m-auto border rounded-2xl shadow-2xl"
-                                    src="/images/png/admin_orders_ro.png" />
+                                    src="/images/png/order list_ro.png" />
                             </div>
                         </div>
                     </section>
@@ -73,13 +73,14 @@ const FirstInfoBlock = () => {
                                 <h1 className="heading p-4 md:text-6xl text-5xl">
                                     Livrare inteligentă
                                 </h1>
-                                <div className="description p-4">Setați raza de livrare la care livrează curierii dumneavoastră.
+                                <div className="description p-4">Setați raza de livrare la care livrează curierii dvs.
                                 </div>
                                 <p className="description p-4">
-                                    Rețineți metodele de plată și termenele de livrare disponibile.
+                                    Rețineți metodele de plată disponibile și termenele de livrare.
 
                                 </p>
-                                <p className="description p-4"></p>
+                                <p className="description p-4">Configurați orele de livrare</p>
+                                <p className="description p-4">Setați prețul de livrare pentru fiecare zonă în funcție de intervalul acesteia</p>
 
                                 <div className="actionBtn p-4 mt-2">
                                     {/* <button id="openLeaveMessage3"
@@ -90,7 +91,7 @@ const FirstInfoBlock = () => {
                             </div>
                             <div className="1/2part md:w-1/2 p-2" >
                                 <img alt="Configurarea zonei și a orei de livrare a restaurantului" className="m-auto p-4 md:relative -z-1 -top-16 border rounded-2xl shadow-2xl"
-                                    src="/images/png/admin_delivery_setting_ro.png"></img>
+                                    src="/images/png/delivery settings2_ro.png"></img>
                                     {/* <Image
                                     className="rounded-2xl bg-red-600 w-100 h-100"
                                     style={{ objectFit: "cover" }}
@@ -127,10 +128,10 @@ const FirstInfoBlock = () => {
                                     Meniul este disponibil atât în versiunea web, cât și în aplicația pentru Android și Iphone.
                                 </p>
                                 <div className="actionBtn p-4 mt-2">
-                                    <button id="openLeaveMessage4"
-                                        className=" openLeaveMessage mr-4 p-3 rounded-xl border-2 border-gray-800">
-                                        Descărcați aplicația (în curând)
-                                    </button>
+                                    <a id="" href="https://play.google.com/store/apps/details?id=com.camelapp.app&pcampaignid=web_share"
+                                        className=" mr-4 p-3 rounded-xl bg-blue-500 text-white">
+                                        Descărcați aplicația Android
+                                    </a>
                                 </div>
                             </div>
                         </div>

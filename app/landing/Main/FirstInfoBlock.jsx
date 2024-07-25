@@ -46,7 +46,7 @@ const FirstInfoBlock = () => {
                             </div>
                             <div className="right md:w-1/2 p-2">
                                 <img alt="Обработка онлайн заказов в админ панели" className="m-auto border rounded-2xl shadow-2xl"
-                                    src="/images/png/admin_orders.png" />
+                                    src="/images/png/order list.png" />
                             </div>
                         </div>
                     </section>
@@ -81,6 +81,7 @@ const FirstInfoBlock = () => {
 
                                 </p>
                                 <p className="description p-4">Настрой часы доставки</p>
+                                <p className="description p-4">Установи цену доставки для каждой зоны в зависимости от ее дальности</p>
 
                                 <div className="actionBtn p-4 mt-2">
                                     {/* <button id="openLeaveMessage3"
@@ -91,7 +92,7 @@ const FirstInfoBlock = () => {
                             </div>
                             <div className="1/2part md:w-1/2 p-2" >
                                 <img alt="Настройка зоны и времени доставки ресторана" className="m-auto p-4 md:relative -z-1 -top-16 border rounded-2xl shadow-2xl"
-                                    src="/images/png/admin_delivery_setting.png"></img>
+                                    src="/images/png/delivery settings.png"></img>
                                     {/* <Image
                                     className="rounded-2xl bg-red-600 w-100 h-100"
                                     style={{ objectFit: "cover" }}
@@ -128,10 +129,10 @@ const FirstInfoBlock = () => {
                                     Меню доступно как в веб версии так и в приложении Android и Iphone
                                 </p>
                                 <div className="actionBtn p-4 mt-2">
-                                    <button id="openLeaveMessage4"
-                                        className=" openLeaveMessage mr-4 p-3 rounded-xl border-2 border-gray-800">
-                                        Скачать приложение (скоро)
-                                    </button>
+                                    <a id="" href="https://play.google.com/store/apps/details?id=com.camelapp.app&pcampaignid=web_share"
+                                        className=" mr-4 p-3 rounded-xl bg-blue-500 text-white">
+                                        Скачать Android приложение
+                                    </a>
                                 </div>
                             </div>
                         </div>

@@ -26,6 +26,9 @@ const page = () => {
       <section className="block mt-4">
         <SecondInfoBlock />
       </section>
+      <section className="text-center block mt-4">
+        <a className="bg-slate-300 text-xl font-medium p-4 rounded-xl" href="https://sandex.md/pricing.html">Produsele noastre și prețurile</a>
+      </section>
 
       <section className="block mt-4 sm:mt-16">
         <div className="flex flex-col items-center w-fit m-auto">
