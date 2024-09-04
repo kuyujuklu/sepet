@@ -3,6 +3,7 @@ package orders
 import (
 	"fmt"
 
+	"github.com/alexkalak/qrmenu/src/controllers/httpv1/input/entities"
 	"github.com/alexkalak/qrmenu/src/controllers/httpv1/locals"
 	"github.com/alexkalak/qrmenu/src/controllers/ws/wsutils"
 	"github.com/alexkalak/qrmenu/src/services/orderservice"
@@ -39,9 +40,9 @@ func (c *ordersController) ConnectToOrdersForClient(conn *websocket.Conn) {
 		return
 	}
 
-	outputOrders := make([]orderservice.WSOrderOutput, 0, len(allOrders))
+	outputOrders := make([]entities.OrderOutput, 0, len(allOrders))
 	for _, order := range allOrders {
-		outputOrder := orderservice.WSOrderOutput{}
+		outputOrder := entities.OrderOutput{}
 		outputOrder.FillFromModel(order)
 		outputOrders = append(outputOrders, outputOrder)
 	}

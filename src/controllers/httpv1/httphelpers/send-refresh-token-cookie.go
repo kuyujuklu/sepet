@@ -10,8 +10,8 @@ import (
 
 var jwtService = jwtservice.New()
 
-func SendRefreshTokenInHttpOnlyCookies(ctx *fiber.Ctx, userID int, userSignificance int) error {
-	refresh_token, err := jwtService.GetRefreshTokenString(userID, userSignificance, jwtservice.STANDARD_REFRESH_LIFE_TIME)
+func SendRefreshTokenInHttpOnlyCookies(ctx *fiber.Ctx, userID int, userSignificance int, userRole string) error {
+	refresh_token, err := jwtService.GetRefreshTokenString(userID, userSignificance, userRole, jwtservice.STANDARD_REFRESH_LIFE_TIME)
 	if err != nil {
 		return servererrors.ErrInternalServerError
 	}

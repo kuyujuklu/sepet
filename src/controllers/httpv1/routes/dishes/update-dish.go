@@ -32,7 +32,7 @@ type updateDishOutput struct {
 // @Security ApiKeyAuth
 // @Param AccessToken header string  true "accesstoken"
 func (c *dishesController) UpdateDish(ctx *fiber.Ctx) error {
-	userID, userSignificance, err := h.GetUserIDAndSignificanceFromLocals(ctx)
+	userID, userSignificance, userRole, err := h.GetUserIDSignificanceAndRoleFromLocals(ctx)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
@@ -53,13 +53,13 @@ func (c *dishesController) UpdateDish(ctx *fiber.Ctx) error {
 	}
 
 	//Checking access for action with category for company
-	err = h.CheckAccess(userID, companyID, userSignificance, models.CATEGORY_COMPANY_ENTITY, categoryID)
+	err = h.CheckCompanyAccess(userID, companyID, userSignificance, userRole, models.CATEGORY_COMPANY_ENTITY, categoryID)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
 
 	//Checking access for action with dish for company
-	err = h.CheckAccess(userID, companyID, userSignificance, models.DISH_COMPANY_ENTITY, dishID)
+	err = h.CheckCompanyAccess(userID, companyID, userSignificance, userRole, models.DISH_COMPANY_ENTITY, dishID)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}

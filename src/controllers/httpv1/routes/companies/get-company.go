@@ -25,7 +25,7 @@ type getCompanyOutput struct {
 // @Security ApiKeyAuth
 // @Param AccessToken header string  true "accesstoken"
 func (c *companiesController) GetCompanyByID(ctx *fiber.Ctx) error {
-	userID, userSignificance, err := h.GetUserIDAndSignificanceFromLocals(ctx)
+	userID, userSignificance, userRole, err := h.GetUserIDSignificanceAndRoleFromLocals(ctx)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
@@ -36,7 +36,7 @@ func (c *companiesController) GetCompanyByID(ctx *fiber.Ctx) error {
 	}
 
 	//TODO: remove zero at the end
-	err = h.CheckAccessForCompanyAction(userID, companyID, userSignificance)
+	err = h.CheckAccessForCompanyAction(userID, companyID, userSignificance, userRole)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}

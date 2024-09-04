@@ -25,3 +25,11 @@ var ErrUnableToCreateQrCode = errors.New("unable to create QR code")
 var ErrPubShippingIsInvalid = errors.New("pub shipping is invalid")
 
 var ErrPubPreorderIsInvalid = errors.New("pub preorder is invalid")
+
+var ErrUnableToAddCourier = errors.New("unable to add courier")
+
+var ErrUnableToDeleteCourierFromPub = errors.New("unable to delete courier from pub")
+
+var ErrUnableToUpdateDeliveryType = errors.New("unable to update delivery type")
+
+var ErrUnableToUpdateAddCommissionToDishPrices = errors.New("unable to update add commission to dish prices")

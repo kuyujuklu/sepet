@@ -7,12 +7,14 @@ import (
 	"github.com/alexkalak/qrmenu/src/errors/categoryerrors"
 	"github.com/alexkalak/qrmenu/src/errors/clienterrors"
 	"github.com/alexkalak/qrmenu/src/errors/companyerrors"
+	"github.com/alexkalak/qrmenu/src/errors/couriererrors"
 	"github.com/alexkalak/qrmenu/src/errors/currencyerrors"
 	"github.com/alexkalak/qrmenu/src/errors/disheserrors"
 	"github.com/alexkalak/qrmenu/src/errors/httperrors"
 	"github.com/alexkalak/qrmenu/src/errors/jwterrors"
 	"github.com/alexkalak/qrmenu/src/errors/menuerrors"
 	"github.com/alexkalak/qrmenu/src/errors/notificationerrors"
+	"github.com/alexkalak/qrmenu/src/errors/ordererrors"
 	"github.com/alexkalak/qrmenu/src/errors/oserrors"
 	"github.com/alexkalak/qrmenu/src/errors/puberrors"
 	"github.com/alexkalak/qrmenu/src/errors/roleerrors"
@@ -137,6 +139,26 @@ var errors = map[error]int{
 	notificationerrors.ErrUnableToGetNotification:    fiber.StatusInternalServerError,
 	notificationerrors.ErrUnableToUpdateNotification: fiber.StatusInternalServerError,
 	notificationerrors.ErrUnableToDeleteNotification: fiber.StatusInternalServerError,
+
+	//ordererrors
+	ordererrors.ErrOrderNotFound:           fiber.StatusNotFound,
+	ordererrors.ErrUnableToCreateOrder:     fiber.StatusInternalServerError,
+	ordererrors.ErrUnableToGetOrder:        fiber.StatusInternalServerError,
+	ordererrors.ErrUnableToUpdateOrder:     fiber.StatusInternalServerError,
+	ordererrors.ErrUnknownOrderType:        fiber.StatusBadRequest,
+	ordererrors.ErrUnkonwnOrderPaymentType: fiber.StatusBadRequest,
+	ordererrors.ErrUnkonwnOrderStatus:      fiber.StatusBadRequest,
+	ordererrors.ErrOrderIsAlreadyReserved:  fiber.StatusForbidden,
+
+	// couriererrors
+	couriererrors.ErrUnableToGetCourier:            fiber.StatusInternalServerError,
+	couriererrors.ErrUnableToCreateCourier:         fiber.StatusInternalServerError,
+	couriererrors.ErrUnableToUpdateCourier:         fiber.StatusInternalServerError,
+	couriererrors.ErrUnableToDeleteCourier:         fiber.StatusInternalServerError,
+	couriererrors.ErrCourierNotFound:               fiber.StatusNotFound,
+	couriererrors.ErrCourierHaveNoImage:            fiber.StatusNoContent,
+	couriererrors.ErrCourierCannotReserveThisOrder: fiber.StatusForbidden,
+	couriererrors.ErrNotCouriersOrder:              fiber.StatusForbidden,
 }
 
 func SendError(ctx *fiber.Ctx, err error, statusCode int) error {

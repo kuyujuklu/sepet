@@ -1,6 +1,8 @@
 package orders
 
 import (
+	"fmt"
+
 	h "github.com/alexkalak/qrmenu/src/controllers/httpv1/httphelpers"
 	"github.com/alexkalak/qrmenu/src/controllers/httpv1/input"
 	"github.com/alexkalak/qrmenu/src/controllers/httpv1/input/entities"
@@ -29,6 +31,8 @@ func (c *ordersController) CreateOrder(ctx *fiber.Ctx) error {
 	if len(validationErrors) > 0 {
 		return h.SendValidationErrors(ctx, validationErrors)
 	}
+
+	fmt.Println("DeliveryPrice in order creation: ", input.DeliveryPrice)
 
 	if input.PubID == 0 {
 		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)

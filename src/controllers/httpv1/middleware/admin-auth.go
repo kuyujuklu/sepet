@@ -7,7 +7,7 @@ import (
 )
 
 func AdminAuthMW(ctx *fiber.Ctx) error {
-	_, userSignificance, err := h.GetUserIDAndSignificanceFromLocals(ctx)
+	_, userSignificance, _, err := h.GetUserIDSignificanceAndRoleFromLocals(ctx)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}

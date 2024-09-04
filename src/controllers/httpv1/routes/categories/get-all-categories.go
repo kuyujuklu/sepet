@@ -27,7 +27,7 @@ type getAllCategoriesOutput struct {
 // @Security ApiKeyAuth
 // @Param AccessToken header string  true "accesstoken"
 func (c *categoryController) GetAllCategories(ctx *fiber.Ctx) error {
-	userID, userSignificance, err := h.GetUserIDAndSignificanceFromLocals(ctx)
+	userID, userSignificance, userRole, err := h.GetUserIDSignificanceAndRoleFromLocals(ctx)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
@@ -43,7 +43,7 @@ func (c *categoryController) GetAllCategories(ctx *fiber.Ctx) error {
 	}
 
 	//Checking access for action with menu for company
-	err = h.CheckAccess(userID, companyID, userSignificance, models.MENU_COMPANY_ENTITY, menuID)
+	err = h.CheckCompanyAccess(userID, companyID, userSignificance, userRole, models.MENU_COMPANY_ENTITY, menuID)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}

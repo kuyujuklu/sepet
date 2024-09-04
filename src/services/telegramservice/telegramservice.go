@@ -50,7 +50,7 @@ func New() (TelegramService, error) {
 
 func (s *telegramSerivce) setup() error {
 	var err error
-	s.bot, err = telego.NewBot(s.botToken, telego.WithDefaultDebugLogger())
+	s.bot, err = telego.NewBot(s.botToken, telego.WithDiscardLogger())
 	if err != nil {
 		fmt.Println("telegram bot initializing error ", err)
 		return err
@@ -136,35 +136,14 @@ func (s *telegramSerivce) SendCreateOrderMessageForPub(pubID int, order models.O
 		return err
 	}
 
-	pubDishes, err := s.PubsRepo.GetAllDishesForPub(pubID)
-	if err != nil {
-		return err
-	}
-
-	dishCounts, err := order.GetDishes()
+	orderDishes, err := order.GetDishes()
 	if err != nil {
 		return servererrors.ErrInternalServerError
 	}
 
 	var totalPrice float64 = 0
-	for _, dishCount := range dishCounts {
-		foundDish := models.Dish{}
-		for _, dish := range pubDishes {
-			if dish.ID == uint(dishCount.DishID) {
-				foundDish = dish
-			}
-		}
-
-		if foundDish.ID == 0 {
-			continue
-		}
-
-		dishPrice := foundDish.Price
-		if foundDish.SalePrice != 0 && foundDish.SalePrice < foundDish.Price {
-			dishPrice = foundDish.SalePrice
-		}
-
-		totalPrice += float64(dishCount.Count) * dishPrice
+	for _, dish := range orderDishes {
+		totalPrice += float64(dish.Count) * dish.DishPrice
 	}
 
 	hasSuperUser := true

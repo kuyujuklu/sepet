@@ -27,8 +27,12 @@ type SetShippingWorkHours struct {
 	End   int `json:"shipping_work_end" example:"1080"`
 }
 
-type SetShippingPrice struct {
-	Price int `json:"price" example:"30"`
+type SetShippingPrices struct {
+	Prices map[string]float64 `json:"prices" example:"{shape_id: price}"`
+}
+
+type SetStandardShippingPrice struct {
+	Price float64 `json:"price" example:"88"`
 }
 
 type VertexOutput struct {
@@ -37,6 +41,8 @@ type VertexOutput struct {
 }
 
 type ShapeOutput struct {
+	ShapeID  string         `json:"shape_id"`
+	Color    string         `json:"color"`
 	Vertices []VertexOutput `json:"vertices"`
 }
 
@@ -49,22 +55,34 @@ func (s *ShapeOutput) FillFromModel(shape models.Shape) error {
 		})
 	}
 	s.Vertices = vertices
+	s.ShapeID = shape.ShapeID
+	s.Color = shape.Color
 	return nil
 }
 
 type ShippingOutput struct {
-	ID                    int           `json:"id"`
-	Available             bool          `json:"available"`
-	ShippingTimeFrom      int           `json:"shipping_time_from"`
-	ShippingTimeTo        int           `json:"shipping_time_to"`
-	ShippingStartWorkTime int           `json:"shipping_work_start"`
-	ShippingEndWorkTime   int           `json:"shipping_work_end"`
-	ShippingPrice         int           `json:"shipping_price"`
-	Shapes                []ShapeOutput `json:"shapes"`
+	ID                        int                `json:"id"`
+	Available                 bool               `json:"available"`
+	ShippingTimeFrom          int                `json:"shipping_time_from"`
+	ShippingTimeTo            int                `json:"shipping_time_to"`
+	ShippingStartWorkTime     int                `json:"shipping_work_start"`
+	ShippingEndWorkTime       int                `json:"shipping_work_end"`
+	ShippingPrices            map[string]float64 `json:"shipping_prices"`
+	StandardShippingPrice     string             `json:"standard_shipping_price"`
+	Shapes                    []ShapeOutput      `json:"shapes"`
+	ShippingPrice             float64            `json:"shipping_price"`
+	DeliveryType              string             `json:"delivery_type"`
+	AddCommissionToDishPrices bool               `json:"add_commission_to_dish_prices"`
+	CommissionForDishPrices   int                `json:"commission_for_dish_prices"` //standard commission in percent
 }
 
 func (s *ShippingOutput) FillFromModel(shipping models.Shipping) error {
 	shapes, err := shipping.GetShapes()
+	if err != nil {
+		return puberrors.ErrPubShippingIsInvalid
+	}
+
+	prices, err := shipping.GetPrices()
 	if err != nil {
 		return puberrors.ErrPubShippingIsInvalid
 	}
@@ -84,9 +102,12 @@ func (s *ShippingOutput) FillFromModel(shipping models.Shipping) error {
 	s.Shapes = shapesOutput
 	s.ShippingTimeFrom = shipping.ShippingTimeFrom
 	s.ShippingTimeTo = shipping.ShippingTimeTo
-	s.ShippingPrice = shipping.ShippingPrice
+	s.ShippingPrices = prices
 	s.ShippingStartWorkTime = shipping.ShippingStartWorkTime
 	s.ShippingEndWorkTime = shipping.ShippingEndWorkTime
+	s.DeliveryType = shipping.DeliveryType
+	s.AddCommissionToDishPrices = shipping.AddCommissionToDishPrices
+	s.CommissionForDishPrices = models.DELIVERY_SERVICE_DISHES_COMMISSION_IN_PERCENT
 
 	return nil
 }

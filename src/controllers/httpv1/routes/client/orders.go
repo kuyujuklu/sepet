@@ -8,6 +8,7 @@ import (
 	"github.com/alexkalak/qrmenu/src/controllers/httpv1/input"
 	"github.com/alexkalak/qrmenu/src/controllers/httpv1/input/entities"
 	"github.com/alexkalak/qrmenu/src/errors/httperrors"
+	"github.com/alexkalak/qrmenu/src/models"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -25,9 +26,13 @@ type GetOrdersOutput struct {
 // @Router       /api/client/orders [GET]
 // @Param AccessToken header string  true "accesstoken"
 func (c *clientController) GetAllOrdersForClient(ctx *fiber.Ctx) error {
-	clientID, _, err := h.GetUserIDAndSignificanceFromLocals(ctx)
+	clientID, _, userRole, err := h.GetUserIDSignificanceAndRoleFromLocals(ctx)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	if userRole != models.CLIENT_ROLE_NAME {
+		return h.SendError(ctx, httperrors.ErrUnauthorized, h.AUTOMATIC_STATUS_CODE)
 	}
 
 	orders, err := c.OrderService.GetOrdersForClient(clientID)
@@ -70,9 +75,13 @@ type CreateOrderOutput struct {
 // @Router       /api/client/orders [POST]
 // @Param AccessToken header string  true "accesstoken"
 func (c *clientController) CreateOrder(ctx *fiber.Ctx) error {
-	clientID, _, err := h.GetUserIDAndSignificanceFromLocals(ctx)
+	clientID, _, userRole, err := h.GetUserIDSignificanceAndRoleFromLocals(ctx)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	if userRole != models.CLIENT_ROLE_NAME {
+		return h.SendError(ctx, httperrors.ErrUnauthorized, h.AUTOMATIC_STATUS_CODE)
 	}
 
 	input, validationErrors, err := input.ParseRequestBody[entities.CreateOrderInput](ctx)
@@ -82,6 +91,7 @@ func (c *clientController) CreateOrder(ctx *fiber.Ctx) error {
 	if len(validationErrors) > 0 {
 		return h.SendValidationErrors(ctx, validationErrors)
 	}
+	fmt.Println("DeliveryPrice in order creation: ", input.DeliveryPrice)
 
 	if input.PubID == 0 {
 		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
@@ -123,9 +133,13 @@ func (c *clientController) CreateOrder(ctx *fiber.Ctx) error {
 // @Param AccessToken header string  true "accesstoken"
 func (c *clientController) RateOrder(ctx *fiber.Ctx) error {
 	fmt.Println("In rate order request")
-	clientID, _, err := h.GetUserIDAndSignificanceFromLocals(ctx)
+	clientID, _, userRole, err := h.GetUserIDSignificanceAndRoleFromLocals(ctx)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	if userRole != models.CLIENT_ROLE_NAME {
+		return h.SendError(ctx, httperrors.ErrUnauthorized, h.AUTOMATIC_STATUS_CODE)
 	}
 
 	orderID, err := strconv.Atoi(ctx.Params("orderID"))

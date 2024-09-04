@@ -3,6 +3,7 @@ package pubservice
 import (
 	"errors"
 	"fmt"
+	"math"
 	"mime/multipart"
 	"time"
 
@@ -49,13 +50,19 @@ type PubService interface {
 	GetShipping(pubID int) (models.Shipping, error)
 	SetShippingTime(pubID int, shippingTimeFrom int, shippingTimeTo int) error
 	SetShippingWorkingTime(pubID int, start int, end int) error
-	SetShippingPrice(pubID int, shippingPrice int) error
+	SetShippingPrices(pubID int, shippingPrice map[string]float64) error
+	UpdatePubDeliveryType(pubID int, deliveryType string) error
+	SetPubAddCommissionToDishPrices(pubID int, addCommission bool) error
 
 	SetCardPreorder(pubID int, available bool) error
 	SetCashPreorder(pubID int, available bool) error
 	GetPreorderInfo(pubID int) (models.PreorderInfo, error)
 
-	GetPubsWithShippingAvailableForPoint(point models.Vertex) ([]models.Pub, error)
+	GetPubsWithShippingAvailableForPoint(point models.Vertex) ([]models.Pub, []float64, error)
+
+	//Couriers
+	AddCourierToPub(pubID, courierID int) error
+	RemoveCourierFromPub(pubID, courierID int) error
 }
 
 type pubsService struct {
@@ -276,7 +283,38 @@ func (s *pubsService) EnableShippingAndSetShapes(pubID int, shapes []models.Shap
 		return nil
 	}
 
-	return s.PubsRepo.SetPubShapes(pubID, shapes)
+	err = s.PubsRepo.SetPubShapes(pubID, shapes)
+	if err != nil {
+		return err
+	}
+
+	shipping, err := s.GetShipping(pubID)
+	if err != nil {
+		return err
+	}
+
+	existingPrices, err := shipping.GetPrices()
+	if err != nil {
+		existingPrices = make(map[string]float64)
+	}
+
+	newPrices := make(map[string]float64)
+
+	for _, shape := range shapes {
+		existingPrice, ok := existingPrices[shape.ShapeID]
+		if !ok {
+			existingPrice = 0
+		}
+
+		newPrices[shape.ShapeID] = existingPrice
+	}
+
+	err = s.SetShippingPrices(pubID, newPrices)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 func (s *pubsService) GetShapes(pubID int) ([]models.Shape, error) {
 	return s.PubsRepo.GetPubShapes(pubID)
@@ -310,17 +348,20 @@ func (s *pubsService) SetShippingWorkingTime(pubID int, start int, end int) erro
 	return s.PubsRepo.SetShippingWorkingTime(pubID, start, end)
 }
 
-func (s *pubsService) SetShippingPrice(pubID int, shippingTimePrice int) error {
-	return s.PubsRepo.SetShippingPrice(pubID, shippingTimePrice)
+func (s *pubsService) SetShippingPrices(pubID int, shippingPrices map[string]float64) error {
+	return s.PubsRepo.SetShippingPrices(pubID, shippingPrices)
 }
 
-func (s *pubsService) GetPubsWithShippingAvailableForPoint(point models.Vertex) ([]models.Pub, error) {
+func (s *pubsService) GetPubsWithShippingAvailableForPoint(point models.Vertex) ([]models.Pub, []float64, error) {
 	pubs, err := s.PubsRepo.GetPubsWithAvailableShipping()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	var availablePubs []models.Pub
 	fmt.Println("pubs len: ", len(pubs))
+
+	shippingPrices := make([]float64, 0)
+
 	for _, pub := range pubs {
 		if pub.IsExpired() {
 			continue
@@ -332,22 +373,69 @@ func (s *pubsService) GetPubsWithShippingAvailableForPoint(point models.Vertex) 
 			continue
 		}
 
-		if pub.Shipping.Available && s.IsPointInsideShapes(shapes, point.Lat, point.Lng) {
+		pubShippingPrices, err := pub.Shipping.GetPrices()
+		if err != nil {
+			continue
+		}
+
+		nearestShape, isAvailable := s.GetAvailableShape(shapes, point.Lat, point.Lng)
+		fmt.Println("nearest Shape: ", nearestShape)
+
+		if pub.Shipping.Available && isAvailable {
 			availablePubs = append(availablePubs, pub)
+
+			var price float64 = 0
+			for key, value := range pubShippingPrices {
+				if key == nearestShape.ShapeID {
+					price = value
+				}
+			}
+
+			shippingPrices = append(shippingPrices, price)
 		}
 	}
 
-	return availablePubs, nil
+	return availablePubs, shippingPrices, nil
 }
 
-func (s *pubsService) IsPointInsideShapes(shapes []models.Shape, lat float64, lng float64) bool {
+func (s *pubsService) GetAvailableShape(shapes []models.Shape, lat float64, lng float64) (models.Shape, bool) {
+	availableShapes := []models.Shape{}
 	for _, shape := range shapes {
 		if s.IsPointInsidePolygon(shape.Vertices, lat, lng) {
-			return true
+			availableShapes = append(availableShapes, shape)
 		}
 	}
 
-	return false
+	if len(availableShapes) == 0 {
+		return models.Shape{}, false
+	}
+
+	if len(availableShapes) == 1 {
+		return availableShapes[0], true
+	}
+
+	shape := s.GetNearestPolygon(lat, lng, availableShapes)
+	return shape, true
+}
+
+func (s *pubsService) GetNearestPolygon(lat float64, lng float64, shapes []models.Shape) models.Shape {
+	distanceArray := make([]float64, len(shapes))
+	for i, shape := range shapes {
+		for _, vertex := range shape.Vertices {
+			var katet1sqr float64 = math.Abs(lat-vertex.Lat) * math.Abs(lat-vertex.Lat)
+			var katet2sqr float64 = math.Abs(lng-vertex.Lng) * math.Abs(lng-vertex.Lng)
+			distanceArray[i] += math.Sqrt(katet1sqr + katet2sqr)
+		}
+	}
+
+	minIndex := 0
+	for i, distance := range distanceArray {
+		if distance < distanceArray[minIndex] {
+			minIndex = i
+		}
+	}
+
+	return shapes[minIndex]
 }
 
 func (s *pubsService) IsPointInsidePolygon(vertices []models.Vertex, lat float64, lng float64) bool {
@@ -378,4 +466,20 @@ func (s *pubsService) IsPointInsidePolygon(vertices []models.Vertex, lat float64
 	}
 
 	return count%2 == 1
+}
+
+func (s *pubsService) AddCourierToPub(pubID, courierID int) error {
+	return s.PubsRepo.AddCourierToPub(pubID, courierID)
+}
+
+func (s *pubsService) RemoveCourierFromPub(pubID, courierID int) error {
+	return s.PubsRepo.RemoveCourierFromPub(pubID, courierID)
+}
+
+func (s *pubsService) UpdatePubDeliveryType(pubID int, deliveryType string) error {
+	return s.PubsRepo.UpdatePubDeliveryType(pubID, deliveryType)
+}
+func (s *pubsService) SetPubAddCommissionToDishPrices(pubID int, addCommission bool) error {
+	fmt.Println("al;ksdjfl;aksjdfl;asf")
+	return s.PubsRepo.SetPubAddCommissionToDishPrices(pubID, addCommission)
 }

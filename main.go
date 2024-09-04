@@ -10,6 +10,7 @@ import (
 	"github.com/alexkalak/qrmenu/src/controllers/ws"
 	"github.com/alexkalak/qrmenu/src/db/postgresql"
 	"github.com/alexkalak/qrmenu/src/logs"
+	"github.com/alexkalak/qrmenu/src/models"
 	"github.com/alexkalak/qrmenu/src/repo"
 	"github.com/alexkalak/qrmenu/src/services/telegramservice"
 	"github.com/gofiber/fiber/v2"
@@ -56,6 +57,7 @@ func configureTime() {
 func configure() {
 	configureLogs()
 	configureRepos()
+	models.ConfigureVariables()
 }
 
 func configureSWAG(app *fiber.App) {

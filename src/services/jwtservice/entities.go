@@ -15,7 +15,8 @@ const (
 )
 
 type UserClaims struct {
-	ID           int `json:"id"`
-	Significance int `json:"significance"`
+	ID           int    `json:"id"`
+	Significance int    `json:"significance"`
+	RoleName     string `json:"role_name"`
 	jwt.RegisteredClaims
 }

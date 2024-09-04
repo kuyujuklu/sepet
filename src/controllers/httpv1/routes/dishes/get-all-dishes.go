@@ -29,7 +29,7 @@ type getAllDishesOutput struct {
 // @Param AccessToken header string  true "accesstoken"
 func (c *dishesController) GetAllDishes(ctx *fiber.Ctx) error {
 
-	userID, userSignificance, err := h.GetUserIDAndSignificanceFromLocals(ctx)
+	userID, userSignificance, userRole, err := h.GetUserIDSignificanceAndRoleFromLocals(ctx)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
@@ -45,7 +45,7 @@ func (c *dishesController) GetAllDishes(ctx *fiber.Ctx) error {
 	}
 
 	//Checking access for action with category for company
-	err = h.CheckAccess(userID, companyID, userSignificance, models.CATEGORY_COMPANY_ENTITY, categoryID)
+	err = h.CheckCompanyAccess(userID, companyID, userSignificance, userRole, models.CATEGORY_COMPANY_ENTITY, categoryID)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}

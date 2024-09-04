@@ -46,6 +46,7 @@ func (c *clientController) sendClientTokens(ctx *fiber.Ctx, client models.Client
 	accessToken, err := c.JwtService.GetAccessTokenString(
 		int(client.ID),
 		models.CLIENT_SIGNIFICANCE,
+		models.CLIENT_ROLE_NAME,
 		jwtservice.STANDARD_ACCESS_LIFE_TIME)
 
 	if err != nil {
@@ -56,6 +57,7 @@ func (c *clientController) sendClientTokens(ctx *fiber.Ctx, client models.Client
 	refreshToken, err := c.JwtService.GetRefreshTokenString(
 		int(client.ID),
 		models.CLIENT_SIGNIFICANCE,
+		models.CLIENT_ROLE_NAME,
 		jwtservice.STANDARD_REFRESH_LIFE_TIME)
 
 	if err != nil {

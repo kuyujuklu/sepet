@@ -9,6 +9,7 @@ import (
 	"github.com/alexkalak/qrmenu/src/errors/clienterrors"
 	"github.com/alexkalak/qrmenu/src/errors/jwterrors"
 	"github.com/alexkalak/qrmenu/src/errors/servererrors"
+	"github.com/alexkalak/qrmenu/src/models"
 	"github.com/alexkalak/qrmenu/src/services/jwtservice"
 	"github.com/gofiber/fiber/v2"
 )
@@ -77,6 +78,7 @@ func (c *clientController) RefreshToken(ctx *fiber.Ctx) error {
 	accessToken, err := c.JwtService.GetAccessTokenString(
 		int(client.ID),
 		client.Role.SignificanceNumber,
+		models.CLIENT_ROLE_NAME,
 		jwtservice.STANDARD_ACCESS_LIFE_TIME)
 
 	if err != nil {

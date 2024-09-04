@@ -15,8 +15,8 @@ var menuService = menuservice.New()
 var categoryService = categoryservice.New()
 var dishService = dishesservice.New()
 
-func CheckAccess(userID int, companyID int, userSignificance int, entityType models.CompanyEntity, entityID int) error {
-	err := CheckAccessForCompanyAction(userID, companyID, userSignificance)
+func CheckCompanyAccess(userID int, companyID int, userSignificance int, userRole string, entityType models.CompanyEntity, entityID int) error {
+	err := CheckAccessForCompanyAction(userID, companyID, userSignificance, userRole)
 	if err != nil {
 		return err
 	}
@@ -24,16 +24,16 @@ func CheckAccess(userID int, companyID int, userSignificance int, entityType mod
 	return CheckAccessForEntity(companyID, entityType, entityID)
 }
 
-func CheckAccessForCompanyAction(userID int, companyID int, userSignificance int) error {
+func CheckAccessForCompanyAction(userID int, companyID int, userSignificance int, userRole string) error {
 	if userSignificance < models.COMPANY_SIGNIFICANCE {
 		return nil
 	}
 
-	if userID != companyID {
-		return httperrors.ErrForbidden
+	if userSignificance == models.COMPANY_SIGNIFICANCE && userRole == models.COMPANY_ROLE_NAME && userID == companyID {
+		return nil
 	}
 
-	return nil
+	return httperrors.ErrForbidden
 }
 
 func CheckAccessForEntity(companyID int, entityType models.CompanyEntity, entityID int) error {
@@ -51,4 +51,16 @@ func CheckAccessForEntity(companyID int, entityType models.CompanyEntity, entity
 	}
 
 	return companyerrors.ErrCompanyEntityNotFound
+}
+
+func CheckAccessForCourierAction(userID int, courierID int, userSignificance int, userRole string) error {
+	if userSignificance < models.COURIER_SIGNIFICANCE {
+		return nil
+	}
+
+	if userSignificance == models.COURIER_SIGNIFICANCE && userRole == models.COURIER_ROLE_NAME && userID == courierID {
+		return nil
+	}
+
+	return httperrors.ErrForbidden
 }

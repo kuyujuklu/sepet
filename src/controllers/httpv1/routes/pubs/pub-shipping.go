@@ -28,7 +28,7 @@ type SetShippingShapes struct {
 // @Security ApiKeyAuth
 // @Param AccessToken header string  true "accesstoken"
 func (c *pubController) SetShapesForPub(ctx *fiber.Ctx) error {
-	userID, userSignificance, err := h.GetUserIDAndSignificanceFromLocals(ctx)
+	userID, userSignificance, userRole, err := h.GetUserIDSignificanceAndRoleFromLocals(ctx)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
@@ -44,7 +44,7 @@ func (c *pubController) SetShapesForPub(ctx *fiber.Ctx) error {
 	}
 
 	//Checking access for action with pub for company
-	err = h.CheckAccess(userID, companyID, userSignificance, models.PUB_COMPANY_ENTITY, pubID)
+	err = h.CheckCompanyAccess(userID, companyID, userSignificance, userRole, models.PUB_COMPANY_ENTITY, pubID)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
@@ -88,7 +88,7 @@ type SetShippingAvailable struct {
 // @Security ApiKeyAuth
 // @Param AccessToken header string  true "accesstoken"
 func (c *pubController) SetAvailableShipping(ctx *fiber.Ctx) error {
-	userID, userSignificance, err := h.GetUserIDAndSignificanceFromLocals(ctx)
+	userID, userSignificance, userRole, err := h.GetUserIDSignificanceAndRoleFromLocals(ctx)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
@@ -104,7 +104,7 @@ func (c *pubController) SetAvailableShipping(ctx *fiber.Ctx) error {
 	}
 
 	//Checking access for action with pub for company
-	err = h.CheckAccess(userID, companyID, userSignificance, models.PUB_COMPANY_ENTITY, pubID)
+	err = h.CheckCompanyAccess(userID, companyID, userSignificance, userRole, models.PUB_COMPANY_ENTITY, pubID)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
@@ -147,11 +147,10 @@ type SetShippingTime struct {
 // @Security ApiKeyAuth
 // @Param AccessToken header string  true "accesstoken"
 func (c *pubController) SetShippingTime(ctx *fiber.Ctx) error {
-	userID, userSignificance, err := h.GetUserIDAndSignificanceFromLocals(ctx)
+	userID, userSignificance, userRole, err := h.GetUserIDSignificanceAndRoleFromLocals(ctx)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
-
 	companyID, err := strconv.Atoi(ctx.Params("companyID"))
 	if err != nil {
 		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
@@ -163,7 +162,7 @@ func (c *pubController) SetShippingTime(ctx *fiber.Ctx) error {
 	}
 
 	//Checking access for action with pub for company
-	err = h.CheckAccess(userID, companyID, userSignificance, models.PUB_COMPANY_ENTITY, pubID)
+	err = h.CheckCompanyAccess(userID, companyID, userSignificance, userRole, models.PUB_COMPANY_ENTITY, pubID)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
@@ -207,7 +206,7 @@ type SetShippingWorkingHours struct {
 // @Security ApiKeyAuth
 // @Param AccessToken header string  true "accesstoken"
 func (c *pubController) SetShippingWorkHours(ctx *fiber.Ctx) error {
-	userID, userSignificance, err := h.GetUserIDAndSignificanceFromLocals(ctx)
+	userID, userSignificance, userRole, err := h.GetUserIDSignificanceAndRoleFromLocals(ctx)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
@@ -223,7 +222,7 @@ func (c *pubController) SetShippingWorkHours(ctx *fiber.Ctx) error {
 	}
 
 	//Checking access for action with pub for company
-	err = h.CheckAccess(userID, companyID, userSignificance, models.PUB_COMPANY_ENTITY, pubID)
+	err = h.CheckCompanyAccess(userID, companyID, userSignificance, userRole, models.PUB_COMPANY_ENTITY, pubID)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
@@ -267,7 +266,7 @@ type SetShippingPrice struct {
 // @Security ApiKeyAuth
 // @Param AccessToken header string  true "accesstoken"
 func (c *pubController) SetShippingPrice(ctx *fiber.Ctx) error {
-	userID, userSignificance, err := h.GetUserIDAndSignificanceFromLocals(ctx)
+	userID, userSignificance, userRole, err := h.GetUserIDSignificanceAndRoleFromLocals(ctx)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
@@ -283,12 +282,12 @@ func (c *pubController) SetShippingPrice(ctx *fiber.Ctx) error {
 	}
 
 	//Checking access for action with pub for company
-	err = h.CheckAccess(userID, companyID, userSignificance, models.PUB_COMPANY_ENTITY, pubID)
+	err = h.CheckCompanyAccess(userID, companyID, userSignificance, userRole, models.PUB_COMPANY_ENTITY, pubID)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
 
-	input, validationErrors, err := input.ParseRequestBody[entities.SetShippingPrice](ctx)
+	input, validationErrors, err := input.ParseRequestBody[entities.SetShippingPrices](ctx)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
@@ -297,7 +296,7 @@ func (c *pubController) SetShippingPrice(ctx *fiber.Ctx) error {
 		return h.SendValidationErrors(ctx, validationErrors)
 	}
 
-	err = c.PubService.SetShippingPrice(pubID, input.Price)
+	err = c.PubService.SetShippingPrices(pubID, input.Prices)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
@@ -328,7 +327,67 @@ type GetShippingShapes struct {
 // @Security ApiKeyAuth
 // @Param AccessToken header string  true "accesstoken"
 func (c *pubController) GetShapesForPub(ctx *fiber.Ctx) error {
-	userID, userSignificance, err := h.GetUserIDAndSignificanceFromLocals(ctx)
+	userID, userSignificance, userRole, err := h.GetUserIDSignificanceAndRoleFromLocals(ctx)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+	companyID, err := strconv.Atoi(ctx.Params("companyID"))
+	if err != nil {
+		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	pubID, err := strconv.Atoi(ctx.Params("pubID"))
+	if err != nil {
+		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	//Checking access for action with pub for company
+	err = h.CheckCompanyAccess(userID, companyID, userSignificance, userRole, models.PUB_COMPANY_ENTITY, pubID)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	shipping, err := c.PubService.GetShipping(pubID)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	shippingOutput := entities.ShippingOutput{}
+	shippingOutput.FillFromModel(shipping)
+
+	return h.SendSuccess(
+		ctx,
+		fiber.Map{
+			"id":                  shippingOutput.ID,
+			"available":           shippingOutput.Available,
+			"shipping_time_from":  shippingOutput.ShippingTimeFrom,
+			"shipping_time_to":    shippingOutput.ShippingTimeTo,
+			"shipping_work_start": shippingOutput.ShippingStartWorkTime,
+			"shipping_work_end":   shippingOutput.ShippingEndWorkTime,
+			"shipping_prices":     shippingOutput.ShippingPrices,
+			"shapes":              shippingOutput.Shapes,
+		},
+		fiber.StatusOK)
+}
+
+type SetDeliveryTypeOutput struct {
+	Ok bool `json:"ok"`
+}
+
+// @Summary      Set delivery type
+// @Description  sets delivery type
+// @Tags         pub
+// @Param companyID path int true "company id"
+// @Param pubID path int true "pub id"
+// @Param input body entities.SetDeliveryPrice true "delivery price"
+// @Accept       json
+// @Produce      json
+// @Success      200  {object} SetDeliveryTypeOutput
+// @Router       /company/{companyID}/pubs/{pubID}/delivery-price [POST]
+// @Security ApiKeyAuth
+// @Param AccessToken header string  true "accesstoken"
+func (c *pubController) SetDeliveryType(ctx *fiber.Ctx) error {
+	userID, userSignificance, userRole, err := h.GetUserIDSignificanceAndRoleFromLocals(ctx)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
@@ -344,17 +403,21 @@ func (c *pubController) GetShapesForPub(ctx *fiber.Ctx) error {
 	}
 
 	//Checking access for action with pub for company
-	err = h.CheckAccess(userID, companyID, userSignificance, models.PUB_COMPANY_ENTITY, pubID)
+	err = h.CheckCompanyAccess(userID, companyID, userSignificance, userRole, models.PUB_COMPANY_ENTITY, pubID)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
 
-	shapes, err := c.PubService.GetShapes(pubID)
+	input, validationErrors, err := input.ParseRequestBody[entities.SetDeliveryType](ctx)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
 
-	shipping, err := c.PubService.GetShipping(pubID)
+	if len(validationErrors) > 0 {
+		return h.SendValidationErrors(ctx, validationErrors)
+	}
+
+	err = c.PubService.UpdatePubDeliveryType(pubID, input.DeliveryType)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
@@ -362,8 +425,67 @@ func (c *pubController) GetShapesForPub(ctx *fiber.Ctx) error {
 	return h.SendSuccess(
 		ctx,
 		fiber.Map{
-			"available": shipping.Available,
-			"shapes":    shapes,
+			"ok": true,
+		},
+		fiber.StatusOK)
+}
+
+type SetAddCommissionToDishPricesOutput struct {
+	Ok bool `json:"ok"`
+}
+
+// @Summary      Set add commission to dish prices
+// @Description  sets add commission to dish
+// @Tags         pub
+// @Param companyID path int true "company id"
+// @Param pubID path int true "pub id"
+// @Param input body entities.SetAddCommissionToDishPrices true "sets add commission to dish"
+// @Accept       json
+// @Produce      json
+// @Success      200  {object} SetAddCommissionToDishPricesOutput
+// @Router       /company/{companyID}/pubs/{pubID}/add-commission-to-dish-prices [POST]
+// @Security ApiKeyAuth
+// @Param AccessToken header string  true "accesstoken"
+func (c *pubController) SetAddCommissionToDishPrices(ctx *fiber.Ctx) error {
+	userID, userSignificance, userRole, err := h.GetUserIDSignificanceAndRoleFromLocals(ctx)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	companyID, err := strconv.Atoi(ctx.Params("companyID"))
+	if err != nil {
+		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	pubID, err := strconv.Atoi(ctx.Params("pubID"))
+	if err != nil {
+		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	//Checking access for action with pub for company
+	err = h.CheckCompanyAccess(userID, companyID, userSignificance, userRole, models.PUB_COMPANY_ENTITY, pubID)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	input, validationErrors, err := input.ParseRequestBody[entities.SetAddCommissionToDishPricesInput](ctx)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	if len(validationErrors) > 0 {
+		return h.SendValidationErrors(ctx, validationErrors)
+	}
+
+	err = c.PubService.SetPubAddCommissionToDishPrices(pubID, input.AddCommissionToDishPrices)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	return h.SendSuccess(
+		ctx,
+		fiber.Map{
+			"ok": true,
 		},
 		fiber.StatusOK)
 }

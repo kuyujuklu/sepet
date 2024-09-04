@@ -35,19 +35,24 @@ func (c *clientController) GetAvailableForShippingPubs(ctx *fiber.Ctx) error {
 		return h.SendError(ctx, clienterrors.ErrInvalidLongitude, h.AUTOMATIC_STATUS_CODE)
 	}
 
-	pubs, err := c.PubService.GetPubsWithShippingAvailableForPoint(models.Vertex{Lat: lat, Lng: lng})
+	pubs, shippingPrices, err := c.PubService.GetPubsWithShippingAvailableForPoint(models.Vertex{Lat: lat, Lng: lng})
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
 
-	distances, err := c.GoogleMapsService.GetDistanceToPubs(ctx.Context(), lat, lng, pubs)
+	distances, err := c.DistanceService.GetDistanceToPubs(lat, lng, pubs)
+	if err != nil {
+		return h.SendError(ctx, servererrors.ErrInternalServerError, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	fmt.Println("Distances: ", distances)
 
 	if len(distances) != len(pubs) {
 		return h.SendError(ctx, servererrors.ErrInternalServerError, h.AUTOMATIC_STATUS_CODE)
 	}
 
 	outputPubs := make([]entities.PubWithDishesAndDistanceOutput, 0, len(pubs))
-
+	fmt.Println("outputPubs: ", outputPubs)
 	for i, pub := range pubs {
 		dishes, err := c.PubService.GetAllDishesForPub(int(pub.ID))
 		if err != nil {
@@ -57,6 +62,8 @@ func (c *clientController) GetAvailableForShippingPubs(ctx *fiber.Ctx) error {
 		if err := outputPub.FillFromModel(pub, distances[i], dishes); err != nil {
 			return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 		}
+		fmt.Println("shippingPrice: ", shippingPrices[i])
+		outputPub.ShippingPrice = shippingPrices[i]
 
 		outputPubs = append(outputPubs, outputPub)
 	}
@@ -94,7 +101,7 @@ func (c *clientController) GetAvailableForShippingPubCategories(ctx *fiber.Ctx) 
 		return h.SendError(ctx, clienterrors.ErrInvalidLongitude, h.AUTOMATIC_STATUS_CODE)
 	}
 
-	pubs, err := c.PubService.GetPubsWithShippingAvailableForPoint(models.Vertex{Lat: lat, Lng: lng})
+	pubs, _, err := c.PubService.GetPubsWithShippingAvailableForPoint(models.Vertex{Lat: lat, Lng: lng})
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}

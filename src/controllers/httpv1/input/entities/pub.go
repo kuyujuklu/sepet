@@ -1,6 +1,7 @@
 package entities
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
@@ -35,6 +36,7 @@ type UpdatePubInput struct {
 	AdditionalInfo   string `json:"additional_info" validate:"" example:"My pub additional info"`
 	TelegramUsername string `json:"telegram_username" validate:"" example:"@my_username"`
 	HasInPlaceOrder  bool   `json:"has_in_place_order" validate:"" example:"true"`
+	Location         string `json:"location"`
 
 	CurrencyID int `json:"currency_id" example:"22"`
 	CompanyID  int `json:"company_id" example:"1"`
@@ -61,26 +63,27 @@ func (p *UpdatePubInput) ConvertToModel(companyID int, pubID int) models.Pub {
 }
 
 type PubOutput struct {
-	ID               int            `json:"id" example:"1"`
-	Expired          bool           `json:"expired" example:"false"`
-	ExpirationTime   string         `json:"expiration_time_utc" example:""`
-	Name             string         `json:"name" example:"My pub name"`
-	UrlName          string         `json:"url_name" example:"my-pub-name"`
-	QrCodeFileName   string         `json:"qr_code_file_name" example:"my-pub-name.png"`
-	ColorTheme       string         `json:"color_theme" example:"light"`
-	Color            string         `json:"color" example:"#ffffff"`
-	BgImageFileName  string         `json:"bg_image_file_name" example:"my-pub-name-bg.png"`
-	LogoFileName     string         `json:"logo_file_name" example:"my-pub-name-logo.png"`
-	WifiPassword     string         `json:"wifi_password" example:"12345678"`
-	Address          string         `json:"address" example:"My pub address"`
-	AdditionalInfo   string         `json:"additional_info" example:"My pub additional info"`
-	ShippingOutput   ShippingOutput `json:"shipping"`
-	Lat              float64        `json:"lat" example:"55.7558"`
-	Lng              float64        `json:"lng" example:"37.6176"`
-	CurrencyID       int            `json:"currency_id"`
-	CompanyID        int            `json:"company_id"`
-	TelegramUserName string         `json:"telegram_username"`
-	HasInPlaceOrder  bool           `json:"has_in_place_order"`
+	ID               int             `json:"id" example:"1"`
+	Expired          bool            `json:"expired" example:"false"`
+	ExpirationTime   string          `json:"expiration_time_utc" example:""`
+	Name             string          `json:"name" example:"My pub name"`
+	UrlName          string          `json:"url_name" example:"my-pub-name"`
+	QrCodeFileName   string          `json:"qr_code_file_name" example:"my-pub-name.png"`
+	ColorTheme       string          `json:"color_theme" example:"light"`
+	Color            string          `json:"color" example:"#ffffff"`
+	BgImageFileName  string          `json:"bg_image_file_name" example:"my-pub-name-bg.png"`
+	LogoFileName     string          `json:"logo_file_name" example:"my-pub-name-logo.png"`
+	WifiPassword     string          `json:"wifi_password" example:"12345678"`
+	Address          string          `json:"address" example:"My pub address"`
+	AdditionalInfo   string          `json:"additional_info" example:"My pub additional info"`
+	ShippingOutput   ShippingOutput  `json:"shipping"`
+	Lat              float64         `json:"lat" example:"55.7558"`
+	Lng              float64         `json:"lng" example:"37.6176"`
+	CurrencyID       int             `json:"currency_id"`
+	CompanyID        int             `json:"company_id"`
+	TelegramUserName string          `json:"telegram_username"`
+	HasInPlaceOrder  bool            `json:"has_in_place_order"`
+	Couriers         []CourierOutput `json:"couriers"`
 }
 
 func (p *PubOutput) FillFromModel(pub models.Pub) error {
@@ -91,7 +94,7 @@ func (p *PubOutput) FillFromModel(pub models.Pub) error {
 	if pub.Shipping.Available {
 		shippingOutput := ShippingOutput{}
 		if err := shippingOutput.FillFromModel(pub.Shipping); err != nil {
-			return err
+			fmt.Println("Error in shipping filling from model entities/pub.go")
 		}
 
 		p.ShippingOutput = shippingOutput
@@ -116,13 +119,20 @@ func (p *PubOutput) FillFromModel(pub models.Pub) error {
 	p.TelegramUserName = pub.TelegramUsername
 	p.HasInPlaceOrder = pub.HasInPlaceOrder
 
+	for _, courier := range pub.Couriers {
+		courierOutput := CourierOutput{}
+		courierOutput.FillFromModel(courier)
+		p.Couriers = append(p.Couriers, courierOutput)
+	}
+
 	return nil
 }
 
 type PubWithDishesAndDistanceOutput struct {
 	PubOutput
-	Distance int          `json:"distance"`
-	Dishes   []DishOutput `json:"dishes"`
+	Distance      int          `json:"distance"`
+	ShippingPrice float64      `json:"shipping_price"`
+	Dishes        []DishOutput `json:"dishes"`
 }
 
 func (p *PubWithDishesAndDistanceOutput) FillFromModel(pub models.Pub, distance int, dishes []models.Dish) error {
@@ -158,13 +168,19 @@ func (p *PubWithDishesAndDistanceOutput) FillFromModel(pub models.Pub, distance 
 
 	p.Dishes = make([]DishOutput, 0, len(dishes))
 
+	p.Distance = distance
+
 	for _, dish := range dishes {
 		dishOutput := DishOutput{}
 		dishOutput.FillFromModel(dish)
 		p.Dishes = append(p.Dishes, dishOutput)
 	}
 
-	p.Distance = distance
+	for _, courier := range pub.Couriers {
+		courierOutput := CourierOutput{}
+		courierOutput.FillFromModel(courier)
+		p.Couriers = append(p.Couriers, courierOutput)
+	}
 
 	return nil
 }
@@ -179,4 +195,16 @@ type UpdateExpirationTimeOutput struct {
 type SetLatLngInput struct {
 	Lat float64 `json:"lat" validate:"required" example:"55.7558"`
 	Lng float64 `json:"lng" validate:"required" example:"37.6176"`
+}
+
+type PubCourierActionInput struct {
+	CourierID int `json:"courier_id"`
+}
+
+type SetDeliveryType struct {
+	DeliveryType string `json:"delivery_type"`
+}
+
+type SetAddCommissionToDishPricesInput struct {
+	AddCommissionToDishPrices bool `json:"add_commission_to_dish_prices"`
 }

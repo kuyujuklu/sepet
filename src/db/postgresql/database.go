@@ -48,6 +48,7 @@ func InitializeDatabase() *gorm.DB {
 		&models.Order{},
 		&models.TelegramChat{},
 		&models.NotificationSubscription{},
+		&models.Courier{},
 	)
 	return db
 }

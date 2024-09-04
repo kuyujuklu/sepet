@@ -48,6 +48,8 @@ type Pub struct {
 
 	TelegramUsername string
 	HasInPlaceOrder  bool
+
+	Couriers []Courier `gorm:"many2many:pub_couriers"`
 }
 
 func (p *Pub) IsExpired() bool {

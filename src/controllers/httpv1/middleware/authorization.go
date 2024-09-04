@@ -35,5 +35,7 @@ func StrictAuthMW(ctx *fiber.Ctx) error {
 
 	ctx.Locals(locals.USER_ID_LOCALS, userClaims.ID)
 	ctx.Locals(locals.USER_SIGNIFICANCE_LOCALS, userClaims.Significance)
+	ctx.Locals(locals.USER_ROLE_LOCALS, userClaims.RoleName)
+
 	return ctx.Next()
 }

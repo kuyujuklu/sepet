@@ -178,23 +178,25 @@ func (c *clientController) GetShapesForPub(ctx *fiber.Ctx) error {
 		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
 	}
 
-	fmt.Println("here")
-	shapes, err := c.PubService.GetShapes(pubID)
-	if err != nil {
-		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
-	}
-
-	fmt.Println("here")
 	shipping, err := c.PubService.GetShipping(pubID)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
 
+	shippingOutput := entities.ShippingOutput{}
+	shippingOutput.FillFromModel(shipping)
+
 	return h.SendSuccess(
 		ctx,
 		fiber.Map{
-			"available": shipping.Available,
-			"shapes":    shapes,
+			"id":                  shippingOutput.ID,
+			"available":           shippingOutput.Available,
+			"shipping_time_from":  shippingOutput.ShippingTimeFrom,
+			"shipping_time_to":    shippingOutput.ShippingTimeTo,
+			"shipping_work_start": shippingOutput.ShippingStartWorkTime,
+			"shipping_work_end":   shippingOutput.ShippingEndWorkTime,
+			"shipping_prices":     shippingOutput.ShippingPrices,
+			"shapes":              shippingOutput.Shapes,
 		},
 		fiber.StatusOK)
 }

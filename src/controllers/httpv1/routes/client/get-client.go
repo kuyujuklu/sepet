@@ -3,6 +3,8 @@ package client
 import (
 	h "github.com/alexkalak/qrmenu/src/controllers/httpv1/httphelpers"
 	"github.com/alexkalak/qrmenu/src/controllers/httpv1/input/entities"
+	"github.com/alexkalak/qrmenu/src/errors/httperrors"
+	"github.com/alexkalak/qrmenu/src/models"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -20,9 +22,13 @@ type GetClientOutput struct {
 // @Router       /client [GET]
 // @Param AccessToken header string  true "accesstoken"
 func (c *clientController) GetClient(ctx *fiber.Ctx) error {
-	userID, _, err := h.GetUserIDAndSignificanceFromLocals(ctx)
+	userID, _, userRole, err := h.GetUserIDSignificanceAndRoleFromLocals(ctx)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	if userRole != models.CLIENT_ROLE_NAME {
+		return h.SendError(ctx, httperrors.ErrUnauthorized, h.AUTOMATIC_STATUS_CODE)
 	}
 
 	client, err := c.ClientService.GetClientByID(userID)

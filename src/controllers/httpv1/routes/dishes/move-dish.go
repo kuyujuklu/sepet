@@ -28,7 +28,7 @@ type moveDishOutput struct {
 // @Security ApiKeyAuth
 // @Param AccessToken header string  true "accesstoken"
 func (c *dishesController) MoveDishLeft(ctx *fiber.Ctx) error {
-	userID, userSignificance, err := h.GetUserIDAndSignificanceFromLocals(ctx)
+	userID, userSignificance, userRole, err := h.GetUserIDSignificanceAndRoleFromLocals(ctx)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
@@ -44,7 +44,7 @@ func (c *dishesController) MoveDishLeft(ctx *fiber.Ctx) error {
 	}
 
 	//Checking access for action with dish for company
-	err = h.CheckAccess(userID, companyID, userSignificance, models.DISH_COMPANY_ENTITY, dishID)
+	err = h.CheckCompanyAccess(userID, companyID, userSignificance, userRole, models.DISH_COMPANY_ENTITY, dishID)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
@@ -76,7 +76,7 @@ func (c *dishesController) MoveDishLeft(ctx *fiber.Ctx) error {
 // @Security ApiKeyAuth
 // @Param AccessToken header string  true "accesstoken"
 func (c *dishesController) MoveDishRight(ctx *fiber.Ctx) error {
-	userID, userSignificance, err := h.GetUserIDAndSignificanceFromLocals(ctx)
+	userID, userSignificance, userRole, err := h.GetUserIDSignificanceAndRoleFromLocals(ctx)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
@@ -92,7 +92,7 @@ func (c *dishesController) MoveDishRight(ctx *fiber.Ctx) error {
 	}
 
 	//Checking access for action with dish for company
-	err = h.CheckAccess(userID, companyID, userSignificance, models.DISH_COMPANY_ENTITY, dishID)
+	err = h.CheckCompanyAccess(userID, companyID, userSignificance, userRole, models.DISH_COMPANY_ENTITY, dishID)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}

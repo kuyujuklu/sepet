@@ -22,6 +22,7 @@ const (
 	NOT_HANDLED_ORDER_STATUS = "not_handled"
 	HANDLED_ORDER_STATUS     = "handled"
 	PREPARING_ORDER_STATUS   = "preparing"
+	AT_COURIER_ORDER_STATUS  = "at_courier"
 	COMPLETED_ORDER_STATUS   = "completed"
 	CANCELED_ORDER_STATUS    = "canceled"
 )
@@ -32,8 +33,10 @@ func TranslateStatus(status string, lang string) string {
 		case NOT_HANDLED_ORDER_STATUS:
 			return "Рассматривается"
 		case HANDLED_ORDER_STATUS:
-			return "Готовится"
+			return "Обработан"
 		case PREPARING_ORDER_STATUS:
+			return "Готовится"
+		case AT_COURIER_ORDER_STATUS:
 			return "У курьера"
 		case COMPLETED_ORDER_STATUS:
 			return "Доставлен"
@@ -46,8 +49,10 @@ func TranslateStatus(status string, lang string) string {
 		case NOT_HANDLED_ORDER_STATUS:
 			return "Nouă"
 		case HANDLED_ORDER_STATUS:
-			return "În pregătire"
+			return "Procesat"
 		case PREPARING_ORDER_STATUS:
+			return "În pregătire"
+		case AT_COURIER_ORDER_STATUS:
 			return "La curier"
 		case COMPLETED_ORDER_STATUS:
 			return "Livrată"
@@ -73,15 +78,16 @@ func CheckOrderPaymentTypeCorrectness(paymentType string) error {
 }
 
 func CheckOrderStatusCorrectness(status string) error {
-	if status != NOT_HANDLED_ORDER_STATUS && status != HANDLED_ORDER_STATUS && status != PREPARING_ORDER_STATUS && status != COMPLETED_ORDER_STATUS && status != CANCELED_ORDER_STATUS {
+	if status != NOT_HANDLED_ORDER_STATUS && status != HANDLED_ORDER_STATUS && status != PREPARING_ORDER_STATUS && status != AT_COURIER_ORDER_STATUS && status != COMPLETED_ORDER_STATUS && status != CANCELED_ORDER_STATUS {
 		return ordererrors.ErrUnkonwnOrderStatus
 	}
 	return nil
 }
 
 type OrderDish struct {
-	DishID int `json:"dish_id"`
-	Count  int `json:"count"`
+	DishID    int     `json:"dish_id"`
+	Count     int     `json:"count"`
+	DishPrice float64 `json:"dish_price"`
 }
 
 type Order struct {
@@ -101,6 +107,12 @@ type Order struct {
 	TableForInPlaceOrder int
 	Status               string
 	Rating               int //from 1 to 5
+	DeliveryPrice        float64
+	Lat                  float64
+	Lng                  float64
+
+	OrderCourierInfo   OrderCourierInfo
+	OrderCourierInfoID int
 }
 
 func (m *Order) GetDishes() ([]OrderDish, error) {

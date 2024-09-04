@@ -51,7 +51,7 @@ func (c *companiesController) CreateCompany(ctx *fiber.Ctx) error {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
 
-	err = h.SendRefreshTokenInHttpOnlyCookies(ctx, int(company.ID), role.SignificanceNumber)
+	err = h.SendRefreshTokenInHttpOnlyCookies(ctx, int(company.ID), role.SignificanceNumber, models.COMPANY_ROLE_NAME)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
@@ -59,6 +59,7 @@ func (c *companiesController) CreateCompany(ctx *fiber.Ctx) error {
 	AccessToken, err := c.JwtService.GetAccessTokenString(
 		int(company.ID),
 		role.SignificanceNumber,
+		models.COMPANY_ROLE_NAME,
 		jwtservice.STANDARD_ACCESS_LIFE_TIME)
 
 	if err != nil {

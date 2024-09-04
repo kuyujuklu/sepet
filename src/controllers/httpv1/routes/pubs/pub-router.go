@@ -40,9 +40,14 @@ func (c *pubController) AuthorizedRouter(router fiber.Router) {
 	router.Post("/:pubID<int>/shipping-time", c.SetShippingTime)
 	router.Post("/:pubID<int>/shipping-work-hours", c.SetShippingWorkHours)
 	router.Post("/:pubID<int>/shipping-price", c.SetShippingPrice)
+	router.Post("/:pubID<int>/delivery-type", c.SetDeliveryType)
+	router.Post("/:pubID<int>/add-commission-to-dish-prices", c.SetAddCommissionToDishPrices)
 
 	router.Post("/:pubID<int>/preorder", c.SetPubPreorder)
 	router.Get("/:pubID<int>/preorder", c.GetPubPreorderInfo)
 
 	router.Post("/:pubID<int>/geolocation", c.SetPubGeolocation)
+
+	router.Post("/:pubID<int>/couriers/", c.AddCourier)
+	router.Delete("/:pubID<int>/couriers/:courierID<int>", c.RemoveCourier)
 }

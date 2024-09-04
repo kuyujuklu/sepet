@@ -33,7 +33,7 @@ func (c *ordersController) UpdateOrderStatus(ctx *fiber.Ctx) error {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
 
-	userID, userSignificance, err := h.GetUserIDAndSignificanceFromLocals(ctx)
+	userID, userSignificance, userRole, err := h.GetUserIDSignificanceAndRoleFromLocals(ctx)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
@@ -54,7 +54,7 @@ func (c *ordersController) UpdateOrderStatus(ctx *fiber.Ctx) error {
 	}
 
 	//Checking access for action with pub for company
-	err = h.CheckAccess(userID, companyID, userSignificance, models.PUB_COMPANY_ENTITY, pubID)
+	err = h.CheckCompanyAccess(userID, companyID, userSignificance, userRole, models.PUB_COMPANY_ENTITY, pubID)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
@@ -71,14 +71,67 @@ func (c *ordersController) UpdateOrderStatus(ctx *fiber.Ctx) error {
 		fiber.StatusOK)
 }
 
+// @Summary      Update order delivery price
+// @Description  updates order delivery price
+// @Tags         Pub
+// @Param companyID path int true "company id"
+// @Param pubID path int true "pub id"
+// @Param price query string true "price param"
+// @Produce      json
+// @Success      200  {object}  UpdateOrderStatusOutput
+// @Router       /api/company/{companyID}/pubs/{pubID}/orders/update-delivery-price?price={} [GET]
+// @Param AccessToken header string  true "accesstoken"
+func (c *ordersController) UpdateOrderDeliveryPrice(ctx *fiber.Ctx) error {
+	priceInput := ctx.Query("price")
+	price, err := strconv.ParseFloat(priceInput, 64)
+	if err != nil {
+		return h.SendError(ctx, httperrors.ErrBadBody, h.AUTOMATIC_STATUS_CODE)
+	}
+	userID, userSignificance, userRole, err := h.GetUserIDSignificanceAndRoleFromLocals(ctx)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+	companyID, err := strconv.Atoi(ctx.Params("companyID"))
+	if err != nil {
+		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	pubID, err := strconv.Atoi(ctx.Params("pubID"))
+	if err != nil {
+		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	orderID, err := strconv.Atoi(ctx.Params("orderID"))
+	if err != nil {
+		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	//Checking access for action with pub for company
+	err = h.CheckCompanyAccess(userID, companyID, userSignificance, userRole, models.PUB_COMPANY_ENTITY, pubID)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	err = c.OrderService.UpdateOrderDeliveryPrice(orderID, price)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+	return h.SendSuccess(
+		ctx,
+		fiber.Map{
+			"delivery_price": price,
+		},
+		fiber.StatusOK)
+}
+
 type UpdateOrderDishesInput struct {
-	Dishes []entities.OrderDish `json:"dishes"`
+	Dishes []entities.OrderDishInput `json:"dishes"`
 }
 
 type UpdateOrderDishesOutput struct {
-	Ok     bool                 `json:"ok" example:"true"`
-	Err    string               `json:"err" example:""`
-	Dishes []entities.OrderDish `json:"dishes"`
+	Ok     bool                       `json:"ok" example:"true"`
+	Err    string                     `json:"err" example:""`
+	Dishes []entities.OrderDishOutput `json:"dishes"`
 }
 
 // @Summary      Update order status
@@ -92,7 +145,7 @@ type UpdateOrderDishesOutput struct {
 // @Router       /api/company/{companyID}/pubs/{pubID}/orders/update-dishes [PUT]
 // @Param AccessToken header string  true "accesstoken"
 func (c *ordersController) UpdateOrderDishes(ctx *fiber.Ctx) error {
-	userID, userSignificance, err := h.GetUserIDAndSignificanceFromLocals(ctx)
+	userID, userSignificance, userRole, err := h.GetUserIDSignificanceAndRoleFromLocals(ctx)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
@@ -113,7 +166,7 @@ func (c *ordersController) UpdateOrderDishes(ctx *fiber.Ctx) error {
 	}
 
 	//Checking access for action with pub for company
-	err = h.CheckAccess(userID, companyID, userSignificance, models.PUB_COMPANY_ENTITY, pubID)
+	err = h.CheckCompanyAccess(userID, companyID, userSignificance, userRole, models.PUB_COMPANY_ENTITY, pubID)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
@@ -126,19 +179,28 @@ func (c *ordersController) UpdateOrderDishes(ctx *fiber.Ctx) error {
 		return h.SendValidationErrors(ctx, validationErrors)
 	}
 
-	dishes := make([]models.OrderDish, 0, len(input.Dishes))
+	isCommissionNeeded, err := c.OrderService.IsCommissionNeededForOrderArgsIDs(orderID, pubID)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
 
+	inputDishes := make([]models.OrderDish, 0, len(input.Dishes))
 	for _, inputDish := range input.Dishes {
-		dishes = append(dishes, models.OrderDish{
+		inputDishes = append(inputDishes, models.OrderDish{
 			Count:  inputDish.Count,
 			DishID: inputDish.DishID,
 		})
+	}
+	dishes, err := c.OrderService.FillDishPrices(pubID, inputDishes, isCommissionNeeded)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
 
 	err = c.OrderService.UpdateOrderDishes(orderID, dishes)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
+
 	return h.SendSuccess(
 		ctx,
 		fiber.Map{

@@ -61,9 +61,6 @@ func (c *clientService) AuthenticateClient(phone string, password string) (model
 		return models.Client{}, err
 	}
 
-	fmt.Println("passwrd: ", password)
-	fmt.Println("phone: ", phone)
-
 	if err := bcrypt.CompareHashAndPassword([]byte(client.HashedPassword), []byte(password)); err != nil {
 		return models.Client{}, clienterrors.ErrClientInvalidPassword
 	}

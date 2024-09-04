@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	h "github.com/alexkalak/qrmenu/src/controllers/httpv1/httphelpers"
+	"github.com/alexkalak/qrmenu/src/controllers/httpv1/input/entities"
 	"github.com/alexkalak/qrmenu/src/controllers/httpv1/locals"
 	"github.com/alexkalak/qrmenu/src/controllers/ws/wsutils"
 	"github.com/alexkalak/qrmenu/src/models"
@@ -28,6 +29,12 @@ func (c *ordersController) ConnectToOrdersForPub(conn *websocket.Conn) {
 		return
 	}
 
+	userRole, ok := conn.Locals(locals.USER_ROLE_LOCALS).(string)
+	if !ok {
+		fmt.Println("user Role error")
+		return
+	}
+
 	companyID, err := strconv.Atoi(conn.Params("companyID"))
 	if err != nil {
 		fmt.Println("companyID error")
@@ -41,7 +48,7 @@ func (c *ordersController) ConnectToOrdersForPub(conn *websocket.Conn) {
 	}
 
 	fmt.Println("userID: ", userID, "companyID: ", companyID, "userSignificance: ", userSignificance, "pubID: ", pubID)
-	err = h.CheckAccess(userID, companyID, userSignificance, models.PUB_COMPANY_ENTITY, pubID)
+	err = h.CheckCompanyAccess(userID, companyID, userSignificance, userRole, models.PUB_COMPANY_ENTITY, pubID)
 	if err != nil {
 		fmt.Println("Check access error")
 		return
@@ -65,9 +72,9 @@ func (c *ordersController) ConnectToOrdersForPub(conn *websocket.Conn) {
 		return
 	}
 
-	outputOrders := make([]orderservice.WSOrderOutput, 0, len(allOrders))
+	outputOrders := make([]entities.OrderOutput, 0, len(allOrders))
 	for _, order := range allOrders {
-		outputOrder := orderservice.WSOrderOutput{}
+		outputOrder := entities.OrderOutput{}
 		outputOrder.FillFromModel(order)
 		outputOrders = append(outputOrders, outputOrder)
 	}

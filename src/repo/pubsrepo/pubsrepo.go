@@ -19,6 +19,7 @@ import (
 	"github.com/alexkalak/qrmenu/src/errors/servererrors"
 	"github.com/alexkalak/qrmenu/src/logs"
 	"github.com/alexkalak/qrmenu/src/models"
+	"github.com/alexkalak/qrmenu/src/repo/courierrepo"
 	"github.com/alexkalak/qrmenu/src/repo/menurepo"
 	"github.com/google/uuid"
 	qrcode "github.com/skip2/go-qrcode"
@@ -80,29 +81,38 @@ type PubsRepo interface {
 	SetShippingAvailable(pubID int, available bool) error
 	SetShippingTime(pubID int, shippingTimeFrom int, shippingTimeTo int) error
 	SetShippingWorkingTime(pubID int, start int, end int) error
-	SetShippingPrice(pubID int, shippingPrice int) error
+	SetShippingPrices(pubID int, shippingPrices map[string]float64) error
 	SetCardPreorder(pubID int, available bool) error
 	SetCashPreorder(pubID int, available bool) error
 	GetPreorderInfo(pubID int) (models.PreorderInfo, error)
+	UpdatePubDeliveryType(pubID int, deliveryType string) error
+	SetPubAddCommissionToDishPrices(pubID int, addCommission bool) error
 
 	//Telegram stuff
 	GetPubsWhichHasTelegramUsername(username string) ([]models.Pub, error)
+
+	//Couriers
+	AddCourierToPub(pubID, courierID int) error
+	RemoveCourierFromPub(pubID int, courierID int) error
 }
 
 type pubsRepo struct {
-	Database   *gorm.DB
-	MenuRepo   menurepo.MenuRepo
-	HttpScheme string
-	HttpHost   string
-	Port       string
+	Database    *gorm.DB
+	MenuRepo    menurepo.MenuRepo
+	CourierRepo courierrepo.CourierRepo
+	HttpScheme  string
+	HttpHost    string
+	Port        string
 }
 
 func New() PubsRepo {
 	return &pubsRepo{
-		HttpHost:   os.Getenv("HTTP_HOST"),
-		HttpScheme: os.Getenv("HTTP_SCHEME"),
-		Port:       os.Getenv("PORT"),
-		Database:   postgresql.GetDB(),
+		HttpHost:    os.Getenv("HTTP_HOST"),
+		HttpScheme:  os.Getenv("HTTP_SCHEME"),
+		Port:        os.Getenv("PORT"),
+		Database:    postgresql.GetDB(),
+		CourierRepo: courierrepo.New(),
+		MenuRepo:    menurepo.New(),
 	}
 }
 
@@ -119,7 +129,7 @@ func (r *pubsRepo) GetAllPubs() ([]models.Pub, error) {
 
 func (r *pubsRepo) GetPubById(id int) (models.Pub, error) {
 	var pub models.Pub
-	result := r.Database.Preload("Shipping").Preload("PreorderInfo").First(&pub, "id = ?", id)
+	result := r.Database.Preload("Shipping").Preload("PreorderInfo").Preload("Couriers").First(&pub, "id = ?", id)
 
 	if result.Error != nil {
 		fmt.Println("error: ", result.Error)
@@ -131,7 +141,7 @@ func (r *pubsRepo) GetPubById(id int) (models.Pub, error) {
 
 func (r *pubsRepo) GetPubByUrlName(urlName string) (models.Pub, error) {
 	var pub models.Pub
-	result := r.Database.Preload("Shipping").Preload("PreorderInfo").First(&pub, "url_name = ?", urlName)
+	result := r.Database.Preload("Shipping").Preload("PreorderInfo").Preload("Couriers").First(&pub, "url_name = ?", urlName)
 
 	if result.Error != nil {
 		fmt.Println("error: ", result.Error)
@@ -257,6 +267,7 @@ func (r *pubsRepo) GetAllDishesForPub(pubID int) ([]models.Dish, error) {
 
 func (r *pubsRepo) CreatePub(pub models.Pub) (models.Pub, error) {
 	shipping := models.Shipping{
+		DeliveryType:          models.DELIVERY_TYPE_OWN,
 		ShippingTimeFrom:      40,
 		ShippingTimeTo:        60,
 		ShippingStartWorkTime: 0,    //00:00
@@ -656,7 +667,7 @@ func (s *pubsRepo) SetShippingWorkingTime(pubID int, start int, end int) error {
 	return nil
 }
 
-func (s *pubsRepo) SetShippingPrice(pubID int, shippingPrice int) error {
+func (s *pubsRepo) SetShippingPrices(pubID int, shippingPrices map[string]float64) error {
 	pub, err := s.GetPubById(pubID)
 	if err != nil {
 		return err
@@ -667,12 +678,17 @@ func (s *pubsRepo) SetShippingPrice(pubID int, shippingPrice int) error {
 		return puberrors.ErrPubShippingIsInvalid
 	}
 
+	pricesJSON, err := json.Marshal(shippingPrices)
+	if err != nil {
+		return err
+	}
+
 	res := s.Database.
 		Model(&models.Shipping{}).
 		Where("id = ?", pub.ShippingID).
 		UpdateColumns(
 			map[string]interface{}{
-				"shipping_price": shippingPrice,
+				"shipping_prices_json": string(pricesJSON),
 			},
 		)
 	if res.Error != nil {
@@ -749,4 +765,93 @@ func (r *pubsRepo) GetPubsWhichHasTelegramUsername(username string) ([]models.Pu
 	}
 
 	return pubs, nil
+}
+
+// Couriers
+func (r *pubsRepo) AddCourierToPub(pubID int, courierID int) error {
+	pub, err := r.GetPubById(pubID)
+	if err != nil {
+		return err
+	}
+
+	courier, err := r.CourierRepo.GetCourierByID(courierID)
+	if err != nil {
+		fmt.Println("courier error: ", err)
+		return err
+	}
+
+	fmt.Println("foudn courier: ", courier)
+
+	courierWithID := models.Courier{
+		Model: gorm.Model{
+			ID: uint(courierID),
+		},
+	}
+
+	err = r.Database.Model(&pub).Association("Couriers").Append([]models.Courier{courierWithID})
+	if err != nil {
+		fmt.Println("Unable to add courier error: ", err)
+		return puberrors.ErrUnableToAddCourier
+	}
+
+	return nil
+}
+
+func (r *pubsRepo) RemoveCourierFromPub(pubID int, courierID int) error {
+	pub, err := r.GetPubById(pubID)
+	if err != nil {
+		return err
+	}
+
+	courierWithID := models.Courier{
+		Model: gorm.Model{
+			ID: uint(courierID),
+		},
+	}
+
+	err = r.Database.Model(&pub).Association("Couriers").Delete([]models.Courier{courierWithID})
+	if err != nil {
+		fmt.Println("Unable to delete courier from pub error: ", err)
+		return puberrors.ErrUnableToDeleteCourierFromPub
+	}
+
+	return nil
+}
+
+func (r *pubsRepo) UpdatePubDeliveryType(pubID int, deliveryType string) error {
+	shipping, err := r.GetShipping(pubID)
+	if err != nil {
+		return err
+	}
+
+	resp := r.Database.
+		Model(&models.Shipping{}).
+		Where("id = ?", shipping.ID).
+		UpdateColumn("delivery_type", deliveryType)
+
+	if resp.Error != nil {
+		return puberrors.ErrUnableToUpdateDeliveryType
+	}
+
+	return nil
+}
+
+func (r *pubsRepo) SetPubAddCommissionToDishPrices(pubID int, addCommission bool) error {
+	shipping, err := r.GetShipping(pubID)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("in repo: ", addCommission)
+
+	resp := r.Database.
+		Model(&models.Shipping{}).
+		Where("id = ?", shipping.ID).
+		UpdateColumn("add_commission_to_dish_prices", addCommission)
+
+	if resp.Error != nil {
+		return puberrors.ErrUnableToUpdateDeliveryType
+	}
+
+	return nil
 }

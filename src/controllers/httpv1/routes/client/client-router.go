@@ -5,11 +5,11 @@ import (
 	"github.com/alexkalak/qrmenu/src/services/categoryservice"
 	"github.com/alexkalak/qrmenu/src/services/clientservice"
 	"github.com/alexkalak/qrmenu/src/services/dishesservice"
-	"github.com/alexkalak/qrmenu/src/services/googlemapsservice"
 	"github.com/alexkalak/qrmenu/src/services/jwtservice"
 	"github.com/alexkalak/qrmenu/src/services/menuservice"
 	"github.com/alexkalak/qrmenu/src/services/notificationservice"
 	"github.com/alexkalak/qrmenu/src/services/orderservice"
+	"github.com/alexkalak/qrmenu/src/services/osrmservice"
 	"github.com/alexkalak/qrmenu/src/services/pubservice"
 	"github.com/alexkalak/qrmenu/src/services/roleservice"
 	"github.com/gofiber/fiber/v2"
@@ -25,7 +25,7 @@ type clientController struct {
 	NotificationSevice notificationservice.NotificationService
 	RoleService        roleservice.RoleService
 	OrderService       orderservice.OrderService
-	GoogleMapsService  googlemapsservice.GoogleMapsService
+	DistanceService    osrmservice.OsrmService
 }
 
 func New() *clientController {
@@ -38,7 +38,7 @@ func New() *clientController {
 		ClientService:      clientservice.New(),
 		RoleService:        roleservice.New(),
 		OrderService:       orderservice.New(),
-		GoogleMapsService:  googlemapsservice.New(),
+		DistanceService:    osrmservice.New(),
 		NotificationSevice: notificationservice.New(),
 	}
 }

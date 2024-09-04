@@ -29,7 +29,7 @@ type updatePubExpirationTimeOutput struct {
 // @Security ApiKeyAuth
 // @Param AccessToken header string  true "accesstoken"
 func (c *adminController) UpdatePubExpirationTime(ctx *fiber.Ctx) error {
-	_, userSignificance, err := h.GetUserIDAndSignificanceFromLocals(ctx)
+	_, userSignificance, _, err := h.GetUserIDSignificanceAndRoleFromLocals(ctx)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
@@ -84,7 +84,7 @@ type updatePubTariff struct {
 // @Security ApiKeyAuth
 // @Param AccessToken header string  true "accesstoken"
 func (c *adminController) UpdateCompanyTariff(ctx *fiber.Ctx) error {
-	_, userSignificance, err := h.GetUserIDAndSignificanceFromLocals(ctx)
+	_, userSignificance, _, err := h.GetUserIDSignificanceAndRoleFromLocals(ctx)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}

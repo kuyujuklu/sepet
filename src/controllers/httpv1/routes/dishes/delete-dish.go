@@ -27,11 +27,10 @@ type deleteDishOutput struct {
 // @Security ApiKeyAuth
 // @Param AccessToken header string  true "accesstoken"
 func (c *dishesController) DeleteDish(ctx *fiber.Ctx) error {
-	userID, userSignificance, err := h.GetUserIDAndSignificanceFromLocals(ctx)
+	userID, userSignificance, userRole, err := h.GetUserIDSignificanceAndRoleFromLocals(ctx)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
-
 	companyID, err := strconv.Atoi(ctx.Params("companyID"))
 	if err != nil {
 		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
@@ -43,7 +42,7 @@ func (c *dishesController) DeleteDish(ctx *fiber.Ctx) error {
 	}
 
 	//Checking access for action with dish for company
-	err = h.CheckAccess(userID, companyID, userSignificance, models.DISH_COMPANY_ENTITY, dishID)
+	err = h.CheckCompanyAccess(userID, companyID, userSignificance, userRole, models.DISH_COMPANY_ENTITY, dishID)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}

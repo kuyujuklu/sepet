@@ -50,9 +50,11 @@ func (c *ordersController) AuthorizeByCookie(ctx *fiber.Ctx) error {
 
 	fmt.Println("setting locals usr id: ", userClaims.ID)
 	fmt.Println("setting locals usr sig: ", userClaims.Significance)
+	fmt.Println("setting locals usr role: ", userClaims.RoleName)
 
 	ctx.Locals(locals.USER_ID_LOCALS, userClaims.ID)
 	ctx.Locals(locals.USER_SIGNIFICANCE_LOCALS, userClaims.Significance)
+	ctx.Locals(locals.USER_ROLE_LOCALS, userClaims.RoleName)
 	return nil
 }
 

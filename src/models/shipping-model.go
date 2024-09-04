@@ -12,17 +12,26 @@ type Vertex struct {
 
 type Shape struct {
 	Vertices []Vertex `json:"vertices"`
+	ShapeID  string   `json:"shape_id"`
+	Color    string   `json:"color"`
 }
 
+const (
+	DELIVERY_TYPE_OWN              = "own"
+	DELIVERY_TYPE_DELIVERY_SERVICE = "delivery_service"
+)
+
 type Shipping struct {
-	ID                    uint
-	Available             bool
-	ShapesJSON            string //this is json of structure []Shape
-	ShippingPrice         int
-	ShippingTimeFrom      int
-	ShippingTimeTo        int
-	ShippingStartWorkTime int //in minutes, for example 360 - 06:00
-	ShippingEndWorkTime   int //in minutes, for example 1080 - 18:00
+	ID                        uint
+	Available                 bool
+	DeliveryType              string
+	ShapesJSON                string //this is json of structure []Shape
+	ShippingPricesJSON        string // {shape_id: price}
+	ShippingTimeFrom          int
+	ShippingTimeTo            int
+	ShippingStartWorkTime     int //in minutes, for example 360 - 06:00
+	ShippingEndWorkTime       int //in minutes, for example 1080 - 18:00
+	AddCommissionToDishPrices bool
 }
 
 func (s *Shipping) GetShapes() ([]Shape, error) {
@@ -36,4 +45,19 @@ func (s *Shipping) GetShapes() ([]Shape, error) {
 		return nil, err
 	}
 	return shapes, nil
+}
+
+func (s *Shipping) GetPrices() (map[string]float64, error) {
+	prices := make(map[string]float64)
+
+	if s.ShippingPricesJSON == "" {
+		return nil, nil
+	}
+
+	err := json.Unmarshal([]byte(s.ShippingPricesJSON), &prices)
+	if err != nil {
+		return nil, err
+	}
+
+	return prices, nil
 }

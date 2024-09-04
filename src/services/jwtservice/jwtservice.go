@@ -10,8 +10,8 @@ import (
 )
 
 type JwtService interface {
-	GetAccessTokenString(id int, userSignificance int, lifeTime time.Duration) (string, error)
-	GetRefreshTokenString(id int, userSignificance int, lifeTime time.Duration) (string, error)
+	GetAccessTokenString(id int, userSignificance int, roleName string, lifeTime time.Duration) (string, error)
+	GetRefreshTokenString(id int, userSignificance int, roleName string, lifeTime time.Duration) (string, error)
 	ParseJwtTokenString(tokenString string) (*UserClaims, bool, error)
 }
 
@@ -27,12 +27,13 @@ func New() JwtService {
 	}
 }
 
-func (s *jwtService) GetAccessTokenString(id int, userSignificance int, lifeTime time.Duration) (string, error) {
+func (s *jwtService) GetAccessTokenString(id int, userSignificance int, roleName string, lifeTime time.Duration) (string, error) {
 	expirationTime := time.Now().Add(lifeTime)
 
 	claims := UserClaims{
 		ID:           id,
 		Significance: userSignificance,
+		RoleName:     roleName,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(expirationTime),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
@@ -50,12 +51,13 @@ func (s *jwtService) GetAccessTokenString(id int, userSignificance int, lifeTime
 	return tokenString, nil
 }
 
-func (s *jwtService) GetRefreshTokenString(id int, userSignificance int, lifeTime time.Duration) (string, error) {
+func (s *jwtService) GetRefreshTokenString(id int, userSignificance int, roleName string, lifeTime time.Duration) (string, error) {
 	expirationTime := time.Now().Add(lifeTime)
 
 	claims := UserClaims{
 		ID:           id,
 		Significance: userSignificance,
+		RoleName:     roleName,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(expirationTime),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
