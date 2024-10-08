@@ -1,4 +1,4 @@
-import { Text, View } from "native-base";
+import { Pressable, Text, View } from "native-base";
 import { AnonymousProBold } from "../../constants/styles-constants";
 import { TouchableOpacity } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
@@ -11,7 +11,12 @@ import {
 import AnimatedNumber from "react-native-animated-numbers";
 import { memo, useEffect, useState } from "react";
 import { ENV } from "../../constants/env/env";
-import { currencies } from "../../app/static-data/data";
+import { currencies, deliveryTypes } from "../../app/static-data/data";
+import { openDishImagePopup } from "../../features/store/dishes/dishesSlice";
+
+const addCommissionToPrice = (price, commission) => {
+  return price + (price / 100) * commission;
+};
 
 const DishCard = ({ dish, pubID, pub }) => {
   const dispatch = useDispatch();
@@ -32,49 +37,70 @@ const DishCard = ({ dish, pubID, pub }) => {
       ? dish?.sale_price
       : dish?.price;
 
-  const dishCount = (dishInBasket && +dishInBasket.count) || 0;
+  const shouldAddCommission =
+    pub?.shipping?.delivery_type === deliveryTypes.deliveryService &&
+    pub?.shipping?.add_commission_to_dish_prices;
+
+  const commission = shouldAddCommission
+    ? pub?.shipping?.commission_for_dish_prices
+    : 0;
+
+  const dishCount = (dishInBasket && +dishInBasket.count) ?? 0;
 
   return (
     <View maxWidth={400} style={{ width: "100%", alignSelf: "center" }}>
       {/* Image container */}
-      <View
-        style={{
-          height: 160,
-          overflow: "hidden",
-          borderRadius: 26,
-          //   borderBottomWidth: 12,
-          //   borderTopWidth: 4,
-          //   borderRightWidth: 2,
-          //   borderLeftWidth: 2,
-          borderColor: "#333",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
+      <Pressable
+        onPress={() =>
+          dispatch(
+            openDishImagePopup({
+              imagePath: dish?.image_file_name ? imagePath : null,
+              dish: dish,
+              dishID: dish?.id,
+              pubID: pubID,
+              commission,
+            }),
+          )
+        }
       >
-        {dish.image_file_name ? (
-          <Image
-            alt=""
-            resizeMode="contain"
-            style={{ width: "100%", aspectRatio: 1 / 8 }}
-            source={{ uri: imagePath }}
-          />
-        ) : (
-          <></>
-        )}
         <View
-          position={"absolute"}
-          w="120%"
-          h="120%"
-          backgroundColor={"rgba(0, 0, 0, 0.5)"}
-          borderWidth={2}
-          alignItems={"center"}
-          justifyContent={"center"}
+          style={{
+            height: 160,
+            overflow: "hidden",
+            borderRadius: 26,
+            //   borderBottomWidth: 12,
+            //   borderTopWidth: 4,
+            //   borderRightWidth: 2,
+            //   borderLeftWidth: 2,
+            borderColor: "#333",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
         >
-          <Text fontSize={"2xl"} fontWeight={"bold"} color={"#fff"}>
-            {dish?.name}
-          </Text>
+          {dish.image_file_name ? (
+            <Image
+              alt=""
+              resizeMode="contain"
+              style={{ width: "100%", aspectRatio: 1 / 8 }}
+              source={{ uri: imagePath }}
+            />
+          ) : (
+            <></>
+          )}
+          <View
+            position={"absolute"}
+            w="100%"
+            h="100%"
+            backgroundColor={"rgba(0, 0, 0, 0.5)"}
+            alignItems={"center"}
+            justifyContent={"center"}
+          >
+              <Text px={2} w="full" textAlign="center" numberOfLines={1} fontSize={"2xl"} fontWeight={"bold"} color={"#fff"}>
+                {dish?.name}
+              </Text>
+          </View>
         </View>
-      </View>
+      </Pressable>
 
       {/* Info container */}
       <View
@@ -86,17 +112,18 @@ const DishCard = ({ dish, pubID, pub }) => {
           justifyContent: "space-between",
         }}
       >
-        {!!dish?.ingredients && 
-        <Text
-          fontSize={"sm"}
-          textAlign={"right"}
-          w="full"
-          color={"coolGray.600"}
-          fontWeight={"medium"}
-          fontFamily={AnonymousProBold}
-        >
-          {dish?.ingredients}
-        </Text>}
+        {!!dish?.ingredients && (
+          <Text
+            fontSize={"sm"}
+            textAlign={"right"}
+            w="full"
+            color={"coolGray.600"}
+            fontWeight={"medium"}
+            fontFamily={AnonymousProBold}
+          >
+            {dish?.ingredients}
+          </Text>
+        )}
 
         <View
           flexDir="row"
@@ -110,7 +137,7 @@ const DishCard = ({ dish, pubID, pub }) => {
             {/* Striked Higher price */}
             {
               //if there is sale, show real price with line-through
-              !!dish?.sale_price && (
+              !!dish?.sale_price && dish?.sale_price < dish?.price && (
                 <Text
                   fontSize={"md"}
                   color={"red.500"}
@@ -120,13 +147,13 @@ const DishCard = ({ dish, pubID, pub }) => {
                     textDecorationStyle: "solid",
                   }}
                 >
-                  {dish?.price} {currency}
+                  {addCommissionToPrice(dish?.price, commission)} {currency}
                 </Text>
               )
             }
             {/* Lower price */}
             <Text fontSize={"md"} color="coolGray.700" fontWeight={"medium"}>
-              {smallestPrice} {currency}
+              {addCommissionToPrice(smallestPrice, commission)} {currency}
             </Text>
           </View>
 

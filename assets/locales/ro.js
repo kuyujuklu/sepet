@@ -23,6 +23,10 @@ export default {
     field_is_required: "Câmpul este obligatoriu",
     this_pub_is_not_delivering_in_your_area:
       "Acest restaurant nu livrează momentan la adresa dvs.",
+    in_this_time_delivery_not_working:
+      "Livrarea nu este disponibilă în acest moment.",
+      too_many_sessions: "Trimiteți cereri de înregistrare prea des",
+      invalid_session_validation_number: "Cod de verificare nevalid",
     validation: {
       client: {
         name_is_required: "Numele este obligatoriu",
@@ -54,6 +58,9 @@ export default {
     send_again: "Trimite din nou",
     submit: "Confirmare",
     go_to_registration: "Nu aveți un cont? Înregistrare",
+    go_to_delete_account: "Doriți să vă extindeți contul? Click aici",
+    privacy_policy_text: "Continuând să utilizați această aplicație, sunteți de acord cu",
+    privacy_policy_link: "politica de confidențialitate",
     inputs: {
       phone_number: { label: "Număr de telefon" },
       password: { label: "Parolă" },
@@ -74,12 +81,14 @@ export default {
     },
   },
   select_geolocation: {
-    select_by_yourself_button: "Selectați manual",
+    saved_addresses: "Adrese salvate",
     headline: "Selectați locația dvs.",
+    select_by_yourself_button: "Selectați manual",
     wait_geolocation_is_loading: "Așteptați, încărcăm locația dvs.",
-    pin_geolocation: "Marcați locația",
+    pin_geolocation: "Adăuga o nouă adresă",
     we_cannot_load_your_geolocaiton:
-      "Nu am putut încărca locația, vă rugăm să o selectați manual",
+    "Nu am putut încărca locația, vă rugăm să o selectați manual",
+    change_geolocation:"Schimba locatia",
   },
   home_page: {
     pubs_near_you: "Restaurante din apropiere",
@@ -97,6 +106,15 @@ export default {
     create_order_button: "Creați comanda",
     pub_is_closed_error:
       "Acest restaurant este în prezent închis, vă rugăm să încercați mai târziu sau să comandați de la altul.",
+  },
+  basket_popup: {
+    another_pub_warning:
+      "Încercați să adăugați un articol dintr-un alt restaurant. Căruciorul va fi gol.",
+    cancel_button: "Înapoi",
+    ok_button: "ok",
+  },
+  dish_popup: {
+    back: "Înapoi",
   },
   create_order_page: {
     headline: "Creați comanda",
@@ -117,7 +135,7 @@ export default {
       items_price: "Prețul produselor",
       delivery_price: "Prețul livrării",
       total_sum: "Total",
-      create_order_button: "Creați comanda",
+      create_order_button: "Inainte",
     },
   },
   order_page: {
@@ -132,8 +150,9 @@ export default {
       order: "Comanda",
       order_statuses: {
         not_handled: "În așteptare",
-        handled: "Se pregătește",
-        preparing: "La curier",
+        handled: "Considerat",
+        preparing: "Se pregătește",
+        at_courier: "La curier",
         completed: "Livrat",
         canceled: "Anulat",
       },
@@ -145,6 +164,7 @@ export default {
   },
   categories: {
     asian: "asiatice",
+    flowers: "flori",
     fast_food: "fast-food",
     breakfast: "mic dejun",
     grill: "grătar",
@@ -152,6 +172,17 @@ export default {
     pasta: "paste",
     pancakes: "clătite",
     soup: "supe",
-    all: "toate",
+    alcohol: "alcool",
+    east_food: "bucătăria orientală",
+    flour: "mâncăruri de făină",
+    home_food: "mânc facuta acasa",
+    kebab: "kebab",
+    salad: "salate",
+    snacks: "gustări",
+    meat: "mâncăruri din carne",
+    all_publishments: "Toate unitățile"
   },
+  order_info_page: {
+    order: "Comanda"
+  }
 };

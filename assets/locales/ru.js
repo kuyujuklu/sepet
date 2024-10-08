@@ -1,5 +1,3 @@
-import { categories } from "../../src/app/static-data/data";
-
 export default {
   errors: {
     something_went_wrong: "Что-то пошло не так",
@@ -25,6 +23,11 @@ export default {
     field_is_required: "Поле обязательно для заполнения",
     this_pub_is_not_delivering_in_your_area:
       "В данный момент этот ресторан не доставляет до вашего адреса",
+      in_this_time_delivery_not_working:
+      "В это время доставка не работает",
+      too_many_sessions: "Вы отправляете запрос на регитрацию слишком часто",
+      invalid_session_validation_number: "Неверный код проверки",
+    
     validation: {
       client: {
         name_is_required: "Имя обязательно для заполнения",
@@ -39,8 +42,8 @@ export default {
         town_min_length_is_3: "Название города должно содержать мин. 3 символа",
         town_max_length_is_100:
           "Название города должно содержать максимум 100 символов",
-        full_address_min_length_is_10:
-          "Полный адрес должен содержать хотя бы 10 символов",
+        full_address_min_length_is_6:
+          "Полный адрес должен содержать хотя бы 6 символов",
         full_address_max_length_is_100:
           "Полный адрес должен содержать макс 100. символов",
       },
@@ -54,6 +57,10 @@ export default {
     send_again: "Отправить снова",
     submit: "Подтвердить",
     go_to_registration: "Нет аккаунта? Регистрация",
+    go_to_change_password: "Забыли пароль? Сменить",
+    go_to_delete_account: "Хотите удлить свой аккаунт? Кликните здесь",
+    privacy_policy_text: "Продолжая пользоваться этим приложением вы соглашаетесь с",
+    privacy_policy_link: "политикой конфиденциальности",
     inputs: {
       phone_number: {
         label: "Номер телефона",
@@ -82,19 +89,39 @@ export default {
       },
       repeat_password: {
         label: "Повторите пароль",
-        errors: {},
       },
     },
   },
+  change_password: {
+    headline: "Сменить пароль",
+    inputs: {
+      new_password:{ 
+        label: "Новый пароль"
+      },
+      repeat_password: {
+        label: "Повторите пароль"
+      }
+    }
+  },
+  phone_validation_number_input: {
+    headline: "Введите код из СМС",
+    go_back: "Вернуться",
+    send_again: "Отравить еще раз"
+  },
   select_geolocation: {
-    headline: "Выберите свое местоположение",
+    saved_addresses: "Сохраненные адреса",
+    headline: "Выберите локацию",
+    
     select_by_yourself_button: "Выбрать самому",
     wait_geolocation_is_loading: "Подождите, мы загружаем ваше местоположение",
-    pin_geolocation: "Отметить местоположение",
+    pin_geolocation: "Добавить новый адрес",
     we_cannot_load_your_geolocaiton:
       "Мы не смогли загрузить ваше местоположение, выберите его сами",
+    change_geolocation:"Сменить локацию",
   },
   home_page: {
+    select_another_geolocation: "Выбрать другую локацию",
+    no_available_pubs_for_location: "К сожалению, мы пока не доставляем до вашего адреса :(",
     pubs_near_you: "Рестораны возле вас",
     pub_is_closed: "Закрыто. Время работы",
   },
@@ -107,7 +134,7 @@ export default {
   basket_page: {
     headline: "Корзина",
     empty: "Пустая",
-    create_order_button: "Создать заказ",
+    create_order_button: "Дальше",
     pub_is_closed_error: "Этот ресторан сейчас закрыт попробуйте позже или сделайте заказ в другом",
   },
   basket_popup: {
@@ -116,13 +143,16 @@ export default {
     cancel_button: "Отмена",
     ok_button: "Ok",
   },
+  dish_popup: {
+    back: "Назад",
+  },
   create_order_page: {
     headline: "Создать заказ",
     additional_data: {
       headline: "Информация о заказе",
       inputs: {
         town: {
-          label: "Район/Город",
+          label: "Город или нас. пункт",
         },
         full_address: {
           label: "Полный адрес",
@@ -162,9 +192,10 @@ export default {
       repeat_button: "Повторить",
       order: "Заказ",
       order_statuses: {
-        not_handled: "Рассматривается",
-        handled: "Готовится",
-        preparing: "У курьера",
+        not_handled: "Обработка",
+        handled: "Рассмотрен",
+        preparing: "Готовится",
+        at_courier: "У курьера",
         completed: "Доставлен",
         canceled: "Отменен",
       },
@@ -176,6 +207,7 @@ export default {
   },
   categories: {
     asian: "азиатск.",
+    flowers: "цветы",
     fast_food: "фаст-фуд",
     breakfast: "завтраки",
     grill: "грилль",
@@ -183,6 +215,21 @@ export default {
     pasta: "паста",
     pancakes: "блины",
     soup: "супы",
-    all: "все",
+    alcohol: "алкоголь",
+    east_food: "восточная кухня",
+    flour: "мучные",
+    home_food: "домашняя еда",
+    kebab: "кебаб",
+    salad: "салаты",
+    snacks: "закуски",
+    meat: "мясо",
+    all_publishments: "Все заведения",
   },
+  order_info_page: {
+    order: "Заказ"
+  },
+  address_info: {
+    your_address: "Ваш адрес",
+
+  }
 };

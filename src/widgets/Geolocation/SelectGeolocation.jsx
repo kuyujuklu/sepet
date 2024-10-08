@@ -6,12 +6,19 @@ import {
   selectNearGeolocationState,
   setGeolocation,
   setNearGeolocation,
+  setSavedAddresses,
 } from "../../features/store/geolocation/geolocationSlice";
 import { useEffect, useRef, useState } from "react";
-import { Button, Spinner, Text, View } from "native-base";
-import { Image, Platform } from "react-native";
+import { Button, ScrollView, Spinner, Text, View } from "native-base";
+import { Animated, Dimensions, Image, Platform } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
+import InputWithValidation from "../Inputs/InputWithValidation";
+import {
+  validateFullAddress,
+  validateTown,
+} from "../../shared/validation/validators/order/order-validator";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const mapStyle = {
   map: {
@@ -31,6 +38,11 @@ const SelectGeolocation = () => {
   const hasPerm = useSelector(selectHasGeolocationPerm);
   const [center, setCenter] = useState(null);
 
+  const [town, setTown] = useState("");
+  const [fullAddress, setFullAddress] = useState("");
+  const [triedToSelectGeolocation, setTriedToSelectGeolocation] = useState("");
+  const [resetErrors, setResetErrors] = useState(false);
+
   const handleSelectLocationByYourself = () => {
     setCenter({ lat: 47.00367, lng: 28.907089 });
     dispatch(setNearGeolocation({ lat: 47.00367, lng: 28.907089 }));
@@ -38,15 +50,72 @@ const SelectGeolocation = () => {
   };
 
   const handleSetLocationButtonClick = () => {
-    console.log("CLLIIIIIIIIIIIIIIIIIIIKC");
-    if (!center) return;
-    dispatch(setGeolocation({ lat: center.lat, lng: center.lng }));
-    navigator.navigate("Home");
+    (async function () {
+      const townError = validateTown(town);
+      const fullAddressError = validateFullAddress(fullAddress);
+      if (townError !== null || fullAddressError !== null) {
+        setTriedToSelectGeolocation(true);
+        return;
+      }
+
+      if (!center) return;
+
+      let savedAddresses = [];
+      try {
+        const value = await AsyncStorage.getItem("saved_addresses");
+        if (value !== null) {
+          savedAddresses = JSON.parse(value);
+        }
+      } catch (e) {
+        console.log("getting saved addresses error: ", e);
+        savedAddresses = [];
+      }
+
+      savedAddresses.push({
+        town,
+        fullAddress,
+        lat: center.lat,
+        lng: center.lng,
+      });
+      AsyncStorage.setItem("saved_addresses", JSON.stringify(savedAddresses));
+
+      dispatch(setSavedAddresses({ addresses: savedAddresses }));
+      dispatch(
+        setGeolocation({
+          lat: center.lat,
+          lng: center.lng,
+          town: town,
+          fullAddress: fullAddress,
+        }),
+      );
+      setTown("");
+      setFullAddress("");
+      setTriedToSelectGeolocation("false");
+      navigator.navigate("Home");
+    })();
   };
 
+  useEffect(() => {
+    const unsubscribeFocus = navigator.addListener("focus", () => {
+      setTimeout(() => {
+        setResetErrors(true);
+      }, 100);
+    });
+    const unsubscribeBlur = navigator.addListener("blur", () => {
+      setTimeout(() => {
+        setResetErrors(true);
+      }, 100);
+    });
+
+    // Return the function to unsubscribe from the event so it gets removed on unmount
+    return () => {
+      unsubscribeFocus();
+      unsubscribeBlur();
+    };
+  }, [navigator]);
   const [selectedRegion, setSelectedRegion] = useState({
-    latitude: 37.78825,
-    longitude: -122.4324,
+    latitude: 47.78825,
+    longitude: 22.4324,
     latitudeDelta: 0.0922,
     longitudeDelta: 0.0421,
   });
@@ -97,9 +166,18 @@ const SelectGeolocation = () => {
 
   const mapRef = useRef(null);
 
+  const [scrollViewHeight, setScrollViewHeight] = useState(0);
+
   return (
-    <View flex={1}>
-      <View px="4" w="full" flex={1}>
+    <ScrollView
+      onLayout={(e) => {
+        const { height } = e.nativeEvent.layout;
+        setScrollViewHeight(height);
+      }}
+      keyboardShouldPersistTaps="handled"
+      flex={1}
+    >
+      <View px="4" w="full" height={scrollViewHeight} flex={1}>
         <View
           w="full"
           rounded="2xl"
@@ -114,6 +192,8 @@ const SelectGeolocation = () => {
           {/* No near location screen */}
           {!nearLocation && (
             <View
+              position="absolute"
+              zIndex="100"
               style={{ width: "100%", height: "100%" }}
               justifyContent="center"
               alignItems="center"
@@ -153,31 +233,67 @@ const SelectGeolocation = () => {
             </View>
           </View>
           {/* Map */}
-          {nearLocation && (
-            <MapView
-              provider={Platform.OS === "android" ? PROVIDER_GOOGLE : undefined}
-              ref={mapRef}
-              onRegionChangeComplete={(e) => {
-                console.log("REGION CHANGE COMPLETE");
-                setCenter({ lat: e.latitude, lng: e.longitude });
-              }}
-              style={{ position: "relative", width: "100%", height: "100%" }}
-              onMapLoaded={() => {
-                setMapLoaded(true);
-              }}
-              camera={{
-                center: {
-                  latitude: nearLocation.lat,
-                  longitude: nearLocation.lng,
-                },
-                pitch: 0, // Change this value to set the desired pitch
-                heading: 0, // Direction faced by the camera, in degrees clockwise from North.
-                zoom: 18,
-              }}
-              region={Platform.OS === "android" ? undefined : selectedRegion}
-            />
-          )}
+          <MapView
+            provider={Platform.OS === "android" ? PROVIDER_GOOGLE : undefined}
+            ref={mapRef}
+            onRegionChangeComplete={(e) => {
+              setCenter({ lat: e.latitude, lng: e.longitude });
+            }}
+            initialCamera={{
+              center: {
+                latitude: nearLocation?.lat ?? 47,
+                longitude: nearLocation?.lng ?? 22,
+              },
+              pitch: 0, // Change this value to set the desired pitch
+              heading: 0, // Direction faced by the camera, in degrees clockwise from North.
+              zoom: 18,
+            }}
+            showsUserLocation
+            showsMyLocationButton
+            style={{
+              position: "relative",
+              width: "100%",
+              height: "100%",
+              flex: 1,
+              opacity: nearLocation ? 1 : 0,
+            }}
+            onMapLoaded={() => {
+              setMapLoaded(true);
+            }}
+            camera={{
+              center: {
+                latitude: nearLocation?.lat ?? 47,
+                longitude: nearLocation?.lng ?? 22,
+              },
+              pitch: 0, // Change this value to set the desired pitch
+              heading: 0, // Direction faced by the camera, in degrees clockwise from North.
+              zoom: 18,
+            }}
+            region={Platform.OS === "android" ? undefined : selectedRegion}
+          />
         </View>
+        <InputWithValidation
+          resetErrors={resetErrors}
+          setResetErrors={setResetErrors}
+          value={town}
+          setValue={setTown}
+          label={t("create_order_page.additional_data.inputs.town.label")}
+          keyboardType={"default"}
+          validators={[validateTown]}
+          validatedOutside={triedToSelectGeolocation}
+        />
+        <InputWithValidation
+          resetErrors={resetErrors}
+          setResetErrors={setResetErrors}
+          value={fullAddress}
+          setValue={setFullAddress}
+          label={t(
+            "create_order_page.additional_data.inputs.full_address.label",
+          )}
+          keyboardType={"default"}
+          validators={[validateFullAddress]}
+          validatedOutside={triedToSelectGeolocation}
+        />
         <Button
           disabled={!nearLocation}
           background={!nearLocation ? "coolGray.400" : "emerald.600"}
@@ -189,7 +305,7 @@ const SelectGeolocation = () => {
           {t("select_geolocation.pin_geolocation")}
         </Button>
       </View>
-    </View>
+    </ScrollView>
   );
 };
 

@@ -1,10 +1,10 @@
-import { FlatList, Platform, View } from "react-native";
+import { FlatList, Platform, TouchableOpacity, View } from "react-native";
 import Pub from "./Pub";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useGetNearbyPubsQuery } from "../../shared/api/pubs/pubsApi";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import newDebounce from "../../shared/utils/debounce";
-import { Pressable } from "native-base";
+import { Pressable, Spinner, Text } from "native-base";
 import { useNavigation } from "@react-navigation/native";
 import { useSelector } from "react-redux";
 import { selectGeolocation } from "../../features/store/geolocation/geolocationSlice";
@@ -36,7 +36,6 @@ const PubList = ({ selectedPub, selectPub }) => {
   useEffect(() => {
     if (!pubsData) return;
 
-    console.log(pubsData?.pubs);
   }, [pubsData]);
 
   const sortedPubs = useMemo(() => {
@@ -70,7 +69,8 @@ const PubList = ({ selectedPub, selectPub }) => {
     const pubIndex = sortedPubs?.findIndex((pub) => pub.id === selectedPub);
     if (pubIndex === -1) return;
 
-    console.log("Scrolling to pubIndex: ", pubIndex);
+    if (!flatListRef || !flatListRef.current) return;
+
     setViewable(pubIndex);
 
     flatListRef.current.scrollToIndex({
@@ -78,7 +78,7 @@ const PubList = ({ selectedPub, selectPub }) => {
       animated: true,
       viewPosition: 0.5,
     });
-  }, [selectedPub, sortedPubs]);
+  }, [selectedPub, sortedPubs.flatListRef]);
 
   const handlePubPress = (id) => {
     if (!id) return;
@@ -123,37 +123,45 @@ const PubList = ({ selectedPub, selectPub }) => {
 
   return (
     <SafeAreaView style={{ paddingLeft: 10 }} edges={[]}>
-      <FlatList
-        ref={flatListRef}
-        renderItem={({ item, index }) => (
-          <Pressable
-            key={item.id}
-            // id={index}
-            disabled={!item.isOpen}
-            onPress={() => {
-              handlePubPress(item?.id);
-            }}
-          >
-            <Pub
-              isViewable={Platform.OS === 'android' ? index === viewable : false}
-              pub={item}
-              distance={item.distance}
-            />
-          </Pressable>
-        )}
-        onScrollToIndexFailed={() => {
-          const wait = new Promise((resolve) => setTimeout(resolve, 250));
-          console.log("Scroll failed");
-          wait.then(() => {
-            scrollPubListToActiveIndex();
-          });
-        }}
-        viewabilityConfig={viewabilityConfig}
-        data={sortedPubs}
-        horizontal
-        onViewableItemsChanged={debounceHandleViewableItemsChange}
-        ItemSeparatorComponent={() => <View style={{ width: 20 }} />}
-      />
+      {pubsIsLoading && (
+        // pubsIsLoading &&
+        <Spinner />
+      )}
+      {!pubsIsLoading && (
+        <FlatList
+          ref={flatListRef}
+          renderItem={({ item, index }) => (
+            <TouchableOpacity
+              key={item.id}
+              // id={index}
+              disabled={!item.isOpen}
+              onPress={() => {
+                handlePubPress(item?.id);
+              }}
+            >
+              <Pub
+                isViewable={
+                  Platform.OS === "android" ? index === viewable : false
+                }
+                pub={item}
+                distance={item.distance}
+              />
+            </TouchableOpacity>
+          )}
+          onScrollToIndexFailed={() => {
+            const wait = new Promise((resolve) => setTimeout(resolve, 250));
+            console.log("Scroll failed");
+            wait.then(() => {
+              scrollPubListToActiveIndex();
+            });
+          }}
+          viewabilityConfig={viewabilityConfig}
+          data={sortedPubs}
+          horizontal
+          onViewableItemsChanged={debounceHandleViewableItemsChange}
+          ItemSeparatorComponent={() => <View style={{ width: 20 }} />}
+        />
+      )}
     </SafeAreaView>
   );
 };

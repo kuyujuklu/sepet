@@ -14,11 +14,14 @@ import { selectGeolocation } from "../../features/store/geolocation/geolocationS
 import { useGetNearbyCategoriesQuery } from "../../shared/api/categories/categoriesApi";
 import { useMemo } from "react";
 import { useGetNearbyPubsQuery } from "../../shared/api/pubs/pubsApi";
+import { Platform } from "react-native";
 
 const translateFoodCategories = (foodCategory) => {
   switch (foodCategory) {
     case categories.Asian:
       return "categories.asian";
+    case categories.Flowers:
+      return "categories.flowers";
     case categories.Breakfast:
       return "categories.breakfast";
     case categories.Dessert:
@@ -33,8 +36,24 @@ const translateFoodCategories = (foodCategory) => {
       return "categories.pasta";
     case categories.Soup:
       return "categories.soup";
+    case categories.Alcohol:
+      return "categories.alcohol";
+    case categories.EastFood:
+      return "categories.east_food";
+    case categories.Flour:
+      return "categories.flour";
+    case categories.HomeFood:
+      return "categories.home_food";
+    case categories.Kebab:
+      return "categories.kebab";
+    case categories.Salad:
+      return "categories.salad";
+    case categories.Snacks:
+      return "categories.snacks";
+    case categories.Meat:
+      return "categories.meat";
     default:
-      return "categories.all";
+      return "categories.all_publishments";
   }
 };
 
@@ -72,7 +91,9 @@ const FoodCategoriesPage = ({ route }) => {
 
     nearCategoriesData.categories.forEach((category) => {
       if (categoriesWithNotValidPubs.has(category.pub_id)) return;
-      if (categoryNamesSet.has(category.pub_id)) return;
+
+      if (!category?.category_types) return;
+      if (!category?.visible) return;
 
       const pub = nearPubsData.pubs?.find((pub) => pub.id === category.pub_id);
 
@@ -81,8 +102,11 @@ const FoodCategoriesPage = ({ route }) => {
         return;
       }
 
-      if (placeholderCategories[category.category_type])
-        categoryNamesSet.add(category.category_type);
+      for (const type of category.category_types) {
+        if (placeholderCategories[type]) {
+          categoryNamesSet.add(type);
+        }
+      }
     });
 
     return Array.from(categoryNamesSet);
@@ -90,7 +114,7 @@ const FoodCategoriesPage = ({ route }) => {
 
   return (
     <Wrapper>
-      <View flex={1} alignItems="center" mt={2}>
+      <View flex={1} alignItems="center">
         <Text
           px={5}
           fontFamily={AnonymousProBold}
@@ -101,12 +125,9 @@ const FoodCategoriesPage = ({ route }) => {
           flexWrap="wrap"
           alignItems="center"
         >
-          {t("near_categories_page.headline")}{" "}
-          <View>
-            <Text fontSize={28} fontFamily={AnonymousProBold}>
-              ({t(translateFoodCategories(foodFilter))})
-            </Text>
-          </View>
+          <Text textTransform="capitalize" fontSize={32} fontFamily={AnonymousProBold}>
+            {t(translateFoodCategories(foodFilter))}
+          </Text>
         </Text>
         <View flex={1}>
           <CategoryWithPubInfoList
@@ -127,7 +148,7 @@ const FoodCategoriesPage = ({ route }) => {
       <View
         position="absolute"
         w="100%"
-        bottom="50"
+        bottom={Platform.OS === "ios" ? 75 : 60}
         zIndex="10"
         mt={4}
         mb="2"

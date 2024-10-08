@@ -1,22 +1,23 @@
+import { Platform } from "react-native";
 
 export const styles = {
   navbarWrapper: {
     position: "absolute",
     width: "100%",
-    height: 50,
+    height: Platform.OS === "ios" ? 75 : 60,
     bottom: 0,
     flex: 1,
   },
   navbarContainer: {
     position: "relative",
     backgroundColor: "#fff",
-    paddingVertical: 10,
+    // paddingBottom: 30,
 
     flex: 1,
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     justifyContent: "space-around",
-    height: 20,
+    // height: 20,
     width: "100%",
     borderWidth: 1,
     borderColor: "#fff",
@@ -24,8 +25,8 @@ export const styles = {
     borderTopLeftRadius: 10,
   },
   navbarButton: {
-    width: 50,
-    height: 50,
+    width: 60,
+    height: 60,
   },
   expandMore: (expanded) => ({
     backgroundColor: "#fff",

@@ -43,18 +43,14 @@ const PubsMap = ({ selectPub, selectedPub }) => {
 
   // Animate map on changing selected pub
   useEffect(() => {
-    console.log("selected pub: ", selectedPub);
 
     if (!mapRef.current) return;
     //on fucking ios mapLoaded not working
     if (Platform.OS === "android" && !mapLoaded) return;
-    console.log("selected pub: ", selectedPub);
 
     const pub = pubs?.find((pub) => pub.id === selectedPub);
 
     if (!pub || !pub.lat || !pub.lng) return;
-
-    console.log("Animating to pub: ", pub);
 
     if (Platform.OS === "android") {
       mapRef.current.animateCamera(
@@ -72,7 +68,6 @@ const PubsMap = ({ selectPub, selectedPub }) => {
     } 
     //ios
     else {
-      console.log("TIPA ANIMATING 1");
       mapRef.current.animateToRegion(
         getRegion(15, { lat: pub.lat, lng: pub.lng }),
         800
@@ -100,7 +95,6 @@ const PubsMap = ({ selectPub, selectedPub }) => {
   //       { duration: 800 }
   //     );
   //   } else {
-  //     console.log("TIPA ANIMATING 1");
   //     setSelectedRegion(getRegion(zoom, location));
   //   }
   // }, [location, selectedPub]);
@@ -119,7 +113,6 @@ const PubsMap = ({ selectPub, selectedPub }) => {
           <MapView
             provider={Platform.OS === "android" ? PROVIDER_GOOGLE : undefined}
             onMapLoaded={() => {
-              console.log("MAP LOADED");
               setMapLoaded(true);
             }}
             camera={{

@@ -53,7 +53,7 @@ const SwitchLanguage = () => {
             </Text>
           </View>
         </TouchableOpacity>
-        {/* <TouchableOpacity onPress={() => handleChangeLang("gz")}>
+        <TouchableOpacity onPress={() => handleChangeLang("gz")}>
           <View
             style={{
               backgroundColor:
@@ -66,10 +66,10 @@ const SwitchLanguage = () => {
             px={5}
           >
             <Text color={i18n.language === "gz" ? "white" : "emerald.600"}>
-              GZ
+              GAG
             </Text>
           </View>
-        </TouchableOpacity> */}
+        </TouchableOpacity>
       </View>
     </>
   );

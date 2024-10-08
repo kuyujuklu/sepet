@@ -1,6 +1,6 @@
 import { FlatList, View } from "native-base";
 import { memo, useEffect, useState } from "react";
-import { Pressable, SafeAreaView } from "react-native";
+import { Pressable, SafeAreaView, TouchableOpacity } from "react-native";
 import { useGetPubInfoQuery } from "../../../shared/api/pubs/pubsApi";
 import CategoryCard from "./CategoryCard";
 import PubInfoHeader from "../../Pub/PubInfoHeader";
@@ -51,16 +51,16 @@ const CategoryList = ({
       <FlatList
         contentContainerStyle={{ paddingHorizontal: 10, paddingBottom: 80 }}
         renderItem={({ item: category, index }) => (
-          <>
+          <View key={category.id}>
             {index === 0 && <PubInfoHeader pubID={pubID} />}
-            <Pressable onPress={() => selectCategory(category?.id)}>
+            <TouchableOpacity onPress={() => selectCategory(category?.id)}>
               <CategoryCard
                 isHightlighted={category?.highlighted}
                 key={category?.id}
                 category={category}
               />
-            </Pressable>
-          </>
+            </TouchableOpacity>
+          </View>
         )}
         data={shownCategories || []}
         ItemSeparatorComponent={() => <View height={5} />}

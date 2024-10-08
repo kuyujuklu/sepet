@@ -1,7 +1,7 @@
 import { Animated } from "react-native";
 import Stars from "./Stars";
 import { Text, View } from "native-base";
-import { memo, useEffect, useRef, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { ENV } from "../../constants/env/env";
 import { images } from "../../app/images/images";
 import { Image } from "expo-image";
@@ -9,7 +9,7 @@ import { GetShippingTimeString } from "../../shared/utils/time";
 import { useTranslation } from "react-i18next";
 
 const Pub = ({ pub, isViewable, distance }) => {
-  const {t} = useTranslation()
+  const { t } = useTranslation();
   const bgPath =
     ENV.API_HTTP_URL +
     ENV.API_STATIC_PATH +
@@ -23,7 +23,7 @@ const Pub = ({ pub, isViewable, distance }) => {
     end: pub?.shipping?.shipping_work_end,
   };
 
-  const shippingTimeString = GetShippingTimeString(shippingWorkHours)
+  const shippingTimeString = GetShippingTimeString(shippingWorkHours);
 
   // Animate the image when it becomes visible
   useEffect(() => {
@@ -60,8 +60,12 @@ const Pub = ({ pub, isViewable, distance }) => {
             opacity={0.8}
             h="full"
           >
-            <Text color="white" fontSize={18}>{t("home_page.pub_is_closed")}</Text>
-            <Text color="white" fontSize={18}>{shippingTimeString}</Text>
+            <Text color="white" fontSize={18}>
+              {t("home_page.pub_is_closed")}
+            </Text>
+            <Text color="white" fontSize={18}>
+              {shippingTimeString}
+            </Text>
           </View>
         )}
         {!pub.bg_image_file_name && (
@@ -95,27 +99,47 @@ const Pub = ({ pub, isViewable, distance }) => {
           flexDirection: "row",
         }}
       >
+        {/* pub name */}
         <Text style={{ fontSize: 18 }}>{pub.name}</Text>
-        <View
-          flex={1}
-          justifyContent="flex-end"
-          alignItems="center"
-          flexDir="row"
-          gap={1}
-        >
-          <View style={{ width: 15, height: 15 }}>
-            <Image
-              source={images.Locaiton}
-              style={{ width: "100%", height: "100%" }}
-            />
+        <View flex={1} flexDir="column">
+          {/* shipping price */}
+          <View
+            justifyContent="flex-end"
+            alignItems="center"
+            flexDir="row"
+            gap={1}
+          >
+            <View style={{ width: 15, height: 15 }}>
+              <Image
+                source={images.WheelBlack}
+                style={{ width: "100%", height: "100%" }}
+              />
+            </View>
+            <Text style={{ fontSize: 14, fontWeight: "bold" }}>
+              {Math.floor(pub.shipping_price)} Lei
+            </Text>
           </View>
-          <Text style={{ fontSize: 14, fontWeight: "bold" }}>
-            {(distance / 1000).toFixed(1)} km
-          </Text>
-        </View>
-        {/* Stars and location */}
-        <View>
-          <Stars count={pub.rating} />
+          {/* distance */}
+          <View
+            justifyContent="flex-end"
+            alignItems="center"
+            flexDir="row"
+            gap={1}
+          >
+            <View style={{ width: 15, height: 15 }}>
+              <Image
+                source={images.Locaiton}
+                style={{ width: "100%", height: "100%" }}
+              />
+            </View>
+            <Text style={{ fontSize: 14, fontWeight: "bold" }}>
+              {(distance / 1000).toFixed(1)} km
+            </Text>
+          </View>
+          {/* Stars and location */}
+          {/* <View>
+            <Stars count={pub.rating} />
+          </View> */}
         </View>
       </View>
     </View>

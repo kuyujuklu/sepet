@@ -58,6 +58,23 @@ export const ConvertApiTimeToLocalDayMonthYear = (time, lang) => {
   return `${day} ${month} ${year}`;
 };
 
+export const ConvertApiTimeToLocalDayMonth = (time, lang) => {
+  const locale = lang === "ro" ? "ro-RO" : "ru-RU";
+  const date = GetTimeFromApiTimeString(time);
+
+  let month;
+  month = date.toLocaleDateString(locale, { month: "short" });
+  // if (locale === "ro-RO")
+  //     month = date.toLocaleDateString(locale, { month: "short" });
+
+  //Capitalize first letter and remove dot at the end
+  month = month.charAt(0).toUpperCase() + month.slice(1, -1);
+  month = month === "Ма" ? "Мая" : month;
+
+  const day = date.getDate();
+  return `${day} ${month}`;
+};
+
 export const GetShippingTimeString = (shippingHours) => {
   const startRoundedHours = parseInt(shippingHours.start / 60);
   const startRoundedMinutes = parseInt(shippingHours.start % 60);

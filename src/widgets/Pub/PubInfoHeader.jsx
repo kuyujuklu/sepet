@@ -76,7 +76,7 @@ const PubInfoHeader = ({ pubID }) => {
             )}
 
             {/* ADDITIONAL INFO */}
-            {pub.additional_info && (
+            {/* {pub.additional_info && (
               <Text>
                 <Text style={pubStyles.pubHeaderInfoRowName}>
                   {t("pub_info_page.pub_header.additional_info")}:
@@ -85,7 +85,7 @@ const PubInfoHeader = ({ pubID }) => {
                   {pub.additional_info}
                 </Text>
               </Text>
-            )}
+            )} */}
           </View>
         </View>
       )}

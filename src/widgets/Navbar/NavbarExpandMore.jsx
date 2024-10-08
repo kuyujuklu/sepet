@@ -27,7 +27,7 @@ const NavbarExpandMore = ({ expanded, setExpanded }) => {
     expandedSize.stopAnimation();
     Animated.timing(expandedSize, {
       toValue: expanded ? 1 : 0,
-      duration: 500,
+      duration: 300,
       useNativeDriver: false,
     }).start();
   }, [expanded]);
@@ -58,8 +58,9 @@ const NavbarExpandMore = ({ expanded, setExpanded }) => {
           outputRange: ["-100%", "0%"],
         }),
         padding: 20,
-        height: 220,
-        top: -220,
+        height: 260,
+        top: -260,
+        zIndex: 100,
       }}
     >
       <View gap={4}>
@@ -68,6 +69,24 @@ const NavbarExpandMore = ({ expanded, setExpanded }) => {
         </View>
 
         <View gap={1}>
+          <TouchableOpacity
+            onPress={() => {
+              goToSelectGeolocation()
+            }}
+          >
+            <View mb={2} flexDir="row" gap={2} alignItems="center">
+              <View style={{ height: 30, width: 30 }}>
+                <Image
+                  style={{ height: 30, width: 30 }}
+                  source={images.Locaiton}
+                />
+              </View>
+
+              <Text color="emerald.600" style={{ fontSize: 16, fontWeight: "medium" }}>
+                {t("select_geolocation.change_geolocation")}
+              </Text>
+            </View>
+          </TouchableOpacity>
           <TouchableOpacity
             onPress={() => {
               Linking.openURL(`tel:+373 605 49 995`);

@@ -19,6 +19,8 @@ export const appErrors = {
   max: "errors.max",
   fieldMustBeNumber: "errors.field_must_be_number",
   invalidUrlName: "errors.invalid_url_name",
+  too_many_sessions: "errors.too_many_sessions",
+  invalid_session_validation_number: "errors.invalid_session_validation_number",
 
   //file uploading
   fileIsTooLarge: "errors.file_is_too_large",

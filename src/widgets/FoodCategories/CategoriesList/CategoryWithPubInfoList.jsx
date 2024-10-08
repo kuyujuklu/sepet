@@ -35,7 +35,7 @@ const CategoryWithPubInfoList = ({ foodFilter, selectCategory }) => {
     const filteredCategories = nearCategoriesData.categories.filter(
       (category) => {
         if (!foodFilter) return true;
-        return category?.category_type === foodFilter;
+        return category?.category_types?.includes(foodFilter);
       },
     );
 

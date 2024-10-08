@@ -33,13 +33,10 @@ const onMessage = (event) => {
     return;
   }
 
-  console.log("CONNECTION MESSAGE");
-
   let error = null;
   let body;
   try {
     body = JSON.parse(event.data);
-    console.log("MESSAGE BODY: ", body);
   } catch (e) {
     error = e;
   }

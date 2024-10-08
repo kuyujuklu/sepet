@@ -24,11 +24,9 @@ const OrdersPage = () => {
     const unsubscribeFocus = navigator.addListener("focus", () => {
       setTimeout(() => {
         setAreComponentsVisible(true);
-      }, 10);
-      setAreComponentsVisible(false);
+      }, 100);
     });
     const unsubscribeBlur = navigator.addListener("blur", () => {
-      console.log("Blured");
       setAreComponentsVisible(false);
     });
 
@@ -46,8 +44,8 @@ const OrdersPage = () => {
           <Spinner width={30} height={30} />
         </View>
       )}
-      {orders && orders.length < 0 ? (
-        <View alignItems="center" mt={2} mb={3}>
+      {areComponentsVisible && orders && orders.length === 0 ? (
+        <View alignItems="center" mb={3}>
           <Text textAlign="center" fontFamily={AnonymousProBold} fontSize={32}>
             {t("order_page.headline_no_orders")}
           </Text>
@@ -60,7 +58,7 @@ const OrdersPage = () => {
         {areComponentsVisible && (
           <LazyLargeComponent
             upperComponent={
-              <View alignItems="center" mt={2} mb={3}>
+              <View alignItems="center" mb={3}>
                 <Text
                   textAlign="center"
                   fontFamily={AnonymousProBold}

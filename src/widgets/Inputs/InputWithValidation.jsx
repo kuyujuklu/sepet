@@ -13,6 +13,9 @@ const InputWithValidation = ({
   inputParams,
   validatedOutside,
   secureTextEntry,
+  resetErrors,
+  setResetErrors,
+  disabled,
 }) => {
   const {t} = useTranslation()
   const [error, setError] = useState(null);
@@ -21,6 +24,13 @@ const InputWithValidation = ({
   useEffect(() => {
     if (validatedOutside) setValueWasSet(true);
   }, [validatedOutside]);
+
+  useEffect(() => {
+    if(!resetErrors) return;
+    setValueWasSet(null)
+    setError(null)
+    setResetErrors(false)
+  }, [resetErrors])
 
   useEffect(() => {
     if (!validators) return;
@@ -45,6 +55,7 @@ const InputWithValidation = ({
 
   return (
     <Input
+      disabled={disabled}
       value={value}
       setValue={setValue}
       label={label}

@@ -16,7 +16,7 @@ const DishListForCategory = ({ pubID, categoryID }) => {
 
     const filteredDishes = pubData?.dishes
       //   .filter((dish) => dish?.visible)
-      .filter((dish) => dish?.category_id === categoryID);
+      .filter((dish) => dish?.category_id === categoryID && dish.visible);
 
     setShownDishes(filteredDishes);
   }, [pubData, categoryID]);

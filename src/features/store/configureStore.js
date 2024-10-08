@@ -9,6 +9,7 @@ import authReducer from "./auth/authSlice";
 import geolocationReducer from "./geolocation/geolocationSlice";
 import basketReducer from "./basket/basketSlice";
 import ordersReducer from "./orders/ordersSlice";
+import dishImagePopupReducer from "./dishes/dishesSlice";
 import { setupListeners } from "@reduxjs/toolkit/query";
 import { pubsApi } from "../../shared/api/pubs/pubsApi";
 import { categoriesApi } from "../../shared/api/categories/categoriesApi";
@@ -25,6 +26,7 @@ export const store = configureStore({
     orders: ordersReducer,
     pubs: pubsReducer,
     basket: basketReducer,
+    dishImagePopup: dishImagePopupReducer,
     errorHandling: errorHandlingReducer,
     alerts: alertReducer,
     geolocation: geolocationReducer,

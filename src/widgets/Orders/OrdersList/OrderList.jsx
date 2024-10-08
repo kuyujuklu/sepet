@@ -26,7 +26,7 @@ const OrderList = ({ orders, upperComponent }) => {
   return (
     <>
       <FlatList
-        contentContainerStyle={{ paddingHorizontal: 10, paddingVertical: 10 }}
+        contentContainerStyle={{ paddingHorizontal: 10, paddingBottom: 10 }}
         renderItem={({ item: order, index }) => (
           <>
             {index === 0 && upperComponent}

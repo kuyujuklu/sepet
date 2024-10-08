@@ -8,7 +8,7 @@ import {
 } from "../../../constants/styles-constants";
 import { validateOrder } from "../../../shared/validation/validators/order/order-validator";
 import { useCreateOrderMutation } from "../../../shared/api/ordersApi/ordersApi";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
   errorKeys,
   pushError,
@@ -23,8 +23,10 @@ import { useTranslation } from "react-i18next";
 import { clearBasket } from "../../../features/store/basket/basketSlice";
 import { addOrder } from "../../../features/store/orders/ordersSlice";
 import { images } from "../../../app/images/images";
+import { selectClient } from "../../../features/store/auth/authSlice";
 const CreateOrder = ({
   pubID,
+  location,
   shippingTimeFrom,
   shippingTimeTo,
   itemsPrice,
@@ -34,6 +36,7 @@ const CreateOrder = ({
   const { t } = useTranslation();
   const navigator = useNavigation();
   const dispatch = useDispatch();
+
   const [town, setTown] = useState();
   const [fullAddress, setFullAddress] = useState();
   const [phoneNumber, setPhoneNumber] = useState();
@@ -41,6 +44,21 @@ const CreateOrder = ({
   const [comments, setComments] = useState("");
   const [paymentType, setPaymentType] = useState("cash");
 
+  const client = useSelector(selectClient);
+  useEffect(() => {
+    if (!client) return;
+    setPhoneNumber(client.phone);
+  }, [client]);
+
+  useEffect(() => {
+    if (!location.town) return;
+    setTown(location.town);
+  }, [location.town]);
+
+  useEffect(() => {
+    if (!location.fullAddress) return;
+    setFullAddress(location.fullAddress);
+  }, [location.fullAddress]);
   const totalSum = (itemsPrice ?? 0) + (deliveryPrice ?? 0);
 
   const isShippingTimeAvailable = !!(shippingTimeFrom && shippingTimeTo);
@@ -68,6 +86,7 @@ const CreateOrder = ({
 
   useEffect(() => {
     if (!createOrderError) return;
+    console.log("create order error: ", createOrderError)
     dispatch(
       pushError({
         errorKey: errorKeys.createOrderError,
@@ -100,6 +119,16 @@ const CreateOrder = ({
       );
     }
 
+    if (!location) {
+      dispatch(
+        pushAlert({
+          status: alertStatuses.error,
+          delay: 3000,
+          title: "select your geolocation on the page please",
+        }),
+      );
+    }
+
     const dishIDs = Object.keys(basket);
 
     if (dishIDs.length === 0) {
@@ -118,7 +147,10 @@ const CreateOrder = ({
     }));
 
     const order = {
+      deliveryPrice: +deliveryPrice,
       town,
+      lat: location?.lat,
+      lng: location?.lng,
       fullAddress,
       mainPhoneNumber: phoneNumber,
       secondPhoneNumber,
@@ -140,7 +172,7 @@ const CreateOrder = ({
   }, [createOrderResponse]);
 
   return (
-    <ScrollView keyboardShouldPersistTaps={"handled"}>
+    <ScrollView flex={1} keyboardShouldPersistTaps={"handled"}>
       <Text
         fontSize={25}
         textTransform={"uppercase"}
@@ -150,7 +182,7 @@ const CreateOrder = ({
       >
         {t("create_order_page.headline")}
       </Text>
-      <View justifyContent={"center"} flex={1}>
+      <View justifyContent={"space-between"} flex={1}>
         <View px={10} gap="4" flex={1} overflow={"hidden"}>
           <CreateOrderInputs
             town={town}
@@ -223,7 +255,8 @@ const CreateOrder = ({
               fontFamily={AnonymousProRegular}
               fontSize={15}
             >
-              {t("create_order_page.additional_data.items_price")}: {itemsPrice} Lei
+              {t("create_order_page.additional_data.items_price")}: {itemsPrice}{" "}
+              Lei
             </Text>
             <Text
               color="gray.600"
@@ -239,7 +272,7 @@ const CreateOrder = ({
           </View>
         </View>
 
-        <View pb={5} px={2}>
+        <View px={2}>
           <Button
             disabled={!areInputsValid}
             background={areInputsValid ? "emerald.600" : "coolGray.400"}
@@ -247,7 +280,7 @@ const CreateOrder = ({
             onPress={sendData}
           >
             {isCreateOrderLoading ? (
-              <Spinner />
+              <Spinner color="#fff" />
             ) : (
               <Text color={"white"}>
                 {t("create_order_page.additional_data.create_order_button")}

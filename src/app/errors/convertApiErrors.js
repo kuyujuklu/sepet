@@ -14,6 +14,15 @@ const respErrors = {
   "validation error": appErrors.validationError,
 
   "invalid password": appErrors.invalidPassword,
+
+  "client not found": appErrors.client_not_found,
+
+  "too many sessions": appErrors.too_many_sessions,
+  "client with the same number already exists":
+    appErrors.client_with_the_same_phone_already_exists,
+
+  "invalid phone validation session number":
+    appErrors.invalid_session_validation_number,
 };
 
 export const convertRespError = (error) => {

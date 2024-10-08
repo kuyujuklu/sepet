@@ -16,6 +16,7 @@ const GeolocationFinder = () => {
       if (nearLocaiton) return;
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
+        console.log("NOT GRANTED, CURRENT STATUS: ", status)
         dispatch(setHasPermission(false))
         return;
       }
@@ -26,7 +27,7 @@ const GeolocationFinder = () => {
         accuracy: Location.Accuracy.BestForNavigation,
         maximumAge: 10000,
       });
-
+      console.log("SETTING NEAR LOCATION: ", location.coords)
       dispatch(
         setNearGeolocation({
           lng: location.coords.longitude,

@@ -6,7 +6,7 @@ import { ENV } from "../../../constants/env/env";
 export const refreshToken = async () => {
   const token = await SecureStore.getItemAsync("refresh_token");
 
-  console.log("REFRESSSSSSSSSSSSSSSSSSSSING TOKEN: ", token);
+  console.log("refresh token: ", token);
 
   if (!token) {
     return {
@@ -41,7 +41,7 @@ export const refreshToken = async () => {
       err: appErrors.something_went_wrong,
     };
   }
-  console.log("REFRESSSSSSSSSSSSSSSSSSSSING TOKEN reSP: ", body);
+  console.log("refresh token resp: ", body);
 
   if (body.ok) {
     return {

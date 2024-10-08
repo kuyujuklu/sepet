@@ -38,7 +38,7 @@ const AuthWatcher = () => {
 
         setaccesstoken(resp.accesstoken);
         dispatch(
-          setClient({ phone: resp.client?.phone, name: resp.client?.phone })
+          setClient({ phone: resp.client?.phone, name: resp.client?.name })
         );
         dispatch(setRefetchClient(false));
       })();

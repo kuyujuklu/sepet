@@ -4,8 +4,6 @@ import { inputStyles } from "../Inputs/inputs.styles";
 export const authStyles = StyleSheet.create({
   authContainer: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
     paddingTop: 20,
     paddingBottom: 50,
     background: "rgb(105,191,201)",
@@ -20,6 +18,7 @@ export const authStyles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   dataInputsContainer: {
+    width: "100%",
     gap: 10,
   },
 });

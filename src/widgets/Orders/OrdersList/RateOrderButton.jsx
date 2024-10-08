@@ -14,7 +14,13 @@ import {
   pushAlert,
 } from "../../../features/store/alerts/alertSlice";
 
-const RateOrderButton = ({ orderStatus, orderID, rating }) => {
+const RateOrderButton = ({
+  orderStatus,
+  orderID,
+  rating,
+  fontSize,
+  iconSize,
+}) => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
   const [
@@ -55,11 +61,9 @@ const RateOrderButton = ({ orderStatus, orderID, rating }) => {
 
   useEffect(() => {
     if (!rateOrderData) return;
-    console.log(rateOrderData);
   }, [rateOrderData]);
   useEffect(() => {
     if (!rateOrderError) return;
-    console.log(rateOrderError);
   }, [rateOrderError]);
 
   const MAX_RATING = 5;
@@ -68,14 +72,16 @@ const RateOrderButton = ({ orderStatus, orderID, rating }) => {
       {!isRatingShown && (
         <TouchableOpacity onPress={handleRateClick}>
           <View flexDir="row" alignItems="center" gap={2}>
-            <View width={15} height={15}>
+            <View width={iconSize ? iconSize : 15} height={iconSize ? iconSize : 15}>
               <Image
                 source={images.LikeDislikeBlack}
                 alt=""
                 style={{ width: "100%", height: "100%" }}
               />
             </View>
-            <Text fontSize="12">{t("order_page.order_card.rate_button")}</Text>
+            <Text fontSize={fontSize ? fontSize : 12}>
+              {t("order_page.order_card.rate_button")}
+            </Text>
           </View>
         </TouchableOpacity>
       )}

@@ -8,6 +8,7 @@ import CategoryList from "../../widgets/FoodCategories/CategoriesList/CategoryLi
 import { createContext, memo, useContext } from "react";
 import DishListForCategory from "../../widgets/Dish/DishListForCategory";
 import { useGetPubInfoQuery } from "../../shared/api/pubs/pubsApi";
+import { Platform } from "react-native";
 
 export const PubInfoRouteContext = createContext();
 
@@ -15,7 +16,6 @@ const CategoriesScreen = memo(() => {
   const contextValue = useContext(PubInfoRouteContext);
   const navigator = useNavigation();
   const route = useRoute();
-  console.log("Rerendered");
   return (
     <View>
       <CategoryList
@@ -65,8 +65,6 @@ const PubInfoPage = () => {
 
   return (
     <Wrapper>
-      <View></View>
-
       <PubInfoRouteContext.Provider
         value={{
           pubID,
@@ -97,7 +95,7 @@ const PubInfoPage = () => {
             component={DishesScreen}
           />
         </Stack.Navigator>
-        <View mb={52} position={"absolute"} bottom={0}>
+        <View mb={Platform.OS === "ios" ? 75 : 60} position={"absolute"} bottom={0}>
           <MenuListForPub
             pubID={pubID}
             menus={pubData?.menus}

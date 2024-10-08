@@ -15,6 +15,10 @@ export const placeholderCategories = {
     image: images.Sushi,
     value: categories.Asian,
   },
+  [categories.Flowers]: {
+    image: images.Flowers,
+    value: categories.Flowers,
+  },
   [categories.FastFood]: {
     image: images.FastFood,
     value: categories.FastFood,
@@ -35,13 +39,45 @@ export const placeholderCategories = {
     image: images.Spaghetti,
     value: categories.Pasta,
   },
-  [categories.Pancakes]: {
-    image: images.Pancakes,
-    value: categories.Pancakes,
-  },
+  // [categories.Pancakes]: {
+  //   image: images.Pancakes,
+  //   value: categories.Pancakes,
+  // },
   [categories.Soup]: {
     image: images.Soup,
     value: categories.Soup,
+  },
+  [categories.Alcohol]: {
+    image: images.Alcohol,
+    value: categories.Alcohol,
+  },
+  [categories.EastFood]: {
+    image: images.EastFood,
+    value: categories.EastFood,
+  },
+  [categories.Flour]: {
+    image: images.Flour,
+    value: categories.Flour,
+  },
+  [categories.HomeFood]: {
+    image: images.HomeFood,
+    value: categories.HomeFood,
+  },
+  [categories.Meat]: {
+    image: images.Meat,
+    value: categories.Meat,
+  },
+  [categories.Kebab]: {
+    image: images.Kebab,
+    value: categories.Kebab,
+  },
+  [categories.Salad]: {
+    image: images.Salad,
+    value: categories.Salad,
+  },
+  [categories.Snacks]: {
+    image: images.Snacks,
+    value: categories.Snacks,
   },
 };
 
@@ -49,7 +85,6 @@ export const categoryNamesArray = Object.keys(placeholderCategories);
 
 const FoodCategoriesNavbar = ({ selectedCategory, possibleCategoryNames = [] }) => {
   const underScoreAnimation = useRef(new Animated.Value(0)).current;
-
   useEffect(() => {
     if (!selectedCategory) return;
 
@@ -69,17 +104,12 @@ const FoodCategoriesNavbar = ({ selectedCategory, possibleCategoryNames = [] }) 
     if (!flatListRef?.current) return;
     if (!possibleCategoryNames) return;
 
-    console.log("selectedCategory: ", selectedCategory);
-
     const indexOfSelectedCategory = possibleCategoryNames.findIndex(
       (categoryName) =>
         placeholderCategories[categoryName].value === selectedCategory,
     );
-    console.log("indexOfSelectedCategory: ", indexOfSelectedCategory);
 
     if (indexOfSelectedCategory < 0) return;
-
-    console.log("scrolling to: ", indexOfSelectedCategory);
 
     flatListRef.current.scrollToIndex({
       index: indexOfSelectedCategory,

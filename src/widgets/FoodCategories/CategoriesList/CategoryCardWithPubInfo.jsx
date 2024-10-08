@@ -6,7 +6,6 @@ import { GetShippingTimeString } from "../../../shared/utils/time";
 import { useTranslation } from "react-i18next";
 
 const CategoryCardWithPubInfo = ({ category, pub, usePubBg, distance }) => {
-  console.log("use pub bg: ", usePubBg);
   const { t } = useTranslation();
   const imagePath =
     ENV.API_HTTP_URL +
@@ -27,7 +26,7 @@ const CategoryCardWithPubInfo = ({ category, pub, usePubBg, distance }) => {
       {/* Image container */}
       <View
         style={{
-          height: 160, 
+          height: 160,
           paddingVertical: 10,
           overflow: "hidden",
           borderRadius: 26,
@@ -45,7 +44,7 @@ const CategoryCardWithPubInfo = ({ category, pub, usePubBg, distance }) => {
             alignItems="center"
             zIndex={10}
             opacity={0.7}
-            style={{ height: "110%" }}
+            style={{ height: "120%" }}
           ></View>
         )}
         {category.image_file_name && (
@@ -119,21 +118,46 @@ const CategoryCardWithPubInfo = ({ category, pub, usePubBg, distance }) => {
             min
           </Text>
           <View
-            flex={1}
             justifyContent="flex-end"
             alignItems="center"
             flexDir="row"
-            gap={1}
+            gap={3}
+            flex={1}
           >
-            <View style={{ width: 15, height: 15 }}>
-              <Image
-                source={images.Locaiton}
-                style={{ width: "100%", height: "100%" }}
-              />
+            {/* shipping price */}
+            <View
+              justifyContent="flex-end"
+              alignItems="center"
+              flexDir="row"
+              gap={1}
+            >
+              <View style={{ width: 15, height: 15 }}>
+                <Image
+                  source={images.WheelBlack}
+                  style={{ width: "100%", height: "100%" }}
+                />
+              </View>
+              <Text style={{ fontSize: 14, fontWeight: "bold" }}>
+                {Math.floor(pub.shipping_price)} Lei
+              </Text>
             </View>
-            <Text style={{ fontSize: 14, fontWeight: "bold" }}>
-              {(distance / 1000).toFixed(1)} km
-            </Text>
+            {/* distance */}
+            <View
+              justifyContent="flex-end"
+              alignItems="center"
+              flexDir="row"
+              gap={1}
+            >
+              <View style={{ width: 15, height: 15 }}>
+                <Image
+                  source={images.Locaiton}
+                  style={{ width: "100%", height: "100%" }}
+                />
+              </View>
+              <Text style={{ fontSize: 14, fontWeight: "bold" }}>
+                {(distance / 1000).toFixed(1)} km
+              </Text>
+            </View>
           </View>
         </View>
       </View>

@@ -19,6 +19,7 @@ export const ordersApi = createApi({
         url: `/api/client/orders/`,
         method: "POST",
         body: {
+          delivery_price: +order.deliveryPrice,
           town: order.town,
           comments: order.comments,
           full_address: order.fullAddress,
@@ -31,6 +32,8 @@ export const ordersApi = createApi({
             dish_id: +dish.dishID,
           })),
           order_type: orderTypes.deliveryOrderType,
+          lat: order.lat,
+          lng: order.lng
         },
         headers: {
           "Content-Type": "application/json",

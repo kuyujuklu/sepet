@@ -7,8 +7,9 @@ import { useSelector } from "react-redux";
 import { selectBasket } from "../../features/store/basket/basketSlice";
 import { Text, View } from "native-base";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import { Image, Pressable, TouchableOpacity } from "react-native";
+import { Dimensions, Image, Pressable, TouchableOpacity } from "react-native";
 import { images } from "../../app/images/images";
+import NavbarExpandMoreCloseArea from "./NavbarExpandMoreCloseArea";
 
 const Navbar = ({ routeName }) => {
   const [expanded, setExpanded] = useState(false);
@@ -25,79 +26,85 @@ const Navbar = ({ routeName }) => {
     navigator.navigate("Basket");
   };
 
+
   return (
-    <View style={styles.navbarWrapper}>
-      <View style={styles.navbarContainer}>
-        <NavbarLink
-          imageSource={images.Home}
-          to={"Home"}
-          isSelected={routeName === "Home"}
-        />
-        <View>
-          <TouchableOpacity
-            style={styles.navbarButton}
-            onPress={() => {
-              navigator.navigate("FoodCategories", { foodCategory: "" });
-            }}
-          >
-            <View
-              style={{
-                flex: 1,
-                alignItems: "center",
-                justifyContent: "center",
+    <>        
+      <View style={{...styles.navbarWrapper, overflow: "visible"}}>
+        <View style={styles.navbarContainer}>
+          <NavbarLink
+            imageSource={images.Home}
+            to={"Home"}
+            isSelected={routeName === "Home"}
+          />
+          <View>
+            <TouchableOpacity
+              style={styles.navbarButton}
+              onPress={() => {
+                navigator.navigate("FoodCategories", { foodCategory: "" });
               }}
             >
-              <Image
-                style={{
-                  width: routeName === "FoodCategories" ? "80%" : "60%",
-                  height: routeName === "FoodCategories" ? "80%" : "60%",
-                }}
-                source={images.KnifeInPlateBlack}
-                alt="smthng"
-              />
-            </View>
-          </TouchableOpacity>
-        </View>
-        <View>
-          {basketCount > 0 && (
-            <Pressable zIndex={100} onPress={goToBasket}>
               <View
-                position={"absolute"}
-                top={1}
-                zIndex={100}
-                right={0}
-                height={5}
-                width={5}
-                background={"red.600"}
-                borderRadius={"full"}
-                alignItems={"center"}
-                justifyContent={"center"}
+                style={{
+                  flex: 1,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
               >
-                <Text color="white">{basketCount}</Text>
+                <Image
+                  style={{
+                    width: routeName === "FoodCategories" ? "80%" : "60%",
+                    height: routeName === "FoodCategories" ? "80%" : "60%",
+                  }}
+                  source={images.KnifeInPlateBlack}
+                  alt="smthng"
+                />
               </View>
-            </Pressable>
-          )}
-          <NavbarLink
-            imageSource={images.Cart}
-            to={"Basket"}
-            isSelected={routeName === "Basket"}
-          />
+            </TouchableOpacity>
           </View>
-        <NavbarLink
-          imageSource={images.OrderList}
-          to={"Orders"}
-          isSelected={routeName === "Orders"}
-          />
+          <View>
+            {basketCount > 0 && (
+              <Pressable zIndex={100} onPress={goToBasket}>
+                <View
+                  position={"absolute"}
+                  top={1}
+                  zIndex={100}
+                  right={0}
+                  height={5}
+                  width={5}
+                  background={"red.600"}
+                  borderRadius={"full"}
+                  alignItems={"center"}
+                  justifyContent={"center"}
+                >
+                  <Text color="white">{basketCount}</Text>
+                </View>
+              </Pressable>
+            )}
+            <NavbarLink
+              imageSource={images.Cart}
+              to={"Basket"}
+              isSelected={routeName === "Basket"}
+            />
+          </View>
           <NavbarLink
-            imageSource={images.Locaiton}
-            to={"SelectGeolocationPage"}
-            isSelected={routeName === "SelectGeolocationPage"}
+            imageSource={images.OrderList}
+            to={"Orders"}
+            isSelected={routeName === "Orders"}
           />
-          
-        <NavbarExpandMoreButton setExpanded={setExpanded} expanded={expanded} />
+
+          <NavbarExpandMoreButton
+            setExpanded={setExpanded}
+            expanded={expanded}
+          />
+        </View>
+        <NavbarExpandMore setExpanded={setExpanded} expanded={expanded} />
+
+        <NavbarExpandMoreCloseArea
+          isOpened={expanded}
+          closeExpandMore={() => setExpanded(false)}
+        />
       </View>
-      <NavbarExpandMore setExpanded={setExpanded} expanded={expanded} />
-    </View>
+    </>
   );
 };
 

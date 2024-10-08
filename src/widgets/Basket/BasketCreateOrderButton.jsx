@@ -5,19 +5,25 @@ import {
   selectBasket,
   selectBasketPubID,
 } from "../../features/store/basket/basketSlice";
-import { useGetPubInfoQuery } from "../../shared/api/pubs/pubsApi";
+import {
+  useGetNearbyPubsQuery,
+  useGetPubInfoQuery,
+} from "../../shared/api/pubs/pubsApi";
 import { useTranslation } from "react-i18next";
 import {
   alertStatuses,
   pushAlert,
 } from "../../features/store/alerts/alertSlice";
+import { selectGeolocation } from "../../features/store/geolocation/geolocationSlice";
+import { useCallback, useMemo } from "react";
 
-const BasketCreateOrderButton = ({ itemsPrice, isClosed}) => {
+const BasketCreateOrderButton = ({ itemsPrice, isClosed }) => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
   const basket = useSelector(selectBasket);
   const pubID = useSelector(selectBasketPubID);
   const navigator = useNavigation();
+  const location = useSelector(selectGeolocation);
 
   const basketIsEmpty = !basket || Object.keys(basket).length === 0;
 
@@ -27,11 +33,17 @@ const BasketCreateOrderButton = ({ itemsPrice, isClosed}) => {
     isLoading,
   } = useGetPubInfoQuery({ pubID }, { pollingInterval: 20000, skip: !pubID });
 
-  const deliveryPrice = pubData?.pub?.shipping?.shipping_price || 0;
-  const smallOrderFee = 3;
+  const {
+    data: pubsData,
+    error: gettingPubsError,
+    isLoading: isPubsLoading,
+  } = useGetNearbyPubsQuery(
+    { coords: { lat: location?.lat, lng: location?.lng } },
+    { skip: !location, pollingInterval: 20000 },
+  );
+
 
   const handleButtonPress = () => {
-    console.log("LKSJDFLKDSJFL")
     if (isClosed) {
       dispatch(
         pushAlert({
@@ -45,8 +57,6 @@ const BasketCreateOrderButton = ({ itemsPrice, isClosed}) => {
 
     navigator.navigate("CreateOrder", {
       itemsPrice,
-      deliveryPrice,
-      smallOrderFee,
       pubID,
       shippingTimeFrom: pubData?.pub?.shipping?.shipping_time_from,
       shippingTimeTo: pubData?.pub?.shipping?.shipping_time_to,

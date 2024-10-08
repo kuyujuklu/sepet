@@ -1,9 +1,9 @@
-import { Image, Pressable, Text, View } from "react-native";
+import { Image, TouchableOpacity, View } from "react-native";
 import { styles } from "./navbar.style";
 
 const NavbarExpandMoreButton = ({ expanded, setExpanded }) => {
   return (
-    <Pressable
+    <TouchableOpacity
       style={styles.navbarButton}
       onPress={() => setExpanded(!expanded)}
     >
@@ -14,7 +14,7 @@ const NavbarExpandMoreButton = ({ expanded, setExpanded }) => {
           alt="smthng"
         />
       </View>
-    </Pressable>
+    </TouchableOpacity>
   );
 };
 

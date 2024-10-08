@@ -1,13 +1,26 @@
 export const categories = {
+  Flowers: "flowers",
   Asian: "asian",
   FastFood: "fast_food",
   Breakfast: "breakfast",
   Grill: "grill",
   Dessert: "dessert",
   Pasta: "pasta",
-  Pancakes: "pancakes",
   Soup: "soup",
+  Alcohol: "alcohol",
+  EastFood: "east_food",
+  Flour: "flour",
+  HomeFood: "home_food",
+  Kebab: "kebab",
+  Salad: "salad",
+  Snacks: "snacks",
+  Meat: "meat",
 };
+
+export const deliveryTypes = {
+  own: "own",
+  deliveryService: "delivery_service"
+}
 
 export const orderPaymentTypes = {
   cardOffline: "card_offline",
@@ -22,6 +35,7 @@ export const orderStatuses = {
   notHandled: "not_handled",
   handled: "handled",
   preparing: "preparing",
+  atCourier: "at_courier",
   completed: "completed",
   canceled: "canceled",
 };

@@ -6,6 +6,7 @@ import {
 } from "react-native";
 import { inputStyles, inputStylesConstants } from "./inputs.styles";
 import { useEffect, useRef, useState } from "react";
+import { useNavigation } from "@react-navigation/native";
 
 const Input = ({
   value,
@@ -16,10 +17,29 @@ const Input = ({
   inputStyles: inputStyleFromParams,
   secureTextEntry,
   inputParams,
+  disabled,
+
+  route,
 }) => {
+  const navigator = useNavigation();
   const [focusedAnimation] = useState(new Animated.Value(0));
   const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef(null);
+  const [isBluredPage, setIsBluredPage] = useState(false);
+  useEffect(() => {
+    const unsubscribeFocus = navigator.addListener("focus", () => {
+      setIsBluredPage(false);
+    });
+    const unsubscribeBlur = navigator.addListener("blur", () => {
+      setIsBluredPage(true);
+    });
+
+    // Return the function to unsubscribe from the event so it gets removed on unmount
+    return () => {
+      unsubscribeFocus();
+      unsubscribeBlur();
+    };
+  }, [navigator, isFocused, errorValue, value]);
 
   let borderColor = errorValue
     ? inputStylesConstants.errorText
@@ -34,9 +54,9 @@ const Input = ({
     Animated.timing(focusedAnimation, {
       toValue: isFocused || value || errorValue ? 1 : 0,
       duration: 100,
-      useNativeDriver: false,
+      useNativeDriver: true,
     }).start();
-  }, [isFocused]);
+  }, [isFocused, value]);
 
   return (
     <Animated.View style={{ marginTop: 18 }}>
@@ -50,20 +70,22 @@ const Input = ({
         value={value}
         onChangeText={setValue}
         keyboardType={keyboardType}
+        editable={!disabled}
         style={{
           backgroundColor: "#fff",
           ...inputStyles.inputField,
           borderColor: borderColor,
           ...inputStyleFromParams,
         }}
+        d
         // placeholderTextColor="#444"
       />
 
       {/* LABEL */}
       <TouchableWithoutFeedback
         onPress={() => {
+          if (disabled) return;
           inputRef.current?.focus();
-          console.log("PRESSED ON TOUCHABLE OPACITY");
         }}
         style={{ borderWidth: 1, borderColor: "#000", backgroundColor: "#000" }}
       >
@@ -71,26 +93,38 @@ const Input = ({
           style={[
             inputStyles.labelContainer,
             {
-              transform: [
-                {
-                  scale: focusedAnimation.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [1, 0.75],
-                  }),
-                },
-                {
-                  translateY: focusedAnimation.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [12, -30],
-                  }),
-                },
-                {
-                  translateX: focusedAnimation.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [16, -16],
-                  }),
-                },
-              ],
+              transform: isBluredPage
+                ? [
+                    {
+                      scale: 1,
+                    },
+                    {
+                      translateY: 12,
+                    },
+                    {
+                      translateX: 16,
+                    },
+                  ]
+                : [
+                    {
+                      scale: focusedAnimation.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [1, 0.75],
+                      }),
+                    },
+                    {
+                      translateY: focusedAnimation.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [12, -30],
+                      }),
+                    },
+                    {
+                      translateX: focusedAnimation.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [16, -16],
+                      }),
+                    },
+                  ],
             },
           ]}
         >

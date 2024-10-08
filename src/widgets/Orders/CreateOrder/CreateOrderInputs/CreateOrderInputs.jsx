@@ -3,6 +3,7 @@ import InputWithValidation from "../../../Inputs/InputWithValidation";
 import {
   validateFullAddress,
   validatePhoneNumber,
+  validatePhoneNumberOmitEmpty,
   validateTown,
 } from "../../../../shared/validation/validators/order/order-validator";
 import { useTranslation } from "react-i18next";
@@ -44,6 +45,7 @@ const CreateOrderInputs = ({
         </Text>
         <View flex={1}>
           <InputWithValidation
+          disabled={true}
             value={phoneNumber}
             setValue={setPhoneNumber}
             label={t(
@@ -68,7 +70,8 @@ const CreateOrderInputs = ({
               "create_order_page.additional_data.inputs.second_phone_number.label",
             )}
             keyboardType={"number-pad"}
-            validatedOutside={validatedOutside}
+            validatedOutside={validatedOutside }
+            validators={[validatePhoneNumberOmitEmpty]}
           />
         </View>
       </View>

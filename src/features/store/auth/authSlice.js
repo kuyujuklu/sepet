@@ -7,6 +7,7 @@ export const authSlice = createSlice({
     isRequiringAuthentication: false,
     client: {
       phone: "",
+      name: "",
     },
     refetchClient: false
   },
@@ -30,7 +31,7 @@ export const authSelectSetIsRequiringAuthentication = (state) =>
 export const authSelectIsAuthRequiredAtApplicationStart = (state) =>
   state.auth.isAuthRequiredAtApplicationStart;
 
-export const selectClient = (state) => state.auth.client;
+export const selectClient = (state) => state?.auth.client;
 
 export const selectRefetchClient = (state) => state.auth.refetchClient
 

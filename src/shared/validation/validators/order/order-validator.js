@@ -25,10 +25,10 @@ export const validateFullAddress = (fullAddress) => {
     return appErrors.fieldIsRequired;
   }
 
-  const result = validation.ValidateLength(fullAddress, 10, 200);
+  const result = validation.ValidateLength(fullAddress, 6, 200);
   switch (result) {
     case appErrors.min:
-      return orderValidationErrors.fullAddressMinLengthIs10;
+      return orderValidationErrors.fullAddressMinLengthIs6;
     case appErrors.max:
       return orderValidationErrors.fullAddressMaxLengthIs100;
   }
@@ -36,6 +36,18 @@ export const validateFullAddress = (fullAddress) => {
   return null;
 };
 
+export const validatePhoneNumberOmitEmpty = (phoneNumber) => {
+  if (!phoneNumber) {
+    return null
+  }
+
+  const result = validation.ValidatePhone(phoneNumber);
+  if (result) {
+    return result;
+  }
+
+  return null;
+};
 export const validatePhoneNumber = (phoneNumber) => {
   if (!phoneNumber) {
     return appErrors.fieldIsRequired;

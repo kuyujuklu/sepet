@@ -4,7 +4,7 @@ import { images } from "../../../app/images/images";
 import { ConvertApiTimeToLocalDayMonthYear } from "../../../shared/utils/time";
 import { orderStatuses } from "../../../app/static-data/data";
 import { useEffect, useMemo, useRef } from "react";
-import { TouchableOpacity } from "react-native";
+import { Pressable, TouchableOpacity } from "react-native";
 import {
   useGetNearbyPubsQuery,
   useGetPubInfoQuery,
@@ -17,40 +17,11 @@ import {
 } from "../../../features/store/alerts/alertSlice";
 import forbidPropTypes from "eslint-plugin-react/lib/rules/forbid-prop-types";
 import { setBasket } from "../../../features/store/basket/basketSlice";
-import { useNavigation } from "@react-navigation/native";
+import { Link, useNavigation } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import { useRateOrderMutation } from "../../../shared/api/ordersApi/ordersApi";
 import RateOrderButton from "./RateOrderButton";
-
-const getOrderStatusText = (status) => {
-  switch (status) {
-    case orderStatuses.notHandled:
-      return "order_page.order_card.order_statuses.not_handled";
-    case orderStatuses.handled:
-      return "order_page.order_card.order_statuses.handled";
-    case orderStatuses.preparing:
-      return "order_page.order_card.order_statuses.preparing";
-    case orderStatuses.completed:
-      return "order_page.order_card.order_statuses.completed";
-    case orderStatuses.canceled:
-      return "order_page.order_card.order_statuses.canceled";
-  }
-};
-
-const getOrderStatusColor = (status) => {
-  switch (status) {
-    case orderStatuses.notHandled:
-      return "red.300";
-    case orderStatuses.handled:
-      return "yellow.500";
-    case orderStatuses.preparing:
-      return "orange.400";
-    case orderStatuses.completed:
-      return "emerald.600";
-    case orderStatuses.canceled:
-      return "gray.600";
-  }
-};
+import { getOrderStatusColor, getOrderStatusText } from "../../../shared/utils/order-utils";
 
 const OrderCard = ({ order, allPubs }) => {
   const { t } = useTranslation();
@@ -59,6 +30,11 @@ const OrderCard = ({ order, allPubs }) => {
   const positionsCount = useMemo(() => {
     return order?.dishes?.reduce((acc, item) => acc + item.count, 0);
   }, [order]);
+
+  const goToOrderInfoPage = () => {
+    if(!order) return;
+    navigator.navigate("OrderInfoPage", {orderID: order?.id})
+  }
 
   const location = useSelector(selectGeolocation);
 
@@ -89,19 +65,30 @@ const OrderCard = ({ order, allPubs }) => {
       return;
     }
 
-    const openedPubs = pubsData.pubs.filter((pub) => pub.isOpen);
-
     let foundID = false;
-    for (const pub of openedPubs) {
+    let foundPub = null;
+    for (const pub of pubsData.pubs) {
       if (order.pub_id === pub.id) {
         foundID = true;
+        foundPub = pub;
       }
     }
 
-    if (!foundID) {
+    if (!foundPub || !foundID) {
       dispatch(
         pushAlert({
           title: t("errors.this_pub_is_not_delivering_in_your_area"),
+          status: alertStatuses.error,
+          delay: 3000,
+        }),
+      );
+      return;
+    }
+
+    if(!foundPub?.isOpen) {
+      dispatch(
+        pushAlert({
+          title: t("errors.in_this_time_delivery_not_working"),
           status: alertStatuses.error,
           delay: 3000,
         }),
@@ -125,7 +112,6 @@ const OrderCard = ({ order, allPubs }) => {
         }
         break;
       }
-      console.log("Dish id: ", dish_id, " count: ", count);
       if (!dishFound) {
         dispatch(
           pushAlert({
@@ -163,91 +149,93 @@ const OrderCard = ({ order, allPubs }) => {
   }
 
   return (
-    <View background={"white"} shadow={"9"} rounded="2xl" px="5" py="2">
-      <View flex={1} justifyContent="center" overflow="hidden">
-        <Text fontSize="19" fontFamily={AnonymousProBold}>
-          {t("order_page.order_card.order")} {order?.id}
-        </Text>
-      </View>
-      <View
-        style={{ height: 90 }}
-        // borderWidth={1}
-        // borderColor={getOrderStatusColor(order?.status) || "#aaa"}
-        w="full"
-        flexDir="row"
-      >
-        <View w="65%" h="full" justifyContent="space-between">
-          <View flex={1} justifyContent="center" overflow="hidden">
-            <Text fontSize="19" fontFamily={AnonymousProBold}>
-              {order?.pub_name}
-            </Text>
-          </View>
-          <View flex={1} justifyContent="center">
-            <View flexDir="row" alignItems="center" gap={2}>
-              <View width={17} height={17}>
-                <Image
-                  source={images.DishPlateBlack}
-                  alt=""
-                  style={{ width: "100%", height: "100%" }}
-                />
-              </View>
-              <Text fontSize="12">
-                {positionsCount} {t("order_page.order_card.positions")}
-              </Text>
-            </View>
-          </View>
-          <View flex={1} justifyContent="center">
-            <RateOrderButton
-              orderStatus={order.status}
-              rating={order.rating}
-              orderID={order.id}
-            />
-          </View>
+    <Pressable onPress={goToOrderInfoPage}>
+      <View background={"white"} shadow={"9"} rounded="2xl" px="5" py="2">
+        <View flex={1} justifyContent="center" overflow="hidden">
+          <Text fontSize="19" fontFamily={AnonymousProBold}>
+            {t("order_page.order_card.order")} {order?.id}
+          </Text>
         </View>
-        <View w="90%" h="full" justifyContent="space-between">
-          <View flex={1} justifyContent="center">
-            <View flexDir="row" alignItems="center" gap={2}>
-              <Text
-                fontWeight="bold"
-                color={getOrderStatusColor(order?.status)}
-              >
-                {t(getOrderStatusText(order?.status))}
+        <View
+          style={{ height: 90 }}
+          // borderWidth={1}
+          // borderColor={getOrderStatusColor(order?.status) || "#aaa"}
+          w="full"
+          flexDir="row"
+        >
+          <View w="65%" h="full" justifyContent="space-between">
+            <View flex={1} justifyContent="center" overflow="hidden">
+              <Text fontSize="19" fontFamily={AnonymousProBold}>
+                {order?.pub_name}
               </Text>
             </View>
-          </View>
-          <View flex={1} justifyContent="center">
-            <View flexDir="row" alignItems="center" gap={2}>
-              <View width={15} height={15}>
-                <Image
-                  source={images.CalendarBlack}
-                  alt=""
-                  style={{ width: "100%", height: "100%" }}
-                />
-              </View>
-              <Text fontSize="12">
-                {ConvertApiTimeToLocalDayMonthYear(order?.created_time)}
-              </Text>
-            </View>
-          </View>
-          <View flex={1} justifyContent="center">
-            <TouchableOpacity onPress={handleRepeatClick}>
+            <View flex={1} justifyContent="center">
               <View flexDir="row" alignItems="center" gap={2}>
-                <View width={15} height={15}>
+                <View width={17} height={17}>
                   <Image
-                    source={images.AgainBlack}
+                    source={images.DishPlateBlack}
                     alt=""
                     style={{ width: "100%", height: "100%" }}
                   />
                 </View>
                 <Text fontSize="12">
-                  {t("order_page.order_card.repeat_button")}
+                  {positionsCount} {t("order_page.order_card.positions")}
                 </Text>
               </View>
-            </TouchableOpacity>
+            </View>
+            <View flex={1} justifyContent="center">
+              <RateOrderButton
+                orderStatus={order.status}
+                rating={order.rating}
+                orderID={order.id}
+              />
+            </View>
+          </View>
+          <View w="90%" h="full" justifyContent="space-between">
+            <View flex={1} justifyContent="center">
+              <View flexDir="row" alignItems="center" gap={2}>
+                <Text
+                  fontWeight="bold"
+                  color={getOrderStatusColor(order?.status)}
+                >
+                  {t(getOrderStatusText(order?.status))}
+                </Text>
+              </View>
+            </View>
+            <View flex={1} justifyContent="center">
+              <View flexDir="row" alignItems="center" gap={2}>
+                <View width={15} height={15}>
+                  <Image
+                    source={images.CalendarBlack}
+                    alt=""
+                    style={{ width: "100%", height: "100%" }}
+                  />
+                </View>
+                <Text fontSize="12">
+                  {ConvertApiTimeToLocalDayMonthYear(order?.created_time)}
+                </Text>
+              </View>
+            </View>
+            <View flex={1} justifyContent="center">
+              <TouchableOpacity onPress={handleRepeatClick}>
+                <View flexDir="row" alignItems="center" gap={2}>
+                  <View width={15} height={15}>
+                    <Image
+                      source={images.AgainBlack}
+                      alt=""
+                      style={{ width: "100%", height: "100%" }}
+                    />
+                  </View>
+                  <Text fontSize="12">
+                    {t("order_page.order_card.repeat_button")}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </View>
-    </View>
+    </Pressable>
   );
 };
 
