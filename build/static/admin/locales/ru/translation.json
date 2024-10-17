@@ -1,5 +1,11 @@
 {
     "test": "ТЕСТ",
+    "gender": {
+        "male": "Мужской",
+        "female": "Женский"
+    },
+    "yes": "Да",
+    "no": "Нет",
     "errors": {
         "something_went_wrong": "Что-то пошло не так. Попробуйте позже.",
         "unknown_error": "Произошла неизвестная ошибка. Попробуйте позже.",
@@ -11,7 +17,12 @@
         "file_is_not_an_image": "Файл не является изображением.",
         "invalid_file": "Неверный файл.",
         "invalid_file_extension": "Неверное расширение файла.",
-        "pub_limit_exceeded": "Превышен лимит заведений. Улучшите тариф для добавления новых заведений."
+        "pub_limit_exceeded": "Превышен лимит заведений. Улучшите тариф для добавления новых заведений.",
+        "courier": {
+            "courier_not_found": "Курьер не найден",
+            "courier_id_is_invalid": "ID курьера не верное"
+        },
+        "field_must_be_number": "Поле должно быть числом" 
     },
     "client": {
         "pub_info": {
@@ -63,6 +74,11 @@
         }
     },
     "admin": {
+        "delivery_types": {
+            "own": "Собственная",
+            "delivery_service": "Служба доставки"
+        },
+        "Save": "Сохранить",
         "logout": "Выход",
         "language": "Язык",
         "images": {
@@ -174,16 +190,18 @@
                 "order_not_found": "Заказ не найден, попробуйте позже",
                 "order_statuses": {
                     "not_handled": "Новый",
-                    "handled": "Готовится",
-                    "preparing": "У курьера",
+                    "handled": "Обработан",
+                    "preparing": "Готовится",
+                    "at_courier": "У курьера",
                     "completed": "Доставлен",
                     "canceled": "Отменен"
                 },
                 "order_filters": {
                     "all": "Активные",
                     "not_handled": "Новые",
-                    "handled": "Готовятся",
-                    "preparing": "У курьера",
+                    "handled": "Обработаны",
+                    "preparing": "Готовятся",
+                    "at_courier": "У курьера",
                     "completed": "Доставлены",
                     "canceled": "Отменены"
                 },
@@ -195,6 +213,11 @@
                 "order_position": {
                     "pieces_shortcut": "шт",
                     "add_dish_button":"Добавить блюдо"
+                },
+                "order_courier_info": {
+                    "set_status_to_preparing_for_couriers": "Назначьте заказу статус готовится чтобы курьеры видели его",
+                    "searching_for_couriers": "Ищем курьера",
+                    "courier_was_found": "Курьер найден"
                 },
                 "table_number": "Номер столика",
                 "town": "Город",
@@ -222,6 +245,12 @@
                 "shipping_work_hours": {
                     "label": "Часы работы доставки"
                 },
+                "shipping_delivery_type": {
+                    "headline": "Способ доставки"
+                },
+                "shipping_add_commission_to_dish_prices": {
+                    "headline": "Добавлять комиссию службы доставки к цене товаров"
+                },
                 "shipping_map": {
                     "checkmark_headline": "Если ваше заведение имеет доставку поставьте галочку",
                     "checkmark_label": "Доставка",
@@ -240,6 +269,7 @@
             "add_category_button": "Добавить категорию",
             "category_types": {
                 "asian": "Азиатская кухня",
+                "flowers": "Цветы",
                 "fast_food": "Фастфуд",
                 "breakfast": "Завтрак",
                 "grill": "Грилль",
@@ -247,7 +277,15 @@
                 "pasta": "Паста",
                 "pancakes": "Блины",
                 "soup": "Супы",
-                "other": "Другое"
+                "other": "Другое",
+                "alcohol": "Алкоголь",
+                "east_food": "Восточная кухня",
+                "flour": "Мучные блюда",
+                "home_food": "Домашняя еда",
+                "kebab": "Кебаб",
+                "salad": "Салаты",
+                "snacks": "Закуски",
+                "meat": "Мясные блюда"
             }
         },
         "dishes": {
@@ -385,6 +423,60 @@
                 "headline": "Удалить блюдо из заказа",
                 "warning": "Вы уверены, что хотите удалить блюдо из заказа?",
                 "delete_button": "Удалить"
+            },
+            "courier_reserve_order_popup": {
+                "headline": "Вы уверены что хотите взять заказ"
+            }
+        }
+    },
+    "courier": {
+        "order_payment_types": {
+            "cash": "Наличными",
+            "card_offline": "Картой курьеру",
+            "not_proceeded": "Не указан"
+        },
+        "courier_order_types": {
+            "available": "Доступные",
+            "active": "Активные",
+            "completed": "Доставленные"
+        },
+        "courier_order": {
+            "reserve_order": "Взять заказ",
+            "set_order_to_completed": "Доставлен",
+            "set_order_to_canceled": "Отменить заказ",
+            "order": "Заказ",
+            "where": "Куда",
+            "client_name": "Имя клиента",
+            "client_main_phone": "Основной телефон клиента",
+            "client_second_phone": "Доп. телефон клиента",
+            "comments":"Комментарии",
+            "positions": "Позиции",
+            "products_price": "Цена продуктов",
+            "delivery_price": "Цена доставки",
+            "total_from_client": "Всего с клиента",
+            "pieces_shortcut": "шт",
+            "you_reserved_order": "Вы взяли заказ, отправляйтесь в ресторан чтобы забрать его",
+            "you_delivered_order": "Вы доставили заказ, посмотреть информацию о нем можно в разделе доставленные"
+        },
+        "courier_profile_inputs": {
+            "headline": "Ваши данные",
+            "name": {
+                "label": "Фамилия Имя"
+            },
+            "phone_number": {
+                "label": "Номер телефона"
+            },
+            "gender": {
+                "label": "Пол"
+            },
+            "birth_date": {
+                "label": "Дата рождения"
+            },
+            "location": {
+                "label": "Место проживаня"
+            },
+            "telegram": {
+                "label": "Telegram"
             }
         }
     }

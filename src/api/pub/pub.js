@@ -180,12 +180,58 @@ export const pub = createApi({
             }),
             invalidatesTags: ["Pub"],
         }), 
-        setShippingPrice: builder.mutation({
-            query: ({ companyID, pubID, price }) => ({
+        setShippingPrices: builder.mutation({
+            query: ({ companyID, pubID, prices }) => ({
                 url: `/api/company/${companyID}/pubs/${pubID}/shipping-price`,
                 method: "POST",
                 body: {
-                    "price": +price,
+                    "prices": prices,
+                },
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }),
+            invalidatesTags: ["Pub"],
+        }), 
+        removeCourier: builder.mutation({
+            query: ({ companyID, pubID, courierID }) => ({
+                url: `/api/company/${companyID}/pubs/${pubID}/couriers/${courierID}`,
+                method: "Delete",
+            }),
+            invalidatesTags: ["Pub"],
+        }),
+        addCourier: builder.mutation({
+            query: ({ companyID, pubID, courierID }) => ({
+                url: `/api/company/${companyID}/pubs/${pubID}/couriers`,
+                method: "POST",
+                body: {
+                    courier_id: +courierID,
+                },
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }),
+            invalidatesTags: ["Pub"],
+        }),
+        updateDeliveryType: builder.mutation({
+            query: ({ companyID, pubID, deliveryType }) => ({
+                url: `/api/company/${companyID}/pubs/${pubID}/delivery-type`,
+                method: "POST",
+                body: {
+                    delivery_type: deliveryType
+                },
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }),
+            invalidatesTags: ["Pub"],
+        }), 
+        setAddCommissionToDishPrices: builder.mutation({
+            query: ({ companyID, pubID, addCommission }) => ({
+                url: `/api/company/${companyID}/pubs/${pubID}/add-commission-to-dish-prices`,
+                method: "POST",
+                body: {
+                    add_commission_to_dish_prices: addCommission
                 },
                 headers: {
                     "Content-Type": "application/json",
@@ -214,5 +260,9 @@ export const {
     useSetGeolocationMutation,
     useSetShippingTimeMutation,
     useSetShippingWorkHoursMutation,
-    useSetShippingPriceMutation,
+    useSetShippingPricesMutation,
+    useRemoveCourierMutation,
+    useAddCourierMutation,
+    useUpdateDeliveryTypeMutation,
+    useSetAddCommissionToDishPricesMutation,
 } = pub;

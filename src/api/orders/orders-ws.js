@@ -79,23 +79,23 @@ const setConnection = (connectionState) => {
   }
 }
 
-const configureSocket = (companyID, pubID) => {
+const configureSocket = async (companyID, pubID) => {
   if(isSocketConnecting || isSocketConnected) {
     return;
   }
 
   isSocketConnecting = true;
-  if(!accesstoken) {
-    const resp = refreshToken();
-    if(resp.ok) {
-      console.log("REFRESHED")
-      setaccesstoken(resp.accesstoken)
-    }
-    else {
-      isSocketConnecting = false;
-      return;
-    }
-};
+
+  
+  const resp = await refreshToken();
+  if(resp.ok) {
+    console.log("REFRESHED")
+    setaccesstoken(resp.accesstoken)
+  }
+  else {
+    isSocketConnecting = false;
+    return;
+  }
 
   // socket = new WebSocket(`ws://${document.location.host}/ws/orders/company/${companyID}/pub/${pubID}`);
   socket = new WebSocket(`${process.env.NODE_ENV === "production" ? "wss" : "ws"}://${process.env.API_SERV ?? window.location.host}/ws/orders/company/${companyID}/pub/${pubID}?access_token=${accesstoken}`);
@@ -132,7 +132,7 @@ const counterToReload = (counter) => () => {
   counter++
   console.log(counter)
 
-  if(counter === 1000) {
+  if(counter === 500) {
     window.location.reload() 
   }
 
@@ -141,7 +141,7 @@ const counterToReload = (counter) => () => {
     configureSocket(socketsCompanyID, socketsPubID);
 }
 
-setInterval(counterToReload(2), 2 * 1000);
+setInterval(counterToReload(2), 4 * 1000);
 
 //On successfully receive data uses callback from parameters
 export const subscribeOnOrdersWebSocket = (companyID, pubID, /*callback*/uploadReceivedData, /*callback*/setConnection) => {
@@ -149,7 +149,11 @@ export const subscribeOnOrdersWebSocket = (companyID, pubID, /*callback*/uploadR
   let socketIsInvalid = socket === null || companyID !== socketsCompanyID || pubID !== socketsPubID 
   if(socketIsInvalid) {
     socketsPubID = pubID;
-    socketsCompanyID = companyID;
+    socketsCompanyID = companyID; socket = null
+    isSocketConnected = false;
+    isSocketConnecting = false;
+    setConnection({state: SOCKET_DISCONNECTED_STATE})
+  
 
     configureSocket(companyID, pubID)  
   }

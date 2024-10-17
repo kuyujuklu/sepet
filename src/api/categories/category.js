@@ -11,7 +11,7 @@ export const category = createApi({
                 url: `/api/company/${companyID}/pubs/${pubID}/menus/${menuID}/categories/`,
                 method: "POST",
                 body: {
-                    category_type: data.categoryType,
+                    category_types: data.categoryTypes,
                     name: data.name,
                     visible: data.visible,
                     place: data.place,
@@ -28,7 +28,7 @@ export const category = createApi({
                 url: `/api/company/${companyID}/pubs/${pubID}/menus/${menuID}/categories/${categoryID}/`,
                 method: "PUT",
                 body: {
-                    category_type: data.categoryType,
+                    category_types: data.categoryTypes,
                     name: data.name,
                     visible: data.visible,
                     text_color: data.textColor,

@@ -49,7 +49,6 @@ const DeleteDishFromOrderPopup = () => {
     let newDishes = popupState?.newDishes;
 
     if (!companyID || !orderID || !pubID || !newDishes) {
-      console.log("NOT VALID DATA");
       return;
     }
 

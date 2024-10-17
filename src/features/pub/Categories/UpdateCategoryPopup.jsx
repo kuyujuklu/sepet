@@ -16,6 +16,7 @@ import { useTranslation } from "react-i18next";
 import { fixedCacheKeys } from "@/api/fixedCacheKeys";
 import { categoryTypes } from "@/static-data/data";
 import SelectWithLabel from "@/components/Inputs/SelectWithLabel";
+import Select from "../../../components/Inputs/Select";
 
 const UpdateCategoryPopup = () => {
     const { t } = useTranslation();
@@ -30,15 +31,17 @@ const UpdateCategoryPopup = () => {
     }, [dispatch]);
 
     const [name, setName] = useState("");
-    const [categoryType, setCategoryType] = useState(categoryTypes.Other.value);
     const [visible, setVisible] = useState(true);
     const [textColor, setTextColor] = useState("#ffffff");
     const [colorPickerOpened, setColorPickerOpened] = useState(true);
+    const [selectedCategoryTypes, setSelectedCategoryTypes] = useState([
+        categoryTypes.Other.value,
+      ]);
 
     useEffect(() => {
         if (popupState.initialCategory) {
             setName(popupState.initialCategory.name ?? "");
-            setCategoryType(popupState.initialCategory.category_type);
+            setSelectedCategoryTypes(popupState.initialCategory.category_types ?? []);
             setVisible(popupState.initialCategory.visible);
             setTextColor(
                 popupState.initialCategory.text_color
@@ -54,10 +57,27 @@ const UpdateCategoryPopup = () => {
         }
     }, [closePopup, data]);
 
+    const setCategoryTypeOnIndex = (value, index) => {
+      let types = [...selectedCategoryTypes];
+      types[index] = value;
+      setSelectedCategoryTypes(types);
+    };
+  
+    const addDish = () => {
+      let types = [...selectedCategoryTypes];
+      types.push(categoryTypes.Other.value);
+      setSelectedCategoryTypes(types);
+    };
+
+  const deleteDish = (index) =>{ 
+    let types = selectedCategoryTypes.filter((_, idx) => idx !== index);
+    setSelectedCategoryTypes(types);
+  }
+
     const handleButtonClick = () => {
         const category = {
             name,
-            categoryType,
+            categoryTypes: selectedCategoryTypes,
             visible,
             textColor,
         };
@@ -100,22 +120,83 @@ const UpdateCategoryPopup = () => {
                         value={name}
                         setValue={setName}
                     />
-                    <SelectWithLabel 
-                        label={t("admin.popups.create_category_popup.category_type")}
-                        wrapperClass="flex items-center gap-4"
-                        labelClassName={
-                            "text-sm sm:text-base text-gray-500 font-medium"
-                        }
-                        selectClassName={"text-xs sm:text-sm"}
-
-                        value={categoryType}
-                        setValue={setCategoryType}
-                        values={Object.keys(categoryTypes).map((key) => ({
-                            value: categoryTypes[key].value,
-                            text: t(categoryTypes[key].text),
-                        }))}
-
+                    
+          
+                    {selectedCategoryTypes && (
+            <div className="flex gap-5 items-center">
+              {/* Label */}
+              <span className="text-sm sm:text-base text-gray-500 font-medium">
+                {t("admin.popups.create_category_popup.category_type")}
+              </span>
+              {/* Types */}
+              <div className="flex gap-5 flex-row flex-wrap items-center">
+                {/* Selected category types */}
+                {selectedCategoryTypes.map((item, index) => (
+                  <div
+                    className="flex items-center gap-1"
+                    style={{ height: 35 }}
+                    key={index}
+                  >
+                    <Select
+                      selectClassName={"text-xs sm:text-sm"}
+                      value={item}
+                      setValue={(value) => setCategoryTypeOnIndex(value, index)}
+                      values={Object.keys(categoryTypes).map((key) => ({
+                        value: categoryTypes[key].value,
+                        text: t(categoryTypes[key].text),
+                      }))}
                     />
+                    <Button
+                      variant="contained"
+                      sx={{
+                        color: "white",
+                        bgcolor: "transparent",
+                        height: "100%",
+                        aspectRatio: 1,
+                        fontSize: ".7rem",
+                        fontWeight: "medium",
+                        padding: ".7rem 1rem",
+                        borderRadius: "10px",
+                        ":hover": {
+                          bgcolor: "transparent",
+                        },
+                      }}
+                      onClick={() => deleteDish(index)}
+                    >
+                      <img src="/static/admin/images/svg/trash-can-red.svg" />
+                    </Button>
+                  </div>
+                ))}
+                {/* Add category type button */}
+                <Button
+                  variant="contained"
+                  sx={{
+                    color: "white",
+                    bgcolor: "#3b82f6",
+                    fontSize: ".7rem",
+                    fontWeight: "medium",
+                    padding: ".5rem",
+                    borderRadius: "10px",
+                    width: "fit-content",
+                    ":hover": {
+                      bgcolor: "#3b82f6",
+                    },
+                  }}
+                  onClick={() => addDish()}
+                >
+                  <div
+                    style={{
+                      width: 18,
+                      height: 19,
+                      padding: "2px 2px 2px 2px",
+                    }}
+                  >
+                    <img src="/static/admin/images/svg/plus-white.svg" />
+                  </div>
+                </Button>
+              </div>
+            </div>
+          )}
                     {/* Pick color */}
                     <div>
                         <div className="flex items-center gap-10">

@@ -20,7 +20,11 @@ export const errorKeys = {
     logout: 'logout',
 
     //order
-    update_order_status: 'update_order_status'
+    update_order_status: 'update_order_status',
+
+    //courier
+    get_courier_info: 'courier.get_courier_info'
+
 };
 
 const initialState = {
@@ -40,6 +44,8 @@ const initialState = {
         [errorKeys.registration]: null,
         [errorKeys.authentication]: null,
         [errorKeys.logout]: null,
+        [errorKeys.get_courier_info]: null
+
     },
 };
 

@@ -14,6 +14,7 @@ import CategoryErrorsHandler from "./category/CategoryErrorsHandler";
 import DishErrorsHandler from "./dish/DishErrorsHandler";
 import CompanyErrorsHandler from "./company/CompanyErrorsHandler";
 import AuthErrorsHandler from "./auth/AuthErrorsHandler";
+import CourierErrorHandlers from "./courier/CourierErrorHandlers";
 
 const ErrorHandlers = () => {
     const {t} = useTranslation();
@@ -21,6 +22,7 @@ const ErrorHandlers = () => {
     const standardHandlingError = useSelector(selectStandardHandlingError);
 
     useEffect(() => {
+        console.log("st handling err: ", standardHandlingError)
         if (!standardHandlingError) return;
 
         if(!standardHandlingError.text) {
@@ -32,6 +34,8 @@ const ErrorHandlers = () => {
             dispatch(handleErrorStandardWay(null));
             return
         }
+
+        console.log("sthet: ",standardHandlingError.text)
 
 		if(standardHandlingError.text === appErrors.unauthorized) {
             dispatch(handleErrorStandardWay(null));
@@ -56,6 +60,7 @@ const ErrorHandlers = () => {
             <MenuErrorsHandler />
             <CategoryErrorsHandler />
             <DishErrorsHandler />
+            <CourierErrorHandlers />
         </>
     );
 };

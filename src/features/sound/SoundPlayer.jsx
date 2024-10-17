@@ -10,7 +10,6 @@ const SoundPlayer = () => {
     const [playNewOrderSound] = useSound("/static/admin/sounds/notification.mp3")
     useEffect(() => {
         if (newOrderSound && playNewOrderSound) {
-            console.log("PLAYING NEW ORDER SOUND")
             playNewOrderSound()
             dispatch(setSoundToPlayed(soundNames.newOrderSound))
         }

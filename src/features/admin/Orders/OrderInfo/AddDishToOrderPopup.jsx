@@ -75,7 +75,6 @@ const AddDishToOrderPopup = () => {
       !selectedDishID ||
       !intCount
     ) {
-      console.log("NOT VALID DATA");
       return;
     }
 
@@ -98,16 +97,16 @@ const AddDishToOrderPopup = () => {
 
   return (
     <Popup opened={popupState.opened} closeCallback={closePopup}>
-      <div className="py-4">
+      <div className="py-4 flex flex-col" style={{maxHeight: "85vh"}}>
         <header>
           <h1 className="font-bold text-center text-xl mb-10 mr-20">
             {t("admin.popups.add_dish_to_order_popup.headline")}
           </h1>
         </header>
-        <main className="mb-10">
-          <div className="flex flex-col gap-4">
+        <main className="mb-10 flex flex-col gap-4 overflow-scroll" style={{flexBasis: "80%"}}>
             {pubData?.dishes?.map((dish) => (
               <div
+              key={dish.id}
                 onClick={() => {
                   setSelectedDishID(dish.id);
                   if (!+count) {
@@ -118,7 +117,6 @@ const AddDishToOrderPopup = () => {
                 <Dish dish={dish} isSelected={dish.id === selectedDishID} />
               </div>
             ))}
-          </div>
         </main>
         <footer className="flex gap-10 justify-start text-center">
           {count !== null && selectedDishID && (

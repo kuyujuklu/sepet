@@ -8,7 +8,7 @@ import { useTranslation } from "react-i18next"
 import PhoneInput from "react-phone-input-2"
 
 //validatory is an array of functions that return a string error is value is not valid
-const PhoneNumberInput = ({value, setValue, style, validators}) => {
+const PhoneNumberInput = ({disabled, value, setValue, style, validators}) => {
     const {t} = useTranslation()
     const [error, setError] = useState("")
 
@@ -43,6 +43,7 @@ const PhoneNumberInput = ({value, setValue, style, validators}) => {
                 specialLabel=""
                 dropdownClass="hidden"
                 dropdownStyle={{display: "none"}}
+                disabled={disabled}
             />
             {
                 <div className={`${errorStyle.error} ${error && errorStyle.active}`}>

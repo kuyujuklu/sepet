@@ -33,6 +33,8 @@ const OrdersPreloader = ({ companyID, pubID }) => {
                 case UPDATE_EVENT_TYPE:
                     dispatch(updateOrder({ order: ordersData.order }));
                     break;
+                default:
+                    break;
             }
         },
         [dispatch]

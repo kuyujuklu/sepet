@@ -3,7 +3,7 @@ import { useSelector } from "react-redux";
 import { selectOrders } from "./ordersSlice";
 import OrderCard from "./OrderCard";
 import { GetUtcDateFromApiTime } from "@/utils/time";
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { orderStatuses } from "../../../static-data/data";
 import { useTranslation } from "react-i18next";
 import OrdersFilter, { orderFilters } from "./OrdersFilter";
@@ -12,7 +12,16 @@ const Orders = () => {
     const { t } = useTranslation();
     const orders = useSelector(selectOrders);
 
-    const [ordersFilter, setOrdersFilter] = useState(orderFilters.all);
+    
+    const navigate = useNavigate()
+
+    const setOrdersFilter = (value) => {
+        navigate(null, {state: {ordersFilter: value}})
+    }
+
+    const {state} = useLocation()
+    const ordersFilter = state?.ordersFilter ?? orderFilters.all
+
 
     const sortedOrders = useMemo(() => {
         const ordersNotFiltered = JSON.parse(JSON.stringify(orders));
@@ -57,7 +66,7 @@ const Orders = () => {
             </h1>
 
             <OrdersFilter
-                ordersFilter={ordersFilter}
+                ordersFilter={ordersFilter ?? orderFilters.all}
                 setOrdersFilter={setOrdersFilter}
             />
 

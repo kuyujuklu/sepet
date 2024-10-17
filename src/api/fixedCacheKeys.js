@@ -13,7 +13,11 @@ export const fixedCacheKeys = {
         set_shipping_availability: 'pubs.set_shipping_availability',
         set_preorder: 'pubs.set_preorder',
         set_shipping_time: 'pubs.set_shipping_time',
-        set_shipping_work_hours: 'pubs.set_shipping_work_hours'
+        set_shipping_work_hours: 'pubs.set_shipping_work_hours',
+        add_courier_error: 'pubs.add_courier',
+        remove_courier_error: 'pubs.remove_courier',
+        set_delivery_type: 'pubs.set_delivery_type',
+        set_add_commission_to_dish_prices: 'pubs.set_add_commission_to_dish_prices'
     },
     menus: {
         create_menu: 'menus.create_menu',
@@ -51,5 +55,12 @@ export const fixedCacheKeys = {
     order :{ 
         deleteDishFromOrder: 'order.delete_dish_from_order',
         addDishToOrder: 'order.add_dish_to_order'
+    },
+    courier: {
+        update_courier_info: 'courier.update_courier_info',
+        update_courier_image: 'courier.update_courier_image',
+        reserve_order: 'courier.reserve_order',
+        set_order_to_completed: 'courier.set_order_to_completed',
+        set_order_to_canceled: 'courier.set_order_to_canceled',
     }
 }

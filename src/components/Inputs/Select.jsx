@@ -4,7 +4,7 @@
 import inputStyle from "../../sass/custom/inputs.module.scss"
 
 //validatory is an array of functions that return a string error is value is not valid
-const Select = ({value, setValue, values, selectStyle, selectClassName, optionStyle, optionClassName}) => {
+const Select = ({disabled, value, setValue, values, selectStyle, selectClassName, optionStyle, optionClassName}) => {
     const handleChange = (e) => {
         const value = e.target.value
         setValue(value)
@@ -13,6 +13,7 @@ const Select = ({value, setValue, values, selectStyle, selectClassName, optionSt
     return (
         <div>
             <select 
+            disabled={disabled}
                 className={`${inputStyle.select} ${selectClassName}}`}
                 style={selectStyle}
                 value={value}

@@ -29,13 +29,16 @@ import SoundPlayer from "./features/sound/SoundPlayer"
 import PayForPubPopup from "./features/company/PayForPubPopup"
 import DeleteDishFromOrderPopup from "./features/admin/Orders/OrderInfo/DeleteDishFromOrderPopup"
 import AddDishToOrderPopup from "./features/admin/Orders/OrderInfo/AddDishToOrderPopup"
+import CourierPage from "./features/courier/CourierPage"
+import CourierInfoPopup from "./features/courier/popups/CourierInfoPopup"
+import AddCourierPopup from "./features/admin/ShippingAndPreorder/Shipping/AddCourierPopup"
+import CourierReserveOrderPopup from "./features/courier/popups/CourierReserveOrderPopup"
+import DeleteClientAccount from "./components/DeleteClientAccount/DeleteClientAccount"
 
 const App = () => {
   return (
     <div>
-      <Routes path="/">
-        <Route path="/admin/*" element={<AppInner />} />
-      </Routes>
+      <AppInner />
     </div>
   )
 }
@@ -59,10 +62,8 @@ const AppInner = () => {
       className=""
     >
       <Routes>
-        <Route path="/auth/registration" element={<Registration />} />
-        <Route path="/auth/authentication" element={<Authentication />} />
-        <Route path="/company" element={<CompanyPage />} />
-        <Route path="/pub/:pubID/*" element={<AdminPanel />} />
+        <Route path="/admin/*" element={<AdminInner />} />
+        <Route path="/courier/*" element={<CourierPage />} />
       </Routes>
       
       <Alerts />
@@ -102,8 +103,26 @@ const Popups =() => {
 
       <DeleteDishFromOrderPopup />
       <AddDishToOrderPopup />
+
+      <CourierInfoPopup />
+      <AddCourierPopup />
+      <CourierReserveOrderPopup />
+
     </>
   )
+}
+
+const AdminInner  = () => {
+  return (
+  <Routes>
+    <Route path="/auth/registration" element={<Registration />} />
+      <Route path="/auth/authentication" element={<Authentication />} />
+      <Route path="/company" element={<CompanyPage />} />
+      <Route path="/pub/:pubID/*" element={<AdminPanel />} />
+      <Route path="/delete-client*" element={<DeleteClientAccount />} />
+  </Routes>
+  )
+
 }
 
 export default App;

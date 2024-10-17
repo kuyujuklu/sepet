@@ -63,8 +63,6 @@ const UpdateDishPopup = () => {
             place: popupState.place ?? 1,
         };
 
-        console.log(dish)
-
         if (
             !popupState.companyID ||
             !popupState.pubID ||

@@ -1,5 +1,11 @@
 {
     "test": "Testul",
+    "gender": {
+        "male": "Masculin",
+        "female": "Feminin"
+    },
+    "yes": "Da",
+    "no": "Nu",
     "errors": {
         "something_went_wrong": "Ceva nu a mers bine. Încercați mai târziu.",
         "unknown_error": "Ceva nu a mers bine. Încercați mai târziu.",
@@ -11,7 +17,11 @@
         "file_is_not_an_image": "Fișierul nu este o imagine.",
         "invalid_file": "Fișier invalid.",
         "invalid_file_extension": "Extensie de fișier invalidă.",
-        "pub_limit_exceeded": "A fost depășită limita de localități. Actualizați tariful pentru a adăuga noi localități."
+        "pub_limit_exceeded": "A fost depășită limita de localități. Actualizați tariful pentru a adăuga noi localități.",
+        "courier": {
+            "courier_not_found": "Curierul nu a fost găsit",
+            "courier_id_is_invalid": "ID-ul curierului nu este corect"
+        }
     },
     "client": {
         "pub_info": {
@@ -63,6 +73,11 @@
         }
     },
     "admin": {
+        "delivery_types": {
+            "own": "Proprietă",
+            "delivery_service": "Serviciul de livrare"
+        },
+        "Save": "Сохранить",
         "logout": "Ieşire",
         "language": "Limba",
         "images": {
@@ -174,16 +189,18 @@
                 "order_not_found": "Comanda nu a fost găsită, încercați mai târziu",
                 "order_statuses": {
                     "not_handled": "Nouă",
-                    "handled": "În pregătire",
-                    "preparing": "La curier",
+                    "handled": "Procesat",
+                    "preparing": "În pregătire",
+                    "at_courier": "La curier",
                     "completed": "Livrată",
                     "canceled": "Anulat"
                 },
                 "order_filters": {
                     "all": "Active",
                     "not_handled": "Noi",
-                    "handled": "În pregătire",
-                    "preparing": "La curier",
+                    "handled": "Procesate",
+                    "preparing": "În pregătire",
+                    "at_courier": "La curier",
                     "completed": "Livrate",
                     "canceled": "Anulate"
                 },
@@ -195,6 +212,11 @@
                 "order_position": {
                     "pieces_shortcut": "buc",
                     "add_dish_button":"Adăugați o poziție"
+                },
+                "order_courier_info": {
+                    "set_status_to_preparing_for_couriers": "Atribuiți starea comenzii în curs de pregătire, astfel încât curierii să o poată vedea",
+                    "searching_for_couriers": "Cautam curier",
+                    "courier_was_found": "Curier găsit"
                 },
                 "table_number": "Numărul mesei",
                 "town": "Oraș",
@@ -222,6 +244,12 @@
                 "shipping_work_hours": {
                     "label": "Orele de livrare"
                 },
+                "shipping_delivery_type": {
+                    "headline": "Metoda de livrare"
+                },
+                "shipping_add_commission_to_dish_prices": {
+                    "headline": "Adăuga comision pentru serviciul de livrare la prețul mărfurilor"
+                },
                 "shipping_map": {
                     "checkmark_headline": "Dacă unitatea dvs. oferă servicii de livrare, bifați această opțiune",
                     "checkmark_label": "Livrare",
@@ -241,13 +269,22 @@
             "category_types": {
                 "asian": "Bucătărie asiatică",
                 "fast_food": "Fast food",
+                "flowers": "Flori",
                 "breakfast": "Mic dejun",
                 "grill": "Grătar",
                 "dessert": "Deserturi",
                 "pasta": "Paste",
                 "pancakes": "Clătite",
                 "soup": "Supe",
-                "other": "Altele"
+                "other": "Altele",
+                "alcohol": "Alcool",
+                "east_food": "Bucătăria orientală",
+                "flour": "Mâncăruri de făină",
+                "home_food": "Mancare facuta acasa",
+                "kebab": "Kebab",
+                "salad": "Salate",
+                "snacks": "Gustări",
+                "meat": "Mâncăruri din carne"
             }
         },
         "dishes": {
@@ -386,6 +423,56 @@
                 "headline": "Scoateți un fel de mâncare din comandă",
                 "warning": "Sigur doriți să eliminați un fel de mâncare din comandă?",
                 "delete_button": "Șterge"
+            }
+        }
+    },
+    "courier": {
+        "order_payment_types": {
+            "cash": "Numerar",
+            "card_offline": "Cu cardul la curier",
+            "not_proceeded": "Nespecificat"
+        },
+        "courier_order_types": {
+            "available": "Disponibile",
+            "active": "Active",
+            "completed": "Livrate"
+        },
+        "courier_order": {
+            "reserve_order": "Ia ordine",
+            "set_order_to_completed": "Livrat",
+                "flowers": "Цветы",
+            "set_order_to_canceled": "Anulează comanda",
+            "order": "Ordin",
+            "where": "Unde",
+            "client_name": "Numele clientului",
+            "client_main_phone": "Numărul de telefon principal al clientului",
+            "client_second_phone": "Număr de telefon suplimentar al clientului",
+            "comments":"Comentarii",
+            "positions": "Poziții",
+            "products_price": "Pretul produselor",
+            "delivery_price": "Pret de livrare",
+            "total_from_client": "Total per client",
+            "pieces_shortcut": "buc"
+        },
+        "courier_profile_inputs": {
+            "headline": "Datele tale",
+            "name": {
+                "label": "Nume prenume"
+            },
+            "phone_number": {
+                "label": "Număr de telefon"
+            },
+            "gender": {
+                "label": "Genul"
+            },
+            "birth_date": {
+                "label": "Data nașterii"
+            },
+            "location": {
+                "label": "Locul de reședință"
+            },
+            "telegram": {
+                "label": "Telegram"
             }
         }
     }

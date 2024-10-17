@@ -31,17 +31,20 @@ const Authentication = () => {
     const dispatch = useDispatch();
 
     useEffect(() => {
-        if (data?.ok && data?.accesstoken) {
-            setaccesstoken(data.accesstoken);
-            dispatch(setAuthenticated(true));
-            dispatch(setRequireAuthenticationToFalse())
-            dispatch(company.util.resetApiState());
-            dispatch(auth.util.resetApiState());
-            navigate("/admin/company/");
-        }
+        (async function() {
+            if (data?.ok && data?.accesstoken) {
+                setaccesstoken(data.accesstoken);
+                dispatch(setAuthenticated(true));
+                dispatch(setRequireAuthenticationToFalse())
+                dispatch(company.util.resetApiState());
+                dispatch(auth.util.resetApiState());
+                navigate(data?.role === "company" ? "/admin/company/" : "/courier");
+            }
+        })()
     }, [data, dispatch, navigate]);
 
     useEffect(() => {
+        console.log("AUTH ERROR: ", error)
         if (!error) return;
         let newError = {...error};
 

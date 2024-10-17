@@ -74,7 +74,6 @@ const UpdatePubPopup = () => {
 
         let validationErrors = ValidatePub(pub);
         if (validationErrors.length > 0) {
-            console.log("validationErrors", validationErrors);
             return;
         }
 

@@ -8,27 +8,66 @@ import {
     Polygon,
     PolygonF,
 } from "@react-google-maps/api";
-import { useEffect, useMemo, useState } from "react";
+import { v4 as uuid } from "uuid";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import { selectShipping } from "./shippingSlice";
 import { useSetShippingMutation } from "@/api/pub/pub";
 import { googleMapSelectIsLoaded } from "../../../GoogleMapsLoader/googleMapsSlice";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import uniqolor from "uniqolor";
 
-const convertToPolygonShapes = (shapes) => {
-    if (!shapes) return [];
-    return shapes.map((shape) =>
-        shape.vertices.map((vertex) => ({ lat: vertex.lat, lng: vertex.lng }))
-    );
-};
+let lastShape = {vertices: [], shape_id: "", color: ""}
 
-const convertFromPolygonShapes = (shapes) => {
-    if (!shapes) return [];
-    return shapes.map((shape) => ({
-        vertices: shape.map((vertex) => ({ lat: vertex.lat, lng: vertex.lng })),
-    }));
-};
+function reverseArr(input) {
+    var ret = [];
+    for(var i = input.length-1; i >= 0; i--) {
+        ret.push(input[i]);
+    }
+    return ret;
+}
+const colors = [
+    "#DC143C",
+    "#9400D3",
+    "#7B68EE",
+    "#FF1493",
+    "#FF4500",
+    "#00BFFF",
+    "#FFD700",
+    "#00FFFF",
+    "#00FF7F",
+]
+
+const getNotUsedColor = (shapes) => {
+    if(!shapes) return colors[0]
+
+    const usedColors = new Set()
+    for(let i = 0; i < shapes.length; i++) {
+        usedColors.add(shapes[i].color)
+    }
+    for(let i = 0; i < colors.length; i++) {
+        if(!usedColors.has(colors[i])) {
+            return colors[i]
+        }
+    }
+
+    return uniqolor((Math.random() * 20000).toString()).color
+}
+
+// const convertToPolygonShapes = (shapes) => {
+//     if (!shapes) return [];
+//     return shapes.map((shape) =>
+//         shape.vertices.map((vertex) => ({ lat: vertex.lat, lng: vertex.lng }))
+//     );
+// };
+
+// const convertFromPolygonShapes = (shapes) => {
+//     if (!shapes) return [];
+//     return shapes.map((shape) => ({
+//         vertices: shape.map((vertex) => ({ lat: vertex.lat, lng: vertex.lng })),
+//     }));
+// };
 
 const Map = ({ pub }) => {
     const { t } = useTranslation();
@@ -61,7 +100,7 @@ const Map = ({ pub }) => {
     useEffect(() => {
         if (
             JSON.stringify(shapes) ===
-            JSON.stringify(convertToPolygonShapes(shippingFromState.shapes))
+            JSON.stringify(shippingFromState.shapes)
         ) {
             setShapesChanged(false);
             return;
@@ -73,77 +112,82 @@ const Map = ({ pub }) => {
     // upload shapes from state
     useEffect(() => {
         if (shippingFromState.shapes) {
-            const shapes = convertToPolygonShapes(shippingFromState.shapes);
-            setShapes(shapes);
+            let shapesJSON = JSON.stringify(shippingFromState.shapes)
+
+            setShapes(JSON.parse(shapesJSON));
         }
     }, [shippingFromState]);
 
     const [isDeletingPolygon, setIsDeletingPolygon] = useState(false);
 
-    const onMouseUp = (e, index) => {
+    const onMouseUp = (e, shapeID) => {
         if (isDeletingPolygon) {
-            setShapes((prev) => prev.filter((_, i) => i !== index));
+            setShapes((prev) => 
+                prev.filter((shape, i) => shape.shape_id !== shapeID)
+            );
             setIsDeletingPolygon(false);
             return;
         }
 
         if (polygonResizeVertex) {
-            let resizedShape = shapes[polygonResizeVertex.shapeID];
+            let resizedShape = shapes.find(shape => shape.shape_id === polygonResizeVertex.shapeID)
 
             if (!resizedShape) return;
 
-            resizedShape[polygonResizeVertex.vertex] = {
+            resizedShape.vertices[polygonResizeVertex.vertex] = {
                 lat: e.latLng.lat(),
                 lng: e.latLng.lng(),
             };
 
-            setShapes((prev) => [
-                ...prev.filter(
-                    (_, index) => index !== polygonResizeVertex.shapeID
-                ),
-                resizedShape,
-            ]);
+            let newShapes = [...shapes]
+            let index = newShapes.findIndex(shape => shape.shape_id === polygonResizeVertex.shapeID);
+            if(index === -1) return;
+
+            newShapes[index] = resizedShape;
+
+            setShapes(newShapes);
 
             setPolygonResizeVertex(null);
         }
 
         if (polygonResizeNewVertex) {
-            let resizedShape = shapes[polygonResizeNewVertex.shapeID];
+            let resizedShape = shapes.find(shape => shape.shape_id === polygonResizeNewVertex.shapeID)
 
             if (!resizedShape) return;
 
             let newLat =
                 e.latLng.lat() * 2 -
-                resizedShape[polygonResizeNewVertex.newVertexID - 1].lat;
+                resizedShape.vertices[polygonResizeNewVertex.newVertexID - 1].lat;
             let newLng =
                 e.latLng.lng() * 2 -
-                resizedShape[polygonResizeNewVertex.newVertexID - 1].lng;
+                resizedShape.vertices[polygonResizeNewVertex.newVertexID - 1].lng;
 
-            resizedShape.splice(polygonResizeNewVertex.newVertexID, 0, {
+            resizedShape.vertices.splice(polygonResizeNewVertex.newVertexID, 0, {
                 lat: newLat,
                 lng: newLng,
             });
 
-            setShapes((prev) => [
-                ...prev.filter(
-                    (_, index) => index !== polygonResizeNewVertex.shapeID
-                ),
-                resizedShape,
-            ]);
+            let newShapes = [...shapes]
+            let index = newShapes.findIndex(shape => shape.shape_id === polygonResizeNewVertex.shapeID);
+            if(index === -1) return;
+
+            newShapes[index] = resizedShape;
+
+            setShapes(newShapes);
 
             setPolygonResizeNewVertex(null);
         }
     };
 
     const polygonOptions = {
-        fillOpacity: 0.3,
+        fillOpacity: 0.5,
         fillColor: "#ff0000",
         strokeColor: "#ff0000",
         strokeWeight: 2,
         editable: true,
     };
 
-    const drawingManagerOptions = {
+    const [drawingManagerOptions, setDrawingManagerOptions] = useState({
         polygonOptions: polygonOptions,
         drawingControl: true,
 
@@ -151,28 +195,55 @@ const Map = ({ pub }) => {
             position: window.google?.maps?.ControlPosition?.TOP_CENTER,
             drawingModes: [window.google?.maps?.drawing?.OverlayType?.POLYGON],
         },
-    };
+    });
 
-    const onOverlayComplete = (event) => {
-        let shape = event.overlay
-            .getPath()
-            .getArray()
-            .map((a) => ({ lat: a.lat(), lng: a.lng() }));
-
+    const onOverlayComplete = useCallback((event) => {
+        const shapeID = uuid()
+        let newShape = {
+            vertices: event.overlay
+                .getPath()
+                .getArray()
+                .map((a) => ({ lat: a.lat(), lng: a.lng() })),
+            shape_id: shapeID,
+            color: getNotUsedColor(shapes, shapeID)
+        }
         event.overlay?.setMap(null);
 
-        if (shape.length < 3) return;
-        console.log(shape);
+        if (newShape.vertices.length < 3) return;
 
-        setShapes((prev) => [...prev, shape]);
-    };
+        if(shapes.length === 0) {
+            lastShape = newShape
+            setShapes((prev) => [...prev, newShape]);
+            return;
+        }
+
+        //check if shape already exists
+        let areShapesEqual = false;
+        if(lastShape.vertices.length === newShape.vertices.length) {
+            areShapesEqual = true;
+
+            for(let i = 0; i < newShape.vertices.length; i++) {
+                if(lastShape.vertices[i].lat !== newShape.vertices[i].lat || lastShape.vertices[i].lng !== newShape.vertices[i].lng) {
+                    areShapesEqual = false;
+                    break;
+                }
+            }
+        }
+
+        if(areShapesEqual) {
+            return;
+        }
+
+        //add Shape
+        lastShape = newShape
+        setShapes((prev) => [...prev, newShape]);
+    }, [shapes]);
 
     const [setShipping] = useSetShippingMutation();
 
     const saveShapes = () => {
-        const finalShapes = convertFromPolygonShapes(shapes);
         setShipping({
-            shapes: finalShapes,
+            shapes: shapes.map(shape => ({vertices: shape.vertices, shape_id: shape.shape_id, color: shape.color})),
             pubID: pub.id,
             companyID: pub.company_id,
         });
@@ -180,15 +251,14 @@ const Map = ({ pub }) => {
 
     const [polygonResizeVertex, setPolygonResizeVertex] = useState(null);
     const [polygonResizeNewVertex, setPolygonResizeNewVertex] = useState(null);
-    const polygonOnMouseDown = (e, id) => {
+    const polygonOnMouseDown = (e, shapeID) => {
         if (e.vertex === undefined && e.edge === undefined) return;
 
         if (e.edge !== undefined) {
-            console.log("edge: ", e.edge);
-            setPolygonResizeNewVertex({ shapeID: id, newVertexID: e.edge + 1 });
+            setPolygonResizeNewVertex({ shapeID, newVertexID: e.edge + 1 });
         }
         if (e.vertex !== undefined) {
-            setPolygonResizeVertex({ shapeID: id, vertex: e.vertex });
+            setPolygonResizeVertex({ shapeID, vertex: e.vertex });
         }
     };
 
@@ -252,24 +322,29 @@ const Map = ({ pub }) => {
                         {markerPosition && <Marker position={markerPosition} />}
 
                         {/* POLYGONS */}
-                        {shapes.map((shape, id) => (
+                        {shapes.map((shape, index) => (
                             <PolygonF
                                 draggable={false}
-                                key={JSON.stringify(shape)}
-                                path={shape}
+                                key={shape.shape_id}
+                                path={shape.vertices}
                                 options={{
                                     ...polygonOptions,
+                                    fillColor: shape.color || "#fff",
+                                    strokeColor: shape.color || "#fff",
+                                    strokeOpacity: 1,
+                                    zIndex: 100 - index,
                                 }}
-                                onMouseUp={(e) => onMouseUp(e, id)}
-                                onMouseDown={(e) => polygonOnMouseDown(e, id)}
+                                onMouseUp={(e) => onMouseUp(e, shape.shape_id)}
+                                onMouseDown={(e) => polygonOnMouseDown(e, shape.shape_id)}
+
                             />
                         ))}
 
                         {/* DRAWING MANAGER */}
-                            <DrawingManagerF
-                                onOverlayComplete={onOverlayComplete}
-                                options={drawingManagerOptions}
-                            />
+                        <DrawingManagerF
+                            onOverlayComplete={onOverlayComplete}
+                            options={drawingManagerOptions}
+                        />
                     </GoogleMap>
                 )}
             </div>

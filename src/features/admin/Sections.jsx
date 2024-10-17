@@ -100,18 +100,18 @@ const OrdersSection = ({ pubID }) => {
 
         const counts = {
             [orderStatuses.notHandled]: 0,
-            [orderStatuses.handled]: 0,
             [orderStatuses.preparing]: 0,
+            [orderStatuses.atCourier]: 0,
             [orderStatuses.completed]: 0,
         };
 
         orders.forEach((order) => {
             if (order.status === orderStatuses.notHandled)
                 counts[orderStatuses.notHandled]++;
-            if (order.status === orderStatuses.handled)
-                counts[orderStatuses.handled]++;
             if (order.status === orderStatuses.preparing)
                 counts[orderStatuses.preparing]++;
+            if (order.status === orderStatuses.atCourier)
+                counts[orderStatuses.atCourier]++;
             if (order.status === orderStatuses.completed)
                 counts[orderStatuses.completed]++;
         });
@@ -155,7 +155,7 @@ const OrdersSection = ({ pubID }) => {
                                 background: "#eab308",
                             }}
                         >
-                            {orderCounts[orderStatuses.handled]}
+                            {orderCounts[orderStatuses.preparing]}
                         </div>
                         <div
                             className="rounded-full flex items-center justify-center text-white"
@@ -165,7 +165,7 @@ const OrdersSection = ({ pubID }) => {
                                 background: "#fb923c",
                             }}
                         >
-                            {orderCounts[orderStatuses.preparing]}
+                            {orderCounts[orderStatuses.atCourier]}
                         </div>
                         <div
                             className="rounded-full flex items-center justify-center text-white"

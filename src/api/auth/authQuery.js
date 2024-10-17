@@ -22,7 +22,7 @@ export const auth = createApi({
             query: ({data}) => ({
                 url: `/auth/login`,
                 method: 'POST',
-                body: {as: "company", email: data.email, password: data.password},
+                body: {as: "", email: data.email, password: data.password},
                 headers: {
                     'Content-Type': 'application/json'
                 }

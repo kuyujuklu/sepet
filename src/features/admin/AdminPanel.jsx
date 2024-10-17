@@ -91,6 +91,11 @@ const AdminPanel = () => {
         dispatch(
             setShipping({
                 available: shippingData.available,
+                shipping_time_from: shippingData.shipping_time_from,
+                shipping_time_to: shippingData.shipping_time_to,
+                shipping_work_start: shippingData.shipping_work_start,
+                shipping_work_end: shippingData.shipping_work_end,
+                shipping_prices: shippingData.shipping_prices,
                 shapes: shippingData.shapes,
             })
         );
@@ -124,7 +129,7 @@ const AdminPanel = () => {
                             </div>
                         </div>
                     </nav>
-                    <div>
+                    <div className="pb-20">
                         <OrdersPreloader
                             companyID={companyData.company.id}
                             pubID={pubID}

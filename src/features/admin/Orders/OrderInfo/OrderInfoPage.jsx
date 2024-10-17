@@ -1,6 +1,6 @@
 import { useDispatch, useSelector } from "react-redux";
 import { selectOrders, setDeleteFromOrderDishPopupState } from "../ordersSlice";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import OrderCard from "../OrderCard";
 import { useParams } from "react-router-dom";
 import { useGetFullPubInfoQuery } from "@/api/pub/pub";
@@ -15,6 +15,11 @@ import { orderTypes } from "@/static-data/data";
 import { useTranslation } from "react-i18next";
 import { pub } from "../../../../api/pub/pub";
 import AddDishToOrderButton from "./AddDishToOrderButton";
+import Select from "../../../../components/Inputs/Select";
+import { Button } from "@mui/material";
+import { useUpdateOrderDeliveryPriceMutation } from "../../../../api/orders/orders";
+import OrderCourierInfo from "../OrderCourierInfo";
+import { deliveryTypes } from "../../../../static-data/data";
 
 const OrderInfoPage = ({ pubUrlName }) => {
   const { t } = useTranslation();
@@ -26,7 +31,6 @@ const OrderInfoPage = ({ pubUrlName }) => {
     if (!orderID || !orders) return null;
 
     const order = orders.find((item) => item.id === orderID);
-    console.log("order: ", order);
     return order ?? null;
   }, [orderID, orders]);
 
@@ -39,21 +43,10 @@ const OrderInfoPage = ({ pubUrlName }) => {
   const orderItemsPrice = useMemo(() => {
     if (!order || !pubData) return 0;
 
-    console.log("dishes = ", pubData?.dishes);
-
-    const itemsPrice = order?.dishes?.reduce((acc, item) => {
-      const dish = pubData?.dishes?.find((dish) => dish.id === item.dish_id);
-
-      if (!dish) return acc;
-
-      const dishPrice =
-        dish.sale_price && dish.sale_price < dish.price
-          ? dish.sale_price
-          : dish.price;
-      console.log("dish price, items count: ", dishPrice, item.count);
-      acc += item.count * dishPrice;
-      return acc;
-    }, 0);
+    const itemsPrice = order?.dishes?.reduce(
+      (acc, item) => acc + item.dish_price * item.count,
+      0
+    );
 
     return itemsPrice;
   }, [order, pubData]);
@@ -71,25 +64,29 @@ const OrderInfoPage = ({ pubUrlName }) => {
   }, [dispatch, pubError]);
 
   const shownDishes = useMemo(() => {
-    const dishCounts = order?.dishes?.reduce((acc, item) => {
-      acc[item.dish_id] = item.count;
+    const dishCountsAndFixedPrice = order?.dishes?.reduce((acc, item) => {
+      acc[item.dish_id] = { count: item.count, fixedPrice: item.dish_price };
       return acc;
     }, {});
 
-    if (!dishCounts || !pubData?.dishes) return;
+    if (!dishCountsAndFixedPrice || !pubData?.dishes) return;
 
     const shownDishes = pubData?.dishes
       ?.map((item) =>
-        dishCounts[item.id] ? { dish: item, count: dishCounts[item.id] } : false
+        dishCountsAndFixedPrice[item.id]
+          ? {
+              dish: item,
+              count: dishCountsAndFixedPrice[item.id].count,
+              fixedPrice: dishCountsAndFixedPrice[item.id].fixedPrice,
+            }
+          : false
       )
       .filter((item) => !!item);
 
     return shownDishes;
   }, [order?.dishes, pubData]);
 
-  const finalPrice = isNaN(+pubData?.pub?.shipping?.shipping_price)
-    ? orderItemsPrice
-    : pubData?.pub?.shipping?.shipping_price + orderItemsPrice;
+  const finalPrice = orderItemsPrice + order?.delivery_price;
 
   const deletePosition = (dishID) => {
     if (
@@ -98,13 +95,9 @@ const OrderInfoPage = ({ pubUrlName }) => {
       !pubUrlName ||
       !pubData?.pub?.company_id
     ) {
-      console.log("INVALID DATA func call");
       return;
     }
-    console.log("dishID: ", dishID);
-    console.log("old dishes: ", order?.dishes);
     const newDishes = order?.dishes.filter((dish) => dish.dish_id !== dishID);
-    console.log("new dishes : ", newDishes);
 
     dispatch(
       setDeleteFromOrderDishPopupState({
@@ -117,6 +110,40 @@ const OrderInfoPage = ({ pubUrlName }) => {
       })
     );
   };
+
+  const [
+    sendDeliveryPrice,
+    {
+      data: saveOrderDeliveryPriceData,
+      error: saveOrderDeliveryPriceError,
+      isLoading: isDeliveryPriceLoading,
+    },
+  ] = useUpdateOrderDeliveryPriceMutation();
+
+  const saveDeliveryPrice = () => {
+    const companyID = pubData?.pub?.company_id;
+    const pubID = pubData?.pub?.id;
+    if (!companyID || !pubID || !orderID || isNaN(+orderDeliveryPrice)) return;
+
+    sendDeliveryPrice({ companyID, pubID, orderID, price: orderDeliveryPrice });
+  };
+
+  const [orderDeliveryPrice, setOrderDeliveryPrice] = useState(0);
+  useEffect(() => {
+    if (!order) return;
+
+    setOrderDeliveryPrice(order.delivery_price);
+  }, [order]);
+
+  const setDeliveryPriceValue = (value) => {
+    if (isNaN(+value)) return;
+
+    setOrderDeliveryPrice(value);
+  };
+
+  const possibleDeliveryPrices = pubData?.pub?.shipping?.shipping_prices
+    ? [0, ...Object.values(pubData?.pub?.shipping?.shipping_prices)]
+    : [0];
 
   return (
     <div className="flex flex-col items-center m-auto">
@@ -134,6 +161,13 @@ const OrderInfoPage = ({ pubUrlName }) => {
             <div className="w-full mb-4">
               <OrderCard order={order} hasArrow={false} />
             </div>
+
+          {pubData?.pub?.shipping?.delivery_type === deliveryTypes.deliveryService &&
+            <div className="w-full mb-4">
+              <OrderCourierInfo order={order} />
+            </div>
+          }
+
 
             <div className="mb-6">
               <OrderStatuses
@@ -223,6 +257,7 @@ const OrderInfoPage = ({ pubUrlName }) => {
                         pub={pubData?.pub}
                         dish={item.dish}
                         count={item.count}
+                        fixedPrice={item.fixedPrice}
                       />
                     </div>
                   </div>
@@ -241,17 +276,50 @@ const OrderInfoPage = ({ pubUrlName }) => {
                 <div className="w-full px-20 py-5">
                   <div>
                     {t("admin.admin_panel.order_page.total_price_of_products")}:{" "}
-                    {orderItemsPrice} Lei
+                    {orderItemsPrice.toFixed(2)} Lei
                   </div>
                   {order.order_type === orderTypes.delivery && (
-                    <div>
+                    <div className="flex items-center gap-5">
                       {t("admin.admin_panel.order_page.price_of_shipping")}:{" "}
-                      {pubData?.pub?.shipping?.shipping_price ?? "unknown"} Lei
+                      <Select
+                        value={orderDeliveryPrice}
+                        setValue={setDeliveryPriceValue}
+                        values={possibleDeliveryPrices.map((price) => ({
+                          value: price,
+                          text: price + " Lei",
+                        }))}
+                      />
+                      {+order?.delivery_price !== orderDeliveryPrice && (
+                        <Button
+                          variant="contained"
+                          sx={{
+                            color: "white",
+                            bgcolor: "#3b82f6",
+                            fontSize: ".7rem",
+                            fontWeight: "medium",
+                            padding: ".2rem 1rem",
+                            borderRadius: "10px",
+                            width: "fit-content%",
+                            ":hover": {
+                              bgcolor: "#2563eb",
+                            },
+                          }}
+                          onClick={saveDeliveryPrice}
+                        >
+                          <span>
+                            {isDeliveryPriceLoading ? (
+                              <BlackSpinner />
+                            ) : (
+                              t("admin.admin_panel.shipping.shipping_time.save")
+                            )}
+                          </span>
+                        </Button>
+                      )}
                     </div>
                   )}
                   <div>
                     {t("admin.admin_panel.order_page.final_price")}:{" "}
-                    {finalPrice} Lei
+                    {finalPrice.toFixed(2)} Lei
                   </div>
                 </div>
               </>

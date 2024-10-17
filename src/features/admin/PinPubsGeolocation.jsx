@@ -29,17 +29,14 @@ const PinPubsGeolocation = () => {
 
     const isGeolocationValid =
         !!(geolocationData && geolocationData.lat && geolocationData.lng);
-        console.log("is geo valid: ",  isGeolocationValid)
     useEffect(() => {
         if (!geolocationData) return;
 
-        console.log("GEO DATA: ",geolocationData);
     }, [geolocationData]);
 
     useEffect(() => {
         if (!geolocationError) return;
 
-        console.log("geolocationError", geolocationError);
     }, [geolocationError]);
 
     const [
@@ -52,20 +49,17 @@ const PinPubsGeolocation = () => {
     ] = useSetGeolocationMutation();
 
     const pinPoint = (lat, lng) => {
-        console.log("setting geolocation");
         setGeolocation({ companyID, pubID, lat, lng });
     };
 
     useEffect(() => {
         if (!setGeolocationData) return;
 
-        console.log(setGeolocationData);
     }, [setGeolocationData]);
 
     useEffect(() => {
         if (!setGeolocationError) return;
 
-        console.log("setGeolocationError", setGeolocationError);
     }, [setGeolocationError]);
 
     return isGoogleMapsApiLoaded ? (

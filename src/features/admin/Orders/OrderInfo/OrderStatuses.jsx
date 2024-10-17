@@ -50,7 +50,6 @@ const OrderStatuses = ({ companyID, pubID, orderID, status }) => {
 
         dispatch(updateOrder({order: {...order, status: updateStatusQueryResp.status}}))
 
-        console.log("resp: ", updateStatusQueryResp);
     }, [dispatch, updateStatusQueryResp]);
 
     useEffect(() => {
@@ -81,16 +80,6 @@ const OrderStatuses = ({ companyID, pubID, orderID, status }) => {
                 </button>
                 <button
                     className={`text-3xs sm:text-base px-1 sm:px-3 py-0 sm:py-2 rounded-lg border border-black ${
-                        status === orderStatuses.handled
-                            ? "bg-black text-white"
-                            : "bg-transparent text-black"
-                    }`}
-                    onClick={() => setOrderStatus(orderStatuses.handled)}
-                >
-                    {t("admin.admin_panel.order_page.order_statuses.handled")}
-                </button>
-                <button
-                    className={`text-3xs sm:text-base px-1 sm:px-3 py-0 sm:py-2 rounded-lg border border-black ${
                         status === orderStatuses.preparing
                             ? "bg-black text-white"
                             : "bg-transparent text-black"
@@ -98,6 +87,16 @@ const OrderStatuses = ({ companyID, pubID, orderID, status }) => {
                     onClick={() => setOrderStatus(orderStatuses.preparing)}
                 >
                     {t("admin.admin_panel.order_page.order_statuses.preparing")}
+                </button>
+                <button
+                    className={`text-3xs sm:text-base px-1 sm:px-3 py-0 sm:py-2 rounded-lg border border-black ${
+                        status === orderStatuses.atCourier
+                            ? "bg-black text-white"
+                            : "bg-transparent text-black"
+                    }`}
+                    onClick={() => setOrderStatus(orderStatuses.atCourier)}
+                >
+                    {t("admin.admin_panel.order_page.order_statuses.at_courier")}
                 </button>
                 <button
                     className={`text-3xs sm:text-base px-1 sm:px-3 py-0 sm:py-2 rounded-lg border border-black ${

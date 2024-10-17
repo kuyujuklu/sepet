@@ -1,5 +1,11 @@
 import { createSlice } from "@reduxjs/toolkit";
 
+export const alertTypes = {
+    success: "success",
+    danger: "danger",
+    warning: "warning"
+}
+
 const initialState = {
     alerts: [],
 };

@@ -19,7 +19,6 @@ const LogoutButton = () => {
     }
 
     useEffect(() => {
-        console.log(error)
         dispatch(setReceivingError({errorKey: errorKeys.logout, error}));
     }, [dispatch, error])
 

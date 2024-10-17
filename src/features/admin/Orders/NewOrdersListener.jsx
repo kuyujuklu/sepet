@@ -25,7 +25,6 @@ const NewOrdersListener = () => {
             lastNotHandledOrdersCount !== null &&
             notHandledOrdersCount > lastNotHandledOrdersCount
         ) {
-            console.log("handled new order");
             dispatch(playSound(soundNames.newOrderSound));
         }
 

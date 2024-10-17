@@ -13,12 +13,15 @@ import shippingReducer from "../features/admin/ShippingAndPreorder/Shipping/ship
 import googleMapReducer from "../features/GoogleMapsLoader/googleMapsSlice"
 import ordersReducer from "../features/admin/Orders/ordersSlice"
 import soundReducer from "../features/sound/soundSlice"
+import courierInfoPopupReducer from "../features/courier/popups/courierInfoPopupSlice"
+import courierOrdersReducer from "../features/courier/courier-orders/courierOrdersSlice"
 import { setupListeners } from "@reduxjs/toolkit/query/react";
 import { pub } from "../api/pub/pub";
 import { menu } from "../api/menu/menu";
 import { category } from "../api/categories/category";
 import { dish } from "../api/dish/dish";
 import { orders } from "../api/orders/orders";
+import { courier } from "../api/courier/courier";
 export const store = configureStore({
     reducer: {
         companySlice: companyReducer,
@@ -33,8 +36,11 @@ export const store = configureStore({
         googleMaps: googleMapReducer,
         orders: ordersReducer,
         sound: soundReducer,
+        courierInfoPopupSlice: courierInfoPopupReducer,
+        courierOrders: courierOrdersReducer,
         [auth.reducerPath]: auth.reducer,
         [company.reducerPath]: company.reducer,
+        [courier.reducerPath]: courier.reducer,
         [pub.reducerPath]: pub.reducer,
         [menu.reducerPath]: menu.reducer,
         [category.reducerPath]: category.reducer,
@@ -44,6 +50,7 @@ export const store = configureStore({
     middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(
         auth.middleware,
         company.middleware,
+        courier.middleware,
         pub.middleware,
         menu.middleware,
         category.middleware,

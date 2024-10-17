@@ -18,6 +18,7 @@ const respErrors = {
 
     //validation
     "validation error": appErrors.validationError,
+    "courier not found": appErrors.courier.courier_not_found
 }
 
 export const convertRespError = (error) => {

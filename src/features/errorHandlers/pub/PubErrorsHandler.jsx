@@ -2,8 +2,9 @@ import { useCreatePubMutation, useDeletePubMutation, useSetPreorderMutation, use
 import { useEffect } from "react"
 import { errorKeys, selectReceivingError, handleErrorStandardWay  } from "../errorHandlerSlice"
 import { useDispatch, useSelector } from "react-redux"
-import { fixedCacheKeys } from "@/api/fixedCacheKeys"
 import { appErrors } from "@/errors/errors"
+import { fixedCacheKeys } from "../../../api/fixedCacheKeys"
+import { useUpdateDeliveryTypeMutation } from "../../../api/pub/pub"
 
 const PubErrorsHandler = () => {
     const dispatch = useDispatch()
@@ -16,6 +17,10 @@ const PubErrorsHandler = () => {
     const [, {error: pubSetPreorderError }] = useSetPreorderMutation({fixedCacheKey: fixedCacheKeys.pubs.set_preorder})
     const [, {error: pubSetShippingTimeError }] = useSetPreorderMutation({fixedCacheKey: fixedCacheKeys.pubs.set_shipping_time})
     const [, {error: pubSetShippingWorkHoursError }] = useSetPreorderMutation({fixedCacheKey: fixedCacheKeys.pubs.set_shipping_work_hours})
+    const [, {error: pubAddCourierError }] = useSetPreorderMutation({fixedCacheKey: fixedCacheKeys.pubs.add_courier_error})
+    const [, {error: pubRemoveCourierError }] = useSetPreorderMutation({fixedCacheKey: fixedCacheKeys.pubs.remove_courier_error})
+    const [, {error: pubUpdateDeliveryTypeError }] = useUpdateDeliveryTypeMutation({fixedCacheKey: fixedCacheKeys.pubs.set_delivery_type})
+    const [, {error: pubSetAddCommissionToDishPrices }] = useUpdateDeliveryTypeMutation({fixedCacheKey: fixedCacheKeys.pubs.set_add_commission_to_dish_prices})
     
     const pubGetByIDError = useSelector(selectReceivingError(errorKeys.get_pub_by_id))
     const getPubsError = useSelector(selectReceivingError(errorKeys.get_pubs))
@@ -127,6 +132,38 @@ const PubErrorsHandler = () => {
 
         dispatch(handleErrorStandardWay(getPubPreorderError))
     }, [dispatch, getPubPreorderError])
+    
+    useEffect(() => {
+        if (!pubAddCourierError || pubAddCourierError.originalStatus === 404)
+            return
+
+        dispatch(handleErrorStandardWay(pubAddCourierError))
+    }, [dispatch, pubAddCourierError])
+
+    useEffect(() => {
+        if (!pubRemoveCourierError || pubRemoveCourierError.originalStatus === 404)
+            return
+
+        dispatch(handleErrorStandardWay(pubRemoveCourierError))
+    }, [dispatch, pubRemoveCourierError])
+
+    useEffect(() => {
+        if (!pubUpdateDeliveryTypeError) {
+            return
+        }
+
+        dispatch(handleErrorStandardWay(pubUpdateDeliveryTypeError))
+    }, [dispatch, pubUpdateDeliveryTypeError])
+    
+
+    useEffect(() => {
+        if (!pubSetAddCommissionToDishPrices) {
+            return
+        }
+
+        dispatch(handleErrorStandardWay(pubSetAddCommissionToDishPrices))
+    }, [dispatch, pubSetAddCommissionToDishPrices])
+    
 
     return (
     <div></div>

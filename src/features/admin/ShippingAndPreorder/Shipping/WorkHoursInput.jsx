@@ -72,6 +72,7 @@ const WorkHoursInput = ({ pubID, companyID, shipping_start, shipping_end }) => {
                         onChange={(values) => setValues(values)}
                         renderTrack={renderTrack(values, MIN, MAX)}
                         renderThumb={renderThumb}
+                        
                     />
             </div>
             { (start !== shipping_start || end !== shipping_end) && 
@@ -133,6 +134,7 @@ const renderTrack = (values, MIN, MAX) => ({ props, children }) => (
 const renderThumb = ({ props, isDragged }) => (
   <div
       {...props}
+      key={props.key}
       style={{
           ...props.style,
           height: "42px",
