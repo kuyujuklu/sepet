@@ -61,6 +61,31 @@ const CreateOrderPopup = () => {
         );
     }, [orderType, pub]);
 
+    const deliveryPricesMinMax = useMemo(() => {
+        if(orderType !== orderTypes.delivery) {
+            return {min: 0, max: 0}
+        }
+
+        if(!pub?.shipping?.available) {
+            return {min: 0, max: 0}
+        }
+
+        if(!pub?.shipping?.shipping_prices)
+            return {min: 0, max: 0}
+
+        const pricesArray = Object.values(pub?.shipping?.shipping_prices)
+        if(pricesArray.length === 0) {
+            return {min: 0, max: 0}
+        }
+
+        console.log("PRICES", pricesArray)
+
+        const min = pricesArray.reduce( (min, value) => value < min ? value : min , Infinity)
+        const max = pricesArray.reduce( (max, value) => value > max ? value : max , 0)
+
+        return {min, max}
+    }, [pub, orderType])
+
     const [comments, setComments] = useState("");
     const [town, setTown] = useState("");
     const [fullAddress, setFullAddress] = useState("");
@@ -200,10 +225,12 @@ const CreateOrderPopup = () => {
                             />
                         )}
                         <CreateOrderPage
-                            deliveryPrice={
-                                orderType === orderTypes.delivery
-                                    ? pub?.shipping?.shipping_price
-                                    : 0
+                        orderType={orderType}
+                            deliveryPriceMin={
+                                deliveryPricesMinMax.min
+                            }
+                            deliveryPriceMax={
+                                deliveryPricesMinMax.max
                             }
                             comments={comments}
                             setComments={setComments}

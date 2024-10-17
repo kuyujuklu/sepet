@@ -1,5 +1,5 @@
 import Textarea from "@/app/shared-components/Inputs/Textarea";
-import { currencies } from "@/app/static-data/data";
+import { currencies, orderTypes } from "@/app/static-data/data";
 import { selectDishes } from "@/app/[locale]/pub/store/basketSlice";
 import { selectData } from "@/app/[locale]/pub/store/pubInfoSlice";
 import { Button } from "@mui/material";
@@ -11,7 +11,9 @@ const CreateOrderPage = ({
     comments,
     setComments,
     createOrder,
-    deliveryPrice,
+    deliveryPriceMin,
+    deliveryPriceMax,
+    orderType
 }) => {
     const { t } = useTranslation();
     const basket = useSelector(selectDishes);
@@ -21,7 +23,7 @@ const CreateOrderPage = ({
 
     const currency =
         currencies.find((currency) => currency.id === pub?.currency_id)
-            ?.symbol ?? "lei";
+            ?.symbol ?? "Lei";
 
     const productPrice = useMemo(() => {
         if (!dishes) return;
@@ -46,40 +48,36 @@ const CreateOrderPage = ({
             else return "unable to count price please reload page";
         }
 
-        if (+deliveryPrice) amount += deliveryPrice;
+        // if (+deliveryPrice) amount += deliveryPrice;
 
         return amount;
-    }, [basket, deliveryPrice, dishes]);
+    }, [basket, dishes]);
 
-    const totalPrice = deliveryPrice + productPrice;
+    // const totalPrice = productPrice;
 
     return (
         <div className="flex justify-center flex-col gap-y-5 w-full">
             <div>
-                <div
-                    className="text-xs sm:text-base text-gray-500 font-medium px-2"
-                    stlye={{ marginBottom: ".1rem" }}
-                >
-                    {t("client.popups.create_order.comments")}
-                </div>
-                <Textarea
-                    style={{ fontSize: "1rem" }}
-                    value={comments}
-                    setValue={setComments}
-                />
-            </div>
-            <div>
-                {deliveryPrice ? (
+                {!isNaN(deliveryPriceMin) && !isNaN(deliveryPriceMax) ? (
                     <>
+                    {orderType === orderTypes.delivery &&
                         <div>
                             <span className="text-xl font-medium">
                                 {t("client.popups.create_order.delivery_price")}
                                 :
                             </span>{" "}
                             <span className="font-bold text-lg">
-                                {deliveryPrice} Lei
+                                    {deliveryPriceMin === deliveryPriceMax ? 
+                                        <>
+                                            {deliveryPriceMin} Lei
+                                        </> :
+                                        <>
+                                        {deliveryPriceMin} Lei - {deliveryPriceMax} Lei
+                                        </>
+                                    }
                             </span>
                         </div>
+                    }
                         <div>
                             <span className="text-xl font-medium">
                                 {t("client.popups.create_order.product_price")}:
@@ -92,14 +90,27 @@ const CreateOrderPage = ({
                 ) : (
                     <></>
                 )}
-                <div>
+                {/* <div>
                     <span className="text-xl font-medium">
                         {t("client.popups.create_order.final_price")}:
                     </span>{" "}
                     <span className="font-bold text-lg">
                         {totalPrice} {currency}
                     </span>
+                </div> */}
+            </div>
+            <div>
+                <div
+                    className="text-xs sm:text-base text-gray-500 font-medium px-2"
+                    stlye={{ marginBottom: ".1rem" }}
+                >
+                    {t("client.popups.create_order.comments")}
                 </div>
+                <Textarea
+                    style={{ fontSize: "1rem" }}
+                    value={comments}
+                    setValue={setComments}
+                />
             </div>
             <Button
                 variant="contained"

@@ -29,20 +29,20 @@ const PubPageInfo = ({ pub, textColor, pubColor, t }) => {
             <div className="flex items-center gap-y justify-between flex-wrap text-sm sm:text-base">
                 {
                     pub.wifi_password &&
-                    <div style={{ width: "100%", maxWidth: 300}} className="flex gap-2">
+                    <div style={{ width: "100%"}} className="flex gap-2">
                         <span>{t("client.pub_info.wifi_password")}: </span>
                         <span>{pub.wifi_password}</span>
                     </div>
                 }
                 {
                     pub.address && 
-                    <div style={{ width: "100%", maxWidth: 300}} className="flex items-center gap-2">
+                    <div style={{ width: "100%"}} className="flex items-center gap-2">
                         <span>{t("client.pub_info.address")}: </span>
                         <span>{pub.address}</span>
                     </div>
                 }
                 {
-                    pub.shipping.shipping_work_start &&
+                    !!pub.shipping.shipping_work_start &&
                     <div style={{ width: "100%" }} className="flex flex-wrap gap-x-2 mt-2">
                         <span>{t("client.pub_info.work_hours")}: </span>
                         <span>{shippingTimeString}</span>
