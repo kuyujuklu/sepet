@@ -79,7 +79,7 @@ export default {
     go_to_auth: "Уже есть аккаунт? Авторизация",
     inputs: {
       name: {
-        label: "Имя",
+        label: "Имя Фамилия",
       },
       phone_number: {
         label: "Номер телефона",

@@ -74,7 +74,7 @@ export default {
     submit: "Confirmare",
     go_to_auth: "Aveți deja un cont? Autentificare",
     inputs: {
-      name: { label: "Nume" },
+      name: { label: "Nume Prenume" },
       phone_number: { label: "Număr de telefon" },
       password: { label: "Parolă" },
       repeat_password: { label: "Repetă parola", errors: {} },

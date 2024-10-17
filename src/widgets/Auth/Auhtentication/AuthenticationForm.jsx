@@ -216,55 +216,6 @@ const AuthenticationForm = () => {
                 {t("auth.go_to_change_password")}
               </Text>
             </Button>
-
-            <Button
-              onPress={() =>
-                Linking.canOpenURL(
-                  "https://qrmenu.sandex.md/admin/delete-client",
-                ).then((supported) => {
-                  if (supported) {
-                    Linking.openURL(
-                      "https://qrmenu.sandex.md/admin/delete-client",
-                    );
-                  } else {
-                    console.log(
-                      "Don't know how to open URI: " + this.props.url,
-                    );
-                  }
-                })
-              }
-              variant="outline"
-              mt={2}
-              color="coolGray.600"
-            >
-              <Text textAlign={"center"} color="coolGray.500">
-                {t("auth.go_to_delete_account")}
-              </Text>
-            </Button>
-              <View flex={1} justifyContent="center" alignItems="center">
-                <Text textAlign={"center"} color="coolGray.500" fontSize={10} mt={3}>
-                  {t("auth.privacy_policy_text")} {" "}
-                </Text>
-                  <TouchableOpacity
-                    onPress={() =>
-                      Linking.canOpenURL(
-                        "https://www.termsfeed.com/live/ebacde7a-7bb6-4e3f-b5f0-85e084530b3a",
-                      ).then((supported) => {
-                        if (supported) {
-                          Linking.openURL(
-                            "https://www.termsfeed.com/live/ebacde7a-7bb6-4e3f-b5f0-85e084530b3a",
-                          );
-                        } else {
-                          console.log(
-                            "Don't know how to open URI: " + this.props.url,
-                          );
-                        }
-                      })
-                    }
-                  >
-                    <Text color="blue.400" fontSize={10}>{t("auth.privacy_policy_link")}</Text>
-                  </TouchableOpacity>
-              </View>
           </View>
         </View>
       </ScrollView>

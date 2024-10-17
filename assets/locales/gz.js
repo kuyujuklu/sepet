@@ -75,7 +75,7 @@ export default {
     go_to_auth: "Var akaunt?  Avtorizaţiya",
     inputs: {
       name: {
-        label: "Ad",
+        label: "Adı Soyadı",
       },
       phone_number: {
         label: "Telefonun nomeri",

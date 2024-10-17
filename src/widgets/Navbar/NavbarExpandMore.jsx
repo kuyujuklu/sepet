@@ -58,8 +58,8 @@ const NavbarExpandMore = ({ expanded, setExpanded }) => {
           outputRange: ["-100%", "0%"],
         }),
         padding: 20,
-        height: 260,
-        top: -260,
+        height: 300,
+        top: -300,
         zIndex: 100,
       }}
     >
@@ -71,7 +71,7 @@ const NavbarExpandMore = ({ expanded, setExpanded }) => {
         <View gap={1}>
           <TouchableOpacity
             onPress={() => {
-              goToSelectGeolocation()
+              goToSelectGeolocation();
             }}
           >
             <View mb={2} flexDir="row" gap={2} alignItems="center">
@@ -82,7 +82,10 @@ const NavbarExpandMore = ({ expanded, setExpanded }) => {
                 />
               </View>
 
-              <Text color="emerald.600" style={{ fontSize: 16, fontWeight: "medium" }}>
+              <Text
+                color="emerald.600"
+                style={{ fontSize: 16, fontWeight: "medium" }}
+              >
                 {t("select_geolocation.change_geolocation")}
               </Text>
             </View>
@@ -100,7 +103,10 @@ const NavbarExpandMore = ({ expanded, setExpanded }) => {
                 />
               </View>
 
-              <Text  color="emerald.600"style={{ fontSize: 16, fontWeight: "medium" }}>
+              <Text
+                color="emerald.600"
+                style={{ fontSize: 16, fontWeight: "medium" }}
+              >
                 +373 605 49 995
               </Text>
             </View>
@@ -118,7 +124,10 @@ const NavbarExpandMore = ({ expanded, setExpanded }) => {
                 />
               </View>
 
-              <Text color="emerald.600" style={{ fontSize: 16, fontWeight: "medium" }}>
+              <Text
+                color="emerald.600"
+                style={{ fontSize: 16, fontWeight: "medium" }}
+              >
                 @AlternativeGE
               </Text>
             </View>
@@ -144,6 +153,26 @@ const NavbarExpandMore = ({ expanded, setExpanded }) => {
             +373{client?.phone}
           </Text>
         </Button>
+        <TouchableOpacity
+          onPress={() =>
+            Linking.canOpenURL(
+              "https://qrmenu.sandex.md/admin/delete-client",
+            ).then((supported) => {
+              if (supported) {
+                Linking.openURL("https://qrmenu.sandex.md/admin/delete-client");
+              } else {
+                console.log("Don't know how to open URI: " + this.props.url);
+              }
+            })
+          }
+          variant="outline"
+          mt={2}
+          color="coolGray.600"
+        >
+          <Text textAlign={"center"} fontSize="xs" color="coolGray.500" style={{textDecorationLine: "underline"}}>
+            {t("auth.go_to_delete_account")}
+          </Text>
+        </TouchableOpacity>
       </View>
     </Animated.View>
   );
