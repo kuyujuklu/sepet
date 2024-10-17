@@ -112,6 +112,14 @@ PERFORMANCE OF THIS SOFTWARE.
  * @license MIT
  */
 
+/**
+* Generate unique and beautiful colors from any texts or numbers
+ * @version v1.1.1
+ * @link https://github.com/dastoori/uniqolor#README
+ * @author Rasool Dastoori
+ * @license MIT License, http://www.opensource.org/licenses/MIT
+ */
+
 /** @license React v16.13.1
  * react-is.production.min.js
  *
