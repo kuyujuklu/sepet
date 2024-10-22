@@ -21,6 +21,7 @@ import (
 )
 
 type OrderService interface {
+	GetAllOrders() ([]models.Order, error)
 	GetOrdersForPub(pubID int) ([]models.Order, error)
 	GetOrdersForClient(clientID int) ([]models.Order, error)
 	GetOrderByID(orderID int) (models.Order, error)
@@ -89,6 +90,10 @@ func New() OrderService {
 	}
 
 	return singleton
+}
+
+func (s *orderService) GetAllOrders() ([]models.Order, error) {
+	return s.OrderRepo.GetAllOrders()
 }
 
 func (s *orderService) SubscribeOnOrderUpdates(callback func(order models.Order)) {
@@ -200,17 +205,9 @@ func (s *orderService) CreateOrder(order models.Order) (models.Order, error) {
 
 	if order.Lat != 0 && order.Lng != 0 {
 		distances, err := s.DistanceService.GetDistanceToPubs(order.Lat, order.Lng, []models.Pub{pub})
-		if err != nil {
-			return models.Order{}, err
+		if err == nil && len(distances) == 1 {
+			distance = distances[0]
 		}
-
-		fmt.Println("Distances: ", distances)
-
-		if len(distances) != 1 {
-			return models.Order{}, ordererrors.ErrUnableToCreateOrder
-		}
-
-		distance = distances[0]
 	}
 
 	courierInfo := models.OrderCourierInfo{

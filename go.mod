@@ -30,16 +30,19 @@ require (
 	github.com/go-openapi/spec v0.21.0 // indirect
 	github.com/go-openapi/swag v0.23.0 // indirect
 	github.com/gofiber/contrib/websocket v1.3.0 // indirect
+	github.com/golang/mock v1.6.0 // indirect
 	github.com/grbit/go-json v0.11.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.6 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mymmrac/telego v0.30.1 // indirect
 	github.com/oliveroneill/exponent-server-sdk-golang v0.0.0-20210823140141-d050598be512 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
 	github.com/rogpeppe/go-internal v1.11.0 // indirect
 	github.com/savsgio/gotils v0.0.0-20240303185622-093b76447511 // indirect
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e // indirect
 	github.com/swaggo/files/v2 v2.0.0 // indirect
+	github.com/twilio/twilio-go v1.23.0 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/valyala/fastjson v1.6.4 // indirect
 	go.opencensus.io v0.22.3 // indirect

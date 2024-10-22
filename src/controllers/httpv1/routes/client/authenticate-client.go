@@ -7,6 +7,7 @@ import (
 	"github.com/alexkalak/qrmenu/src/controllers/httpv1/input"
 	"github.com/alexkalak/qrmenu/src/controllers/httpv1/input/entities"
 	"github.com/alexkalak/qrmenu/src/errors/clienterrors"
+	"github.com/alexkalak/qrmenu/src/errors/httperrors"
 	"github.com/alexkalak/qrmenu/src/errors/jwterrors"
 	"github.com/alexkalak/qrmenu/src/errors/servererrors"
 	"github.com/alexkalak/qrmenu/src/models"
@@ -95,4 +96,41 @@ func (c *clientController) RefreshToken(ctx *fiber.Ctx) error {
 			"client":      clientOutput,
 		},
 		fiber.StatusOK)
+}
+
+func (c *clientController) DeleteClient(ctx *fiber.Ctx) error {
+	input, _, err := input.ParseRequestBody[entities.AuthenticateClientInput](ctx)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	client, err := c.ClientService.AuthenticateClient(input.Phone, input.Password)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	err = c.ClientService.DeleteClient(int(client.ID))
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	return c.sendClientTokens(ctx, client)
+}
+
+func (c *clientController) DeleteClientByToken(ctx *fiber.Ctx) error {
+	userID, _, userRole, err := h.GetUserIDSignificanceAndRoleFromLocals(ctx)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	if userRole != models.CLIENT_ROLE_NAME {
+		return h.SendError(ctx, httperrors.ErrUnauthorized, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	err = c.ClientService.DeleteClient(userID)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	return h.SendSuccess(ctx, fiber.Map{}, h.AUTOMATIC_STATUS_CODE)
 }

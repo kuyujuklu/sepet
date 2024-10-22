@@ -14,11 +14,12 @@ type CreateCourierInput struct {
 }
 
 type UpdateCourierInput struct {
-	FullName    string `json:"full_name"`
-	PhoneNumber string `json:"phone_number"`
-	BirthDate   string `json:"birth_date"`
-	Gender      string `json:"gender"`
-	Location    string `json:"location"`
+	FullName         string `json:"full_name"`
+	PhoneNumber      string `json:"phone_number"`
+	BirthDate        string `json:"birth_date"`
+	Gender           string `json:"gender"`
+	Location         string `json:"location"`
+	TelegramUsername string `json:"telegram_username"`
 }
 
 func (c *UpdateCourierInput) ConvertToModel() (models.Courier, error) {
@@ -29,11 +30,12 @@ func (c *UpdateCourierInput) ConvertToModel() (models.Courier, error) {
 	}
 
 	courier := models.Courier{
-		FullName:    c.FullName,
-		PhoneNumber: c.PhoneNumber,
-		BirthDate:   birthDate,
-		Gender:      c.Gender,
-		Location:    c.Location,
+		FullName:         c.FullName,
+		PhoneNumber:      c.PhoneNumber,
+		BirthDate:        birthDate,
+		Gender:           c.Gender,
+		Location:         c.Location,
+		TelegramUsername: c.TelegramUsername,
 	}
 
 	return courier, nil
@@ -44,13 +46,14 @@ type CourierOutput struct {
 	CreatedAt string `json:"created_at"`
 	UpdatedAt string `json:"updated_at"`
 
-	FullName      string `json:"full_name"`
-	Email         string `json:"email"`
-	PhoneNumber   string `json:"phone_number"`
-	BirthDate     string `json:"birth_date"`
-	Gender        string `json:"gender"`
-	Location      string `json:"location"`
-	ImageFileName string `json:"image_file_name"`
+	FullName         string `json:"full_name"`
+	Email            string `json:"email"`
+	PhoneNumber      string `json:"phone_number"`
+	BirthDate        string `json:"birth_date"`
+	Gender           string `json:"gender"`
+	Location         string `json:"location"`
+	ImageFileName    string `json:"image_file_name"`
+	TelegramUsername string `json:"telegram_username"`
 }
 
 func (c *CourierOutput) FillFromModel(courier models.Courier) {
@@ -64,7 +67,7 @@ func (c *CourierOutput) FillFromModel(courier models.Courier) {
 	c.BirthDate = helpers.ConvertToShortApiTime(courier.BirthDate)
 	c.Gender = courier.Gender
 	c.Location = courier.Location
-
+	c.TelegramUsername = courier.TelegramUsername
 }
 
 type ReserveOrderInput struct {

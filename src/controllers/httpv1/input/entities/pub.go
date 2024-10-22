@@ -64,6 +64,7 @@ func (p *UpdatePubInput) ConvertToModel(companyID int, pubID int) models.Pub {
 
 type PubOutput struct {
 	ID               int             `json:"id" example:"1"`
+	CompanyEmail     string          `json:"copmany_email" example:"email@email.com"`
 	Expired          bool            `json:"expired" example:"false"`
 	ExpirationTime   string          `json:"expiration_time_utc" example:""`
 	Name             string          `json:"name" example:"My pub name"`
@@ -100,6 +101,7 @@ func (p *PubOutput) FillFromModel(pub models.Pub) error {
 		p.ShippingOutput = shippingOutput
 	}
 
+	p.CompanyEmail = pub.Company.Email
 	p.ExpirationTime = helpers.ConvertToStandardApiTime(pub.ExpirationTime)
 	p.ID = int(pub.ID)
 	p.Name = pub.Name

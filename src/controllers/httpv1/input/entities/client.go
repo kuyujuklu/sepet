@@ -15,6 +15,20 @@ type RegistrateClientInput struct {
 	Password string `json:"password"`
 }
 
+type CheckPhoneValidationNumberInput struct {
+	Phone  string `json:"phone"`
+	Number string `json:"number"`
+}
+type RegistrateBySessionNumberInput struct {
+	Phone  string `json:"phone"`
+	Number string `json:"number"`
+}
+type ChangePasswordBySessionNumberInput struct {
+	Phone    string `json:"phone"`
+	Password string `json:"password"`
+	Number   string `json:"number"`
+}
+
 type AuthenticateClientInput struct {
 	Phone    string `json:"phone"`
 	Password string `json:"password"`

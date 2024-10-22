@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
+	"time"
 
 	"github.com/alexkalak/qrmenu/src/errors/osrmerrors"
 	"github.com/alexkalak/qrmenu/src/models"
@@ -15,10 +17,14 @@ type OsrmService interface {
 	GetDistanceToPubs(originLat, originLng float64, pubs []models.Pub) ([]int, error)
 }
 
-type osrmService struct{}
+type osrmService struct {
+	DrivingRequestPath string
+}
 
 func New() OsrmService {
-	return &osrmService{}
+	return &osrmService{
+		DrivingRequestPath: os.Getenv("OSRM_API_DRIVING_PATH"),
+	}
 }
 
 func (s *osrmService) GetDistanceToPubs(originLat, originLng float64, pubs []models.Pub) ([]int, error) {
@@ -33,11 +39,15 @@ func (s *osrmService) GetDistanceToPubs(originLat, originLng float64, pubs []mod
 	}
 	queryString += "?sources=0&annotations=distance"
 
-	url := "http://router.project-osrm.org/table/v1/driving/" + queryString
+	url := s.DrivingRequestPath + queryString
 
 	fmt.Println("osrm url: " + url)
 
-	resp, err := http.Get(url)
+	client := http.Client{
+		Timeout: 3 * time.Second,
+	}
+	resp, err := client.Get(url)
+
 	if err != nil {
 		return nil, err
 	}

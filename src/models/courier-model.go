@@ -9,12 +9,13 @@ import (
 type Courier struct {
 	gorm.Model
 
-	FullName       string
-	Email          string
-	HashedPassword string
-	PhoneNumber    string
-	BirthDate      time.Time
-	Gender         string
-	Location       string
-	ImageFileName  string
+	FullName         string
+	Email            string
+	HashedPassword   string
+	PhoneNumber      string
+	BirthDate        time.Time
+	Gender           string
+	Location         string
+	ImageFileName    string
+	TelegramUsername string
 }

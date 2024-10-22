@@ -17,6 +17,7 @@ func Configure() error {
 
 type OrderRepo interface {
 	NewTransaction() *gorm.DB
+	GetAllOrders() ([]models.Order, error)
 	GetAllOrdersWithPreparingStatus() ([]models.Order, error)
 	GetOrdersForPub(pubID int) ([]models.Order, error)
 	GetOrdersForClient(clientID int) ([]models.Order, error)
@@ -47,6 +48,16 @@ func New() OrderRepo {
 
 func (r *orderRepo) NewTransaction() *gorm.DB {
 	return r.Database.Begin()
+}
+
+func (r *orderRepo) GetAllOrders() ([]models.Order, error) {
+	orders := []models.Order{}
+	resp := r.Database.Preload("Client").Preload("Pub").Preload("OrderCourierInfo").Find(&orders)
+	if resp.Error != nil {
+		return nil, ordererrors.ErrUnableToGetOrder
+	}
+
+	return orders, nil
 }
 
 func (r *orderRepo) GetAllOrdersWithPreparingStatus() ([]models.Order, error) {

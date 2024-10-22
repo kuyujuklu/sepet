@@ -118,7 +118,7 @@ func New() PubsRepo {
 
 func (r *pubsRepo) GetAllPubs() ([]models.Pub, error) {
 	var pubs []models.Pub
-	result := r.Database.Preload("Shipping").Preload("PreorderInfo").Find(&pubs)
+	result := r.Database.Preload("Shipping").Preload("Company").Preload("PreorderInfo").Preload("Couriers").Find(&pubs)
 
 	if result.Error != nil {
 		return nil, puberrors.ErrUnableToGetPub
@@ -129,7 +129,7 @@ func (r *pubsRepo) GetAllPubs() ([]models.Pub, error) {
 
 func (r *pubsRepo) GetPubById(id int) (models.Pub, error) {
 	var pub models.Pub
-	result := r.Database.Preload("Shipping").Preload("PreorderInfo").Preload("Couriers").First(&pub, "id = ?", id)
+	result := r.Database.Preload("Shipping").Preload("Company").Preload("PreorderInfo").Preload("Couriers").First(&pub, "id = ?", id)
 
 	if result.Error != nil {
 		fmt.Println("error: ", result.Error)

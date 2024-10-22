@@ -10,10 +10,12 @@ import (
 )
 
 type TelegramRepo interface {
+	GetAllCourierChats() ([]models.TelegramCourierChat, error)
 	GetChatByUsername(username string) (models.TelegramChat, error)
 	GetChatByChatID(chatID string) (models.TelegramChat, error)
 	GetAllTelegramChatsForPub(pubID int) ([]models.TelegramChat, error)
 	CreateChat(chat models.TelegramChat) (models.TelegramChat, error)
+	CreateCourierChat(chat models.TelegramCourierChat) (models.TelegramCourierChat, error)
 	DeleteAllChatsForPub(pubID int) error
 }
 
@@ -25,6 +27,17 @@ func New() TelegramRepo {
 	return &telegramRepo{
 		Database: postgresql.GetDB(),
 	}
+}
+
+func (r *telegramRepo) GetAllCourierChats() ([]models.TelegramCourierChat, error) {
+	var couriers []models.TelegramCourierChat
+	result := r.Database.Find(&couriers)
+
+	if result.Error != nil {
+		return nil, telegramerrors.ErrUnableToCreateChat
+	}
+
+	return couriers, nil
 }
 
 func (r *telegramRepo) GetChatByChatID(chatID string) (models.TelegramChat, error) {
@@ -79,6 +92,23 @@ func (r *telegramRepo) CreateChat(chat models.TelegramChat) (models.TelegramChat
 	resp := r.Database.Create(&chat)
 	if resp.Error != nil {
 		return models.TelegramChat{}, telegramerrors.ErrUnableToCreateChat
+	}
+
+	return chat, nil
+}
+
+func (r *telegramRepo) CreateCourierChat(chat models.TelegramCourierChat) (models.TelegramCourierChat, error) {
+	_, err := r.GetChatByChatID(chat.ChatID)
+	if err == nil {
+		return models.TelegramCourierChat{}, telegramerrors.ErrChatWithTheSameChatIDAlreadyExists
+	}
+	if err != telegramerrors.ErrChatNotFound {
+		return models.TelegramCourierChat{}, err
+	}
+
+	resp := r.Database.Create(&chat)
+	if resp.Error != nil {
+		return models.TelegramCourierChat{}, telegramerrors.ErrUnableToCreateChat
 	}
 
 	return chat, nil

@@ -2,9 +2,12 @@ package clientrepo
 
 import (
 	"errors"
+	"fmt"
+	"time"
 
 	"github.com/alexkalak/qrmenu/src/db/postgresql"
 	"github.com/alexkalak/qrmenu/src/errors/clienterrors"
+	"github.com/alexkalak/qrmenu/src/helpers"
 	"github.com/alexkalak/qrmenu/src/models"
 	"gorm.io/gorm"
 )
@@ -17,6 +20,11 @@ type ClientRepo interface {
 	CreateClient(client models.Client) (models.Client, error)
 	GetClientByPhoneNumber(phone string) (models.Client, error)
 	GetClientByID(id int) (models.Client, error)
+	GetAllPhoneValidationSessionsForPhone(phone string) ([]models.PhoneValidationSession, error)
+	GetAvailablePhoneValidationSessionsForPhone(phone string) ([]models.PhoneValidationSession, error)
+	CreatePhoneValidationSession(phone string, name string, hashedPassword string, code string, pinID string) (models.PhoneValidationSession, error)
+	ChangePassword(phone string, hashedPassword string) error
+	DeleteClient(id int) error
 }
 
 type clientRepo struct {
@@ -70,4 +78,67 @@ func (r *clientRepo) CreateClient(client models.Client) (models.Client, error) {
 	}
 
 	return client, nil
+}
+
+func (r *clientRepo) GetAllPhoneValidationSessionsForPhone(phone string) ([]models.PhoneValidationSession, error) {
+	validationSessions := make([]models.PhoneValidationSession, 0)
+
+	resp := r.Database.Find(&validationSessions, "phone = ?", phone)
+	if resp.Error != nil {
+		return nil, clienterrors.ErrUnableToGetClientPhoneValidationSessions
+	}
+
+	return validationSessions, nil
+}
+
+func (r *clientRepo) GetAvailablePhoneValidationSessionsForPhone(phone string) ([]models.PhoneValidationSession, error) {
+	validationSessions := make([]models.PhoneValidationSession, 0)
+
+	resp := r.Database.Find(&validationSessions, "phone = ? AND created_at > ?", phone, time.Now().Add(-time.Hour))
+	if resp.Error != nil {
+		return nil, clienterrors.ErrUnableToGetClientPhoneValidationSessions
+	}
+
+	fmt.Println("validation sessions", helpers.ConvertToJSON(validationSessions))
+
+	return validationSessions, nil
+}
+
+func (r *clientRepo) ChangePassword(phone string, hashedPassword string) error {
+	_, err := r.GetClientByPhoneNumber(phone)
+	if err != nil {
+		return err
+	}
+
+	resp := r.Database.Model(models.Client{}).Where("phone = ?", phone).UpdateColumn("hashed_password", hashedPassword)
+	if resp.Error != nil {
+		return clienterrors.ErrUnableToChangePassword
+	}
+
+	return nil
+}
+
+func (r *clientRepo) CreatePhoneValidationSession(phone string, name string, hashedPassword string, code string, pinID string) (models.PhoneValidationSession, error) {
+	session := models.PhoneValidationSession{
+		Name:           name,
+		Phone:          phone,
+		HashedPassword: hashedPassword,
+		Number:         code,
+	}
+
+	resp := r.Database.Create(&session)
+	if resp.Error != nil {
+		return models.PhoneValidationSession{}, clienterrors.ErrUnableToCreateClientPhoneValidationSession
+	}
+
+	return session, nil
+}
+
+func (r *clientRepo) DeleteClient(id int) error {
+	resp := r.Database.Delete(&models.Client{}, "id = ?", id)
+	if resp.Error != nil {
+		return clienterrors.ErrUnableToCreateClientPhoneValidationSession
+	}
+
+	return nil
 }

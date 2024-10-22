@@ -32,6 +32,8 @@ const (
 )
 
 type CourierRepo interface {
+	GetAllCouriers() ([]models.Courier, error)
+	GetAllCouriersWithTelegramUsername(telegramUsername string) ([]models.Courier, error)
 	GetCourierByEmail(email string) (models.Courier, error)
 	GetCourierByID(courierID int) (models.Courier, error)
 	CreateCourier(email string, hashedPassword string) (models.Courier, error)
@@ -52,6 +54,28 @@ func New() CourierRepo {
 	return &courierRepo{
 		Database: postgresql.GetDB(),
 	}
+}
+
+func (r *courierRepo) GetAllCouriers() ([]models.Courier, error) {
+	var couriers []models.Courier
+	result := r.Database.Find(&couriers)
+
+	if result.Error != nil {
+		return nil, couriererrors.ErrUnableToGetCourier
+	}
+
+	return couriers, nil
+}
+
+func (r *courierRepo) GetAllCouriersWithTelegramUsername(telegramUsername string) ([]models.Courier, error) {
+	var couriers []models.Courier
+	result := r.Database.Find(&couriers, "telegram_username = ?", telegramUsername)
+
+	if result.Error != nil {
+		return nil, couriererrors.ErrUnableToGetCourier
+	}
+
+	return couriers, nil
 }
 
 func (r *courierRepo) GetAllCourierOrders(courierID int) ([]models.Order, error) {

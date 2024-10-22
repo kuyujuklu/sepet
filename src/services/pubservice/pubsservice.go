@@ -379,7 +379,6 @@ func (s *pubsService) GetPubsWithShippingAvailableForPoint(point models.Vertex) 
 		}
 
 		nearestShape, isAvailable := s.GetAvailableShape(shapes, point.Lat, point.Lng)
-		fmt.Println("nearest Shape: ", nearestShape)
 
 		if pub.Shipping.Available && isAvailable {
 			availablePubs = append(availablePubs, pub)

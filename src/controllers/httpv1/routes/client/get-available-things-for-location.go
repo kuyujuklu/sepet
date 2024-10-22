@@ -7,7 +7,6 @@ import (
 	h "github.com/alexkalak/qrmenu/src/controllers/httpv1/httphelpers"
 	"github.com/alexkalak/qrmenu/src/controllers/httpv1/input/entities"
 	"github.com/alexkalak/qrmenu/src/errors/clienterrors"
-	"github.com/alexkalak/qrmenu/src/errors/servererrors"
 	"github.com/alexkalak/qrmenu/src/models"
 	"github.com/gofiber/fiber/v2"
 )
@@ -41,31 +40,16 @@ func (c *clientController) GetAvailableForShippingPubs(ctx *fiber.Ctx) error {
 	}
 
 	distances, err := c.DistanceService.GetDistanceToPubs(lat, lng, pubs)
+	if err != nil || len(distances) != len(pubs) {
+		fmt.Println("No distances")
+		distances = make([]int, len(pubs))
+	}
+
+	fmt.Println("got distances: ", distances)
+
+	outputPubs, err := c.convertPubsWithDishes(pubs, shippingPrices, distances)
 	if err != nil {
-		return h.SendError(ctx, servererrors.ErrInternalServerError, h.AUTOMATIC_STATUS_CODE)
-	}
-
-	fmt.Println("Distances: ", distances)
-
-	if len(distances) != len(pubs) {
-		return h.SendError(ctx, servererrors.ErrInternalServerError, h.AUTOMATIC_STATUS_CODE)
-	}
-
-	outputPubs := make([]entities.PubWithDishesAndDistanceOutput, 0, len(pubs))
-	fmt.Println("outputPubs: ", outputPubs)
-	for i, pub := range pubs {
-		dishes, err := c.PubService.GetAllDishesForPub(int(pub.ID))
-		if err != nil {
-			return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
-		}
-		outputPub := entities.PubWithDishesAndDistanceOutput{}
-		if err := outputPub.FillFromModel(pub, distances[i], dishes); err != nil {
-			return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
-		}
-		fmt.Println("shippingPrice: ", shippingPrices[i])
-		outputPub.ShippingPrice = shippingPrices[i]
-
-		outputPubs = append(outputPubs, outputPub)
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
 
 	fmt.Println("pubs len: ", len(pubs))
@@ -76,6 +60,26 @@ func (c *clientController) GetAvailableForShippingPubs(ctx *fiber.Ctx) error {
 			"pubs": outputPubs,
 		},
 		fiber.StatusOK)
+}
+
+func (c *clientController) convertPubsWithDishes(pubs []models.Pub, shippingPrices []float64, distances []int) ([]entities.PubWithDishesAndDistanceOutput, error) {
+	outputPubs := make([]entities.PubWithDishesAndDistanceOutput, 0, len(pubs))
+	for i, pub := range pubs {
+		dishes, err := c.PubService.GetAllDishesForPub(int(pub.ID))
+		if err != nil {
+			return nil, err
+		}
+		outputPub := entities.PubWithDishesAndDistanceOutput{}
+		if err := outputPub.FillFromModel(pub, distances[i], dishes); err != nil {
+			return nil, err
+		}
+		fmt.Println("shippingPrice: ", shippingPrices[i])
+		outputPub.ShippingPrice = shippingPrices[i]
+
+		outputPubs = append(outputPubs, outputPub)
+	}
+
+	return outputPubs, nil
 }
 
 type GetCategoriesOutput struct {

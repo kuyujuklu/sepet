@@ -14,13 +14,17 @@ import (
 	"github.com/alexkalak/qrmenu/src/repo/courierrepo"
 	"github.com/alexkalak/qrmenu/src/repo/orderrepo"
 	"github.com/alexkalak/qrmenu/src/repo/pubsrepo"
+	"github.com/alexkalak/qrmenu/src/repo/telegramrepo"
 	"github.com/alexkalak/qrmenu/src/services/orderservice"
+	"github.com/alexkalak/qrmenu/src/services/telegramservice"
 	"github.com/gofiber/contrib/websocket"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type CourierService interface {
 	Login(email string, password string) (models.Courier, error)
+
+	GetAllCouriers() ([]models.Courier, error)
 	GetCourierByEmail(email string) (models.Courier, error)
 	GetCourierByID(courierID int) (models.Courier, error)
 	CreateCourier(email string, password string) (models.Courier, error)
@@ -41,6 +45,8 @@ type CourierService interface {
 }
 
 type courierService struct {
+	TelegramService             telegramservice.TelegramService
+	TelegramRepo                telegramrepo.TelegramRepo
 	PubsRepo                    pubsrepo.PubsRepo
 	OrderService                orderservice.OrderService
 	CourierRepo                 courierrepo.CourierRepo
@@ -60,13 +66,20 @@ func New() CourierService {
 		CourierRepo:  courierrepo.New(),
 		OrderService: orderservice.New(),
 		OrderRepo:    orderrepo.New(),
+		TelegramRepo: telegramrepo.New(),
 		WebSocketCourierConnections: wshelpers.ConnectionsForID{
 			Connections: map[int]wshelpers.ConnectionsSet{},
 		},
 	}
+	tservice, _ := telegramservice.New()
+	singleton.TelegramService = tservice
+
 	singleton.OrderService.SubscribeOnOrderUpdates(singleton.UpdateOrderCallback)
 
 	return singleton
+}
+func (s *courierService) GetAllCouriers() ([]models.Courier, error) {
+	return s.CourierRepo.GetAllCouriers()
 }
 
 func (s *courierService) GetAllAvailableOrdersForDelivery() ([]models.Order, error) {
@@ -110,7 +123,17 @@ func (s *courierService) GetAllCourierDeliveredOrders(courierID int) ([]models.O
 func (s *courierService) UpdateOrderCallback(order models.Order) {
 	fmt.Println("update callback")
 
-	s.SendActiveOrderUpdateForAllCouriers(order)
+	pub, err := s.PubsRepo.GetPubById(order.PubID)
+	if err != nil {
+		return
+	}
+
+	if order.Status == models.PREPARING_ORDER_STATUS && !order.OrderCourierInfo.IsReserved && pub.Shipping.DeliveryType == models.DELIVERY_TYPE_DELIVERY_SERVICE {
+		fmt.Println("sending order for couriers in telegram")
+		s.SendActiveOrderUpdateForAllCouriersTelegram(order)
+	}
+
+	s.SendActiveOrderUpdateForAllCouriersWebSocket(order)
 }
 
 func (s *courierService) Login(email string, password string) (models.Courier, error) {
@@ -296,7 +319,7 @@ func (s *courierService) RemoveConnectionFromCourierConnections(courierID int, c
 	return nil
 }
 
-func (s *courierService) SendActiveOrderUpdateForAllCouriers(order models.Order) error {
+func (s *courierService) SendActiveOrderUpdateForAllCouriersWebSocket(order models.Order) error {
 
 	conns := wshelpers.ConnectionsSet{}
 	for _, value := range s.WebSocketCourierConnections.Connections {
@@ -306,6 +329,22 @@ func (s *courierService) SendActiveOrderUpdateForAllCouriers(order models.Order)
 	}
 
 	return s.SendSingleCourierOrderMessage(order, UPDATE_EVENT_TYPE, conns)
+}
+
+func (s *courierService) SendActiveOrderUpdateForAllCouriersTelegram(order models.Order) error {
+	fmt.Println("======================================")
+	chats, err := s.TelegramRepo.GetAllCourierChats()
+	if err != nil {
+		return err
+	}
+
+	for _, chat := range chats {
+		err := s.TelegramService.SendCreateOrderMessageForCourier(chat.ChatID, chat.Username, order)
+		if err != nil {
+			fmt.Println("ERROR SENDING TELEGRAM FOR COURIER ", err)
+		}
+	}
+	return nil
 }
 
 func (s *courierService) SendSingleCourierOrderMessage(order models.Order, eventType EventType, connections wshelpers.ConnectionsSet) error {

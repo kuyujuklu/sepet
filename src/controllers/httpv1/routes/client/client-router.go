@@ -49,6 +49,14 @@ func (c *clientController) UnauthorizedRouter(router fiber.Router) {
 	router.Get("/pub/:pubID<int>/shipping", c.GetShapesForPub)
 	router.Get("/pub/:pubID<int>/preorder", c.GetPubPreorder)
 	router.Post("/registration", c.RegistrateClient)
+	router.Post("/delete-client", c.DeleteClient)
+
+	router.Post("/auth/check-validation-number", c.CheckPhoneValidationNumber)
+	router.Post("/registration/generate-phone-validation-session", c.GenerateClientRegistrationSession)
+	router.Post("/registration/registrate-by-session-number", c.RegistrateBySessionNumber)
+	router.Post("/auth/generate-change-password-validation-session", c.GenerateClientChangePasswordSession)
+	router.Post("/auth/change-password-with-validation-number", c.ChangePasswordBySessionNumber)
+
 	router.Post("/authentication", c.AuthenticateClient)
 	router.Post("/authentication/refresh-token", c.RefreshToken)
 	router.Post("/notifications/subscribe", c.SubscribeToNotification)
@@ -61,6 +69,7 @@ func (c *clientController) AuthorizedRouter(router fiber.Router) {
 	router.Get("/", c.GetClient)
 
 	//Orders
+	router.Post("/delete-client-by-token", c.DeleteClientByToken)
 	router.Post("/orders", c.CreateOrder)
 	router.Post("/orders/:orderID<int>/rate", c.RateOrder)
 	router.Get("/orders", c.GetAllOrdersForClient)

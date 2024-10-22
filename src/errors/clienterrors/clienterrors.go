@@ -12,3 +12,11 @@ var ErrClientInvalidPassword = errors.New("invalid password")
 
 var ErrInvalidLatitude = errors.New("invalid latitude")
 var ErrInvalidLongitude = errors.New("invalid longitude")
+
+var ErrUnableToGetClientPhoneValidationSessions = errors.New("unable to get client validation sessions")
+var ErrUnableToCreateClientPhoneValidationSession = errors.New("unable to create client validation session")
+var ErrTooManySessions = errors.New("too many sessions")
+var ErrPhoneValidationSessionHasExpired = errors.New("phone vaildation session has expired")
+var ErrPhoneValidationSessionNotFound = errors.New("session not found")
+var ErrPhoneValidationSessionNumberInvalid = errors.New("invalid phone validation session number")
+var ErrUnableToChangePassword = errors.New("unable to change password")
