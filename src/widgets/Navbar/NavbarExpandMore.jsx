@@ -13,14 +13,15 @@ import { useNavigation } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import SwitchLanguage from "./SwitchLanguage";
 import { images } from "../../app/images/images";
-import { useSelector } from "react-redux";
-import { selectClient } from "../../features/store/auth/authSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { openDeleteClientPopup, selectClient } from "../../features/store/auth/authSlice";
 
 const NavbarExpandMore = ({ expanded, setExpanded }) => {
   const { t } = useTranslation();
   //from 0 to 1
   const navigator = useNavigation();
   const [expandedSize] = useState(new Animated.Value(0));
+  const dispatch = useDispatch()
   const client = useSelector(selectClient);
 
   useEffect(() => {
@@ -155,15 +156,7 @@ const NavbarExpandMore = ({ expanded, setExpanded }) => {
         </Button>
         <TouchableOpacity
           onPress={() =>
-            Linking.canOpenURL(
-              "https://qrmenu.sandex.md/admin/delete-client",
-            ).then((supported) => {
-              if (supported) {
-                Linking.openURL("https://qrmenu.sandex.md/admin/delete-client");
-              } else {
-                console.log("Don't know how to open URI: " + this.props.url);
-              }
-            })
+            dispatch(openDeleteClientPopup())
           }
           variant="outline"
           mt={2}

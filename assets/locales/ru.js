@@ -23,11 +23,10 @@ export default {
     field_is_required: "Поле обязательно для заполнения",
     this_pub_is_not_delivering_in_your_area:
       "В данный момент этот ресторан не доставляет до вашего адреса",
-      in_this_time_delivery_not_working:
-      "В это время доставка не работает",
-      too_many_sessions: "Вы отправляете запрос на регитрацию слишком часто",
-      invalid_session_validation_number: "Неверный код проверки",
-    
+    in_this_time_delivery_not_working: "В это время доставка не работает",
+    too_many_sessions: "Вы отправляете запрос на регитрацию слишком часто",
+    invalid_session_validation_number: "Неверный код проверки",
+
     validation: {
       client: {
         name_is_required: "Имя обязательно для заполнения",
@@ -59,7 +58,8 @@ export default {
     go_to_registration: "Нет аккаунта? Регистрация",
     go_to_change_password: "Забыли пароль? Сменить",
     go_to_delete_account: "Хотите удлить свой аккаунт? Кликните здесь",
-    privacy_policy_text: "Продолжая пользоваться этим приложением вы соглашаетесь с",
+    privacy_policy_text:
+      "Продолжая пользоваться этим приложением вы соглашаетесь с",
     privacy_policy_link: "политикой конфиденциальности",
     inputs: {
       phone_number: {
@@ -95,33 +95,34 @@ export default {
   change_password: {
     headline: "Сменить пароль",
     inputs: {
-      new_password:{ 
-        label: "Новый пароль"
+      new_password: {
+        label: "Новый пароль",
       },
       repeat_password: {
-        label: "Повторите пароль"
-      }
-    }
+        label: "Повторите пароль",
+      },
+    },
   },
   phone_validation_number_input: {
     headline: "Введите код из СМС",
     go_back: "Вернуться",
-    send_again: "Отравить еще раз"
+    send_again: "Отравить еще раз",
   },
   select_geolocation: {
     saved_addresses: "Сохраненные адреса",
     headline: "Выберите локацию",
-    
+
     select_by_yourself_button: "Выбрать самому",
     wait_geolocation_is_loading: "Подождите, мы загружаем ваше местоположение",
     pin_geolocation: "Добавить новый адрес",
     we_cannot_load_your_geolocaiton:
       "Мы не смогли загрузить ваше местоположение, выберите его сами",
-    change_geolocation:"Сменить локацию",
+    change_geolocation: "Сменить локацию",
   },
   home_page: {
     select_another_geolocation: "Выбрать другую локацию",
-    no_available_pubs_for_location: "К сожалению, мы пока не доставляем до вашего адреса :(",
+    no_available_pubs_for_location:
+      "К сожалению, мы пока не доставляем до вашего адреса :(",
     pubs_near_you: "Рестораны возле вас",
     pub_is_closed: "Закрыто. Время работы",
   },
@@ -135,7 +136,8 @@ export default {
     headline: "Корзина",
     empty: "Пустая",
     create_order_button: "Дальше",
-    pub_is_closed_error: "Этот ресторан сейчас закрыт попробуйте позже или сделайте заказ в другом",
+    pub_is_closed_error:
+      "Этот ресторан сейчас закрыт попробуйте позже или сделайте заказ в другом",
   },
   basket_popup: {
     another_pub_warning:
@@ -226,10 +228,17 @@ export default {
     all_publishments: "Все заведения",
   },
   order_info_page: {
-    order: "Заказ"
+    order: "Заказ",
   },
   address_info: {
     your_address: "Ваш адрес",
-
-  }
+  },
+  delete_account_popup: {
+    headline: "Удалить мой аккаунт",
+    main_text:
+      "Внимание! Удаление аккаунта Sepet, означает удаление всех данных о вас, такие как: ваши заказы, ваше имя, емейл, телефон, адреса доставок, выбранные местоположения, оценки ресторанов, история создания заказов, информация о вашем устройстве, и кукис.",
+    subscription: "Это действие необратимо.",
+    back: "Назад",
+    delete: "Удалить",
+  },
 };

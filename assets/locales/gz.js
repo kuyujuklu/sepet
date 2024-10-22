@@ -55,7 +55,8 @@ export default {
     go_to_registration: "Yok akaunt?  Registraţiya",
     go_to_change_password: "Unuttunuz parolü? Diiştirmää",
     go_to_delete_account: "Isteersiniz akauntu silmää? Basınız burayı",
-    privacy_policy_text: "Продолжая пользоваться этим приложением вы соглашаетесь с",
+    privacy_policy_text:
+      "Продолжая пользоваться этим приложением вы соглашаетесь с",
     privacy_policy_link: "политикой конфиденциальности",
     inputs: {
       phone_number: {
@@ -224,5 +225,13 @@ export default {
 
   order_info_page: {
     order: "Sımarlamak",
+  },
+  delete_account_popup: {
+    headline: "Удалить мой аккаунт",
+    main_text:
+      "Внимание! Удаление аккаунта Sepet, означает удаление всех данных о вас, такие как: ваши заказы, ваше имя, емейл, телефон, адреса доставок, выбранные местоположения, оценки ресторанов, история создания заказов, информация о вашем устройстве, и кукис.",
+    subscription: "Это действие необратимо.",
+    back: "Назад",
+    delete: "Удалить",
   },
 };

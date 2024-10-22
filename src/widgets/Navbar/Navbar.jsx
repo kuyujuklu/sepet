@@ -3,16 +3,21 @@ import NavbarExpandMore from "./NavbarExpandMore";
 import { styles } from "./navbar.style";
 import NavbarExpandMoreButton from "./NavbarExpandMoreButton";
 import { useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { selectBasket } from "../../features/store/basket/basketSlice";
 import { Text, View } from "native-base";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { Dimensions, Image, Pressable, TouchableOpacity } from "react-native";
 import { images } from "../../app/images/images";
 import NavbarExpandMoreCloseArea from "./NavbarExpandMoreCloseArea";
+import { selectNavbarExpanded, setNavbarExpanded } from "../../features/store/navbar/navbarSlice";
 
 const Navbar = ({ routeName }) => {
-  const [expanded, setExpanded] = useState(false);
+  const dispatch = useDispatch()
+  const expanded = useSelector(selectNavbarExpanded)
+  const setExpanded = (exp) => {
+    dispatch(setNavbarExpanded(exp))
+  }
   const navigator = useNavigation();
 
   const basket = useSelector(selectBasket);

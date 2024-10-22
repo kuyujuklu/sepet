@@ -9,7 +9,10 @@ export const authSlice = createSlice({
       phone: "",
       name: "",
     },
-    refetchClient: false
+    refetchClient: false,
+    deleteClientPopup: {
+      opened: false,
+    },
   },
   reducers: {
     setIsRequiringAuthentication(state, action) {
@@ -18,13 +21,25 @@ export const authSlice = createSlice({
     setClient(state, action) {
       state.client = action.payload;
     },
-    setRefetchClient(state,action) {
+    setRefetchClient(state, action) {
       state.refetchClient = action.payload;
-    }
+    },
+    openDeleteClientPopup(state) {
+      state.deleteClientPopup.opened = true;
+    },
+    closeDeleteClientPopup(state) {
+      state.deleteClientPopup.opened = false;
+    },
   },
 });
 
-export const { setIsRequiringAuthentication, setClient,setRefetchClient } = authSlice.actions;
+export const {
+  setIsRequiringAuthentication,
+  setClient,
+  setRefetchClient,
+  openDeleteClientPopup,
+  closeDeleteClientPopup,
+} = authSlice.actions;
 
 export const authSelectSetIsRequiringAuthentication = (state) =>
   state.auth.isRequiringAuthentication;
@@ -33,6 +48,8 @@ export const authSelectIsAuthRequiredAtApplicationStart = (state) =>
 
 export const selectClient = (state) => state?.auth.client;
 
-export const selectRefetchClient = (state) => state.auth.refetchClient
+export const selectRefetchClient = (state) => state.auth.refetchClient;
+
+export const selectDeleteClientPopup = (state) => state.auth.deleteClientPopup;
 
 export default authSlice.reducer;

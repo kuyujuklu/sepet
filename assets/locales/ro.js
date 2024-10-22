@@ -25,8 +25,8 @@ export default {
       "Acest restaurant nu livrează momentan la adresa dvs.",
     in_this_time_delivery_not_working:
       "Livrarea nu este disponibilă în acest moment.",
-      too_many_sessions: "Trimiteți cereri de înregistrare prea des",
-      invalid_session_validation_number: "Cod de verificare nevalid",
+    too_many_sessions: "Trimiteți cereri de înregistrare prea des",
+    invalid_session_validation_number: "Cod de verificare nevalid",
     validation: {
       client: {
         name_is_required: "Numele este obligatoriu",
@@ -58,8 +58,9 @@ export default {
     send_again: "Trimite din nou",
     submit: "Confirmare",
     go_to_registration: "Nu aveți un cont? Înregistrare",
-    go_to_delete_account: "Doriți să vă extindeți contul? Click aici",
-    privacy_policy_text: "Continuând să utilizați această aplicație, sunteți de acord cu",
+    go_to_delete_account: "Doriți să vă ștergeți contul? Click aici",
+    privacy_policy_text:
+      "Continuând să utilizați această aplicație, sunteți de acord cu",
     privacy_policy_link: "politica de confidențialitate",
     inputs: {
       phone_number: { label: "Număr de telefon" },
@@ -87,8 +88,8 @@ export default {
     wait_geolocation_is_loading: "Așteptați, încărcăm locația dvs.",
     pin_geolocation: "Adăuga o nouă adresă",
     we_cannot_load_your_geolocaiton:
-    "Nu am putut încărca locația, vă rugăm să o selectați manual",
-    change_geolocation:"Schimba locatia",
+      "Nu am putut încărca locația, vă rugăm să o selectați manual",
+    change_geolocation: "Schimba locatia",
   },
   home_page: {
     pubs_near_you: "Restaurante din apropiere",
@@ -180,9 +181,17 @@ export default {
     salad: "salate",
     snacks: "gustări",
     meat: "mâncăruri din carne",
-    all_publishments: "Toate unitățile"
+    all_publishments: "Toate unitățile",
   },
   order_info_page: {
-    order: "Comanda"
-  }
+    order: "Comanda",
+  },
+  delete_account_popup: {
+    headline: "Ștergeți contul meu",
+    main_text:
+      "Atenţie! Ștergerea unui cont Sepet înseamnă ștergerea tuturor datelor despre dvs., cum ar fi: comenzile dvs., numele dvs., e-mailul, telefonul, adresele de livrare, locațiile selectate, evaluările restaurantelor, istoricul comenzilor, informații despre dispozitivul dvs. și cookie-uri.",
+    subscription: "Această acțiune este ireversibilă.",
+    back: "Spate",
+    delete: "Şterge contul",
+  },
 };

@@ -42,6 +42,7 @@ import { setSavedAddresses } from "./src/features/store/geolocation/geolocationS
 import { useNetInfo } from "@react-native-community/netinfo";
 import InternetChecker from "./src/widgets/InternetChecker";
 import NoInternetPage from "./src/pages/Internet/NoInternetPage";
+import DeleteClientPopup from "./src/widgets/Client/DeleteClientPopup";
 
 export default function App() {
   return (
@@ -156,6 +157,7 @@ const AppInner = () => {
 
       <ClearBasketPopup />
       <DishImagePopup />
+      <DeleteClientPopup />
       <InternetChecker />
     </NavigationContainer>
   );
