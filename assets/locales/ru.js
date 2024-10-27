@@ -50,6 +50,8 @@ export default {
   },
   auth: {
     logout: "Выйти из аккаунта",
+    guest_account: "Аккаунт гостя",
+    login_as_guest: "Войти как гость",
     headline: "Авторизация",
     pass_validation_code_from_sms: "Введите код из смс",
     go_back: "Вернуться",
@@ -138,7 +140,8 @@ export default {
     create_order_button: "Дальше",
     pub_is_closed_error:
       "Этот ресторан сейчас закрыт попробуйте позже или сделайте заказ в другом",
-  },
+    go_to_registration: "Чтобы продолжить - зарегистрируйтесь"
+    },
   basket_popup: {
     another_pub_warning:
       "Вы пытаетесь добавить товар из другого ресторана.  Корзина будет очищена.",

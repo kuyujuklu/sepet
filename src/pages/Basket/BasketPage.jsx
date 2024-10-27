@@ -19,6 +19,8 @@ import { AnonymousProBold } from "../../constants/styles-constants";
 import { deliveryTypes } from "../../app/static-data/data";
 import { Platform } from "react-native";
 import { selectGeolocation } from "../../features/store/geolocation/geolocationSlice";
+import { selectClient } from "../../features/store/auth/authSlice";
+import BasketGoToRegistrationButton from "../../widgets/Basket/BasketGoToRegistrationButton";
 
 const BasketPage = () => {
   const dispatch = useDispatch();
@@ -31,6 +33,8 @@ const BasketPage = () => {
 
   const basket = useSelector(selectBasket);
   const location = useSelector(selectGeolocation);
+
+  const client = useSelector(selectClient);
 
   const {
     data: pubsData,
@@ -109,10 +113,14 @@ const BasketPage = () => {
         style={{ bottom: Platform.OS === "ios" ? 85 : 60 }}
         borderRadius={15}
       >
-        <BasketCreateOrderButton
-          itemsPrice={itemsPrice}
-          isClosed={!pubData?.pub.isOpen}
-        />
+        {!client || client.isGuest ? (
+          <BasketGoToRegistrationButton />
+        ) : (
+          <BasketCreateOrderButton
+            itemsPrice={itemsPrice}
+            isClosed={!pubData?.pub.isOpen}
+          />
+        )}
       </View>
     </Wrapper>
   );

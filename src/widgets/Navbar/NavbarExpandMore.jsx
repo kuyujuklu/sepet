@@ -14,14 +14,17 @@ import { useTranslation } from "react-i18next";
 import SwitchLanguage from "./SwitchLanguage";
 import { images } from "../../app/images/images";
 import { useDispatch, useSelector } from "react-redux";
-import { openDeleteClientPopup, selectClient } from "../../features/store/auth/authSlice";
+import {
+  openDeleteClientPopup,
+  selectClient,
+} from "../../features/store/auth/authSlice";
 
 const NavbarExpandMore = ({ expanded, setExpanded }) => {
   const { t } = useTranslation();
   //from 0 to 1
   const navigator = useNavigation();
   const [expandedSize] = useState(new Animated.Value(0));
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
   const client = useSelector(selectClient);
 
   useEffect(() => {
@@ -151,18 +154,21 @@ const NavbarExpandMore = ({ expanded, setExpanded }) => {
               textAlign: "center",
             }}
           >
-            +373{client?.phone}
+            {client?.isGuest ? t("auth.guest_account") : `+373${client?.phone}`}
           </Text>
         </Button>
         <TouchableOpacity
-          onPress={() =>
-            dispatch(openDeleteClientPopup())
-          }
+          onPress={() => dispatch(openDeleteClientPopup())}
           variant="outline"
           mt={2}
           color="coolGray.600"
         >
-          <Text textAlign={"center"} fontSize="xs" color="coolGray.500" style={{textDecorationLine: "underline"}}>
+          <Text
+            textAlign={"center"}
+            fontSize="xs"
+            color="coolGray.500"
+            style={{ textDecorationLine: "underline" }}
+          >
             {t("auth.go_to_delete_account")}
           </Text>
         </TouchableOpacity>

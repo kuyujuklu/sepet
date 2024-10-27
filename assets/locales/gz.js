@@ -48,6 +48,8 @@ export default {
   auth: {
     logout: "Akaunttan çıkış",
     headline: "Avtorizaţiya",
+    guest_account: "Musaafir akauntu",
+    login_as_guest: "Girmää registratiyasız",
     pass_validation_code_from_sms: "Yazın SMS kodu",
     go_back: "Geeri dön",
     send_again: "Enidän yolla",
@@ -133,7 +135,8 @@ export default {
     create_order_button: "Ileri",
     pub_is_closed_error:
       "Restoran kapalı, savaşın soran, yada yapın sımarlamak başka restoranda",
-  },
+    go_to_registration: "Чтобы продолжить - зарегистрируйтесь"
+    },
   basket_popup: {
     another_pub_warning:
       "Siz savaşěrsınız yapmaa sımarlamak başka erdän. Tamannamaa? Sepet boşalacek!!!",

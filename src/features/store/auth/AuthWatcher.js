@@ -18,35 +18,52 @@ const AuthWatcher = () => {
 
   const refetchClient = useSelector(selectRefetchClient);
   const isAuthRequiredAtApplicationStart = useSelector(
-    authSelectIsAuthRequiredAtApplicationStart
+    authSelectIsAuthRequiredAtApplicationStart,
   );
 
-  //Check on startup if authentication is required
-  useEffect(() => {
-    if (isAuthRequiredAtApplicationStart || refetchClient) {
-      (async function () {
-        const resp = await refreshToken();
-        if (!resp?.ok || !resp.accesstoken) {
-          navigator.dispatch(
-            CommonActions.reset({
-              index: 0,
-              routes: [{ name: "Registration" }],
-            })
-          );
-          return;
-        }
-
-        setaccesstoken(resp.accesstoken);
-        dispatch(
-          setClient({ phone: resp.client?.phone, name: resp.client?.name })
-        );
-        dispatch(setRefetchClient(false));
-      })();
+  const authenticate = async () => {
+    const resp = await refreshToken();
+    if (!resp?.ok || !resp.accesstoken) {
+      dispatch(setRefetchClient(false));
+      navigator.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: "Registration" }],
+        }),
+      );
+      return;
     }
-  }, [isAuthRequiredAtApplicationStart, refetchClient]);
+
+    setaccesstoken(resp.accesstoken);
+    dispatch(
+      setClient({
+        phone: resp.client?.phone,
+        name: resp.client?.name,
+        isGuest: false,
+      }),
+    );
+    dispatch(setRefetchClient(false));
+  };
+
+  useEffect(() => {
+    if (isAuthRequiredAtApplicationStart) {
+      console.log(
+        " AUTH REQUIRED at app start ",
+        isAuthRequiredAtApplicationStart,
+      );
+      authenticate();
+    }
+  }, [isAuthRequiredAtApplicationStart]);
+
+  useEffect(() => {
+    if (refetchClient) {
+      console.log("REFETCH CLIENT", refetchClient);
+      authenticate();
+    }
+  }, [refetchClient]);
 
   const isRequiringAuthentication = useSelector(
-    authSelectSetIsRequiringAuthentication
+    authSelectSetIsRequiringAuthentication,
   );
 
   // Redirect to registration page if authentication is required

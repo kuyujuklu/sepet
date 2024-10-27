@@ -8,6 +8,7 @@ export const authSlice = createSlice({
     client: {
       phone: "",
       name: "",
+      isGuest: false,
     },
     refetchClient: false,
     deleteClientPopup: {

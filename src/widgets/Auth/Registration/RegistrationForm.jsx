@@ -11,7 +11,7 @@ import { authStyles } from "../auth.styles";
 import RegistrationDataInputs from "./RegistrationDataInputs";
 import { useEffect, useRef, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setaccesstoken } from "../../../shared/api/auth/authBasedQuery";
 import * as SecureStore from "expo-secure-store";
 import { useNavigation } from "@react-navigation/native";
@@ -30,8 +30,18 @@ import { ENV } from "../../../constants/env/env";
 import { validateRegistrationData } from "../../../shared/validation/validators/client/client-validation";
 import { Image } from "expo-image";
 import { images } from "../../../app/images/images";
-import { Animated, Dimensions, Keyboard, Platform, TouchableOpacity } from "react-native";
-import { setRefetchClient } from "../../../features/store/auth/authSlice";
+import {
+  Animated,
+  Dimensions,
+  Keyboard,
+  Platform,
+  TouchableOpacity,
+  Linking,
+} from "react-native";
+import {
+  setClient,
+  setRefetchClient,
+} from "../../../features/store/auth/authSlice";
 import AuthValidationNumber from "../AuthValidationNumber";
 import { GetTimeFromApiTimeString } from "../../../shared/utils/time";
 import forbidPropTypes from "eslint-plugin-react/lib/rules/forbid-prop-types";
@@ -42,55 +52,19 @@ import {
 import { appErrors } from "../../../app/errors/appErrors";
 import { convertRespError } from "../../../app/errors/convertApiErrors";
 import { trimPhone } from "../../../shared/utils/phone-utils";
-import { Linking } from "react-native";
+import { selectGeolocation } from "../../../features/store/geolocation/geolocationSlice";
 
 const RegistrationForm = () => {
   const { t } = useTranslation();
   const timestampRef = useRef(Date.now()).current;
   const dispatch = useDispatch();
+  const location = useSelector(selectGeolocation);
 
   const navigator = useNavigation();
   const [phone, setPhone] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [repeatPassword, setRepeatPassword] = useState("");
-
-  // const [
-  //   registrationQuery,
-  //   {
-  //     data: registrationQueryData,
-  //     error: registrationQueryError,
-  //     isLoading: registrationQueryIsLoading,
-  //   },
-  // ] = useLazyRegistrateQuery({ sessionId: timestampRef });
-
-  // //Handling registration data sending success
-  // useEffect(() => {
-  //   if (!registrationQueryData || !registrationQueryData.ok) return;
-
-  //   SecureStore.setItemAsync(
-  //     "refresh_token",
-  //     registrationQueryData.refresh_token,
-  //   );
-
-  //   setaccesstoken(registrationQueryData.access_token);
-  //   dispatch(enableNavbar());
-  //   dispatch(setRefetchClient(true));
-  //   navigator.navigate("SelectGeolocationPage");
-  // }, [registrationQueryData]);
-
-  // // // Handling registration data sending error
-  // useEffect(() => {
-  //   if (!registrationQueryError?.data || !registrationQueryError?.data?.err)
-  //     return;
-
-  //   dispatch(
-  //     pushError({
-  //       errorKey: errorKeys.registration,
-  //       error: registrationQueryError.data.err,
-  //     }),
-  //   );
-  // }, [registrationQueryError]);
 
   const [page, setPage] = useState("data"); //data or validation
 
@@ -143,6 +117,15 @@ const RegistrationForm = () => {
     setaccesstoken(validateSessionNumberData.access_token);
     dispatch(enableNavbar());
     dispatch(setRefetchClient(true));
+    
+    if (location && location.lat && location.lng) {
+      navigator.navigate("Home");
+      return;
+    }
+    navigator.navigate("SelectGeolocationPage");
+
+
+
     navigator.navigate("SelectGeolocationPage");
   }, [validateSessionNumberData]);
 
@@ -257,6 +240,27 @@ const RegistrationForm = () => {
       useNativeDriver: false,
     }).start();
   }, [shouldHideImage]);
+
+  const loginAsGuest = () => {
+    dispatch(
+      setClient({ phone: "guest account", name: "Guest", isGuest: true }),
+    );
+
+    if (location && location.lat && location.lng) {
+      // setaccesstoken(validateSessionNumberData.access_token);
+      // dispatch(setRefetchClient(true));
+      dispatch(enableNavbar());
+      dispatch(setRefetchClient(false));
+      navigator.navigate("Home");
+      return;
+    }
+    // setaccesstoken(validateSessionNumberData.access_token);
+    // dispatch(setRefetchClient(true));
+    dispatch(enableNavbar());
+    dispatch(setRefetchClient(false));
+    navigator.navigate("SelectGeolocationPage");
+  };
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : null}
@@ -371,29 +375,47 @@ const RegistrationForm = () => {
                   {t("registration.go_to_auth")}
                 </Text>
               </Button>
-              <View flex={1} justifyContent="center" alignItems="center">
-                <Text textAlign={"center"} color="coolGray.500" fontSize={10} mt={3}>
-                  {t("auth.privacy_policy_text")} {" "}
+
+              <Button
+                onPress={() => loginAsGuest()}
+                variant="outline"
+                mt={2}
+                color="coolGray.600"
+              >
+                <Text color="coolGray.500" textAlign="center">
+                  {t("auth.login_as_guest")}
                 </Text>
-                  <TouchableOpacity
-                    onPress={() =>
-                      Linking.canOpenURL(
-                        "https://www.termsfeed.com/live/ebacde7a-7bb6-4e3f-b5f0-85e084530b3a",
-                      ).then((supported) => {
-                        if (supported) {
-                          Linking.openURL(
-                            "https://www.termsfeed.com/live/ebacde7a-7bb6-4e3f-b5f0-85e084530b3a",
-                          );
-                        } else {
-                          console.log(
-                            "Don't know how to open URI: " + this.props.url,
-                          );
-                        }
-                      })
-                    }
-                  >
-                    <Text color="blue.400" fontSize={10}>{t("auth.privacy_policy_link")}</Text>
-                  </TouchableOpacity>
+              </Button>
+              <View flex={1} justifyContent="center" alignItems="center">
+                <Text
+                  textAlign={"center"}
+                  color="coolGray.500"
+                  fontSize={10}
+                  mt={3}
+                >
+                  {t("auth.privacy_policy_text")}{" "}
+                </Text>
+                <TouchableOpacity
+                  onPress={() =>
+                    Linking.canOpenURL(
+                      "https://www.termsfeed.com/live/ebacde7a-7bb6-4e3f-b5f0-85e084530b3a",
+                    ).then((supported) => {
+                      if (supported) {
+                        Linking.openURL(
+                          "https://www.termsfeed.com/live/ebacde7a-7bb6-4e3f-b5f0-85e084530b3a",
+                        );
+                      } else {
+                        console.log(
+                          "Don't know how to open URI: " + this.props.url,
+                        );
+                      }
+                    })
+                  }
+                >
+                  <Text color="blue.400" fontSize={10}>
+                    {t("auth.privacy_policy_link")}
+                  </Text>
+                </TouchableOpacity>
               </View>
             </View>
           </View>

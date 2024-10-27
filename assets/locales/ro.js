@@ -52,6 +52,8 @@ export default {
   },
   auth: {
     logout: "Deconectare",
+    guest_account: "Cont de oaspete",
+    login_as_guest: "Conectați fără înreg.",
     headline: "Autentificare",
     pass_validation_code_from_sms: "Introduceți codul din SMS",
     go_back: "Înapoi",
@@ -107,7 +109,9 @@ export default {
     create_order_button: "Creați comanda",
     pub_is_closed_error:
       "Acest restaurant este în prezent închis, vă rugăm să încercați mai târziu sau să comandați de la altul.",
-  },
+      go_to_registration: "Pentru a continua - înregistrează-te"
+  
+    },
   basket_popup: {
     another_pub_warning:
       "Încercați să adăugați un articol dintr-un alt restaurant. Căruciorul va fi gol.",

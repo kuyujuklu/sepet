@@ -33,14 +33,14 @@ const CategoryCard = ({ category }) => {
         )}
         <View
           position={"absolute"}
-          w="120%"
+          w="100%"
           h="120%"
           backgroundColor={"rgba(0, 0, 0, 0.5)"}
           borderWidth={2}
           alignItems={"center"}
           justifyContent={"center"}
         >
-          <Text fontSize={"2xl"} fontWeight={"bold"} color={"#fff"}>
+          <Text numberOfLines={1} fontSize={"2xl"} fontWeight={"bold"} color={"#fff"}>
             {category?.name}
           </Text>
         </View>

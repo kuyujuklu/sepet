@@ -11,7 +11,7 @@ import { authStyles } from "../auth.styles";
 import * as SecureStore from "expo-secure-store";
 import { useEffect, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setaccesstoken } from "../../../shared/api/auth/authBasedQuery";
 import { useNavigation } from "@react-navigation/native";
 import { useLazyAuthenticationQuery } from "../../../shared/api/client/clientAuth";
@@ -35,6 +35,7 @@ import {
   Platform,
   TouchableOpacity,
 } from "react-native";
+import { selectGeolocation } from "../../../features/store/geolocation/geolocationSlice";
 
 const AuthenticationForm = () => {
   const dispatch = useDispatch();
@@ -44,6 +45,7 @@ const AuthenticationForm = () => {
   const navigator = useNavigation();
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  const location = useSelector(selectGeolocation);
 
   const [
     authenticationQuery,
@@ -65,11 +67,16 @@ const AuthenticationForm = () => {
     setaccesstoken(authenticationQueryData.access_token);
     dispatch(enableNavbar());
     dispatch(setRefetchClient(true));
-
     SecureStore.setItemAsync(
       "refresh_token",
       authenticationQueryData.refresh_token,
     );
+
+    if (location && location.lat && location.lng) {
+      navigator.navigate("Home");
+      return;
+    }
+
     navigator.navigate("SelectGeolocationPage");
   }, [authenticationQueryData]);
 
