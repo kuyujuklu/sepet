@@ -96,6 +96,7 @@ const AdminPanel = () => {
                 shipping_work_start: shippingData.shipping_work_start,
                 shipping_work_end: shippingData.shipping_work_end,
                 shipping_prices: shippingData.shipping_prices,
+                shipping_free_delivery_prices: shippingData.shipping_free_delivery_prices,
                 shapes: shippingData.shapes,
             })
         );

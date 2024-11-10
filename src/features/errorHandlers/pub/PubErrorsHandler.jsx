@@ -1,10 +1,9 @@
-import { useCreatePubMutation, useDeletePubMutation, useSetPreorderMutation, useUpdatePubMutation } from "@/api/pub/pub"
 import { useEffect } from "react"
 import { errorKeys, selectReceivingError, handleErrorStandardWay  } from "../errorHandlerSlice"
 import { useDispatch, useSelector } from "react-redux"
 import { appErrors } from "@/errors/errors"
 import { fixedCacheKeys } from "../../../api/fixedCacheKeys"
-import { useUpdateDeliveryTypeMutation } from "../../../api/pub/pub"
+import { useCreatePubMutation, useDeletePubMutation, useSetPreorderMutation, useSetShippingFreeDeliveryPricesMutation, useUpdateDeliveryTypeMutation, useUpdatePubMutation } from "../../../api/pub/pub"
 
 const PubErrorsHandler = () => {
     const dispatch = useDispatch()
@@ -21,6 +20,7 @@ const PubErrorsHandler = () => {
     const [, {error: pubRemoveCourierError }] = useSetPreorderMutation({fixedCacheKey: fixedCacheKeys.pubs.remove_courier_error})
     const [, {error: pubUpdateDeliveryTypeError }] = useUpdateDeliveryTypeMutation({fixedCacheKey: fixedCacheKeys.pubs.set_delivery_type})
     const [, {error: pubSetAddCommissionToDishPrices }] = useUpdateDeliveryTypeMutation({fixedCacheKey: fixedCacheKeys.pubs.set_add_commission_to_dish_prices})
+    const [, {error: pubSetFreeDeliveryFromError }] = useSetShippingFreeDeliveryPricesMutation({fixedCacheKey: fixedCacheKeys.pubs.set_shipping_free_delivery_from})
     
     const pubGetByIDError = useSelector(selectReceivingError(errorKeys.get_pub_by_id))
     const getPubsError = useSelector(selectReceivingError(errorKeys.get_pubs))
@@ -163,6 +163,15 @@ const PubErrorsHandler = () => {
 
         dispatch(handleErrorStandardWay(pubSetAddCommissionToDishPrices))
     }, [dispatch, pubSetAddCommissionToDishPrices])
+    
+
+    useEffect(() => {
+        if (!pubSetFreeDeliveryFromError) {
+            return
+        }
+
+        dispatch(handleErrorStandardWay(pubSetFreeDeliveryFromError))
+    }, [dispatch, pubSetFreeDeliveryFromError])
     
 
     return (

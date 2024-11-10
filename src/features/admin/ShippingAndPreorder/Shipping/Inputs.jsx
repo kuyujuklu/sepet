@@ -13,6 +13,7 @@ import DeliveryTypeInput from "./DeliveryTypeInput";
 import { useSetAddCommissionToDishPricesMutation } from "../../../../api/pub/pub";
 import { fixedCacheKeys } from "../../../../api/fixedCacheKeys";
 import BlackSpinner from "../../../../components/loaders/BlackSpinner";
+import FreeDeliveryPriceInput from "./FreeDeliveryPriceInput";
 
 const Inputs = ({ pub }) => {
   const { t } = useTranslation();
@@ -158,6 +159,20 @@ const Inputs = ({ pub }) => {
                 companyID={pub?.company_id}
                 pubID={pub?.id}
                 deliveryPrices={shipping?.shipping_prices}
+                shapeColors={shipping?.shapes?.reduce((acc, shape) => {
+                  acc[shape.shape_id] = shape.color;
+                  return acc;
+                }, {})}
+              />
+            </div>
+            <div className="mt-2">
+              <div className="font-medium text-lg mb-4">
+                {t("admin.admin_panel.shipping.shipping_free_delivery_prices.headline")}
+              </div>
+              <FreeDeliveryPriceInput
+                companyID={pub?.company_id}
+                pubID={pub?.id}
+                deliveryPrices={shipping?.shipping_free_delivery_prices}
                 shapeColors={shipping?.shapes?.reduce((acc, shape) => {
                   acc[shape.shape_id] = shape.color;
                   return acc;

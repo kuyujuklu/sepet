@@ -216,7 +216,7 @@ const CourierOrderCard = ({ courierID, order, courierOrdersFilter }) => {
             />
           </div>
           <span className="font-bold">
-            {order?.courier_info?.courier_reward} Lei
+            {order?.courier_info?.courier_reward?.toFixed(2)} Lei
           </span>
         </div>
         {(courierOrdersFilter === courierOrderFilters.completed || courierOrdersFilter === courierOrderFilters.active) && (

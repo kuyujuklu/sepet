@@ -8,6 +8,7 @@ const initialState = {
         shipping_work_start: null,
         shipping_work_end: null,
         shipping_prices: null,
+        shipping_free_delivery_prices: null,
         shapes: []
     },
     addCourierPopup: {

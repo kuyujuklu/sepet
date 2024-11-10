@@ -14,6 +14,7 @@ export const fixedCacheKeys = {
         set_preorder: 'pubs.set_preorder',
         set_shipping_time: 'pubs.set_shipping_time',
         set_shipping_work_hours: 'pubs.set_shipping_work_hours',
+        set_shipping_free_delivery_from: 'pubs.set_shipping_free_delivery_from',
         add_courier_error: 'pubs.add_courier',
         remove_courier_error: 'pubs.remove_courier',
         set_delivery_type: 'pubs.set_delivery_type',

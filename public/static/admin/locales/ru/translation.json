@@ -251,6 +251,9 @@
                 "shipping_add_commission_to_dish_prices": {
                     "headline": "Добавлять комиссию службы доставки к цене товаров"
                 },
+                "shipping_free_delivery_prices": {
+                    "headline": "Бесплатная доставка в вашем заведении"
+                },
                 "shipping_map": {
                     "checkmark_headline": "Если ваше заведение имеет доставку поставьте галочку",
                     "checkmark_label": "Доставка",

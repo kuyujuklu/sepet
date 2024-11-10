@@ -193,6 +193,19 @@ export const pub = createApi({
             }),
             invalidatesTags: ["Pub"],
         }), 
+        setShippingFreeDeliveryPrices: builder.mutation({
+            query: ({ companyID, pubID, prices }) => ({
+                url: `/api/company/${companyID}/pubs/${pubID}/shipping-free-delivery-prices`,
+                method: "POST",
+                body: {
+                    "prices": prices,
+                },
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }),
+            invalidatesTags: ["Pub"],
+        }), 
         removeCourier: builder.mutation({
             query: ({ companyID, pubID, courierID }) => ({
                 url: `/api/company/${companyID}/pubs/${pubID}/couriers/${courierID}`,
@@ -265,4 +278,5 @@ export const {
     useAddCourierMutation,
     useUpdateDeliveryTypeMutation,
     useSetAddCommissionToDishPricesMutation,
+    useSetShippingFreeDeliveryPricesMutation
 } = pub;
