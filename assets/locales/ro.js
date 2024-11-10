@@ -198,4 +198,7 @@ export default {
     back: "Spate",
     delete: "Şterge contul",
   },
+  pub_card: {
+    free_delivery_from: "Livrare gratuita de la"
+  }
 };

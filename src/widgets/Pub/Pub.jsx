@@ -16,6 +16,13 @@ const Pub = ({ pub, isViewable, distance }) => {
     "/images/pubs/bgs/" +
     pub.bg_image_file_name;
 
+    const [imageLoaded, setImageLoaded] = useState(false);
+
+    useEffect(() => {
+      if (pub && !pub.bg_image_file_name) {
+        setImageLoaded(true);
+      }
+    }, [pub]);
   const scaleAnimation = useRef(new Animated.Value(0)).current;
 
   const shippingWorkHours = {
@@ -33,6 +40,10 @@ const Pub = ({ pub, isViewable, distance }) => {
       useNativeDriver: false,
     }).start();
   }, [isViewable]);
+
+  const hasFreeDeliveryPrice =
+    !isNaN(+pub?.shipping_free_delivery_price) &&
+    +pub?.shipping_free_delivery_price > 0;
 
   return (
     <View style={{ width: 300 }}>
@@ -81,6 +92,7 @@ const Pub = ({ pub, isViewable, distance }) => {
           </View>
         )}
         <Image
+          onLoad={() => setImageLoaded(true)}
           contentFit="contain"
           style={{ width: 340, aspectRatio: 1 / 8 }}
           source={{ uri: bgPath }}
@@ -88,20 +100,39 @@ const Pub = ({ pub, isViewable, distance }) => {
         />
       </Animated.View>
 
+        {/* free delivery price */}
+      {hasFreeDeliveryPrice && (
+        <View
+          style={{
+            paddingRight: 20,
+            paddingLeft: 20,
+            alignItems: "center",
+            justifyContent: "center",
+            flexDirection: "row",
+          }}
+        >
+          <Text style={{ fontSize: 14 }} textAlign="center" fontWeight="bold">
+            {t("pub_card.free_delivery_from")}{" "}
+            {pub?.shipping_free_delivery_price} Lei
+          </Text>
+        </View>
+      )}
       {/* Info container */}
       <View
         style={{
           paddingTop: 10,
           paddingRight: 20,
           paddingLeft: 20,
-          alignItems: "center",
           justifyContent: "space-between",
           flexDirection: "row",
         }}
       >
-        {/* pub name */}
-        <Text style={{ fontSize: 18 }}>{pub.name}</Text>
         <View flex={1} flexDir="column">
+          {/* pub name */}
+          <Text style={{ fontSize: 18 }}>{pub.name}</Text>
+          {/* free delivery price */}
+        </View>
+        <View flexDir="column">
           {/* shipping price */}
           <View
             justifyContent="flex-end"

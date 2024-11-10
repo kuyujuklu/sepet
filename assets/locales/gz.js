@@ -237,4 +237,7 @@ export default {
     back: "Назад",
     delete: "Удалить",
   },
+  pub_card: {
+    free_delivery_from: "Бесплатная доставка от"
+  }
 };

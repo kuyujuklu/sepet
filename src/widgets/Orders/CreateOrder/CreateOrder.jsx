@@ -96,6 +96,9 @@ const CreateOrder = ({
   }, [createOrderError]);
 
   const sendData = () => {
+    if (isCreateOrderLoading) {
+      return;
+    }
     setTriedToSubmit(true);
 
     if (!areInputsValid) {
@@ -117,6 +120,7 @@ const CreateOrder = ({
           title: "you have no dishes in basket",
         }),
       );
+      return;
     }
 
     if (!location) {
@@ -139,6 +143,7 @@ const CreateOrder = ({
           title: "you have no dishes in basket",
         }),
       );
+      return;
     }
 
     const dishes = dishIDs.map((dishID) => ({
@@ -274,7 +279,7 @@ const CreateOrder = ({
 
         <View px={2}>
           <Button
-            disabled={!areInputsValid}
+            disabled={!areInputsValid || !basket || Object.keys(basket).length === 0}
             background={areInputsValid ? "emerald.600" : "coolGray.400"}
             borderRadius={15}
             onPress={sendData}

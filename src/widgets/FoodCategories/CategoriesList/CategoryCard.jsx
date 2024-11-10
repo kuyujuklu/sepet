@@ -1,8 +1,7 @@
-import { Text, View } from "native-base";
+import { Spinner, Text, View } from "native-base";
 import { ENV } from "../../../constants/env/env";
-import { memo } from "react";
-import { Image } from 'expo-image';
-
+import { memo, useEffect, useState } from "react";
+import { Image } from "expo-image";
 
 const CategoryCard = ({ category }) => {
   const imagePath =
@@ -10,8 +9,15 @@ const CategoryCard = ({ category }) => {
     ENV.API_STATIC_PATH +
     "/images/categories/" +
     category?.image_file_name;
+  const [imageLoaded, setImageLoaded] = useState(false);
 
-    return (
+  useEffect(() => {
+    if (category && !category.image_file_name) {
+      setImageLoaded(true);
+    }
+  }, [category]);
+
+  return (
     <View maxWidth={400} style={{ width: "100%", alignSelf: "center" }}>
       {/* Image container */}
       <View
@@ -26,6 +32,7 @@ const CategoryCard = ({ category }) => {
         {category.image_file_name && (
           <Image
             alt=""
+            onLoad={() => setImageLoaded(true)}
             contentFit="contain"
             style={{ width: "100%", aspectRatio: 1 / 8 }}
             source={{ uri: imagePath }}
@@ -33,16 +40,22 @@ const CategoryCard = ({ category }) => {
         )}
         <View
           position={"absolute"}
-          w="100%"
+          w="110%"
           h="120%"
           backgroundColor={"rgba(0, 0, 0, 0.5)"}
           borderWidth={2}
           alignItems={"center"}
           justifyContent={"center"}
         >
-          <Text numberOfLines={1} fontSize={"2xl"} fontWeight={"bold"} color={"#fff"}>
+          <Text
+            numberOfLines={1}
+            fontSize={"2xl"}
+            fontWeight={"bold"}
+            color={"#fff"}
+          >
             {category?.name}
           </Text>
+          {!imageLoaded && <Spinner color="white" w="25" h="25" />}
         </View>
       </View>
 

@@ -1,4 +1,4 @@
-import { Pressable, Text, View } from "native-base";
+import { Pressable, Spinner, Text, View } from "native-base";
 import { AnonymousProBold } from "../../constants/styles-constants";
 import { TouchableOpacity } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
@@ -47,6 +47,14 @@ const DishCard = ({ dish, pubID, pub }) => {
 
   const dishCount = (dishInBasket && +dishInBasket.count) ?? 0;
 
+  const [imageLoaded, setImageLoaded] = useState(false);
+
+  useEffect(() => {
+    if (dish && !dish.image_file_name) {
+      setImageLoaded(true);
+    }
+  }, [dish]);
+
   return (
     <View maxWidth={400} style={{ width: "100%", alignSelf: "center" }}>
       {/* Image container */}
@@ -79,6 +87,7 @@ const DishCard = ({ dish, pubID, pub }) => {
         >
           {dish.image_file_name ? (
             <Image
+              onLoad={() => setImageLoaded(true)}
               alt=""
               resizeMode="contain"
               style={{ width: "100%", aspectRatio: 1 / 8 }}
@@ -98,6 +107,8 @@ const DishCard = ({ dish, pubID, pub }) => {
               <Text px={2} w="full" textAlign="center" numberOfLines={1} fontSize={"2xl"} fontWeight={"bold"} color={"#fff"}>
                 {dish?.name}
               </Text>
+
+          {!imageLoaded && <Spinner color="white" w="25" h="25" />}
           </View>
         </View>
       </Pressable>

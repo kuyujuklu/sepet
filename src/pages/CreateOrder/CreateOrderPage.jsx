@@ -6,7 +6,10 @@ import { selectBasket } from "../../features/store/basket/basketSlice";
 import { useTranslation } from "react-i18next";
 import { selectGeolocation } from "../../features/store/geolocation/geolocationSlice";
 import { useMemo } from "react";
-import { useGetNearbyPubsQuery, useGetPubInfoQuery } from "../../shared/api/pubs/pubsApi";
+import {
+  useGetNearbyPubsQuery,
+  useGetPubInfoQuery,
+} from "../../shared/api/pubs/pubsApi";
 import { deliveryTypes } from "../../app/static-data/data";
 
 const CreateOrderPage = ({ route }) => {
@@ -32,17 +35,6 @@ const CreateOrderPage = ({ route }) => {
     { pollingInterval: 20000, skip: !pubID },
   );
 
-  const deliveryPrice = useMemo(() => {
-    if (!pubsData || !pubID) return;
-
-    const pub = pubsData.pubs.find((pub) => pub.id === pubID);
-    if (!pub) {
-      return 0;
-    }
-
-    return pub.shipping_price;
-  }, [pubsData, pubID]);
-
   const itemsPrice = Object.keys(basket).reduce((acc, key) => {
     const dish = basket[key];
 
@@ -61,6 +53,29 @@ const CreateOrderPage = ({ route }) => {
 
     return acc + dish.count * dish.price + commission;
   }, 0);
+  
+  const deliveryPrice = useMemo(() => {
+    if (!pubsData || !pubID) return;
+
+    const pub = pubsData.pubs.find((pub) => pub.id === pubID);
+    if (!pub) {
+      return 0;
+    }
+
+    console.log("del price: ", pub?.shipping_free_delivery_price);
+    console.log("items price: ", itemsPrice);
+
+    if (
+      pub?.shipping_free_delivery_price &&
+      itemsPrice &&
+      itemsPrice > pub.shipping_free_delivery_price
+    ) {
+      return 0;
+    }
+
+    return pub.shipping_price;
+  }, [pubsData, pubID, itemsPrice]);
+
 
   return (
     <Wrapper>

@@ -57,7 +57,7 @@ const CategoryCardWithPubInfo = ({ category, pub, usePubBg, distance }) => {
         )}
         <View
           position={"absolute"}
-          w="100%"
+          w="110%"
           h="120%"
           backgroundColor={"rgba(0, 0, 0, 0.5)"}
           borderWidth={2}
