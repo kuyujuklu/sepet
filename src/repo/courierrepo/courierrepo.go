@@ -69,7 +69,7 @@ func (r *courierRepo) GetAllCouriers() ([]models.Courier, error) {
 
 func (r *courierRepo) GetAllCouriersWithTelegramUsername(telegramUsername string) ([]models.Courier, error) {
 	var couriers []models.Courier
-	result := r.Database.Find(&couriers, "telegram_username = ?", telegramUsername)
+	result := r.Database.Find(&couriers, "UPPER(telegram_username) = ?", strings.ToUpper(telegramUsername))
 
 	if result.Error != nil {
 		return nil, couriererrors.ErrUnableToGetCourier

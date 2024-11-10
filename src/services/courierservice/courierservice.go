@@ -333,9 +333,29 @@ func (s *courierService) SendActiveOrderUpdateForAllCouriersWebSocket(order mode
 
 func (s *courierService) SendActiveOrderUpdateForAllCouriersTelegram(order models.Order) error {
 	fmt.Println("======================================")
+	couriers, err := s.CourierRepo.GetAllCouriers()
+	if err != nil {
+		return err
+	}
+
 	chats, err := s.TelegramRepo.GetAllCourierChats()
 	if err != nil {
 		return err
+	}
+	chatsMap := make(map[string]models.TelegramCourierChat, 0)
+	for _, chat := range chats {
+		chatsMap[chat.Username] = chat
+	}
+
+	existingChats := []models.TelegramCourierChat{}
+	for _, courier := range couriers {
+		if courier.TelegramUsername != "" {
+			chat, ok := chatsMap[courier.TelegramUsername]
+			if !ok {
+				continue
+			}
+			existingChats = append(existingChats, chat)
+		}
 	}
 
 	for _, chat := range chats {

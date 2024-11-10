@@ -124,6 +124,7 @@ func (r *clientRepo) CreatePhoneValidationSession(phone string, name string, has
 		Phone:          phone,
 		HashedPassword: hashedPassword,
 		Number:         code,
+		PinID:          pinID,
 	}
 
 	resp := r.Database.Create(&session)

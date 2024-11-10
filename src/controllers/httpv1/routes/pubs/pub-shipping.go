@@ -1,6 +1,7 @@
 package pubs
 
 import (
+	"fmt"
 	"strconv"
 
 	h "github.com/alexkalak/qrmenu/src/controllers/httpv1/httphelpers"
@@ -309,6 +310,62 @@ func (c *pubController) SetShippingPrice(ctx *fiber.Ctx) error {
 		fiber.StatusOK)
 }
 
+// @Summary      Set shipping price
+// @Description  sets shipping price
+// @Tags         pub
+// @Param companyID path int true "company id"
+// @Param pubID path int true "pub id"
+// @Param input body entities.SetShippingPrice true "time params"
+// @Accept       json
+// @Produce      json
+// @Success      200  {object} SetShippingPrice
+// @Router       /company/{companyID}/pubs/{pubID}/shipping-price [POST]
+// @Security ApiKeyAuth
+// @Param AccessToken header string  true "accesstoken"
+func (c *pubController) SetShippingFreeDeliveryPrice(ctx *fiber.Ctx) error {
+	userID, userSignificance, userRole, err := h.GetUserIDSignificanceAndRoleFromLocals(ctx)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	companyID, err := strconv.Atoi(ctx.Params("companyID"))
+	if err != nil {
+		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	pubID, err := strconv.Atoi(ctx.Params("pubID"))
+	if err != nil {
+		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	//Checking access for action with pub for company
+	err = h.CheckCompanyAccess(userID, companyID, userSignificance, userRole, models.PUB_COMPANY_ENTITY, pubID)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	input, validationErrors, err := input.ParseRequestBody[entities.SetShippingPrices](ctx)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	if len(validationErrors) > 0 {
+		return h.SendValidationErrors(ctx, validationErrors)
+	}
+
+	err = c.PubService.SetShippingFreeDeliveryPrices(pubID, input.Prices)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	return h.SendSuccess(
+		ctx,
+		fiber.Map{
+			"ok": true,
+		},
+		fiber.StatusOK)
+}
+
 type GetShippingShapes struct {
 	Ok        bool           `json:"ok" example:"true"`
 	Available bool           `json:"available"`
@@ -355,17 +412,20 @@ func (c *pubController) GetShapesForPub(ctx *fiber.Ctx) error {
 	shippingOutput := entities.ShippingOutput{}
 	shippingOutput.FillFromModel(shipping)
 
+	fmt.Println("RETURNING: ", shippingOutput)
+
 	return h.SendSuccess(
 		ctx,
 		fiber.Map{
-			"id":                  shippingOutput.ID,
-			"available":           shippingOutput.Available,
-			"shipping_time_from":  shippingOutput.ShippingTimeFrom,
-			"shipping_time_to":    shippingOutput.ShippingTimeTo,
-			"shipping_work_start": shippingOutput.ShippingStartWorkTime,
-			"shipping_work_end":   shippingOutput.ShippingEndWorkTime,
-			"shipping_prices":     shippingOutput.ShippingPrices,
-			"shapes":              shippingOutput.Shapes,
+			"id":                            shippingOutput.ID,
+			"available":                     shippingOutput.Available,
+			"shipping_time_from":            shippingOutput.ShippingTimeFrom,
+			"shipping_time_to":              shippingOutput.ShippingTimeTo,
+			"shipping_work_start":           shippingOutput.ShippingStartWorkTime,
+			"shipping_work_end":             shippingOutput.ShippingEndWorkTime,
+			"shipping_prices":               shippingOutput.ShippingPrices,
+			"shipping_free_delivery_prices": shippingOutput.ShippingFreeDeliveryPrices,
+			"shapes":                        shippingOutput.Shapes,
 		},
 		fiber.StatusOK)
 }
@@ -488,4 +548,8 @@ func (c *pubController) SetAddCommissionToDishPrices(ctx *fiber.Ctx) error {
 			"ok": true,
 		},
 		fiber.StatusOK)
+}
+
+type SetFreeDeliveryFromOutput struct {
+	Ok bool `json:"ok"`
 }

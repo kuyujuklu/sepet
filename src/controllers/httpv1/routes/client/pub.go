@@ -189,14 +189,15 @@ func (c *clientController) GetShapesForPub(ctx *fiber.Ctx) error {
 	return h.SendSuccess(
 		ctx,
 		fiber.Map{
-			"id":                  shippingOutput.ID,
-			"available":           shippingOutput.Available,
-			"shipping_time_from":  shippingOutput.ShippingTimeFrom,
-			"shipping_time_to":    shippingOutput.ShippingTimeTo,
-			"shipping_work_start": shippingOutput.ShippingStartWorkTime,
-			"shipping_work_end":   shippingOutput.ShippingEndWorkTime,
-			"shipping_prices":     shippingOutput.ShippingPrices,
-			"shapes":              shippingOutput.Shapes,
+			"id":                            shippingOutput.ID,
+			"available":                     shippingOutput.Available,
+			"shipping_time_from":            shippingOutput.ShippingTimeFrom,
+			"shipping_time_to":              shippingOutput.ShippingTimeTo,
+			"shipping_work_start":           shippingOutput.ShippingStartWorkTime,
+			"shipping_work_end":             shippingOutput.ShippingEndWorkTime,
+			"shipping_prices":               shippingOutput.ShippingPrices,
+			"shipping_free_delivery_prices": shippingOutput.ShippingFreeDeliveryPrices,
+			"shapes":                        shippingOutput.Shapes,
 		},
 		fiber.StatusOK)
 }

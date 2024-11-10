@@ -51,6 +51,7 @@ type PubService interface {
 	SetShippingTime(pubID int, shippingTimeFrom int, shippingTimeTo int) error
 	SetShippingWorkingTime(pubID int, start int, end int) error
 	SetShippingPrices(pubID int, shippingPrice map[string]float64) error
+	SetShippingFreeDeliveryPrices(pubID int, shippingFreeDeliveryPrices map[string]float64) error
 	UpdatePubDeliveryType(pubID int, deliveryType string) error
 	SetPubAddCommissionToDishPrices(pubID int, addCommission bool) error
 
@@ -58,7 +59,7 @@ type PubService interface {
 	SetCashPreorder(pubID int, available bool) error
 	GetPreorderInfo(pubID int) (models.PreorderInfo, error)
 
-	GetPubsWithShippingAvailableForPoint(point models.Vertex) ([]models.Pub, []float64, error)
+	GetPubsWithShippingAvailableForPoint(point models.Vertex) ([]models.Pub, []float64, []float64, error)
 
 	//Couriers
 	AddCourierToPub(pubID, courierID int) error
@@ -293,6 +294,7 @@ func (s *pubsService) EnableShippingAndSetShapes(pubID int, shapes []models.Shap
 		return err
 	}
 
+	//shipping prices
 	existingPrices, err := shipping.GetPrices()
 	if err != nil {
 		existingPrices = make(map[string]float64)
@@ -314,8 +316,31 @@ func (s *pubsService) EnableShippingAndSetShapes(pubID int, shapes []models.Shap
 		return err
 	}
 
+	//shipping delivery prices
+	existingFreeDeliveryPrices, err := shipping.GetFreeDeliveryPrices()
+	if err != nil {
+		existingFreeDeliveryPrices = make(map[string]float64)
+	}
+
+	newFreeDeliveryPrices := make(map[string]float64)
+
+	for _, shape := range shapes {
+		existingPrice, ok := existingFreeDeliveryPrices[shape.ShapeID]
+		if !ok {
+			existingPrice = 0
+		}
+
+		newFreeDeliveryPrices[shape.ShapeID] = existingPrice
+	}
+
+	err = s.SetShippingFreeDeliveryPrices(pubID, newFreeDeliveryPrices)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
+
 func (s *pubsService) GetShapes(pubID int) ([]models.Shape, error) {
 	return s.PubsRepo.GetPubShapes(pubID)
 }
@@ -351,16 +376,20 @@ func (s *pubsService) SetShippingWorkingTime(pubID int, start int, end int) erro
 func (s *pubsService) SetShippingPrices(pubID int, shippingPrices map[string]float64) error {
 	return s.PubsRepo.SetShippingPrices(pubID, shippingPrices)
 }
+func (s *pubsService) SetShippingFreeDeliveryPrices(pubID int, shippingFreeDeliveryPrices map[string]float64) error {
+	return s.PubsRepo.SetShippingFreeDeliveryPrices(pubID, shippingFreeDeliveryPrices)
+}
 
-func (s *pubsService) GetPubsWithShippingAvailableForPoint(point models.Vertex) ([]models.Pub, []float64, error) {
+func (s *pubsService) GetPubsWithShippingAvailableForPoint(point models.Vertex) ([]models.Pub, []float64, []float64, error) {
 	pubs, err := s.PubsRepo.GetPubsWithAvailableShipping()
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 	var availablePubs []models.Pub
 	fmt.Println("pubs len: ", len(pubs))
 
 	shippingPrices := make([]float64, 0)
+	shippingFreeDeliveryPrices := make([]float64, 0)
 
 	for _, pub := range pubs {
 		if pub.IsExpired() {
@@ -377,6 +406,10 @@ func (s *pubsService) GetPubsWithShippingAvailableForPoint(point models.Vertex) 
 		if err != nil {
 			continue
 		}
+		pubShippingFreeDeliveryPrices, err := pub.Shipping.GetFreeDeliveryPrices()
+		if err != nil {
+			continue
+		}
 
 		nearestShape, isAvailable := s.GetAvailableShape(shapes, point.Lat, point.Lng)
 
@@ -384,17 +417,24 @@ func (s *pubsService) GetPubsWithShippingAvailableForPoint(point models.Vertex) 
 			availablePubs = append(availablePubs, pub)
 
 			var price float64 = 0
-			for key, value := range pubShippingPrices {
-				if key == nearestShape.ShapeID {
-					price = value
+			var freeDeliveryPrice float64 = 0
+			for shapeID, shapePrice := range pubShippingPrices {
+				if shapeID == nearestShape.ShapeID {
+					price = shapePrice
+				}
+			}
+			for shapeID, shapeFreeDeliveryPrice := range pubShippingFreeDeliveryPrices {
+				if shapeID == nearestShape.ShapeID {
+					freeDeliveryPrice = shapeFreeDeliveryPrice
 				}
 			}
 
 			shippingPrices = append(shippingPrices, price)
+			shippingFreeDeliveryPrices = append(shippingFreeDeliveryPrices, freeDeliveryPrice)
 		}
 	}
 
-	return availablePubs, shippingPrices, nil
+	return availablePubs, shippingPrices, shippingFreeDeliveryPrices, nil
 }
 
 func (s *pubsService) GetAvailableShape(shapes []models.Shape, lat float64, lng float64) (models.Shape, bool) {
@@ -480,5 +520,6 @@ func (s *pubsService) UpdatePubDeliveryType(pubID int, deliveryType string) erro
 }
 func (s *pubsService) SetPubAddCommissionToDishPrices(pubID int, addCommission bool) error {
 	fmt.Println("al;ksdjfl;aksjdfl;asf")
+
 	return s.PubsRepo.SetPubAddCommissionToDishPrices(pubID, addCommission)
 }

@@ -34,7 +34,7 @@ func (c *clientController) GetAvailableForShippingPubs(ctx *fiber.Ctx) error {
 		return h.SendError(ctx, clienterrors.ErrInvalidLongitude, h.AUTOMATIC_STATUS_CODE)
 	}
 
-	pubs, shippingPrices, err := c.PubService.GetPubsWithShippingAvailableForPoint(models.Vertex{Lat: lat, Lng: lng})
+	pubs, shippingPrices, shippingFreeDeliveryPrices, err := c.PubService.GetPubsWithShippingAvailableForPoint(models.Vertex{Lat: lat, Lng: lng})
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
@@ -47,7 +47,7 @@ func (c *clientController) GetAvailableForShippingPubs(ctx *fiber.Ctx) error {
 
 	fmt.Println("got distances: ", distances)
 
-	outputPubs, err := c.convertPubsWithDishes(pubs, shippingPrices, distances)
+	outputPubs, err := c.convertPubsWithDishes(pubs, shippingPrices, shippingFreeDeliveryPrices, distances)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
@@ -62,7 +62,7 @@ func (c *clientController) GetAvailableForShippingPubs(ctx *fiber.Ctx) error {
 		fiber.StatusOK)
 }
 
-func (c *clientController) convertPubsWithDishes(pubs []models.Pub, shippingPrices []float64, distances []int) ([]entities.PubWithDishesAndDistanceOutput, error) {
+func (c *clientController) convertPubsWithDishes(pubs []models.Pub, shippingPrices []float64, shippingFreeDeliveryPrices []float64, distances []int) ([]entities.PubWithDishesAndDistanceOutput, error) {
 	outputPubs := make([]entities.PubWithDishesAndDistanceOutput, 0, len(pubs))
 	for i, pub := range pubs {
 		dishes, err := c.PubService.GetAllDishesForPub(int(pub.ID))
@@ -75,6 +75,7 @@ func (c *clientController) convertPubsWithDishes(pubs []models.Pub, shippingPric
 		}
 		fmt.Println("shippingPrice: ", shippingPrices[i])
 		outputPub.ShippingPrice = shippingPrices[i]
+		outputPub.ShippingFreeDeliveryPrice = shippingFreeDeliveryPrices[i]
 
 		outputPubs = append(outputPubs, outputPub)
 	}
@@ -105,7 +106,7 @@ func (c *clientController) GetAvailableForShippingPubCategories(ctx *fiber.Ctx) 
 		return h.SendError(ctx, clienterrors.ErrInvalidLongitude, h.AUTOMATIC_STATUS_CODE)
 	}
 
-	pubs, _, err := c.PubService.GetPubsWithShippingAvailableForPoint(models.Vertex{Lat: lat, Lng: lng})
+	pubs, _, _, err := c.PubService.GetPubsWithShippingAvailableForPoint(models.Vertex{Lat: lat, Lng: lng})
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}

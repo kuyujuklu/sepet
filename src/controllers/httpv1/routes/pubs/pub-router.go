@@ -40,6 +40,7 @@ func (c *pubController) AuthorizedRouter(router fiber.Router) {
 	router.Post("/:pubID<int>/shipping-time", c.SetShippingTime)
 	router.Post("/:pubID<int>/shipping-work-hours", c.SetShippingWorkHours)
 	router.Post("/:pubID<int>/shipping-price", c.SetShippingPrice)
+	router.Post("/:pubID<int>/shipping-free-delivery-prices", c.SetShippingFreeDeliveryPrice)
 	router.Post("/:pubID<int>/delivery-type", c.SetDeliveryType)
 	router.Post("/:pubID<int>/add-commission-to-dish-prices", c.SetAddCommissionToDishPrices)
 

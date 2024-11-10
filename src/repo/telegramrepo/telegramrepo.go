@@ -2,6 +2,7 @@ package telegramrepo
 
 import (
 	"errors"
+	"strings"
 
 	"github.com/alexkalak/qrmenu/src/db/postgresql"
 	"github.com/alexkalak/qrmenu/src/errors/telegramerrors"
@@ -56,7 +57,7 @@ func (r *telegramRepo) GetChatByChatID(chatID string) (models.TelegramChat, erro
 
 func (r *telegramRepo) GetChatByUsername(username string) (models.TelegramChat, error) {
 	var telegramChat models.TelegramChat
-	result := r.Database.First(&telegramChat, "username = ?", username)
+	result := r.Database.First(&telegramChat, "UPPER(username) = ?", strings.ToUpper(username))
 
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {

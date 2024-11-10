@@ -82,6 +82,7 @@ type PubsRepo interface {
 	SetShippingTime(pubID int, shippingTimeFrom int, shippingTimeTo int) error
 	SetShippingWorkingTime(pubID int, start int, end int) error
 	SetShippingPrices(pubID int, shippingPrices map[string]float64) error
+	SetShippingFreeDeliveryPrices(pubID int, shippingFreeDeliveryPrices map[string]float64) error
 	SetCardPreorder(pubID int, available bool) error
 	SetCashPreorder(pubID int, available bool) error
 	GetPreorderInfo(pubID int) (models.PreorderInfo, error)
@@ -698,6 +699,37 @@ func (s *pubsRepo) SetShippingPrices(pubID int, shippingPrices map[string]float6
 	return nil
 }
 
+func (s *pubsRepo) SetShippingFreeDeliveryPrices(pubID int, shippingFreeDeliveryPrices map[string]float64) error {
+	pub, err := s.GetPubById(pubID)
+	if err != nil {
+		return err
+	}
+
+	err = s.Database.First(&models.Shipping{}, "id = ?", pub.ShippingID).Error
+	if err != nil {
+		return puberrors.ErrPubShippingIsInvalid
+	}
+
+	pricesJSON, err := json.Marshal(shippingFreeDeliveryPrices)
+	if err != nil {
+		return err
+	}
+
+	res := s.Database.
+		Model(&models.Shipping{}).
+		Where("id = ?", pub.ShippingID).
+		UpdateColumns(
+			map[string]interface{}{
+				"shipping_free_delivery_prices_json": string(pricesJSON),
+			},
+		)
+	if res.Error != nil {
+		return servererrors.ErrInternalServerError
+	}
+
+	return nil
+}
+
 func (s *pubsRepo) SetCardPreorder(pubID int, available bool) error {
 	pub, err := s.GetPubById(pubID)
 	if err != nil {
@@ -759,7 +791,7 @@ func (r *pubsRepo) GetPubsWithAvailableShipping() ([]models.Pub, error) {
 // Telegram stuff
 func (r *pubsRepo) GetPubsWhichHasTelegramUsername(username string) ([]models.Pub, error) {
 	pubs := []models.Pub{}
-	resp := r.Database.Find(&pubs, "telegram_username = ?", username)
+	resp := r.Database.Find(&pubs, "UPPER(telegram_username) = ?", strings.ToUpper(username))
 	if resp.Error != nil {
 		return nil, puberrors.ErrUnableToGetPub
 	}

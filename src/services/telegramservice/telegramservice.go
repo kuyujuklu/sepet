@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/alexkalak/qrmenu/src/errors/servererrors"
 	"github.com/alexkalak/qrmenu/src/models"
@@ -84,7 +85,7 @@ func (s *telegramSerivce) handleUpdate(update telego.Update) {
 		return
 	}
 
-	username := update.Message.From.Username
+	username := strings.ToLower(update.Message.From.Username)
 	if username == "" {
 		return
 	}
@@ -107,7 +108,7 @@ func (s *telegramSerivce) handleUpdate(update telego.Update) {
 		chat := models.TelegramChat{
 			PubID:    int(pubs[0].ID),
 			ChatID:   update.Message.Chat.ChatID().String(),
-			Username: update.Message.From.Username,
+			Username: strings.ToLower(update.Message.From.Username),
 		}
 
 		chat, err = s.TelegramRepo.CreateChat(chat)
@@ -127,7 +128,7 @@ func (s *telegramSerivce) handleUpdate(update telego.Update) {
 		return
 	}
 
-	couriers, err := s.CourierRepo.GetAllCouriersWithTelegramUsername(username)
+	couriers, err := s.CourierRepo.GetAllCouriersWithTelegramUsername(strings.ToLower(username))
 	if err != nil {
 		s.bot.SendMessage(&telego.SendMessageParams{
 			ChatID: update.Message.Chat.ChatID(),
@@ -145,7 +146,7 @@ func (s *telegramSerivce) handleUpdate(update telego.Update) {
 		chat := models.TelegramCourierChat{
 			CourierID: int(couriers[0].ID),
 			ChatID:    update.Message.Chat.ChatID().String(),
-			Username:  update.Message.From.Username,
+			Username:  strings.ToLower(update.Message.From.Username),
 		}
 
 		chat, err = s.TelegramRepo.CreateCourierChat(chat)
@@ -166,10 +167,10 @@ func (s *telegramSerivce) handleUpdate(update telego.Update) {
 		return
 	}
 
-	fmt.Println("no one pub has your username in orders settings")
+	fmt.Println("no one pub or courier has your username in orders settings")
 	s.bot.SendMessage(&telego.SendMessageParams{
 		ChatID: update.Message.Chat.ChatID(),
-		Text:   "no one pub has your username in orders settings",
+		Text:   "no one pub or courier has your username in orders settings",
 	})
 }
 
@@ -184,9 +185,9 @@ func (s *telegramSerivce) SendCreateOrderMessageForPub(pubID int, order models.O
 		return servererrors.ErrInternalServerError
 	}
 
-	var totalPrice float64 = 0
+	var totalDishPrice float64 = 0
 	for _, dish := range orderDishes {
-		totalPrice += float64(dish.Count) * dish.DishPrice
+		totalDishPrice += float64(dish.Count) * dish.DishPrice
 	}
 
 	hasSuperUser := true
@@ -199,23 +200,32 @@ func (s *telegramSerivce) SendCreateOrderMessageForPub(pubID int, order models.O
 	orderTextForSuperUser := fmt.Sprintf(`
 	New order number: %d 
 	
+	Pub Name: %s 
+	Pub Address: %s 
 	➡Full name: %s 
 	➡Address: %s 
 	📱Phone: %s 
 	
-	💸Total products price:  %.2f Lei
+	💸Total products price:  %.2f Lei,
+	💸DeliveryPrice: %.2f,
+	💸CourierReward: %.2f,
+
 
 	URL: %s 
 	`,
 		order.ID,
+		order.Pub.Name,
+		order.Pub.Address,
 		order.Client.Name,
-		order.FullAddress,
+		order.Town+" "+order.FullAddress,
 		order.MainPhoneNumber,
-		totalPrice,
+		totalDishPrice,
+		order.DeliveryPrice,
+		order.OrderCourierInfo.CourierReward,
 		fmt.Sprintf("https://qrmenu.sandex.md/admin/pub/%d/order/%d", pubID, order.ID))
 
 	if order.OrderType == models.IN_PLACE_ORDER_TYPE {
-		orderTextForSuperUser = fmt.Sprintf("Pub name: %s \n New order number: %d \n In place order \n Table number: %d \n Total products price: %.2f Lei", pub.Name, order.ID, order.TableForInPlaceOrder, totalPrice)
+		orderTextForSuperUser = fmt.Sprintf("Pub name: %s \n New order number: %d \n In place order \n Table number: %d \n Total products price: %.2f Lei", pub.Name, order.ID, order.TableForInPlaceOrder, totalDishPrice)
 	}
 
 	suChatID, err := strconv.Atoi(suChat.ChatID)
@@ -228,7 +238,7 @@ func (s *telegramSerivce) SendCreateOrderMessageForPub(pubID int, order models.O
 			&telego.SendMessageParams{
 				ChatID: telego.ChatID{
 					ID:       int64(suChatID),
-					Username: suChat.Username,
+					Username: strings.ToLower(suChat.Username),
 				},
 				Text: orderTextForSuperUser,
 			},
@@ -258,20 +268,20 @@ func (s *telegramSerivce) SendCreateOrderMessageForPub(pubID int, order models.O
 	`,
 		order.ID,
 		order.Client.Name,
-		order.FullAddress,
+		order.Town+" "+order.FullAddress,
 		order.MainPhoneNumber,
-		totalPrice,
+		totalDishPrice,
 		fmt.Sprintf("https://qrmenu.sandex.md/admin/pub/%d/order/%d", pubID, order.ID))
 
 	if order.OrderType == models.IN_PLACE_ORDER_TYPE {
-		orderText = fmt.Sprintf("New order number: %d \n In place order \n Table number: %d \n Total products price: %.2f Lei", order.ID, order.TableForInPlaceOrder, totalPrice)
+		orderText = fmt.Sprintf("New order number: %d \n In place order \n Table number: %d \n Total products price: %.2f Lei", order.ID, order.TableForInPlaceOrder, totalDishPrice)
 	}
 
 	s.bot.SendMessage(
 		&telego.SendMessageParams{
 			ChatID: telego.ChatID{
 				ID:       int64(chatID),
-				Username: chat.Username,
+				Username: strings.ToLower(chat.Username),
 			},
 			Text: orderText,
 		},
@@ -286,9 +296,9 @@ func (s *telegramSerivce) SendCreateOrderMessageForCourier(chatID string, chatUs
 		return servererrors.ErrInternalServerError
 	}
 
-	var totalPrice float64 = 0
+	var totalDishPrice float64 = 0
 	for _, dish := range orderDishes {
-		totalPrice += float64(dish.Count) * dish.DishPrice
+		totalDishPrice += float64(dish.Count) * dish.DishPrice
 	}
 
 	orderText := fmt.Sprintf(
@@ -296,8 +306,8 @@ func (s *telegramSerivce) SendCreateOrderMessageForCourier(chatID string, chatUs
 	
 		➡Pub name: %s
 		➡Pub address: %s
-		➡Client address %s
-		💸Delivery Price : %.2f Lei
+		➡Client address: %s
+		💸Reward : %.2f Lei
 
 		ℹ️Comment: %s
 
@@ -306,7 +316,7 @@ func (s *telegramSerivce) SendCreateOrderMessageForCourier(chatID string, chatUs
 		order.Pub.Name,
 		order.Pub.Address,
 		order.Town+", "+order.FullAddress,
-		order.DeliveryPrice,
+		order.OrderCourierInfo.CourierReward,
 		order.Comments)
 
 	chatIDint, err := strconv.Atoi(chatID)
@@ -318,7 +328,7 @@ func (s *telegramSerivce) SendCreateOrderMessageForCourier(chatID string, chatUs
 		&telego.SendMessageParams{
 			ChatID: telego.ChatID{
 				ID:       int64(chatIDint),
-				Username: chatUsername,
+				Username: strings.ToLower(chatUsername),
 			},
 			Text: orderText,
 		},

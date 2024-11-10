@@ -69,6 +69,7 @@ func (c *clientService) GenerateClientRegistrationSession(phone string, name str
 	}
 
 	pinID, err := c.SmsService.CreateVerificationSession("+373" + phone)
+	fmt.Println("Created pin id: ", pinID)
 	if err != nil {
 		return models.PhoneValidationSession{}, time.Now(), err
 	}
@@ -136,7 +137,7 @@ func (c *clientService) CheckPhoneValidationNumberCorrectness(phone string, code
 		}
 	}
 
-	err = c.SmsService.CheckVerificationCode(sessionWithMaxID.PinID, code)
+	err = c.SmsService.CheckVerificationCode(sessionWithMaxID.PinID, "+373"+sessionWithMaxID.Phone, code)
 	if err != nil {
 		return models.PhoneValidationSession{}, err
 	}
@@ -162,7 +163,7 @@ func (c *clientService) CheckPhoneValidationNumberCorrectnessWithNewCodeGenerati
 		}
 	}
 
-	err = c.SmsService.CheckVerificationCode("+373"+phone, code)
+	err = c.SmsService.CheckVerificationCode(sessionWithMaxID.PinID, "+373"+phone, code)
 	if err != nil {
 		return models.PhoneValidationSession{}, err
 	}

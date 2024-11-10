@@ -132,9 +132,10 @@ func (p *PubOutput) FillFromModel(pub models.Pub) error {
 
 type PubWithDishesAndDistanceOutput struct {
 	PubOutput
-	Distance      int          `json:"distance"`
-	ShippingPrice float64      `json:"shipping_price"`
-	Dishes        []DishOutput `json:"dishes"`
+	Distance                  int          `json:"distance"`
+	ShippingPrice             float64      `json:"shipping_price"`
+	ShippingFreeDeliveryPrice float64      `json:"shipping_free_delivery_price"`
+	Dishes                    []DishOutput `json:"dishes"`
 }
 
 func (p *PubWithDishesAndDistanceOutput) FillFromModel(pub models.Pub, distance int, dishes []models.Dish) error {

@@ -210,10 +210,17 @@ func (s *orderService) CreateOrder(order models.Order) (models.Order, error) {
 		}
 	}
 
+	dishesTotalPrice, err := s.CalculateOrderDishesTotalPrice(order)
+	if err != nil {
+		return models.Order{}, err
+	}
+
+	commissionInFraction := float64(models.DELIVERY_SERVICE_DISHES_COMMISSION_IN_PERCENT) / 100
+
 	courierInfo := models.OrderCourierInfo{
 		IsReserved:        false,
 		ReserverCourierID: 0,
-		CourierReward:     order.DeliveryPrice,
+		CourierReward:     order.DeliveryPrice + dishesTotalPrice*float64(commissionInFraction)*0.5, //half of commission is for courier
 		Distance:          distance,
 	}
 
@@ -246,6 +253,19 @@ func (s *orderService) CreateOrder(order models.Order) (models.Order, error) {
 	s.TelegramService.SendCreateOrderMessageForPub(order.PubID, order)
 
 	return order, nil
+}
+
+func (s *orderService) CalculateOrderDishesTotalPrice(order models.Order) (float64, error) {
+	dishes, err := order.GetDishes()
+	if err != nil {
+		return 0, err
+	}
+
+	sum := 0.0
+	for _, dishInfo := range dishes {
+		sum += dishInfo.DishPrice * float64(dishInfo.Count)
+	}
+	return sum, nil
 }
 
 func (s *orderService) CreateOrderForUnknownClient(order models.Order) (models.Order, error) {
