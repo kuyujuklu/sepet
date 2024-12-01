@@ -26,7 +26,7 @@ const mapStyle = {
     height: "100%",
   },
 };
-const SelectGeolocation = () => {
+const SelectGeolocation = ({setGeolocation, goBack}) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const navigator = useNavigation();
@@ -38,11 +38,6 @@ const SelectGeolocation = () => {
   const hasPerm = useSelector(selectHasGeolocationPerm);
   const [center, setCenter] = useState(null);
 
-  const [town, setTown] = useState("");
-  const [fullAddress, setFullAddress] = useState("");
-  const [triedToSelectGeolocation, setTriedToSelectGeolocation] = useState("");
-  const [resetErrors, setResetErrors] = useState(false);
-
   const handleSelectLocationByYourself = () => {
     setCenter({ lat: 47.00367, lng: 28.907089 });
     dispatch(setNearGeolocation({ lat: 47.00367, lng: 28.907089 }));
@@ -50,69 +45,12 @@ const SelectGeolocation = () => {
   };
 
   const handleSetLocationButtonClick = () => {
-    (async function () {
-      const townError = validateTown(town);
-      const fullAddressError = validateFullAddress(fullAddress);
-      if (townError !== null || fullAddressError !== null) {
-        setTriedToSelectGeolocation(true);
-        return;
-      }
-
-      if (!center) return;
-
-      let savedAddresses = [];
-      try {
-        const value = await AsyncStorage.getItem("saved_addresses");
-        if (value !== null) {
-          savedAddresses = JSON.parse(value);
-        }
-      } catch (e) {
-        console.log("getting saved addresses error: ", e);
-        savedAddresses = [];
-      }
-
-      savedAddresses.push({
-        town,
-        fullAddress,
-        lat: center.lat,
-        lng: center.lng,
-      });
-      AsyncStorage.setItem("saved_addresses", JSON.stringify(savedAddresses));
-
-      dispatch(setSavedAddresses({ addresses: savedAddresses }));
-      dispatch(
-        setGeolocation({
-          lat: center.lat,
-          lng: center.lng,
-          town: town,
-          fullAddress: fullAddress,
-        }),
-      );
-      setTown("");
-      setFullAddress("");
-      setTriedToSelectGeolocation("false");
-      navigator.navigate("Home");
-    })();
+    setGeolocation({
+      lat: center.lat,
+      lng: center.lng,
+    });
   };
 
-  useEffect(() => {
-    const unsubscribeFocus = navigator.addListener("focus", () => {
-      setTimeout(() => {
-        setResetErrors(true);
-      }, 100);
-    });
-    const unsubscribeBlur = navigator.addListener("blur", () => {
-      setTimeout(() => {
-        setResetErrors(true);
-      }, 100);
-    });
-
-    // Return the function to unsubscribe from the event so it gets removed on unmount
-    return () => {
-      unsubscribeFocus();
-      unsubscribeBlur();
-    };
-  }, [navigator]);
   const [selectedRegion, setSelectedRegion] = useState({
     latitude: 47.78825,
     longitude: 22.4324,
@@ -272,37 +210,24 @@ const SelectGeolocation = () => {
             region={Platform.OS === "android" ? undefined : selectedRegion}
           />
         </View>
-        <InputWithValidation
-          resetErrors={resetErrors}
-          setResetErrors={setResetErrors}
-          value={town}
-          setValue={setTown}
-          label={t("create_order_page.additional_data.inputs.town.label")}
-          keyboardType={"default"}
-          validators={[validateTown]}
-          validatedOutside={triedToSelectGeolocation}
-        />
-        <InputWithValidation
-          resetErrors={resetErrors}
-          setResetErrors={setResetErrors}
-          value={fullAddress}
-          setValue={setFullAddress}
-          label={t(
-            "create_order_page.additional_data.inputs.full_address.label",
-          )}
-          keyboardType={"default"}
-          validators={[validateFullAddress]}
-          validatedOutside={triedToSelectGeolocation}
-        />
+    
         <Button
           disabled={!nearLocation}
           background={!nearLocation ? "coolGray.400" : "emerald.600"}
           borderRadius={15}
           mt={8}
-          mb={4}
+          mb={2}
           onPress={handleSetLocationButtonClick}
         >
-          {t("select_geolocation.pin_geolocation")}
+          {t("select_geolocation.continue")}
+        </Button>
+        <Button
+          background={"red.600"}
+          borderRadius={15}
+          mb={10}
+          onPress={goBack}
+        >
+          {t("select_geolocation.back")}
         </Button>
       </View>
     </ScrollView>

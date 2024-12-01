@@ -2,7 +2,7 @@
   "expo": {
     "name": "Sepet",
     "slug": "camelapp",
-    "version": "1.2.15",
+    "version": "1.2.16",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -33,7 +33,7 @@
         "android.permission.ACCESS_FINE_LOCATION",
         "android.permission.FOREGROUND_SERVICE"
       ],
-      "versionCode": 15,
+      "versionCode": 16,
       "package": "com.camelapp.app",
       "config": {
         "googleMaps": {
@@ -78,7 +78,7 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "7bd390ca-381b-4c7a-afe8-20d42af468f3"
+        "projectId": "e149f77b-df25-4a08-a7e7-d885dc5397ab"
       }
     }
   }

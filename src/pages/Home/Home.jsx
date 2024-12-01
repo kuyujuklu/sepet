@@ -73,8 +73,8 @@ const Home = () => {
   }, [nearCategoriesData, nearPubsData]);
 
   useEffect(() => {
-    console.log("near pubs data", nearPubsData)
-  }, [nearPubsData])
+    console.log("near pubs data", nearPubsData);
+  }, [nearPubsData]);
 
   return (
     <Wrapper>
@@ -89,11 +89,13 @@ const Home = () => {
               style={{
                 flexDirection: "row",
                 gap: 5,
-                alignItems:"center"
+                alignItems: "center",
               }}
-              onPress={() => navigator.navigate("SelectGeolocationPage")}
+              onPress={() => {
+                navigator.navigate("SelectGeolocationPage");
+              }}
             >
-              <View style={{width: 20, height: 20}}>
+              <View style={{ width: 20, height: 20 }}>
                 <Image
                   source={images.Locaiton}
                   style={{ width: "100%", height: "100%" }}

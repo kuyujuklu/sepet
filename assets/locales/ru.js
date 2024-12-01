@@ -113,6 +113,10 @@ export default {
   select_geolocation: {
     saved_addresses: "Сохраненные адреса",
     headline: "Выберите локацию",
+    continue: "Далее",
+    back: "Назад",
+    add_new_address: "Добавить адрес доставки",
+  add_address_inputs_headline: "Укажите свой адрес",
 
     select_by_yourself_button: "Выбрать самому",
     wait_geolocation_is_loading: "Подождите, мы загружаем ваше местоположение",
@@ -175,7 +179,7 @@ export default {
           label: "Тип оплаты",
           values: {
             cash: "Наличными",
-            card_offline: "Картой курьеру",
+            card_offline: "Переводом курьеру",
           },
         },
       },

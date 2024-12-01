@@ -30,6 +30,7 @@ import SelectGeolocationPage from "./src/pages/Geolocation/SelectGeolocationPage
 import OrdersPreloader from "./src/features/store/orders/OrdersPreloader";
 
 import "./src/i18n/i18n.config";
+// import "./firebaseConfig"
 
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";

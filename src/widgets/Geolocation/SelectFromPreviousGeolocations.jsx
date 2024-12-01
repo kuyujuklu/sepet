@@ -15,7 +15,7 @@ import { Image } from "expo-image";
 import { images } from "../../app/images/images";
 import { useMemo } from "react";
 
-const SelectFromPreviousGeolocations = () => {
+const SelectFromPreviousGeolocations = ({goToSelectGeolocationOnMap}) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const navigator = useNavigation();
@@ -54,15 +54,29 @@ const SelectFromPreviousGeolocations = () => {
     dispatch(setSavedAddresses({ addresses: newAddresses }));
   };
 
-  if (!savedAddresses || savedAddresses.length === 0) {
-    return <></>;
-  }
+  // if (!savedAddresses || savedAddresses.length === 0) {
+  //   return <></>;
+  // }
+
   return (
-    <View px={5}>
-      <Text fontSize={22} fontFamily={AnonymousProBold}>
-        {t("select_geolocation.saved_addresses")}
-      </Text>
-      <View px={2}>
+    <View px={5} w="full" py="5">
+      <View my="20" style={{
+        width: 200,
+         height: 200,
+        margin: "auto"
+  }}>
+        <Image
+          contentFit="contain"
+          source={images.Sepet}
+          style={{ width: "100%", height: "100%" }}
+        />
+      </View>
+      {(savedAddresses && savedAddresses.length > 0) && 
+        <Text fontSize={28} mb="5" fontWeight="bold" textAlign="center" fontFamily={AnonymousProBold}>
+          {t("select_geolocation.saved_addresses")}
+        </Text>
+      }
+      <View px={2} flexDirection="column" gap="10px" alignItems="center">
         {savedAddresses?.map((address, idx) => (
           <View
             w="full"
@@ -73,6 +87,10 @@ const SelectFromPreviousGeolocations = () => {
             <TouchableOpacity
               style={{
                 flex: 1,
+                borderRadius: 50,
+                paddingVertical: 10,
+                paddingHorizontal: 20,
+                backgroundColor: "#059669",
               }}
               onPress={() =>
                 selectGeolocation({
@@ -83,8 +101,8 @@ const SelectFromPreviousGeolocations = () => {
                 })
               }
             >
-              <Text fontSize={18} color="emerald.600" numberOfLines={1}>
-                {idx + 1}. {address.town + ", " + address.fullAddress}
+              <Text fontSize={15} color="white" ml='2' textAlign="left" numberOfLines={1}>
+                {address.town + ", " + address.fullAddress}
               </Text>
             </TouchableOpacity>
 
@@ -105,6 +123,31 @@ const SelectFromPreviousGeolocations = () => {
             </TouchableOpacity>
           </View>
         ))}
+          <View
+            w="full"
+            justifyContent="space-between"
+            flexDir="row"
+            alignItems="center" 
+            mt="5"
+          >
+              <TouchableOpacity
+                style={{
+                  flex: 1,
+                  borderRadius: 50,
+                  paddingVertical: 10,
+                  paddingHorizontal: 20,
+                  backgroundColor: "#059669",
+                }}
+                onPress={() =>
+                  goToSelectGeolocationOnMap()
+                }
+              >
+                <Text fontSize={14} color="white" textAlign="center" numberOfLines={1}>
+                  + {t("select_geolocation.add_new_address")}
+                </Text>
+              </TouchableOpacity>
+  
+        </View>
       </View>
     </View>
   );

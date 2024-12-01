@@ -18,6 +18,9 @@ import {
 import { useTranslation } from "react-i18next";
 import SelectFromPreviousGeolocations from "../../widgets/Geolocation/SelectFromPreviousGeolocations";
 import { Animated, Dimensions, Platform } from "react-native";
+import SelectGeolocationInputs from "../../widgets/Geolocation/SelectGeolocationInputs";
+import { Image } from "expo-image";
+import { images } from "../../app/images/images";
 
 const SelectGeolocationPage = () => {
   const { t } = useTranslation();
@@ -36,6 +39,17 @@ const SelectGeolocationPage = () => {
   const shouldHideImage = Dimensions.get("window").height - height > 200;
   const savedAddresses = useSelector(selectSavedAddresses);
 
+  const [page, setPage] = useState("select_from_previous");
+  const [geolocationOnMap, setGeolocationOnMap] = useState({});
+
+  useEffect(() => {
+    if (!geolocationOnMap?.lat || !geolocationOnMap?.lng) {
+      return;
+    }
+
+    setPage("new_address_inputs");
+  }, [geolocationOnMap]);
+
   return (
     <Wrapper>
       <KeyboardAvoidingView
@@ -49,28 +63,41 @@ const SelectGeolocationPage = () => {
             setHeight(height);
           }}
         >
-          {savedAddresses && savedAddresses.length > 0 && (
+          {page === "select_from_previous" && (
             <View
               style={{
                 height: shouldHideImage ? 0 : "auto",
                 overflow: "hidden",
               }}
             >
-              <SelectFromPreviousGeolocations />
+              <SelectFromPreviousGeolocations
+                goToSelectGeolocationOnMap={() => setPage("new_address_map")}
+              />
             </View>
           )}
-          <View>
-            <Text fontFamily={AnonymousProBold} fontSize={22} px={5}>
-              {location || nearLocaiton
-                ? t("select_geolocation.headline")
-                : hasPerm
-                  ? t("select_geolocation.wait_geolocation_is_loading")
-                  : t("select_geolocation.we_cannot_load_your_geolocaiton")}
-            </Text>
-          </View>
-          <View flex={1}>
-            <SelectGeolocation />
-          </View>
+          {page === "new_address_map" && (
+            <>
+              <View>
+                <Text fontFamily={AnonymousProBold} fontSize={22} px={5}>
+                  {location || nearLocaiton
+                    ? t("select_geolocation.headline")
+                    : hasPerm
+                      ? t("select_geolocation.wait_geolocation_is_loading")
+                      : t("select_geolocation.we_cannot_load_your_geolocaiton")}
+                </Text>
+              </View>
+              <View flex={1}>
+                <SelectGeolocation setGeolocation={setGeolocationOnMap} goBack={() => setPage("select_from_previous")}/>
+              </View>
+            </>
+          )}
+          {page === "new_address_inputs" && (
+            <>
+              <View flex={1}>
+                <SelectGeolocationInputs geolocation={geolocationOnMap} setPage={() => setPage("select_from_previous")} goBack={() => setPage("new_address_map")}/>
+              </View>
+            </>
+          )}
         </View>
       </KeyboardAvoidingView>
     </Wrapper>

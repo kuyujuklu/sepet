@@ -86,6 +86,12 @@ export default {
   select_geolocation: {
     saved_addresses: "Adrese salvate",
     headline: "Selectați locația dvs.",
+    
+    continue: "Continua",
+    back: "înapoi",
+    add_new_address: "Adăugați adresa de livrare",
+   add_address_inputs_headline: "Introduceți adresa dvs",
+
     select_by_yourself_button: "Selectați manual",
     wait_geolocation_is_loading: "Așteptați, încărcăm locația dvs.",
     pin_geolocation: "Adăuga o nouă adresă",
@@ -133,7 +139,7 @@ export default {
         comments: { label: "Comentarii la comandă" },
         payment_type: {
           label: "Tipul de plată",
-          values: { cash: "Numerar", card_offline: "Card la curier" },
+          values: { cash: "Numerar", card_offline: "Transfer la curier" },
         },
       },
       delivery_time: "Timpul de livrare",

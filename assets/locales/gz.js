@@ -110,6 +110,12 @@ export default {
   select_geolocation: {
     saved_addresses: "Yazılı adreslar",
     headline: "Ayırın lokaţıyayı",
+
+    continue: "Ileri",
+    back: "Geeri",
+    add_new_address: "Eni adresi ekelemää",
+    add_address_inputs_headline: "Yazın sizin adresinizi",
+
     select_by_yourself_button: "Ayırın kendiniz",
     wait_geolocation_is_loading: "Bekläyin , biz ükleriz sizin adrezinizi",
     pin_geolocation: "Ekle eni adres",
@@ -170,7 +176,7 @@ export default {
           label: "Ödeşmäk tipi",
           values: {
             cash: "Paraylan",
-            card_offline: "Kartaylan kuryera",
+            card_offline: "Kuryera karda",
           },
         },
       },
@@ -183,7 +189,7 @@ export default {
   },
   order_page: {
     headline: "Sizin sımarlamanız",
-    headline_no_orders: "bişey sımarmalamadınız",
+    headline_no_orders: "Bişey sımarlamadınız",
     order_card: {
       unable_to_repeat_order: "Biz yakışměěr  tekrarlayalım",
       order_is_not_completed_alert: "Sımarlamak taa etişmedi",
