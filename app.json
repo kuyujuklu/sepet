@@ -2,7 +2,7 @@
   "expo": {
     "name": "Sepet",
     "slug": "camelapp",
-    "version": "1.2.17",
+    "version": "1.2.18",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -17,6 +17,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.sepet.app",
+      "googleServicesFile": "./GoogleService-Info.plist",
       "infoPlist": {
         "NSLocationAlwaysAndWhenInUseUsageDescription": "Разрешить SepetMD использовать геолокацию для определения расстояния и цены доставки.",
         "NSLocationWhenInUseUsageDescription": "Разрешить SepetMD использовать геолокацию для определения расстояния и цены доставки."
@@ -33,7 +34,7 @@
         "android.permission.ACCESS_FINE_LOCATION",
         "android.permission.FOREGROUND_SERVICE"
       ],
-      "versionCode": 17,
+      "versionCode": 18,
       "package": "com.camelapp.app",
       "config": {
         "googleMaps": {
