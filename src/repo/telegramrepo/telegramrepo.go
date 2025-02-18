@@ -12,6 +12,7 @@ import (
 
 type TelegramRepo interface {
 	GetAllCourierChats() ([]models.TelegramCourierChat, error)
+	GetCourierChatByUsername(username string) (models.TelegramCourierChat, error)
 	GetChatByUsername(username string) (models.TelegramChat, error)
 	GetChatByChatID(chatID string) (models.TelegramChat, error)
 	GetAllTelegramChatsForPub(pubID int) ([]models.TelegramChat, error)
@@ -53,6 +54,21 @@ func (r *telegramRepo) GetChatByChatID(chatID string) (models.TelegramChat, erro
 	}
 
 	return telegramChat, nil
+}
+
+func (r *telegramRepo) GetCourierChatByUsername(username string) (models.TelegramCourierChat, error) {
+	var telegramChat models.TelegramCourierChat
+	result := r.Database.First(&telegramChat, "UPPER(username) = ?", strings.ToUpper(username))
+
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return models.TelegramCourierChat{}, telegramerrors.ErrChatNotFound
+		}
+		return models.TelegramCourierChat{}, telegramerrors.ErrUnableToGetChat
+	}
+
+	return telegramChat, nil
+
 }
 
 func (r *telegramRepo) GetChatByUsername(username string) (models.TelegramChat, error) {

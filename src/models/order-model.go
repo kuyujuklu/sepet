@@ -92,24 +92,26 @@ type OrderDish struct {
 
 type Order struct {
 	gorm.Model
-	Town                 string
-	FullAddress          string
-	MainPhoneNumber      string
-	SecondPhoneNumber    string
-	Comments             string
-	PaymentType          string
-	PubID                int
-	Pub                  Pub
-	ClientID             int
-	Client               Client
-	DishesJSON           string
-	OrderType            string
-	TableForInPlaceOrder int
-	Status               string
-	Rating               int //from 1 to 5
-	DeliveryPrice        float64
-	Lat                  float64
-	Lng                  float64
+	Town                              string
+	Prepared                          bool
+	FullAddress                       string
+	MainPhoneNumber                   string
+	SecondPhoneNumber                 string
+	Comments                          string
+	PaymentType                       string
+	PubID                             int
+	Pub                               Pub
+	ClientID                          int
+	Client                            Client
+	DishesJSON                        string
+	TotalDishesPriceWithoutCommission float64
+	OrderType                         string
+	TableForInPlaceOrder              int
+	Status                            string
+	Rating                            int //from 1 to 5
+	DeliveryPrice                     float64
+	Lat                               float64
+	Lng                               float64
 
 	OrderCourierInfo   OrderCourierInfo
 	OrderCourierInfoID int

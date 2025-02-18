@@ -63,6 +63,7 @@ type OrderCourierInfoOutput struct {
 	ReserverCourierID int     `json:"reserver_courier_id"`
 	Distance          int     `json:"distance"`
 	CourierReward     float64 `json:"courier_reward"`
+	CourierDebit      float64 `json:"courier_debit"`
 }
 
 func (o *OrderCourierInfoOutput) FillFromModel(courierInfo models.OrderCourierInfo) {
@@ -70,32 +71,35 @@ func (o *OrderCourierInfoOutput) FillFromModel(courierInfo models.OrderCourierIn
 	o.ReserverCourierID = courierInfo.ReserverCourierID
 	o.Distance = courierInfo.Distance
 	o.CourierReward = courierInfo.CourierReward
+	o.CourierDebit = courierInfo.CourierDebit
 }
 
 type OrderOutput struct {
-	ID                   int                    `json:"id" example:"12"`
-	PubName              string                 `json:"pub_name" example:"Big star"`
-	CreatedTime          string                 `json:"created_time" example:"2006-01-02 15:04:05"`
-	Town                 string                 `json:"town" example:"Kazaklia"`
-	FullAddress          string                 `json:"full_address" example:"Lenina 889"`
-	MainPhoneNumber      string                 `json:"main_phone_number" example:"843829"`
-	SecondPhoneNumber    string                 `json:"second_phone_number" example:"929320"`
-	Comments             string                 `json:"comments"`
-	PaymentType          string                 `json:"payment_type"`
-	PubID                int                    `json:"pub_id"`
-	PubUrlName           string                 `json:"pub_url_name"`
-	ClientID             int                    `json:"client_id"`
-	Dishes               []OrderDishOutput      `json:"dishes"`
-	OrderType            string                 `json:"order_type" example:"delivery"`
-	TableForInPlaceOrder int                    `json:"table_for_in_place_order" example:"2"`
-	Status               string                 `json:"status"`
-	Rating               int                    `json:"rating"`
-	DeliveryPrice        float64                `json:"delivery_price"`
-	CourierInfo          OrderCourierInfoOutput `json:"courier_info"`
-	ClientName           string                 `json:"client_name" example:"George"`
-	Pub                  PubOutput              `json:"pub"`
-	Lat                  float64                `json:"lat"`
-	Lng                  float64                `json:"lng"`
+	ID                                int                    `json:"id" example:"12"`
+	PubName                           string                 `json:"pub_name" example:"Big star"`
+	CreatedTime                       string                 `json:"created_time" example:"2006-01-02 15:04:05"`
+	Town                              string                 `json:"town" example:"Kazaklia"`
+	FullAddress                       string                 `json:"full_address" example:"Lenina 889"`
+	MainPhoneNumber                   string                 `json:"main_phone_number" example:"843829"`
+	SecondPhoneNumber                 string                 `json:"second_phone_number" example:"929320"`
+	Comments                          string                 `json:"comments"`
+	PaymentType                       string                 `json:"payment_type"`
+	PubID                             int                    `json:"pub_id"`
+	PubUrlName                        string                 `json:"pub_url_name"`
+	ClientID                          int                    `json:"client_id"`
+	Dishes                            []OrderDishOutput      `json:"dishes"`
+	OrderType                         string                 `json:"order_type" example:"delivery"`
+	TableForInPlaceOrder              int                    `json:"table_for_in_place_order" example:"2"`
+	Status                            string                 `json:"status"`
+	Rating                            int                    `json:"rating"`
+	DeliveryPrice                     float64                `json:"delivery_price"`
+	CourierInfo                       OrderCourierInfoOutput `json:"courier_info"`
+	ClientName                        string                 `json:"client_name" example:"George"`
+	Pub                               PubOutput              `json:"pub"`
+	Lat                               float64                `json:"lat"`
+	Lng                               float64                `json:"lng"`
+	TotalDishesPriceWithoutCommission float64                `json:"total_dishes_price_without_commission"`
+	Prepared                          bool                   `json:"prepared"`
 }
 
 func (o *OrderOutput) FillFromModel(order models.Order) error {
@@ -135,6 +139,8 @@ func (o *OrderOutput) FillFromModel(order models.Order) error {
 	o.ClientName = order.Client.Name
 	o.Lat = order.Lat
 	o.Lng = order.Lng
+	o.TotalDishesPriceWithoutCommission = order.TotalDishesPriceWithoutCommission
+	o.Prepared = order.Prepared
 
 	for _, orderDish := range orderDishes {
 		o.Dishes = append(o.Dishes, OrderDishOutput{Count: orderDish.Count, DishID: orderDish.DishID, DishPrice: orderDish.DishPrice})
@@ -144,28 +150,30 @@ func (o *OrderOutput) FillFromModel(order models.Order) error {
 }
 
 type OrderOutputWithoutPub struct {
-	ID                   int                    `json:"id" example:"12"`
-	PubName              string                 `json:"pub_name" example:"Big star"`
-	CreatedTime          string                 `json:"created_time" example:"2006-01-02 15:04:05"`
-	Town                 string                 `json:"town" example:"Kazaklia"`
-	FullAddress          string                 `json:"full_address" example:"Lenina 889"`
-	MainPhoneNumber      string                 `json:"main_phone_number" example:"843829"`
-	SecondPhoneNumber    string                 `json:"second_phone_number" example:"929320"`
-	Comments             string                 `json:"comments"`
-	PaymentType          string                 `json:"payment_type"`
-	PubID                int                    `json:"pub_id"`
-	PubUrlName           string                 `json:"pub_url_name"`
-	ClientID             int                    `json:"client_id"`
-	Dishes               []OrderDishOutput      `json:"dishes"`
-	OrderType            string                 `json:"order_type" example:"delivery"`
-	TableForInPlaceOrder int                    `json:"table_for_in_place_order" example:"2"`
-	Status               string                 `json:"status"`
-	Rating               int                    `json:"rating"`
-	DeliveryPrice        float64                `json:"delivery_price"`
-	CourierInfo          OrderCourierInfoOutput `json:"courier_info"`
-	ClientName           string                 `json:"client_name" example:"George"`
-	Lat                  float64                `json:"lat"`
-	Lng                  float64                `json:"lng"`
+	ID                                int                    `json:"id" example:"12"`
+	PubName                           string                 `json:"pub_name" example:"Big star"`
+	CreatedTime                       string                 `json:"created_time" example:"2006-01-02 15:04:05"`
+	Town                              string                 `json:"town" example:"Kazaklia"`
+	FullAddress                       string                 `json:"full_address" example:"Lenina 889"`
+	MainPhoneNumber                   string                 `json:"main_phone_number" example:"843829"`
+	SecondPhoneNumber                 string                 `json:"second_phone_number" example:"929320"`
+	Comments                          string                 `json:"comments"`
+	PaymentType                       string                 `json:"payment_type"`
+	PubID                             int                    `json:"pub_id"`
+	PubUrlName                        string                 `json:"pub_url_name"`
+	ClientID                          int                    `json:"client_id"`
+	Dishes                            []OrderDishOutput      `json:"dishes"`
+	OrderType                         string                 `json:"order_type" example:"delivery"`
+	TableForInPlaceOrder              int                    `json:"table_for_in_place_order" example:"2"`
+	Status                            string                 `json:"status"`
+	Rating                            int                    `json:"rating"`
+	DeliveryPrice                     float64                `json:"delivery_price"`
+	CourierInfo                       OrderCourierInfoOutput `json:"courier_info"`
+	ClientName                        string                 `json:"client_name" example:"George"`
+	Lat                               float64                `json:"lat"`
+	Lng                               float64                `json:"lng"`
+	TotalDishesPriceWithoutCommission float64                `json:"total_dishes_price_without_commission"`
+	Prepared                          bool                   `json:"prepared"`
 }
 
 func (o *OrderOutputWithoutPub) FillFromModel(order models.Order) error {
@@ -204,6 +212,8 @@ func (o *OrderOutputWithoutPub) FillFromModel(order models.Order) error {
 	o.ClientName = order.Client.Name
 	o.Lat = order.Lat
 	o.Lng = order.Lng
+	o.TotalDishesPriceWithoutCommission = order.TotalDishesPriceWithoutCommission
+	o.Prepared = order.Prepared
 
 	for _, orderDish := range orderDishes {
 		o.Dishes = append(o.Dishes, OrderDishOutput{Count: orderDish.Count, DishID: orderDish.DishID, DishPrice: orderDish.DishPrice})

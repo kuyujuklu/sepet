@@ -17,3 +17,5 @@ var ErrCourierHaveNoImage = errors.New("courier does not have image")
 var ErrCourierCannotReserveThisOrder = errors.New("courier cannot reserve this order")
 
 var ErrNotCouriersOrder = errors.New("not couriers order")
+
+var ErrDebitAlreadyAddedToCourier = errors.New("debit already added to courier")

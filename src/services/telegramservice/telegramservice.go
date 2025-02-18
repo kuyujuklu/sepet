@@ -138,10 +138,14 @@ func (s *telegramSerivce) handleUpdate(update telego.Update) {
 	}
 
 	if len(couriers) != 0 {
-		s.bot.SendMessage(&telego.SendMessageParams{
-			ChatID: update.Message.Chat.ChatID(),
-			Text:   fmt.Sprintf("courier with name: %s and phone: %s has your telegram id", couriers[0].FullName, couriers[0].PhoneNumber),
-		})
+		_, err := s.TelegramRepo.GetCourierChatByUsername(strings.ToLower(update.Message.From.Username))
+		if err == nil {
+			s.bot.SendMessage(&telego.SendMessageParams{
+				ChatID: update.Message.Chat.ChatID(),
+				Text:   fmt.Sprintf("courier with name: %s and phone: %s has your telegram id", couriers[0].FullName, couriers[0].PhoneNumber),
+			})
+			return
+		}
 
 		chat := models.TelegramCourierChat{
 			CourierID: int(couriers[0].ID),
@@ -206,8 +210,8 @@ func (s *telegramSerivce) SendCreateOrderMessageForPub(pubID int, order models.O
 	➡Address: %s 
 	📱Phone: %s 
 	
-	💸Total products price:  %.2f Lei,
-	💸DeliveryPrice: %.2f,
+	💸Total products price without commission:  %.2f Lei,
+	💸Commission: %.2f,
 	💸CourierReward: %.2f,
 
 
@@ -219,8 +223,8 @@ func (s *telegramSerivce) SendCreateOrderMessageForPub(pubID int, order models.O
 		order.Client.Name,
 		order.Town+" "+order.FullAddress,
 		order.MainPhoneNumber,
-		totalDishPrice,
-		order.DeliveryPrice,
+		order.TotalDishesPriceWithoutCommission,
+		order.OrderCourierInfo.CourierDebit,
 		order.OrderCourierInfo.CourierReward,
 		fmt.Sprintf("https://qrmenu.sandex.md/admin/pub/%d/order/%d", pubID, order.ID))
 
@@ -307,7 +311,6 @@ func (s *telegramSerivce) SendCreateOrderMessageForCourier(chatID string, chatUs
 		➡Pub name: %s
 		➡Pub address: %s
 		➡Client address: %s
-		💸Reward : %.2f Lei
 
 		ℹ️Comment: %s
 
@@ -316,7 +319,6 @@ func (s *telegramSerivce) SendCreateOrderMessageForCourier(chatID string, chatUs
 		order.Pub.Name,
 		order.Pub.Address,
 		order.Town+", "+order.FullAddress,
-		order.OrderCourierInfo.CourierReward,
 		order.Comments)
 
 	chatIDint, err := strconv.Atoi(chatID)

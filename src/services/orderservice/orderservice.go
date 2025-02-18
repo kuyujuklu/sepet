@@ -15,6 +15,7 @@ import (
 	"github.com/alexkalak/qrmenu/src/repo/rolerepo"
 	"github.com/alexkalak/qrmenu/src/services/notificationservice"
 	"github.com/alexkalak/qrmenu/src/services/osrmservice"
+	"github.com/alexkalak/qrmenu/src/services/pubservice"
 	"github.com/alexkalak/qrmenu/src/services/telegramservice"
 	"github.com/gofiber/contrib/websocket"
 	"github.com/google/uuid"
@@ -22,6 +23,7 @@ import (
 
 type OrderService interface {
 	GetAllOrders() ([]models.Order, error)
+	GetAllOrdersWithSpecificStatuses(statuses ...string) ([]models.Order, error)
 	GetOrdersForPub(pubID int) ([]models.Order, error)
 	GetOrdersForClient(clientID int) ([]models.Order, error)
 	GetOrderByID(orderID int) (models.Order, error)
@@ -30,6 +32,8 @@ type OrderService interface {
 	UpdateOrderStatus(orderID int, status string) error
 	UpdateOrderDeliveryPrice(orderID int, deliveryPrice float64) error
 	UpdateOrderCourierInfo(orderID int, courierInfo models.OrderCourierInfo) (models.OrderCourierInfo, error)
+	UpdateOrderPrepared(orderID int, prepared bool) error
+	AddToOrderCourierInfoCourierDebit(orderID int, amount float64) (models.OrderCourierInfo, error)
 	IsCommissionNeededForOrderArgsIDs(orderID int, pubID int) (bool, error)
 	IsCommissionNeededForOrderArgsModels(order models.Order, pub models.Pub) (bool, error)
 	FillDishPricesForOrder(order *models.Order, addCommission bool) error
@@ -38,7 +42,7 @@ type OrderService interface {
 
 	RateOrder(orderID int, rating int) error
 
-	SubscribeOnOrderUpdates(callback func(order models.Order))
+	SubscribeOnOrderUpdates(callback func(order models.Order, sendTelegram bool))
 
 	AddConnectionToOrdersForPubConnections(pubID int, conn *websocket.Conn) error
 	AddConnectionToOrdersForClientConnections(pubID int, conn *websocket.Conn) error
@@ -51,13 +55,14 @@ type orderService struct {
 	DistanceService                 osrmservice.OsrmService
 	OrderRepo                       orderrepo.OrderRepo
 	ClientRepo                      clientrepo.ClientRepo
+	PubService                      pubservice.PubService
 	WebSocketPubConnections         wshelpers.ConnectionsForID
 	WebSocketClientConnections      wshelpers.ConnectionsForID
 	PubsRepo                        pubsrepo.PubsRepo
 	RoleRepo                        rolerepo.RoleRepo
 	TelegramService                 telegramservice.TelegramService
 	NotificationService             notificationservice.NotificationService
-	SubsribedOnOrdersUpdateCallback []func(order models.Order)
+	SubsribedOnOrdersUpdateCallback []func(order models.Order, sendTelegram bool)
 }
 
 var singleton *orderService = nil
@@ -67,6 +72,7 @@ func New() OrderService {
 		singleton = &orderService{
 			DistanceService:     osrmservice.New(),
 			PubsRepo:            pubsrepo.New(),
+			PubService:          pubservice.New(),
 			OrderRepo:           orderrepo.New(),
 			ClientRepo:          clientrepo.New(),
 			RoleRepo:            rolerepo.New(),
@@ -95,8 +101,11 @@ func New() OrderService {
 func (s *orderService) GetAllOrders() ([]models.Order, error) {
 	return s.OrderRepo.GetAllOrders()
 }
+func (s *orderService) GetAllOrdersWithSpecificStatuses(statuses ...string) ([]models.Order, error) {
+	return s.OrderRepo.GetAllOrdersWithSpecificStatuses(statuses...)
+}
 
-func (s *orderService) SubscribeOnOrderUpdates(callback func(order models.Order)) {
+func (s *orderService) SubscribeOnOrderUpdates(callback func(order models.Order, sendTelegram bool)) {
 	s.SubsribedOnOrdersUpdateCallback = append(s.SubsribedOnOrdersUpdateCallback, callback)
 }
 
@@ -150,6 +159,21 @@ func (s *orderService) FillDishPricesForOrder(order *models.Order, addCommission
 	}
 
 	order.DishesJSON = string(dishesForOrderJSON)
+
+	dishesTotalPrice, err := s.CalculateOrderDishesTotalPrice(*order)
+	if err != nil {
+		return err
+	}
+
+	//adding total dishes price wihthout commission field to order
+	commissionInFraction := float64(models.DELIVERY_SERVICE_DISHES_COMMISSION_IN_PERCENT) / 100
+
+	dishesTotalPriceWithoutCommission := dishesTotalPrice / float64(1+commissionInFraction)
+	fmt.Println("dishes total price without commission: ", dishesTotalPriceWithoutCommission)
+
+	order.TotalDishesPriceWithoutCommission = dishesTotalPriceWithoutCommission
+	//
+
 	return nil
 }
 
@@ -214,14 +238,25 @@ func (s *orderService) CreateOrder(order models.Order) (models.Order, error) {
 	if err != nil {
 		return models.Order{}, err
 	}
+	fmt.Println("dishes total price: ", dishesTotalPrice)
 
-	commissionInFraction := float64(models.DELIVERY_SERVICE_DISHES_COMMISSION_IN_PERCENT) / 100
+	realDeliveryPrice, freeDeliveryPrice, err := s.GetRealDeliveryPricesForOrder(order, pub)
+	if err != nil {
+		return models.Order{}, err
+	}
+
+	commission := dishesTotalPrice - order.TotalDishesPriceWithoutCommission
 
 	courierInfo := models.OrderCourierInfo{
 		IsReserved:        false,
 		ReserverCourierID: 0,
-		CourierReward:     order.DeliveryPrice + dishesTotalPrice*float64(commissionInFraction)*0.5, //half of commission is for courier
+		CourierReward:     realDeliveryPrice, //half of commission is for courier
+		CourierDebit:      commission,
 		Distance:          distance,
+	}
+
+	if freeDeliveryPrice > 0 && freeDeliveryPrice < dishesTotalPrice {
+		courierInfo.CourierDebit = commission - realDeliveryPrice
 	}
 
 	order.Status = models.NOT_HANDLED_ORDER_STATUS
@@ -253,6 +288,10 @@ func (s *orderService) CreateOrder(order models.Order) (models.Order, error) {
 	s.TelegramService.SendCreateOrderMessageForPub(order.PubID, order)
 
 	return order, nil
+}
+
+func (s *orderService) GetRealDeliveryPricesForOrder(order models.Order, pub models.Pub) (float64, float64, error) {
+	return s.PubService.GetDeliveryPriceForLatLng(pub, order.Lat, order.Lng)
 }
 
 func (s *orderService) CalculateOrderDishesTotalPrice(order models.Order) (float64, error) {
@@ -385,6 +424,28 @@ func (s *orderService) UpdateOrderDeliveryPrice(orderID int, deliveryPrice float
 	return nil
 }
 
+func (s *orderService) AddToOrderCourierInfoCourierDebit(orderID int, amount float64) (models.OrderCourierInfo, error) {
+	order, err := s.OrderRepo.GetOrderByID(orderID)
+	if err != nil {
+		return models.OrderCourierInfo{}, err
+	}
+
+	if order.OrderCourierInfo.IsReserved {
+		return models.OrderCourierInfo{}, ordererrors.ErrOrderIsAlreadyReserved
+	}
+
+	courierInfo := order.OrderCourierInfo
+	courierInfo.CourierReward -= amount
+	courierInfo.CourierDebit += amount
+
+	updatedCourierInfo, err := s.UpdateOrderCourierInfo(orderID, courierInfo)
+	if err != nil {
+		return models.OrderCourierInfo{}, err
+	}
+
+	return updatedCourierInfo, nil
+}
+
 func (s *orderService) UpdateOrderCourierInfo(orderID int, courierInfo models.OrderCourierInfo) (models.OrderCourierInfo, error) {
 	tx := s.OrderRepo.NewTransaction()
 
@@ -419,20 +480,9 @@ func (s *orderService) UpdateOrderCourierInfo(orderID int, courierInfo models.Or
 	return updatedCourierInfo, nil
 }
 
-func (s *orderService) UpdateOrderDishes(orderID int, orderDishes []models.OrderDish) error {
-	_, err := s.OrderRepo.GetOrderByID(orderID)
-	if err != nil {
-		return err
-	}
-
+func (s *orderService) UpdateOrderPrepared(orderID int, prepared bool) error {
 	tx := s.OrderRepo.NewTransaction()
-
-	dishesBytes, err := json.Marshal(orderDishes)
-	if err != nil {
-		return err
-	}
-
-	err = s.OrderRepo.UpdateOrderDishesWithinTransaction(tx, orderID, string(dishesBytes))
+	err := s.OrderRepo.UpdateOrderPreparedWithinTransaction(tx, orderID, prepared)
 	if err != nil {
 		return err
 	}
@@ -443,7 +493,7 @@ func (s *orderService) UpdateOrderDishes(orderID int, orderDishes []models.Order
 	}
 
 	//send for all subscribed callbacks
-	s.SendUpdatedOrderToAllCallbacks(order)
+	s.SendUpdatedOrderToAllCallbacksWithoutTelegram(order)
 
 	//sending for admin panel
 	err = s.SendSingleOrderMessageForPubConnections(order.PubID, order, UPDATE_EVENT_TYPE)
@@ -463,7 +513,119 @@ func (s *orderService) UpdateOrderDishes(orderID int, orderDishes []models.Order
 	return nil
 }
 
+func (s *orderService) UpdateOrderDishes(orderID int, orderDishes []models.OrderDish) error {
+	_, err := s.OrderRepo.GetOrderByID(orderID)
+	if err != nil {
+		return err
+	}
+
+	order, err := s.OrderRepo.GetOrderByID(orderID)
+	if err != nil {
+		return err
+	}
+
+	dishesBytes, err := json.Marshal(orderDishes)
+	if err != nil {
+		return err
+	}
+	order.DishesJSON = string(dishesBytes)
+
+	isCommissionNeeded, err := s.IsCommissionNeededForOrderArgsIDs(orderID, order.PubID)
+	if err != nil {
+		return err
+	}
+
+	totalPrice, err := s.CalculateOrderDishesTotalPrice(order)
+	if err != nil {
+		return err
+	}
+
+	err = s.FillDishPricesForOrder(&order, isCommissionNeeded)
+	if err != nil {
+		return err
+	}
+
+	commissionInFraction := float64(models.DELIVERY_SERVICE_DISHES_COMMISSION_IN_PERCENT) / 100
+	commission := totalPrice - totalPrice/float64(1+commissionInFraction)
+	fmt.Println("total dish plaksdjflkajsdlfk j= ", totalPrice)
+	fmt.Println("total dish comj= ", commission)
+
+	order.TotalDishesPriceWithoutCommission = totalPrice - commission
+
+	if !isCommissionNeeded {
+		order.TotalDishesPriceWithoutCommission = totalPrice
+	}
+
+	err = s.OrderRepo.UpdateOrderTotalPrice(orderID, order.TotalDishesPriceWithoutCommission)
+	if err != nil {
+		return err
+	}
+
+	tx := s.OrderRepo.NewTransaction()
+
+	err = s.OrderRepo.UpdateOrderDishesWithinTransaction(tx, orderID, string(dishesBytes))
+	if err != nil {
+		return err
+	}
+
+	orderInTransaction, err := s.OrderRepo.GetOrderByIDWithinTransaction(tx, orderID)
+	if err != nil {
+		return err
+	}
+
+	newCourierInfo := orderInTransaction.OrderCourierInfo
+	newCourierInfo.CourierDebit = commission
+
+	_, err = s.UpdateOrderCourierInfo(orderID, newCourierInfo)
+	if err != nil {
+		return err
+	}
+	//send for all subscribed callbacks
+	s.SendUpdatedOrderToAllCallbacks(orderInTransaction)
+
+	//sending for admin panel
+	err = s.SendSingleOrderMessageForPubConnections(orderInTransaction.PubID, orderInTransaction, UPDATE_EVENT_TYPE)
+	if err != nil {
+		fmt.Println("sending notification error")
+		return err
+	}
+
+	//sending for clients
+	err = s.SendSingleOrderMessageForClientConnections(orderInTransaction.ClientID, orderInTransaction, UPDATE_EVENT_TYPE)
+	if err != nil {
+		fmt.Println("sending notification error")
+		return err
+	}
+	tx.Commit()
+
+	return nil
+}
+
 func getBodyForOrderUpdateStatusNotification(orderID int, orderStatus string) notificationservice.NotificaitonText {
+	if orderStatus == models.NOT_HANDLED_ORDER_STATUS {
+		return notificationservice.NotificaitonText{
+			Ru: fmt.Sprintf("Заказ №%d в обработке, ожидайте ответа от ресторана", orderID),
+			Ro: fmt.Sprintf("Comanda №%d este în curs de procesare, așteptați un răspuns din partea restaurantului", orderID),
+		}
+	}
+	if orderStatus == models.PREPARING_ORDER_STATUS {
+		return notificationservice.NotificaitonText{
+			Ru: fmt.Sprintf("Заказ №%d готовится", orderID),
+			Ro: fmt.Sprintf("Comanda №%d este în curs de pregătire", orderID),
+		}
+	}
+	if orderStatus == models.AT_COURIER_ORDER_STATUS {
+		return notificationservice.NotificaitonText{
+			Ru: fmt.Sprintf("Заказ №%d передан курьеру, ожидайте звонка", orderID),
+			Ro: fmt.Sprintf("Comanda №%d a fost transferată curierului, așteptați un apel", orderID),
+		}
+	}
+	if orderStatus == models.COMPLETED_ORDER_STATUS {
+		return notificationservice.NotificaitonText{
+			Ru: fmt.Sprintf("Заказ №%d доставлен. Спасибо за доверие! Оцените качество сервиса", orderID),
+			Ro: fmt.Sprintf("Comanda №%d a fost livrată. Vă mulțumim pentru încredere! Evaluați calitatea serviciului", orderID),
+		}
+	}
 	return notificationservice.NotificaitonText{
 		Ru: fmt.Sprintf("У заказа №%d обновился статус, теперь он: %s", orderID, models.TranslateStatus(orderStatus, "ru")),
 		Ro: fmt.Sprintf("Ordinul nr. %d a fost actualizat și acum este: %s", orderID, models.TranslateStatus(orderStatus, "ro")),
@@ -518,7 +680,13 @@ func (s *orderService) RateOrder(orderID int, rating int) error {
 
 func (s *orderService) SendUpdatedOrderToAllCallbacks(order models.Order) {
 	for _, f := range s.SubsribedOnOrdersUpdateCallback {
-		f(order)
+		f(order, true)
+	}
+}
+
+func (s *orderService) SendUpdatedOrderToAllCallbacksWithoutTelegram(order models.Order) {
+	for _, f := range s.SubsribedOnOrdersUpdateCallback {
+		f(order, false)
 	}
 }
 

@@ -20,6 +20,7 @@ type ClientRepo interface {
 	CreateClient(client models.Client) (models.Client, error)
 	GetClientByPhoneNumber(phone string) (models.Client, error)
 	GetClientByID(id int) (models.Client, error)
+	GetAllClients() ([]models.Client, error)
 	GetAllPhoneValidationSessionsForPhone(phone string) ([]models.PhoneValidationSession, error)
 	GetAvailablePhoneValidationSessionsForPhone(phone string) ([]models.PhoneValidationSession, error)
 	CreatePhoneValidationSession(phone string, name string, hashedPassword string, code string, pinID string) (models.PhoneValidationSession, error)
@@ -61,6 +62,17 @@ func (r *clientRepo) GetClientByID(id int) (models.Client, error) {
 	}
 
 	return client, nil
+}
+
+func (r *clientRepo) GetAllClients() ([]models.Client, error) {
+	clients := []models.Client{}
+	resp := r.Database.Preload("Role").Find(&clients)
+
+	if resp.Error != nil {
+		return nil, clienterrors.ErrUnableToGetClient
+	}
+
+	return clients, nil
 }
 
 func (r *clientRepo) CreateClient(client models.Client) (models.Client, error) {

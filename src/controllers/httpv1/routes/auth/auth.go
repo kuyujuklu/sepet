@@ -225,7 +225,7 @@ func (c *authController) RefreshToken(ctx *fiber.Ctx) error {
 
 	accessToken, err := c.JwtService.GetAccessTokenString(
 		int(user.ID),
-		user.Role.SignificanceNumber,
+		userClaims.Significance,
 		userClaims.RoleName,
 		jwtservice.STANDARD_ACCESS_LIFE_TIME)
 

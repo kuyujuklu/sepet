@@ -18,4 +18,5 @@ type Courier struct {
 	Location         string
 	ImageFileName    string
 	TelegramUsername string
+	Balance          float64
 }

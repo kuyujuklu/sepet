@@ -208,3 +208,59 @@ func (c *ordersController) UpdateOrderDishes(ctx *fiber.Ctx) error {
 		},
 		fiber.StatusOK)
 }
+
+type UpdateOrderPreparedInput struct {
+	Prepared bool `json:"prepared"`
+}
+
+type UpdateOrderPreparedOutput struct {
+	Prepared bool `json:"prepared"`
+}
+
+func (c *ordersController) UpdateOrderPrepared(ctx *fiber.Ctx) error {
+	userID, userSignificance, userRole, err := h.GetUserIDSignificanceAndRoleFromLocals(ctx)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	companyID, err := strconv.Atoi(ctx.Params("companyID"))
+	if err != nil {
+		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	pubID, err := strconv.Atoi(ctx.Params("pubID"))
+	if err != nil {
+		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	orderID, err := strconv.Atoi(ctx.Params("orderID"))
+	if err != nil {
+		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	//Checking access for action with pub for company
+	err = h.CheckCompanyAccess(userID, companyID, userSignificance, userRole, models.PUB_COMPANY_ENTITY, pubID)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	input, validationErrors, err := input.ParseRequestBody[UpdateOrderPreparedInput](ctx)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+	if len(validationErrors) > 0 {
+		return h.SendValidationErrors(ctx, validationErrors)
+	}
+
+	err = c.OrderService.UpdateOrderPrepared(orderID, input.Prepared)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	return h.SendSuccess(
+		ctx,
+		fiber.Map{
+			"prepared": input.Prepared,
+		},
+		fiber.StatusOK)
+}

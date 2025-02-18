@@ -18,6 +18,7 @@ func Configure() error {
 type OrderRepo interface {
 	NewTransaction() *gorm.DB
 	GetAllOrders() ([]models.Order, error)
+	GetAllOrdersWithSpecificStatuses(statuses ...string) ([]models.Order, error)
 	GetAllOrdersWithPreparingStatus() ([]models.Order, error)
 	GetOrdersForPub(pubID int) ([]models.Order, error)
 	GetOrdersForClient(clientID int) ([]models.Order, error)
@@ -25,6 +26,9 @@ type OrderRepo interface {
 	GetOrderByIDWithinTransaction(tx *gorm.DB, orderID int) (models.Order, error)
 	CreateOrder(models.Order, models.OrderCourierInfo) (models.Order, error)
 	CreateOrderWithinTransaction(tx *gorm.DB, order models.Order, courierInfo models.OrderCourierInfo) (models.Order, error)
+	UpdateOrderTotalPrice(orderID int, totalPrice float64) error
+	UpdateOrderPrepared(orderID int, prepared bool) error
+	UpdateOrderPreparedWithinTransaction(tx *gorm.DB, orderID int, prepared bool) error
 	UpdateOrderStatus(orderID int, status string) error
 	UpdateOrderStatusWithinTransaction(tx *gorm.DB, orderID int, status string) error
 	UpdateOrderDeliveryPrice(orderID int, price float64) error
@@ -53,6 +57,20 @@ func (r *orderRepo) NewTransaction() *gorm.DB {
 func (r *orderRepo) GetAllOrders() ([]models.Order, error) {
 	orders := []models.Order{}
 	resp := r.Database.Preload("Client").Preload("Pub").Preload("OrderCourierInfo").Find(&orders)
+	if resp.Error != nil {
+		return nil, ordererrors.ErrUnableToGetOrder
+	}
+
+	return orders, nil
+}
+
+func (r *orderRepo) GetAllOrdersWithSpecificStatuses(statuses ...string) ([]models.Order, error) {
+	orders := []models.Order{}
+	if len(statuses) == 0 {
+		return r.GetAllOrders()
+	}
+
+	resp := r.Database.Preload("Client").Preload("Pub").Preload("OrderCourierInfo").Find(&orders, "status in (?)", statuses)
 	if resp.Error != nil {
 		return nil, ordererrors.ErrUnableToGetOrder
 	}
@@ -166,6 +184,23 @@ func (r *orderRepo) CreateOrderWithinTransaction(tx *gorm.DB, order models.Order
 	}
 
 	return order, nil
+}
+
+func (r *orderRepo) UpdateOrderTotalPrice(orderID int, totalPrice float64) error {
+	fmt.Println("updat inal =========================================")
+	err := r.Database.Model(&models.Order{}).Where("id = ?", orderID).UpdateColumn("total_dishes_price_without_commission", totalPrice).Error
+	return err
+}
+func (r *orderRepo) UpdateOrderPrepared(orderID int, prepared bool) error {
+	fmt.Println("updat inal =========================================")
+	err := r.Database.Model(&models.Order{}).Where("id = ?", orderID).UpdateColumn("prepared", prepared).Error
+	return err
+}
+
+func (r *orderRepo) UpdateOrderPreparedWithinTransaction(tx *gorm.DB, orderID int, prepared bool) error {
+	fmt.Println("updat inal =========================================")
+	err := tx.Model(&models.Order{}).Where("id = ?", orderID).UpdateColumn("prepared", prepared).Error
+	return err
 }
 
 func (r *orderRepo) UpdateOrderStatus(orderID int, status string) error {

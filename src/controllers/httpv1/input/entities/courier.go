@@ -46,14 +46,15 @@ type CourierOutput struct {
 	CreatedAt string `json:"created_at"`
 	UpdatedAt string `json:"updated_at"`
 
-	FullName         string `json:"full_name"`
-	Email            string `json:"email"`
-	PhoneNumber      string `json:"phone_number"`
-	BirthDate        string `json:"birth_date"`
-	Gender           string `json:"gender"`
-	Location         string `json:"location"`
-	ImageFileName    string `json:"image_file_name"`
-	TelegramUsername string `json:"telegram_username"`
+	FullName         string  `json:"full_name"`
+	Email            string  `json:"email"`
+	PhoneNumber      string  `json:"phone_number"`
+	BirthDate        string  `json:"birth_date"`
+	Gender           string  `json:"gender"`
+	Location         string  `json:"location"`
+	ImageFileName    string  `json:"image_file_name"`
+	TelegramUsername string  `json:"telegram_username"`
+	Balance          float64 `json:"balance"`
 }
 
 func (c *CourierOutput) FillFromModel(courier models.Courier) {
@@ -68,6 +69,7 @@ func (c *CourierOutput) FillFromModel(courier models.Courier) {
 	c.Gender = courier.Gender
 	c.Location = courier.Location
 	c.TelegramUsername = courier.TelegramUsername
+	c.Balance = courier.Balance
 }
 
 type ReserveOrderInput struct {

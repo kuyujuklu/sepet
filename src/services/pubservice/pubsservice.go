@@ -44,6 +44,8 @@ type PubService interface {
 
 	SetLatLng(pubID int, lat float64, lng float64) error
 
+	GetDeliveryPriceForLatLng(pub models.Pub, lat float64, lng float64) (float64, float64, error)
+	GetAvailableShape(shapes []models.Shape, lat float64, lng float64) (models.Shape, bool)
 	SetShippingAvailable(pubID int, available bool) error
 	EnableShippingAndSetShapes(pubID int, shapes []models.Shape) error
 	GetShapes(pubID int) ([]models.Shape, error)
@@ -435,6 +437,49 @@ func (s *pubsService) GetPubsWithShippingAvailableForPoint(point models.Vertex) 
 	}
 
 	return availablePubs, shippingPrices, shippingFreeDeliveryPrices, nil
+}
+
+func (s *pubsService) GetDeliveryPriceForLatLng(pub models.Pub, lat float64, lng float64) (float64, float64, error) {
+	if !pub.Shipping.Available {
+		return 0, 0, puberrors.ErrPubShippingIsInvalid
+	}
+
+	shapes, err := pub.Shipping.GetShapes()
+	if err != nil {
+		fmt.Println("error getting shapes While getting pubs with shipping available for point: ", err)
+		return 0, 0, err
+	}
+
+	pubShippingPrices, err := pub.Shipping.GetPrices()
+	if err != nil {
+		return 0, 0, err
+	}
+
+	pubShippingFreeDeliveryPrices, err := pub.Shipping.GetFreeDeliveryPrices()
+	if err != nil {
+		return 0, 0, err
+	}
+
+	nearestShape, isAvailable := s.GetAvailableShape(shapes, lat, lng)
+
+	var price float64 = 0
+	var freeDeliveryPrice float64 = 0
+
+	if isAvailable {
+		for shapeID, shapePrice := range pubShippingPrices {
+			if shapeID == nearestShape.ShapeID {
+				price = shapePrice
+			}
+		}
+
+		for shapeID, shapeFreeDeliveryPrice := range pubShippingFreeDeliveryPrices {
+			if shapeID == nearestShape.ShapeID {
+				freeDeliveryPrice = shapeFreeDeliveryPrice
+			}
+		}
+	}
+
+	return price, freeDeliveryPrice, nil
 }
 
 func (s *pubsService) GetAvailableShape(shapes []models.Shape, lat float64, lng float64) (models.Shape, bool) {

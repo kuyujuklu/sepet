@@ -4,11 +4,13 @@ import (
 	"errors"
 	"fmt"
 	"mime/multipart"
+	"strings"
 
 	"github.com/alexkalak/qrmenu/src/controllers/httpv1/input/entities"
 	"github.com/alexkalak/qrmenu/src/errors/autherrors"
 	"github.com/alexkalak/qrmenu/src/errors/couriererrors"
 	"github.com/alexkalak/qrmenu/src/errors/ordererrors"
+	"github.com/alexkalak/qrmenu/src/helpers"
 	"github.com/alexkalak/qrmenu/src/helpers/wshelpers"
 	"github.com/alexkalak/qrmenu/src/models"
 	"github.com/alexkalak/qrmenu/src/repo/courierrepo"
@@ -32,6 +34,7 @@ type CourierService interface {
 	DeleteCourier(courierID int) error
 	GetAllAvailableOrdersForDelivery() ([]models.Order, error)
 	GetAllCourierOrders(courierID int) ([]models.Order, error)
+	AddToCourierBalance(courierID int, amount float64) (float64, error)
 
 	UploadCourierImage(courierID int, fileHeader *multipart.FileHeader) (string, error)
 	DeleteCourierImage(courierID int) error
@@ -120,7 +123,7 @@ func (s *courierService) GetAllCourierDeliveredOrders(courierID int) ([]models.O
 	return availableOrders, nil
 }
 
-func (s *courierService) UpdateOrderCallback(order models.Order) {
+func (s *courierService) UpdateOrderCallback(order models.Order, sendTelegram bool) {
 	fmt.Println("update callback")
 
 	pub, err := s.PubsRepo.GetPubById(order.PubID)
@@ -128,7 +131,7 @@ func (s *courierService) UpdateOrderCallback(order models.Order) {
 		return
 	}
 
-	if order.Status == models.PREPARING_ORDER_STATUS && !order.OrderCourierInfo.IsReserved && pub.Shipping.DeliveryType == models.DELIVERY_TYPE_DELIVERY_SERVICE {
+	if sendTelegram && order.Status == models.PREPARING_ORDER_STATUS && !order.OrderCourierInfo.IsReserved && pub.Shipping.DeliveryType == models.DELIVERY_TYPE_DELIVERY_SERVICE {
 		fmt.Println("sending order for couriers in telegram")
 		s.SendActiveOrderUpdateForAllCouriersTelegram(order)
 	}
@@ -178,6 +181,84 @@ func (s *courierService) UpdateCourier(courierID int, courier models.Courier) (m
 	courier.ImageFileName = courierFromDB.ImageFileName
 
 	return s.CourierRepo.UpdateCourier(courierID, courier)
+}
+
+func (s *courierService) AddToCourierBalance(courierID int, amount float64) (float64, error) {
+	courierFromDB, err := s.CourierRepo.GetCourierByID(courierID)
+	if err != nil {
+		return 0, err
+	}
+
+	courier := courierFromDB
+	courier.Balance += amount
+
+	newCourier, err := s.CourierRepo.UpdateCourier(courierID, courier)
+	if err != nil {
+		return 0, err
+	}
+
+	return newCourier.Balance, nil
+
+}
+
+func (s *courierService) AddOrderCourierDebitToCourier(courierID int, order models.Order) (float64, error) {
+	courierFromDB, err := s.CourierRepo.GetCourierByID(courierID)
+	if err != nil {
+		return 0, err
+	}
+
+	//If debit already added then just considering that it was added
+	if order.OrderCourierInfo.IsDebitAddedToCourier {
+		return courierFromDB.Balance, nil
+	}
+
+	courier := courierFromDB
+	courier.Balance -= order.OrderCourierInfo.CourierDebit
+
+	newCourierInfo := order.OrderCourierInfo
+	newCourierInfo.IsDebitAddedToCourier = true
+
+	_, err = s.OrderRepo.UpdateOrderCourierInfo(int(order.ID), newCourierInfo)
+	if err != nil {
+		return 0, err
+	}
+
+	_, err = s.CourierRepo.UpdateCourier(courierID, courier)
+	if err != nil {
+		return 0, err
+	}
+
+	return courier.Balance, nil
+}
+
+func (s *courierService) RemoveOrderCourierDebitFromCourier(courierID int, order models.Order) (float64, error) {
+	courierFromDB, err := s.CourierRepo.GetCourierByID(courierID)
+	if err != nil {
+		return 0, err
+	}
+
+	//If debit isnt yet added then just considering that all normal
+	if !order.OrderCourierInfo.IsDebitAddedToCourier {
+		return courierFromDB.Balance, nil
+	}
+
+	courier := courierFromDB
+	courier.Balance += order.OrderCourierInfo.CourierDebit
+
+	newCourierInfo := order.OrderCourierInfo
+	newCourierInfo.IsDebitAddedToCourier = false
+
+	_, err = s.OrderRepo.UpdateOrderCourierInfo(int(order.ID), newCourierInfo)
+	if err != nil {
+		return 0, err
+	}
+
+	_, err = s.CourierRepo.UpdateCourier(courierID, courier)
+	if err != nil {
+		return 0, err
+	}
+
+	return courier.Balance, nil
 }
 
 func (s *courierService) DeleteCourier(id int) error {
@@ -254,14 +335,26 @@ func (s *courierService) ReserveOrder(courierID int, orderID int) error {
 		}
 	}
 
+	fmt.Println("order courier info: ", helpers.ConvertToJSON(order.OrderCourierInfo))
 	newCourierInfo := order.OrderCourierInfo
 	newCourierInfo.IsReserved = true
 	newCourierInfo.ReserverCourierID = courierID
 
-	_, err = s.OrderService.UpdateOrderCourierInfo(orderID, newCourierInfo)
+	fmt.Println("updating courier info")
+	updatedCourierInfo, err := s.OrderService.UpdateOrderCourierInfo(orderID, newCourierInfo)
 	if err != nil {
 		return err
 	}
+
+	order.OrderCourierInfo = updatedCourierInfo
+	fmt.Println("adding debit")
+	debit, err := s.AddOrderCourierDebitToCourier(courierID, order)
+	if err != nil {
+		return err
+	}
+	fmt.Println("debit added")
+
+	fmt.Printf("After order reserving debit of courierID %d: %.2f", courierID, debit)
 
 	return nil
 }
@@ -309,6 +402,13 @@ func (s *courierService) SetOrderStatusToCanceled(courierID int, orderID int) er
 		return err
 	}
 
+	// debit, err := s.RemoveOrderCourierDebitFromCourier(courierID, order)
+	// if err != nil {
+	// 	return err
+	// }
+
+	// fmt.Printf("After order canceling debit of courierID %d: %.2f", courierID, debit)
+
 	return nil
 }
 
@@ -350,7 +450,7 @@ func (s *courierService) SendActiveOrderUpdateForAllCouriersTelegram(order model
 	existingChats := []models.TelegramCourierChat{}
 	for _, courier := range couriers {
 		if courier.TelegramUsername != "" {
-			chat, ok := chatsMap[courier.TelegramUsername]
+			chat, ok := chatsMap[strings.ToLower(courier.TelegramUsername)]
 			if !ok {
 				continue
 			}
@@ -358,7 +458,8 @@ func (s *courierService) SendActiveOrderUpdateForAllCouriersTelegram(order model
 		}
 	}
 
-	for _, chat := range chats {
+	for _, chat := range existingChats {
+		fmt.Println("chat: ", chat)
 		err := s.TelegramService.SendCreateOrderMessageForCourier(chat.ChatID, chat.Username, order)
 		if err != nil {
 			fmt.Println("ERROR SENDING TELEGRAM FOR COURIER ", err)

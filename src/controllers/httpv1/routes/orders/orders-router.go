@@ -32,4 +32,5 @@ func (c *ordersController) AuthorizedRouter(router fiber.Router) {
 	router.Put("/:orderID<int>/update-status", c.UpdateOrderStatus)
 	router.Put("/:orderID<int>/update-delivery-price", c.UpdateOrderDeliveryPrice)
 	router.Put("/:orderID<int>/update-dishes", c.UpdateOrderDishes)
+	router.Put("/:orderID<int>/update-prepared", c.UpdateOrderPrepared)
 }

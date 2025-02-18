@@ -18,6 +18,7 @@ import (
 
 type ClientService interface {
 	GetClientByID(id int) (models.Client, error)
+	GetAllClients() ([]models.Client, error)
 	RegistrateClient(phone string, name string, password string) (models.Client, error)
 	AuthenticateClient(phone string, password string) (models.Client, error)
 	GenerateClientRegistrationSession(phone string, name string, password string) (models.PhoneValidationSession, time.Time, error)
@@ -46,6 +47,10 @@ func New() ClientService {
 
 func (c *clientService) GetClientByID(id int) (models.Client, error) {
 	return c.ClientRepo.GetClientByID(id)
+}
+
+func (c *clientService) GetAllClients() ([]models.Client, error) {
+	return c.ClientRepo.GetAllClients()
 }
 
 func (c *clientService) GenerateClientRegistrationSession(phone string, name string, password string) (models.PhoneValidationSession, time.Time, error) {

@@ -13,6 +13,7 @@ import (
 
 type NotificationRepo interface {
 	GetNotificationSubscription(phone string) (models.NotificationSubscription, error)
+	GetAllSubscriptions() ([]models.NotificationSubscription, error)
 	CreateSubscriptionSubscription(phone, token, lang string) (models.NotificationSubscription, error)
 	UpdateNotificationSubscriptionToken(phone, token, lang string) (models.NotificationSubscription, error)
 }
@@ -90,4 +91,12 @@ func (r *notificationRepo) UpdateNotificationSubscriptionToken(phone, token, lan
 	fmt.Println("not sub: ", notificationSub)
 
 	return notificationSub, nil
+}
+func (r *notificationRepo) GetAllSubscriptions() ([]models.NotificationSubscription, error) {
+	subs := make([]models.NotificationSubscription, 0)
+	resp := r.Database.Find(&subs)
+	if resp.Error != nil {
+		return nil, notificationerrors.ErrUnableToGetNotification
+	}
+	return subs, nil
 }
