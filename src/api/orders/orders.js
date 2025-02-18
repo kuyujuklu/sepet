@@ -37,11 +37,22 @@ export const orders = createApi({
                 }),
                 invalidatesTags: ["Orders"],
         }),
+        updatePrepared: builder.mutation({
+                query: ({ companyID, pubID, orderID, prepared }) => ({
+                    url: `/api/company/${companyID}/pubs/${pubID}/orders/${orderID}/update-prepared`,
+                    method: "PUT",
+                    body: {
+                        prepared
+                    },
+                }),
+                invalidatesTags: ["Orders"],
+        }),
     }),
 });
 
 export const {
     useUpdateOrderStatusMutation,
     useUpdateOrderDishesMutation,
-    useUpdateOrderDeliveryPriceMutation
+    useUpdateOrderDeliveryPriceMutation,
+    useUpdatePreparedMutation
 } = orders;

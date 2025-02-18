@@ -22,6 +22,7 @@ import { category } from "../api/categories/category";
 import { dish } from "../api/dish/dish";
 import { orders } from "../api/orders/orders";
 import { courier } from "../api/courier/courier";
+import { admin } from "../api/admin/admin";
 export const store = configureStore({
     reducer: {
         companySlice: companyReducer,
@@ -46,8 +47,10 @@ export const store = configureStore({
         [category.reducerPath]: category.reducer,
         [dish.reducerPath]: dish.reducer,
         [orders.reducerPath]: orders.reducer,
+        [admin.reducerPath]: admin.reducer,
     },
     middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(
+        admin.middleware,
         auth.middleware,
         company.middleware,
         courier.middleware,

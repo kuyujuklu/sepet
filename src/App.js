@@ -34,6 +34,7 @@ import CourierInfoPopup from "./features/courier/popups/CourierInfoPopup"
 import AddCourierPopup from "./features/admin/ShippingAndPreorder/Shipping/AddCourierPopup"
 import CourierReserveOrderPopup from "./features/courier/popups/CourierReserveOrderPopup"
 import DeleteClientAccount from "./components/DeleteClientAccount/DeleteClientAccount"
+import AdministrationOrders from "./features/administration/AdministrationOrders"
 
 const App = () => {
   return (
@@ -63,6 +64,7 @@ const AppInner = () => {
     >
       <Routes>
         <Route path="/admin/*" element={<AdminInner />} />
+        <Route path="/administration/orders" element={<AdministrationOrders />} />
         <Route path="/courier/*" element={<CourierPage />} />
       </Routes>
       

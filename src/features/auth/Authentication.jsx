@@ -38,7 +38,9 @@ const Authentication = () => {
                 dispatch(setRequireAuthenticationToFalse())
                 dispatch(company.util.resetApiState());
                 dispatch(auth.util.resetApiState());
-                navigate(data?.role === "company" ? "/admin/company/" : "/courier");
+                navigate(data?.role === "company" ? "/admin/company/" : 
+                        data?.role === "admin" ? "/administration/orders" : 
+                        "/courier");
             }
         })()
     }, [data, dispatch, navigate]);

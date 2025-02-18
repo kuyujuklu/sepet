@@ -16,10 +16,12 @@ import { useTranslation } from "react-i18next";
 import { pub } from "../../../../api/pub/pub";
 import AddDishToOrderButton from "./AddDishToOrderButton";
 import Select from "../../../../components/Inputs/Select";
-import { Button } from "@mui/material";
-import { useUpdateOrderDeliveryPriceMutation } from "../../../../api/orders/orders";
+import { Button, Checkbox } from "@mui/material";
+import { useUpdateOrderDeliveryPriceMutation, useUpdatePreparedMutation } from "../../../../api/orders/orders";
 import OrderCourierInfo from "../OrderCourierInfo";
 import { deliveryTypes } from "../../../../static-data/data";
+import { KeyboardReturnTwoTone } from "@mui/icons-material";
+import CheckboxWithLabel from "../../../../components/Inputs/CheckboxWithLabel";
 
 const OrderInfoPage = ({ pubUrlName }) => {
   const { t } = useTranslation();
@@ -120,12 +122,31 @@ const OrderInfoPage = ({ pubUrlName }) => {
     },
   ] = useUpdateOrderDeliveryPriceMutation();
 
+
   const saveDeliveryPrice = () => {
     const companyID = pubData?.pub?.company_id;
     const pubID = pubData?.pub?.id;
     if (!companyID || !pubID || !orderID || isNaN(+orderDeliveryPrice)) return;
 
     sendDeliveryPrice({ companyID, pubID, orderID, price: orderDeliveryPrice });
+  };
+
+  const [
+    updatePrepared,
+    {
+      data: updatedOrderPreparedData,
+      error: updatedOrderPreparedError,
+      isLoading: isPreparedLoading,
+    },
+  ] = useUpdatePreparedMutation();
+
+
+  const setPrepared = (prepared) => {
+    const companyID = pubData?.pub?.company_id;
+    const pubID = pubData?.pub?.id;
+    if (!companyID || !pubID || !orderID) return;
+
+    updatePrepared({ companyID, pubID, orderID, prepared });
   };
 
   const [orderDeliveryPrice, setOrderDeliveryPrice] = useState(0);
@@ -168,7 +189,6 @@ const OrderInfoPage = ({ pubUrlName }) => {
             </div>
           }
 
-
             <div className="mb-6">
               <OrderStatuses
                 companyID={pubData?.pub?.company_id}
@@ -176,7 +196,18 @@ const OrderInfoPage = ({ pubUrlName }) => {
                 orderID={orderID}
                 status={order.status}
               />
+
+              {order.status === "preparing" && 
+                <div className="flex items-center">
+                  <span>Заказ готов </span>
+                  <CheckboxWithLabel 
+                      value={order?.prepared} 
+                      setValue={(prep) => setPrepared(prep)} 
+                  />
+                </div>
+              }
             </div>
+          
 
             <div className="grid grid-cols-2 w-full px-10 mb-10">
               {order.order_type === orderTypes.delivery && (
@@ -276,8 +307,23 @@ const OrderInfoPage = ({ pubUrlName }) => {
                 <div className="w-full px-20 py-5">
                   <div>
                     {t("admin.admin_panel.order_page.total_price_of_products")}:{" "}
-                    {orderItemsPrice.toFixed(2)} Lei
+                   
+                   
+                    {pubData?.pub?.shipping?.add_commission_to_dish_prices ?
+                      (orderItemsPrice / 1.1).toFixed(2)  :
+                      orderItemsPrice.toFixed(2)
+                    } Lei
+
+
                   </div>
+                  {pubData?.pub?.shipping?.add_commission_to_dish_prices && 
+                    <div>
+                      {/* commission */}
+                      {t("commission")}:{" "}
+                      {(orderItemsPrice- orderItemsPrice / 1.1).toFixed(2)} Lei
+                      
+                    </div>
+                  }
                   {order.order_type === orderTypes.delivery && (
                     <div className="flex items-center gap-5">
                       {t("admin.admin_panel.order_page.price_of_shipping")}:{" "}

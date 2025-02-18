@@ -14,4 +14,4 @@ export const company = createApi({
     
 })
 
-export const { useGetCompanyQuery } = company;
+export const { useGetCompanyQuery, useCheckAdminQuery } = company;

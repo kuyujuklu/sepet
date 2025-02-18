@@ -28,7 +28,7 @@ const CourierPage = () => {
 
   return (
             <div className="w-full pb-20">
-                <CourierHeader courierID={courierData?.courier.id} courierName={courierData?.courier.full_name} />
+                <CourierHeader balance={courierData?.courier?.balance} courierID={courierData?.courier.id} courierName={courierData?.courier.full_name} />
                 <Routes>
                     <Route path="/" element={<RedirectToProfile />} />
                     <Route path="/profile" element={<CourierProfile courierID={courierData?.courier.id} />} />
