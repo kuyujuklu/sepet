@@ -33,7 +33,8 @@
             "wifi_password": "Parolă Wi-Fi",
             "address": "Adresă",
             "additional_info": "Informații suplimentare",
-            "work_hours": "Ore de deschidere"
+            "work_hours": "Ore de deschidere",
+            "delivery_to": "Livrare către"
         },
         "basket": {
             "headline": "Coș",
@@ -53,6 +54,8 @@
                 "in_place_order": "Comandă la local",
                 "delivery": "Livrare la domiciliu",
                 "town": "Oraș",
+                "delivery_to": "Livrare către",
+                "choose": "Selecta",
                 "full_address": "Adresa completă",
                 "phone": "Telefon",
                 "choose_payment_type": "Alegeți tipul de plată",
@@ -65,6 +68,9 @@
                 "comments": "Comentarii",
                 "create_order_button": "Comandă"
 
+            },
+            "select_location_popup": {
+              "headline": "Selectați orașul" 
             }
         }
     }

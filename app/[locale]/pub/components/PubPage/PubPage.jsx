@@ -5,26 +5,29 @@ import StoreProvider from "../../store/StoreProvider";
 import ThemeContextProvider from "./ThemeContextProvider";
 import DataToStateUploader from "./DataToStateUploader";
 import ThemeWrapperForPubPage from "./ThemeWrapperForPubPage";
+import SelectLocationPopup from "../Location/SelectLocationPopup";
 
-function PubPage({ data, children, hasDownPanel, downPanelData }) {
-    if (data?.pub?.expired) return <SomethingWentWrong />;
+function PubPage({ pubName, data, children, hasDownPanel, downPanelData }) {
+  if (data?.pub?.expired) return <SomethingWentWrong />;
 
-    return (
-        <StoreProvider>
-            <ThemeContextProvider data={data}>
-            {
-                data?.pub && (
-                    <div>
-                        <DataToStateUploader data={data} />
-                        {/* wrapper */}
-                        <ThemeWrapperForPubPage data={data} hasDownPanel={hasDownPanel} downPanelData={downPanelData} >{children}</ThemeWrapperForPubPage>
-                    </div>
-                )
-            }
-                <CreateOrderPopup />
-            </ThemeContextProvider>
-        </StoreProvider>
-    );
+  return (
+    <StoreProvider>
+      <ThemeContextProvider data={data}>
+        {
+          data?.pub && (
+            <div>
+              <DataToStateUploader data={data} pubName={pubName} />
+              {/* wrapper */}
+              <ThemeWrapperForPubPage data={data} hasDownPanel={hasDownPanel} downPanelData={downPanelData} >{children}</ThemeWrapperForPubPage>
+            </div>
+          )
+        }
+        <CreateOrderPopup />
+        <SelectLocationPopup />
+
+      </ThemeContextProvider>
+    </StoreProvider>
+  );
 }
 
 export default PubPage;

@@ -18,7 +18,8 @@
             "wifi_password": "Пароль от Wi-Fi",
             "address": "Адрес",
             "additional_info": "Информация",
-            "work_hours": "Время работы"
+            "work_hours": "Время работы",
+            "delivery_to": "Доставка в"
         },
         "errors": {
             "unknown_order_type": "Неизвестный тип заказа",
@@ -52,6 +53,8 @@
                 "in_place_order": "Заказ в ресторане",
                 "delivery": "Доставка на дом",
                 "town": "Город",
+                "delivery_to": "Доставка в",
+                "choose": "Выбрать",
                 "full_address": "Полный адрес",
                 "phone": "Телефон",
                 "choose_payment_type": "Выберите тип оплаты",
@@ -65,6 +68,9 @@
 
                 "create_order_button": "Заказать"
 
+            },
+            "select_location_popup": {
+              "headline": "Выберите свой город"
             }
         }
     }
