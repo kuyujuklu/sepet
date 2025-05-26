@@ -5,43 +5,22 @@ const Header = ({ lang }) => {
     <div>
 
       {/* <!-- Navbar goes here --> */}
-      <nav className="bg-white shadow-lg rounded-b-xl">
+      <nav style={{backgroundColor: 'rgb(255 255 255 / 27%)'}} className=" shadow-lg rounded-b-xl">
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex justify-between">
-            <div className="flex space-x-7">
-              <div>
+            <div className="flex ">
+              
                 {/* <!-- Website Logo --> */}
-                <a
-                  href="#"
-                  className="flex items-center py-4 px-2"
-                >
-                  {/* <!-- <img alt=""src="logo.png" alt="Logo" className="h-8 w-8 mr-2"> --> */}
-                  <span className="font-semibold text-gray-500 text-lg">
-                    Sandex Terminal
-                                    </span>
+                <a href="#" className="flex-row md:flex justify-items-center items-center py-4 px-2">                  
+                    <img src="images/png/bird.png" width={30} height={30}></img>
+                    <span className="font-semibold text-gray-500 text-lg">sepet.md</span>
                 </a>
-              </div>
-              {/* <!-- Primary Navbar items --> */}
             </div>
-            {/* <!-- Secondary Navbar items --> */}
-            <div className=" flex items-center space-x-3">
-              <SwitchLang lang={lang} />
-              <a
-                href="/admin/company"
-                id="openSignUp-1"
-                className=" py-2 px-2 font-medium text-gray-500 rounded-xl hover:bg-blue-500 hover:text-white
-                    transition duration-300 "
-              >
-                Log In
-                            </a>
-              <a
-                href="/admin/auth/registration"
-                id="openSignUp-02"
-                className="  py-2 px-2 font-medium text-white bg-blue-500 rounded-xl hover:bg-blue-400 transition
-                    duration-300"
-              >
-                Sign Up
-                            </a>
+            <div className="p-4 text-xs sm:text-base self-center">Все на расстоянии одного клика</div>
+            <div className=" flex items-center">
+              <a href="https://onelink.to/ey3df3" className="p-2 m-1 sm:p-4 sm:m-2 bg-cyan-400 text-xs sm:text-base rounded-xl text-white">
+                Скачать Sepet</a>
+            
             </div>
           </div>
         </div>
