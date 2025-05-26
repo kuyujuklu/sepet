@@ -19,7 +19,8 @@
             "address": "Адрес",
             "additional_info": "Информация",
             "work_hours": "Время работы",
-            "delivery_to": "Доставка в"
+            "delivery_to": "Доставка в",
+            "open_in_app": "Открыть в приложении"
         },
         "errors": {
             "unknown_order_type": "Неизвестный тип заказа",

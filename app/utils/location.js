@@ -1,14 +1,4 @@
-import { latlng_for_location } from "../static-data/data"
-
-const ru_translates = {
-  "Kazaklia": "Казаклия",
-  "Komrat": "Комрат"
-}
-const ro_translates = {
-  "Kazaklia": "Cazaclia",
-  "Komrat": "Comrat"
-}
-
+import { latlng_for_location, ro_translates, ru_translates } from "../static-data/data"
 
 export const getLatLngForLocation = (location) => {
   return latlng_for_location[location] ?? { lat: 0, lng: 0 }

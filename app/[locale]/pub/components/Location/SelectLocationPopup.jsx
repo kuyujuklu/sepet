@@ -52,8 +52,10 @@ const SelectLocationPopup = () => {
     }
   }, [dispatch, requireLocation])
 
+
+  console.log("LOC: ", select_options_ru)
   return (
-    <Popup opened={popupState.opened} closeCallback={closePopupIfSelected}>
+    <Popup popupStyle={{ display: "block" }} contentStyle={{ top: 50, margin: "0 auto" }} opened={popupState.opened} closeCallback={closePopupIfSelected}>
       <div className="py-4">
         <header>
           <h1 className="font-bold text-center text-xl  mb-6">
@@ -61,13 +63,14 @@ const SelectLocationPopup = () => {
           </h1>
         </header>
         <main className="flex flex-col gap-6 mb-6">
-          <div className="relative flex flex-col gap-10">
+          <div className="flex flex-col gap-10">
             <div style={{}}>
               <Select
                 menuPosition={"absolute"}
                 onChange={handleChange}
                 options={i18n.language === "ro" ? select_options_ro : select_options_ru}
-                minMenuHeight={300}
+                minMenuHeight={400}
+                menuIsOpen={true}
 
                 components={{
                   Control,

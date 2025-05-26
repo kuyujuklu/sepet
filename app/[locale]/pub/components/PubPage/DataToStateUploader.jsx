@@ -44,6 +44,13 @@ const DataToStateUploader = ({ data, pubName }) => {
   }, [pubDataWithLocation, dispatch])
 
 
+  useEffect(() => {
+    if (data?.pub?.id) {
+      setTimeout(() => {
+        window.location = `sepetmd://md?Path=PubInfo&PubID=${data.pub.id}`
+      }, 100)
+    }
+  }, [data])
 
   useEffect(() => {
     if (data) dispatch(setData(data));

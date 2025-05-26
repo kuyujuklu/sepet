@@ -96,10 +96,29 @@ export const deliveryTypes = {
 
 export const locations = {
   Kazaklia: "Kazaklia",
+  Kazaklia: "Kazaklia",
+  Kazaklia: "Kazaklia",
+  Kazaklia: "Kazaklia",
+  Kazaklia: "Kazaklia",
+  Kazaklia: "Kazaklia",
+  Kazaklia: "Kazaklia",
+  Kazaklia: "Kazaklia",
+  Kazaklia: "Kazaklia",
+  Kazaklia: "Kazaklia",
+  Kazaklia: "Kazaklia",
   Komrat: "Komrat",
+}
+
+export const ru_translates = {
+  [locations.Kazaklia]: "Казаклия",
+  [locations.Komrat]: "Комрат"
+}
+export const ro_translates = {
+  [locations.Kazaklia]: "Cazaclia",
+  [locations.Komrat]: "Comrat"
 }
 
 export const latlng_for_location = {
   [locations.Kazaklia]: { lat: 46.0107910676057, lng: 28.66281325096689 },
-  [locations.Komrat]: { lat: 46.2984314559434, lng: 28.655574133019062 }
+  [locations.Komrat]: { lat: 46.2984314559434, lng: 28.655574133019062 },
 }

@@ -34,7 +34,8 @@
             "address": "Adresă",
             "additional_info": "Informații suplimentare",
             "work_hours": "Ore de deschidere",
-            "delivery_to": "Livrare către"
+            "delivery_to": "Livrare către",
+            "open_in_app": "Deschide în aplicație"
         },
         "basket": {
             "headline": "Coș",
