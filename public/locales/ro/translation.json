@@ -44,6 +44,8 @@
                 "delivery": "Livrare la domiciliu",
                 "in_place_order":"Comandă la local"
             },
+            "no_delivery_available": "Nu este posibil să comanzi de la această unitate la locația ta, te rugăm să selectezi alta",
+            "button_no_delivery_text": "Această unitate nu livrează la locația selectată, vă rugăm să selectați alta",
             "create_order_button": "Сomanda" 
         },
         "popups": {

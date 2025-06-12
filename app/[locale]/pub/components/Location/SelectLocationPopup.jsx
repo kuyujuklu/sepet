@@ -5,19 +5,9 @@ import { useCallback, useEffect, useState } from "react";
 import Popup from "@/app/shared-components/Popup/Popup";
 import { selectSelectLocationPopupState, closeSelectLocationPopup, selectRequireLocation, setRequireLocation, openSelectLocationPopup, setLocation, selectLocation } from "../../store/locationSlice";
 import Select, { components } from 'react-select'
-import { locations } from "../../../../static-data/data";
+import { locations, select_location_options_ro, select_location_options_ru } from "../../../../static-data/data";
 import { translateLocation } from "../../../../utils/location";
 
-
-const select_options_ru = [
-  { value: locations.Kazaklia, label: translateLocation(locations.Kazaklia, "ru") },
-  { value: locations.Komrat, label: translateLocation(locations.Komrat, "ru") }
-]
-
-const select_options_ro = [
-  { value: locations.Kazaklia, label: translateLocation(locations.Kazaklia, "ro") },
-  { value: locations.Komrat, label: translateLocation(locations.Komrat, "ro") }
-]
 
 const SelectLocationPopup = () => {
   const { t, i18n } = useTranslation();
@@ -36,6 +26,7 @@ const SelectLocationPopup = () => {
 
 
   const handleChange = (option) => {
+    console.log("value : ", option.value)
     if (!locations[option?.value]) {
       return;
     }
@@ -53,7 +44,6 @@ const SelectLocationPopup = () => {
   }, [dispatch, requireLocation])
 
 
-  console.log("LOC: ", select_options_ru)
   return (
     <Popup popupStyle={{ display: "block" }} contentStyle={{ top: 50, margin: "0 auto" }} opened={popupState.opened} closeCallback={closePopupIfSelected}>
       <div className="py-4">
@@ -68,7 +58,7 @@ const SelectLocationPopup = () => {
               <Select
                 menuPosition={"absolute"}
                 onChange={handleChange}
-                options={i18n.language === "ro" ? select_options_ro : select_options_ru}
+                options={i18n.language === "ro" ? select_location_options_ro : select_location_options_ru}
                 minMenuHeight={400}
                 menuIsOpen={true}
 

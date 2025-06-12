@@ -1,10 +1,11 @@
 import Header from "./landing/Header"
 import CarouselSection from "./landing/Carousel/CarouselSection"
-import FirstInfoBlock from "./landing/Main/FirstInfoBlock"
+import FirstInfoBlock from "./landing/Main/ChooseLocation"
 import SecondInfoBlock from "./landing/Main/SecondInfoBlock"
 
 import style from './landing/sass/components/company-inline-select/company-inline-select.module.scss'
 import Link from "next/link"
+import Main from "./landing/Main/Main"
 
 
 const page = () => {
@@ -13,18 +14,9 @@ const page = () => {
       <header className="block mb-5">
         <Header lang="ru" />
       </header>
-      <section>
-        <CarouselSection />
-      </section>
       <section className="block mt-4">
-        <FirstInfoBlock />
+        <Main />
       </section>
-      <section className="relative w-full">
-        <SecondInfoBlock />
-      </section>
-
-
-
     </div>
   )
 }

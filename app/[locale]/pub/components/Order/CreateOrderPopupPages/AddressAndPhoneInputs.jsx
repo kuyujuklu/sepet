@@ -8,7 +8,7 @@ import { selectLocation, openSelectLocationPopup } from "../../../store/location
 import { translateLocation } from "../../../../../utils/location"
 import { closeCreateOrderPopup } from "../../../store/orderSlice"
 
-const AddressAndPhoneInputs = ({ town, setTown, fullAddress, setFullAddress, phone, setPhone, isValidatedOutside }) => {
+const AddressAndPhoneInputs = ({ isDeliveryAvailable, town, setTown, fullAddress, setFullAddress, phone, setPhone, isValidatedOutside }) => {
   const { t, i18n } = useTranslation()
 
   const location = useSelector(selectLocation)
@@ -65,33 +65,40 @@ const AddressAndPhoneInputs = ({ town, setTown, fullAddress, setFullAddress, pho
         </div>
       </div>
 
-      <InputWithLabel
-        label={t("client.popups.create_order.full_address")}
-        labelClassName={
-          "text-xs sm:text-base text-gray-500 font-medium"
-        }
-        labelStyle={{
-          marginBottom: ".1rem",
-        }}
-        inputStyle={{ fontSize: "1rem" }}
-        value={fullAddress}
-        setValue={setFullAddress}
-        validators={[validateFullAddress]}
-        validationDependencies={{ requireValidation: isValidatedOutside }}
-      />
-      <div className="">
-        <div className="text-xs sm:text-base text-gray-500 font-medium px-2" stlye={{ marginBottom: ".1rem" }}>
-          {t("client.popups.create_order.phone")}
-        </div>
-        <PhoneNumberInput
-          value={phone}
-          setValue={setPhone}
-          style={{ fontSize: "1rem" }}
+      {
+        isDeliveryAvailable ?
+          <>
+            <InputWithLabel
+              label={t("client.popups.create_order.full_address")}
+              labelClassName={
+                "text-xs sm:text-base text-gray-500 font-medium"
+              }
+              labelStyle={{
+                marginBottom: ".1rem",
+              }}
+              inputStyle={{ fontSize: "1rem" }}
+              value={fullAddress}
+              setValue={setFullAddress}
+              validators={[validateFullAddress]}
+              validationDependencies={{ requireValidation: isValidatedOutside }}
+            />
+            <div className="">
+              <div className="text-xs sm:text-base text-gray-500 font-medium px-2" stlye={{ marginBottom: ".1rem" }}>
+                {t("client.popups.create_order.phone")}
+              </div>
+              <PhoneNumberInput
+                value={phone}
+                setValue={setPhone}
+                style={{ fontSize: "1rem" }}
 
-          validators={[validatePhone]}
-          validationDependencies={{ requireValidation: isValidatedOutside }}
-        />
-      </div>
+                validators={[validatePhone]}
+                validationDependencies={{ requireValidation: isValidatedOutside }}
+              />
+            </div>
+          </>
+
+          : <div className="text-xl text-red-400 font-bold">{t("client.basket.no_delivery_available")}</div>
+      }
     </div>
   )
 }

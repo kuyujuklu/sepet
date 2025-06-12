@@ -261,9 +261,11 @@ const CreateOrderPopup = () => {
                 phone={phone}
                 setPhone={setPhone}
                 isValidatedOutside={isValidatedWithError}
+                isDeliveryAvailable={isDeliveryAvailable}
               />
             )}
             <CreateOrderPage
+              isDeliveryAvailable={isDeliveryAvailable}
               orderType={orderType}
               deliveryPrice={deliveryPrice}
               productPrice={productPrice}

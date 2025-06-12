@@ -26,8 +26,8 @@ const DownPanel = ({ reference, pubID }) => {
 
   const pubWorkHours = getPubWorkHours(pub)
   const isDeliveryAvailable = pubWorkHours.isDeliveryAvailable
+  console.log("IS DEL AV: ", isDeliveryAvailable)
   //const hasOrder = isDeliveryAvailable || pub?.has_in_place_order; Removed in place order 
-  const hasOrder = isDeliveryAvailable
 
   return (
     <div
@@ -49,12 +49,10 @@ const DownPanel = ({ reference, pubID }) => {
           <div className="relative">
             <div className="relative">
 
-              <div style={{}} className="w-full px-5 left-0 right-0 mx-auto bottom-0 flex items-center justify-center">
-                <div>
-                </div>
+              <div style={{}} className="w-full flex-col px-5 left-0 right-0 mx-auto bottom-0 flex items-center justify-center">
                 <Button
                   variant="contained"
-                  disabled={!count || !hasOrder}
+                  disabled={!count || !isDeliveryAvailable}
                   style={{
                     background: themeContext.color,
                   }}
@@ -65,6 +63,8 @@ const DownPanel = ({ reference, pubID }) => {
                     padding: ".7rem 1rem",
                     borderRadius: "10px",
                     width: "100%",
+                    color: "white",
+                    background: "rgb(17 24 39)",
                     ":disabled": {
                       color: "rgb(31, 41, 55)"
                     },
@@ -76,6 +76,9 @@ const DownPanel = ({ reference, pubID }) => {
                 >
                   {t("client.basket.create_order_button")}
                 </Button>
+                {!isDeliveryAvailable &&
+                  <div className="text-sm text-red-400">{t("client.basket.button_no_delivery_text")}</div>
+                }
               </div>
             </div>
           </div>
@@ -86,6 +89,21 @@ const DownPanel = ({ reference, pubID }) => {
               background: themeContext.bgColor,
             }}
           >
+            <Link href={`/`}>
+              <div className="flex flex-col justify-center items-center">
+                <Image
+                  className="cursor-pointer"
+                  src={
+                    themeContext.theme === "dark"
+                      ? "/images/svg/home-white.svg"
+                      : "/images/svg/home-black.svg"
+                  }
+                  alt="pencil"
+                  width={30}
+                  height={30}
+                />
+              </div>
+            </Link>
             <Link href={`/${i18n.language}/pub/${pubID}/`}>
               <div className="flex flex-col justify-center items-center">
                 <Image

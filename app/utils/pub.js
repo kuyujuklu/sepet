@@ -20,6 +20,7 @@ export const getPubWorkHours = (pub) => {
       shippingWorkEnd: 1,
     }
   }
+  console.log("PUB SHIPPING: ", pub?.shipping)
 
   const isDeliveryAvailable =
     pub.shipping.available &&
