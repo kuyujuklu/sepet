@@ -1,0 +1,12 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.camelapp.app",
+    "sha256_cert_fingerprints":
+    [
+      "39:3B:E8:A0:F8:C4:C1:87:84:C3:27:7E:42:2B:4D:57:FE:82:CE:86:7A:F0:16:04:ED:13:DA:77:F7:F0:47:FD",
+      "0C:27:31:4D:8B:A1:93:CD:56:0D:AB:2E:21:9E:A8:77:58:DD:AD:F4:97:F0:D7:84:49:2A:98:AB:2F:DA:8F:7D"
+    ]
+  }
+}]
