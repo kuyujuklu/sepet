@@ -31,7 +31,7 @@ func InitializeDatabase() *gorm.DB {
 		return nil
 	}
 
-	//asd
+	// asd
 	db.AutoMigrate(
 		&models.Company{},
 		&models.Pub{},
@@ -48,6 +48,8 @@ func InitializeDatabase() *gorm.DB {
 		&models.Order{},
 		&models.TelegramChat{},
 		&models.TelegramCourierChat{},
+		&models.TelegramSuperUserChat{},
+		&models.TelegramSuperUser{},
 		&models.NotificationSubscription{},
 		&models.Courier{},
 		&models.PhoneValidationSession{},
@@ -60,7 +62,7 @@ func GetDB() *gorm.DB {
 		fmt.Println("initializtion database")
 		database = InitializeDatabase()
 		for database == nil {
-			var sleep = time.Second
+			sleep := time.Second
 			sleep = sleep * 2
 			fmt.Printf("database id unvaliable. Wait for %s seconds \n", sleep.String())
 

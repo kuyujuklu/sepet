@@ -25,14 +25,20 @@ type Shipping struct {
 	ID                             uint
 	Available                      bool
 	DeliveryType                   string
-	ShapesJSON                     string //this is json of structure []Shape
+	ShapesJSON                     string // this is json of structure []Shape
 	ShippingPricesJSON             string // {shape_id: price}
 	ShippingFreeDeliveryPricesJSON string // {shape_id: price}
 	ShippingTimeFrom               int
 	ShippingTimeTo                 int
-	ShippingStartWorkTime          int //in minutes, for example 360 - 06:00
-	ShippingEndWorkTime            int //in minutes, for example 1080 - 18:00
+	ShippingStartWorkTime          int // in minutes, for example 360 - 06:00
+	ShippingEndWorkTime            int // in minutes, for example 1080 - 18:00
+	ShippingWorkHoursForWeekJSON   string
 	AddCommissionToDishPrices      bool
+}
+
+type ShippingWorkTimeForDay struct {
+	Start int // in minutes, for example 360 - 06:00
+	End   int // in minutes, for example 1080 - 18:00
 }
 
 func (s *Shipping) GetShapes() ([]Shape, error) {
@@ -76,4 +82,48 @@ func (s *Shipping) GetFreeDeliveryPrices() (map[string]float64, error) {
 	}
 
 	return prices, nil
+}
+
+func (s *Shipping) GetWorkHoursForWeek() ([]ShippingWorkTimeForDay, error) {
+	if s.ShippingWorkHoursForWeekJSON == "" {
+		return []ShippingWorkTimeForDay{
+			{
+				Start: 0,
+				End:   0,
+			},
+			{
+				Start: 0,
+				End:   0,
+			},
+			{
+				Start: 0,
+				End:   0,
+			},
+			{
+				Start: 0,
+				End:   0,
+			},
+			{
+				Start: 0,
+				End:   0,
+			},
+			{
+				Start: 0,
+				End:   0,
+			},
+			{
+				Start: 0,
+				End:   0,
+			},
+		}, nil
+	}
+
+	res := make([]ShippingWorkTimeForDay, 0)
+
+	err := json.Unmarshal([]byte(s.ShippingWorkHoursForWeekJSON), &res)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }

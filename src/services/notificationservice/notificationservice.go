@@ -2,6 +2,7 @@ package notificationservice
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/alexkalak/qrmenu/src/errors/notificationerrors"
 	"github.com/alexkalak/qrmenu/src/helpers"
@@ -19,34 +20,43 @@ type NotificaitonText struct {
 type NotificationService interface {
 	Subscribe(phone, token, lang string) (models.NotificationSubscription, error)
 	SendToAllClients(title NotificaitonText, body NotificaitonText) error
-	SendNotification(clientID int, title NotificaitonText, body NotificaitonText) error
+	SendNotification(clientID int, title NotificaitonText, body NotificaitonText, data map[string]string) error
+	SendNotificationLinkedToOrderInfoPage(clientID int, title NotificaitonText, body NotificaitonText, orderID int) error
 	SendNotificationWithToken(token string, lang string, title NotificaitonText, body NotificaitonText) error
 }
 
 type notificationService struct {
-	NotificationRepo notificationrepo.NotificationRepo
-	ClientRepo       clientrepo.ClientRepo
+	NotificationRepo         notificationrepo.NotificationRepo
+	ClientRepo               clientrepo.ClientRepo
+	ApplicationPath          string
+	ApplicationPathParam     string
+	ApplicationOrderPagePath string
+	ApplicationOrderIDParam  string
 }
 
 func New() NotificationService {
 	return &notificationService{
-		NotificationRepo: notificationrepo.New(),
-		ClientRepo:       clientrepo.New(),
+		NotificationRepo:         notificationrepo.New(),
+		ClientRepo:               clientrepo.New(),
+		ApplicationPath:          os.Getenv("APPLICATION_EXPO_PATH"),
+		ApplicationPathParam:     os.Getenv("APPLICATION_PATH_PARAM"),
+		ApplicationOrderPagePath: os.Getenv("APPLICATION_ORDER_PAGE_PATH"),
+		ApplicationOrderIDParam:  os.Getenv("APPLICATION_ORDER_ID_PARAM"),
 	}
 }
 
 func (s *notificationService) Subscribe(phone, token, lang string) (models.NotificationSubscription, error) {
 	_, err := s.NotificationRepo.GetNotificationSubscription(phone)
-	//notificationSub exists
+	// notificationSub exists
 	if err == nil {
 		return s.NotificationRepo.UpdateNotificationSubscriptionToken(phone, token, lang)
 	}
-	//notification does not exist
+	// notification does not exist
 	if err == notificationerrors.ErrNotificationNotFound {
 		return s.NotificationRepo.CreateSubscriptionSubscription(phone, token, lang)
 	}
 
-	//unable to get sub
+	// unable to get sub
 	return models.NotificationSubscription{}, err
 }
 
@@ -111,7 +121,7 @@ func (s *notificationService) SendToAllClients(title NotificaitonText, body Noti
 	return nil
 }
 
-func (s *notificationService) SendNotification(clientID int, title NotificaitonText, body NotificaitonText) error {
+func (s *notificationService) SendNotification(clientID int, title NotificaitonText, body NotificaitonText, data map[string]string) error {
 	client, err := s.ClientRepo.GetClientByID(clientID)
 	if err != nil {
 		return err
@@ -150,9 +160,9 @@ func (s *notificationService) SendNotification(clientID int, title NotificaitonT
 			Sound:    "default",
 			Title:    notificationBodyString,
 			Priority: expo.DefaultPriority,
+			Data:     data,
 		},
 	)
-
 	if err != nil {
 		fmt.Println("nil in publishing notification: ", err)
 		return err
@@ -161,6 +171,13 @@ func (s *notificationService) SendNotification(clientID int, title NotificaitonT
 	fmt.Println("push response: ", helpers.ConvertToJSON(response))
 
 	return nil
+}
+
+func (s *notificationService) SendNotificationLinkedToOrderInfoPage(clientID int, title NotificaitonText, body NotificaitonText, orderID int) error {
+	data := make(map[string]string)
+	data["url"] = fmt.Sprintf("%s?%s=%s&%s=%d", s.ApplicationPath, s.ApplicationPathParam, s.ApplicationOrderPagePath, s.ApplicationOrderIDParam, orderID)
+	fmt.Println("data: ", data)
+	return s.SendNotification(clientID, title, body, data)
 }
 
 func (s *notificationService) SendNotificationWithToken(token string, lang string, title NotificaitonText, body NotificaitonText) error {
@@ -194,7 +211,6 @@ func (s *notificationService) SendNotificationWithToken(token string, lang strin
 			Priority: expo.DefaultPriority,
 		},
 	)
-
 	if err != nil {
 		fmt.Println("nil in publishing notification: ", err)
 		return err

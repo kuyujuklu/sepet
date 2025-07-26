@@ -50,6 +50,8 @@ type Pub struct {
 	HasInPlaceOrder  bool
 
 	Couriers []Courier `gorm:"many2many:pub_couriers"`
+
+	Rating float64
 }
 
 func (p *Pub) IsExpired() bool {

@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/alexkalak/qrmenu/src/errors/servererrors"
+	"github.com/alexkalak/qrmenu/src/errors/telegramerrors"
 	"github.com/alexkalak/qrmenu/src/models"
 	"github.com/alexkalak/qrmenu/src/repo/courierrepo"
 	"github.com/alexkalak/qrmenu/src/repo/pubsrepo"
@@ -17,6 +18,8 @@ import (
 type TelegramService interface {
 	SendCreateOrderMessageForPub(pubID int, order models.Order) error
 	SendCreateOrderMessageForCourier(chatID string, chatUsername string, order models.Order) error
+	CreateTelegramSuperUser(username string) (models.TelegramSuperUser, error)
+	SetPubsForSuperUser(username string, pubsJSON string) error
 }
 type telegramSerivce struct {
 	CourierRepo  courierrepo.CourierRepo
@@ -81,13 +84,68 @@ func (s *telegramSerivce) handleUpdate(update telego.Update) {
 	if update.Message == nil {
 		return
 	}
-	if update.Message.Text != "/start" {
-		return
+	if update.Message.Text == "/start" {
+		s.handleStart(&update)
 	}
+	//if update.Message.Text == "/show_pubs" {
+	//	s.showPubs(&update)
+	//}
+}
 
+func (s *telegramSerivce) handleStart(update *telego.Update) {
 	username := strings.ToLower(update.Message.From.Username)
 	if username == "" {
 		return
+	}
+
+	superUsers, err := s.TelegramRepo.GetAllSuperUsersWithTelegramUsername(username)
+	if err != nil {
+		return
+	}
+
+	if len(superUsers) != 0 {
+		s.bot.SendMessage(&telego.SendMessageParams{
+			ChatID: update.Message.Chat.ChatID(),
+			Text:   fmt.Sprintf("Super user with name: %s was found", superUsers[0].Username),
+		})
+
+		chat := models.TelegramChat{
+			PubID:    int(superUsers[0].ID),
+			ChatID:   update.Message.Chat.ChatID().String(),
+			Username: strings.ToLower(update.Message.From.Username),
+		}
+		suChat := models.TelegramSuperUserChat{
+			ChatID:      update.Message.Chat.ChatID().String(),
+			SuperUserID: int(superUsers[0].ID),
+			Username:    username,
+			PubIDsJSON:  "[]",
+		}
+
+		chat, err = s.TelegramRepo.CreateChat(chat)
+		hasError := false
+		errText := ""
+		if err != nil && err != telegramerrors.ErrChatWithTheSameChatIDAlreadyExists {
+			hasError = true
+			errText = err.Error()
+		}
+		suChat, err = s.TelegramRepo.CreateTelegramSuperUserChat(suChat)
+		if err != nil && err != telegramerrors.ErrSuperUserAlreadyExists {
+			fmt.Println("telegram su chat created error", suChat)
+			hasError = true
+			errText = err.Error()
+		}
+
+		if hasError {
+			s.bot.SendMessage(&telego.SendMessageParams{
+				ChatID: update.Message.Chat.ChatID(),
+				Text:   fmt.Sprintf("Something went wrong try again: %s", errText),
+			})
+		} else {
+			s.bot.SendMessage(&telego.SendMessageParams{
+				ChatID: update.Message.Chat.ChatID(),
+				Text:   fmt.Sprintf("Chat was created %s", chat.ChatID),
+			})
+		}
 	}
 
 	pubs, err := s.PubsRepo.GetPubsWhichHasTelegramUsername(username)
@@ -194,11 +252,28 @@ func (s *telegramSerivce) SendCreateOrderMessageForPub(pubID int, order models.O
 		totalDishPrice += float64(dish.Count) * dish.DishPrice
 	}
 
-	hasSuperUser := true
-	suChat, err := s.TelegramRepo.GetChatByUsername(s.suTelegram)
+	allSuChats, err := s.TelegramRepo.GetAllSuperUserChats()
+	fmt.Println("all su chats", allSuChats)
 	if err != nil {
-		hasSuperUser = false
-		fmt.Println("No super user chat")
+		fmt.Printf("getting su chats error: %s", err)
+		allSuChats = make([]models.TelegramSuperUserChat, 0)
+	}
+
+	suChats := make([]models.TelegramSuperUserChat, 0)
+	if len(allSuChats) > 0 {
+		for _, suChat := range allSuChats {
+			pubIDs, err := suChat.GetPubIDs()
+			if err != nil {
+				continue
+			}
+			fmt.Println("Pub ids for ", suChat.Username, ": ", pubIDs)
+
+			for _, id := range pubIDs {
+				if id == int64(pubID) {
+					suChats = append(suChats, suChat)
+				}
+			}
+		}
 	}
 
 	orderTextForSuperUser := fmt.Sprintf(`
@@ -226,27 +301,29 @@ func (s *telegramSerivce) SendCreateOrderMessageForPub(pubID int, order models.O
 		order.TotalDishesPriceWithoutCommission,
 		order.OrderCourierInfo.CourierDebit,
 		order.OrderCourierInfo.CourierReward,
-		fmt.Sprintf("https://qrmenu.sandex.md/admin/pub/%d/order/%d", pubID, order.ID))
+		fmt.Sprintf("https://sepet.md/admin/pub/%d/order/%d", pubID, order.ID))
 
 	if order.OrderType == models.IN_PLACE_ORDER_TYPE {
 		orderTextForSuperUser = fmt.Sprintf("Pub name: %s \n New order number: %d \n In place order \n Table number: %d \n Total products price: %.2f Lei", pub.Name, order.ID, order.TableForInPlaceOrder, totalDishPrice)
 	}
 
-	suChatID, err := strconv.Atoi(suChat.ChatID)
-	if err != nil {
-		hasSuperUser = false
-	}
-
-	if hasSuperUser {
-		s.bot.SendMessage(
-			&telego.SendMessageParams{
-				ChatID: telego.ChatID{
-					ID:       int64(suChatID),
-					Username: strings.ToLower(suChat.Username),
+	if len(suChats) > 0 {
+		for _, suChat := range suChats {
+			chatID, _ := strconv.Atoi(suChat.ChatID)
+			fmt.Println("Sending to su chat: ", chatID, suChat.Username)
+			_, err = s.bot.SendMessage(
+				&telego.SendMessageParams{
+					ChatID: telego.ChatID{
+						ID:       int64(chatID),
+						Username: strings.ToLower(suChat.Username),
+					},
+					Text: orderTextForSuperUser,
 				},
-				Text: orderTextForSuperUser,
-			},
-		)
+			)
+			if err != nil {
+				fmt.Println("Sending to su chat error: ", err)
+			}
+		}
 	}
 
 	chat, err := s.TelegramRepo.GetChatByUsername(pub.TelegramUsername)
@@ -275,7 +352,7 @@ func (s *telegramSerivce) SendCreateOrderMessageForPub(pubID int, order models.O
 		order.Town+" "+order.FullAddress,
 		order.MainPhoneNumber,
 		totalDishPrice,
-		fmt.Sprintf("https://qrmenu.sandex.md/admin/pub/%d/order/%d", pubID, order.ID))
+		fmt.Sprintf("https://sepet.md/admin/pub/%d/order/%d", pubID, order.ID))
 
 	if order.OrderType == models.IN_PLACE_ORDER_TYPE {
 		orderText = fmt.Sprintf("New order number: %d \n In place order \n Table number: %d \n Total products price: %.2f Lei", order.ID, order.TableForInPlaceOrder, totalDishPrice)
@@ -314,7 +391,7 @@ func (s *telegramSerivce) SendCreateOrderMessageForCourier(chatID string, chatUs
 
 		ℹ️Comment: %s
 
-		https://qrmenu.sandex.md/courier/orders`,
+		https://sepet.md/courier/orders`,
 		order.ID,
 		order.Pub.Name,
 		order.Pub.Address,
@@ -337,4 +414,15 @@ func (s *telegramSerivce) SendCreateOrderMessageForCourier(chatID string, chatUs
 	)
 
 	return nil
+}
+
+func (s *telegramSerivce) CreateTelegramSuperUser(username string) (models.TelegramSuperUser, error) {
+	superUser := models.TelegramSuperUser{
+		Username: username,
+	}
+	return s.TelegramRepo.CreateTelegramSuperUser(superUser)
+}
+
+func (s *telegramSerivce) SetPubsForSuperUser(username string, pubsJSON string) error {
+	return s.TelegramRepo.SetPubsForSuperUser(username, pubsJSON)
 }

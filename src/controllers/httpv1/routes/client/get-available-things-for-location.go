@@ -23,6 +23,7 @@ type GetAvailablePubsOutput struct {
 // @Produce      json
 // @Success      200  {object}  GetAvailablePubsOutput
 // @Router       /client/get-available-pubs [GET]
+
 func (c *clientController) GetAvailableForShippingPubs(ctx *fiber.Ctx) error {
 	lat, err := strconv.ParseFloat(ctx.Query("lat"), 64)
 	if err != nil {
@@ -52,7 +53,7 @@ func (c *clientController) GetAvailableForShippingPubs(ctx *fiber.Ctx) error {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
 
-	fmt.Println("pubs len: ", len(pubs))
+	fmt.Println("pubs len: ", len(outputPubs))
 
 	return h.SendSuccess(
 		ctx,

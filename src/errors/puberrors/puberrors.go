@@ -33,3 +33,5 @@ var ErrUnableToDeleteCourierFromPub = errors.New("unable to delete courier from 
 var ErrUnableToUpdateDeliveryType = errors.New("unable to update delivery type")
 
 var ErrUnableToUpdateAddCommissionToDishPrices = errors.New("unable to update add commission to dish prices")
+
+var ErrInvalidWorkHoursData = errors.New("invalid work hours data")

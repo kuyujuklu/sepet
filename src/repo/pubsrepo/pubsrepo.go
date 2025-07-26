@@ -69,10 +69,10 @@ type PubsRepo interface {
 	GetPubLogoFileName(pubID int) (string, error)
 	GetPubBGFileName(pubID int) (string, error)
 
-	//Geolocation
+	// Geolocation
 	SetLatLng(pubID int, lat float64, lng float64) error
 
-	//Shipping
+	// Shipping
 	GetPubsWithAvailableShipping() ([]models.Pub, error)
 	EnableShipping(pubID int) error
 	GetPubShapes(pubID int) ([]models.Shape, error)
@@ -80,7 +80,7 @@ type PubsRepo interface {
 	GetShipping(pubID int) (models.Shipping, error)
 	SetShippingAvailable(pubID int, available bool) error
 	SetShippingTime(pubID int, shippingTimeFrom int, shippingTimeTo int) error
-	SetShippingWorkingTime(pubID int, start int, end int) error
+	SetShippingWorkHoursForWeek(pubID int, workHours []models.ShippingWorkTimeForDay) error
 	SetShippingPrices(pubID int, shippingPrices map[string]float64) error
 	SetShippingFreeDeliveryPrices(pubID int, shippingFreeDeliveryPrices map[string]float64) error
 	SetCardPreorder(pubID int, available bool) error
@@ -89,12 +89,14 @@ type PubsRepo interface {
 	UpdatePubDeliveryType(pubID int, deliveryType string) error
 	SetPubAddCommissionToDishPrices(pubID int, addCommission bool) error
 
-	//Telegram stuff
+	// Telegram stuff
 	GetPubsWhichHasTelegramUsername(username string) ([]models.Pub, error)
 
-	//Couriers
+	// Couriers
 	AddCourierToPub(pubID, courierID int) error
 	RemoveCourierFromPub(pubID int, courierID int) error
+
+	UpdatePubRatingWithinTransaction(tx *gorm.DB, pubID int, newRating float64) error
 }
 
 type pubsRepo struct {
@@ -271,8 +273,8 @@ func (r *pubsRepo) CreatePub(pub models.Pub) (models.Pub, error) {
 		DeliveryType:          models.DELIVERY_TYPE_OWN,
 		ShippingTimeFrom:      40,
 		ShippingTimeTo:        60,
-		ShippingStartWorkTime: 0,    //00:00
-		ShippingEndWorkTime:   1440, //24:00
+		ShippingStartWorkTime: 0,    // 00:00
+		ShippingEndWorkTime:   1440, // 24:00
 	}
 
 	err := r.Database.Create(&shipping).Error
@@ -378,7 +380,7 @@ func (s *pubsRepo) UploadPubLogo(pubID int, fileHeader *multipart.FileHeader) (s
 	fileExtension := fileNameSplitted[len(fileNameSplitted)-1]
 	fileName := fileID + "." + fileExtension
 
-	file, err := os.OpenFile(PUB_LOGO_FILE_PATH+fileName, os.O_CREATE|os.O_WRONLY, 0777)
+	file, err := os.OpenFile(PUB_LOGO_FILE_PATH+fileName, os.O_CREATE|os.O_WRONLY, 0o777)
 	if err != nil {
 		return "", oserrors.ErrUnableToOpenFile
 	}
@@ -414,7 +416,7 @@ func (s *pubsRepo) UploadPubBG(pubID int, fileHeader *multipart.FileHeader) (str
 	fileExtension := fileNameSplitted[len(fileNameSplitted)-1]
 	fileName := fileID + "." + fileExtension
 
-	file, err := os.OpenFile(PUB_BACKGROUND_FILE_PATH+fileName, os.O_CREATE|os.O_WRONLY, 0777)
+	file, err := os.OpenFile(PUB_BACKGROUND_FILE_PATH+fileName, os.O_CREATE|os.O_WRONLY, 0o777)
 	if err != nil {
 		return "", oserrors.ErrUnableToOpenFile
 	}
@@ -477,7 +479,6 @@ func (s *pubsRepo) DeletePubBG(pubID int) error {
 	}
 
 	err = os.Remove(PUB_BACKGROUND_FILE_PATH + pub.BgImageFileName)
-
 	if err != nil {
 		exists := !errors.Is(err, os.ErrNotExist)
 		if exists {
@@ -641,10 +642,15 @@ func (s *pubsRepo) SetShippingTime(pubID int, shippingTimeFrom int, shippingTime
 	return nil
 }
 
-func (s *pubsRepo) SetShippingWorkingTime(pubID int, start int, end int) error {
+func (s *pubsRepo) SetShippingWorkHoursForWeek(pubID int, workHours []models.ShippingWorkTimeForDay) error {
 	pub, err := s.GetPubById(pubID)
 	if err != nil {
 		return err
+	}
+
+	workHoursJSON, err := json.Marshal(workHours)
+	if err != nil {
+		return puberrors.ErrInvalidWorkHoursData
 	}
 
 	err = s.Database.First(&models.Shipping{}, "id = ?", pub.ShippingID).Error
@@ -657,8 +663,7 @@ func (s *pubsRepo) SetShippingWorkingTime(pubID int, start int, end int) error {
 		Where("id = ?", pub.ShippingID).
 		UpdateColumns(
 			map[string]interface{}{
-				"shipping_start_work_time": start,
-				"shipping_end_work_time":   end,
+				"shipping_work_hours_for_week_json": workHoursJSON,
 			},
 		)
 	if res.Error != nil {
@@ -883,6 +888,15 @@ func (r *pubsRepo) SetPubAddCommissionToDishPrices(pubID int, addCommission bool
 
 	if resp.Error != nil {
 		return puberrors.ErrUnableToUpdateDeliveryType
+	}
+
+	return nil
+}
+
+func (r *pubsRepo) UpdatePubRatingWithinTransaction(tx *gorm.DB, pubID int, newRating float64) error {
+	result := r.Database.Model(&models.Pub{}).Where("id = ?", pubID).UpdateColumn("rating", newRating)
+	if result.Error != nil {
+		return result.Error
 	}
 
 	return nil

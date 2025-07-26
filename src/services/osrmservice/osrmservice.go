@@ -32,7 +32,7 @@ func (s *osrmService) GetDistanceToPubs(originLat, originLng float64, pubs []mod
 		return []int{}, nil
 	}
 
-	//ATTENTION: osrm api receives info like lng,lat
+	// ATTENTION: osrm api receives info like lng,lat
 	queryString := fmt.Sprintf("%f,%f", originLng, originLat)
 	for _, pub := range pubs {
 		queryString += ";" + fmt.Sprintf("%f,%f", pub.Lng, pub.Lat)
@@ -47,8 +47,9 @@ func (s *osrmService) GetDistanceToPubs(originLat, originLng float64, pubs []mod
 		Timeout: 3 * time.Second,
 	}
 	resp, err := client.Get(url)
-
 	if err != nil {
+		fmt.Println("Osrm get distances error: ", err)
+
 		return nil, err
 	}
 

@@ -1,9 +1,12 @@
 package middleware
 
 import (
+	"fmt"
+
 	h "github.com/alexkalak/qrmenu/src/controllers/httpv1/httphelpers"
 	"github.com/alexkalak/qrmenu/src/controllers/httpv1/locals"
 	"github.com/alexkalak/qrmenu/src/errors/jwterrors"
+	"github.com/alexkalak/qrmenu/src/helpers"
 	"github.com/alexkalak/qrmenu/src/services/jwtservice"
 	"github.com/gofiber/fiber/v2"
 )
@@ -32,6 +35,8 @@ func StrictAuthMW(ctx *fiber.Ctx) error {
 	if !ok {
 		return h.SendError(ctx, jwterrors.ErrNotValidToken, h.AUTOMATIC_STATUS_CODE)
 	}
+
+	fmt.Println("AUTH USER CLAIMS: ", helpers.ConvertToJSON(userClaims))
 
 	ctx.Locals(locals.USER_ID_LOCALS, userClaims.ID)
 	ctx.Locals(locals.USER_SIGNIFICANCE_LOCALS, userClaims.Significance)

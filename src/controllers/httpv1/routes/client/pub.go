@@ -1,6 +1,7 @@
 package client
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 
@@ -37,6 +38,25 @@ func (c *clientController) GetPubInfoByUrlName(ctx *fiber.Ctx) error {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
 
+	lat := ctx.Query("lat")
+	lng := ctx.Query("lng")
+	fmt.Println("Lat: ", lat)
+	fmt.Println("Lng: ", lng)
+
+	if lat != "" && lat != "0" && lng != "" && lng != "0" {
+		fmt.Println("HELLO ?? ", lat, lng)
+		latFloat, err := strconv.ParseFloat(lat, 32)
+		if err != nil {
+			return h.SendError(ctx, errors.New("invalid lat"), h.AUTOMATIC_STATUS_CODE)
+		}
+		lngFloat, err := strconv.ParseFloat(lng, 32)
+		if err != nil {
+			return h.SendError(ctx, errors.New("invalid lng"), h.AUTOMATIC_STATUS_CODE)
+		}
+
+		return c.getPubInfoWithShippingPricesForPoint(ctx, pub, models.Vertex{Lat: latFloat, Lng: lngFloat})
+	}
+
 	return c.getPubInfo(ctx, pub)
 }
 
@@ -62,25 +82,69 @@ func (c *clientController) GetPubInfoByID(ctx *fiber.Ctx) error {
 }
 
 func (c *clientController) getPubInfo(ctx *fiber.Ctx, pub models.Pub) error {
-	menus, err := c.PubService.GetAllMenusForPub(int(pub.ID))
+	pubOutput, menusOutput, categoriesOutput, dishesOutput, err := c.getPubMenusCategoriesDishesOutput(pub)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	return h.SendSuccess(
+		ctx,
+		fiber.Map{
+			"pub":        pubOutput,
+			"menus":      menusOutput,
+			"categories": categoriesOutput,
+			"dishes":     dishesOutput,
+		},
+		fiber.StatusOK)
+}
+
+func (c *clientController) getPubInfoWithShippingPricesForPoint(ctx *fiber.Ctx, pub models.Pub, point models.Vertex) error {
+	_, menusOutput, categoriesOutput, dishesOutput, err := c.getPubMenusCategoriesDishesOutput(pub)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	isAvailable, shippingPrice, freeDeliveryPrice, err := c.PubService.GetShippingPricesForPubAvailableForPoint(pub, point)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+	pubOutput := entities.PubWithDishesAndDistanceOutput{}
+	pubOutput.FillFromModel(pub, 0, []models.Dish{})
+	pubOutput.ShippingPrice = shippingPrice
+	pubOutput.ShippingFreeDeliveryPrice = freeDeliveryPrice
+	pubOutput.PubOutput.ShippingOutput.Available = isAvailable
+
+	return h.SendSuccess(
+		ctx,
+		fiber.Map{
+			"pub":        pubOutput,
+			"menus":      menusOutput,
+			"categories": categoriesOutput,
+			"dishes":     dishesOutput,
+		},
+		fiber.StatusOK)
+}
+
+func (c *clientController) getPubMenusCategoriesDishesOutput(pub models.Pub) (entities.PubOutput, []entities.MenuOutput, []entities.CategoryOutput, []entities.DishOutput, error) {
+	menus, err := c.PubService.GetAllMenusForPub(int(pub.ID))
+	if err != nil {
+		return entities.PubOutput{}, nil, nil, nil, err
 	}
 
 	categories, err := c.PubService.GetAllCategoriesForPub(int(pub.ID))
 	if err != nil {
-		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+		return entities.PubOutput{}, nil, nil, nil, err
 	}
 
 	dishes, err := c.PubService.GetAllDishesForPub(int(pub.ID))
 	if err != nil {
-		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+		return entities.PubOutput{}, nil, nil, nil, err
 	}
 
 	pubOutput := entities.PubOutput{}
 	err = pubOutput.FillFromModel(pub)
 	if err != nil {
-		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+		return entities.PubOutput{}, nil, nil, nil, err
 	}
 
 	menusOutput := make([]entities.MenuOutput, 0, len(menus))
@@ -104,15 +168,7 @@ func (c *clientController) getPubInfo(ctx *fiber.Ctx, pub models.Pub) error {
 		dishesOutput = append(dishesOutput, dishOutput)
 	}
 
-	return h.SendSuccess(
-		ctx,
-		fiber.Map{
-			"pub":        pubOutput,
-			"menus":      menusOutput,
-			"categories": categoriesOutput,
-			"dishes":     dishesOutput,
-		},
-		fiber.StatusOK)
+	return pubOutput, menusOutput, categoriesOutput, dishesOutput, nil
 }
 
 type GetPubPreorderOutput struct {
@@ -195,6 +251,7 @@ func (c *clientController) GetShapesForPub(ctx *fiber.Ctx) error {
 			"shipping_time_to":              shippingOutput.ShippingTimeTo,
 			"shipping_work_start":           shippingOutput.ShippingStartWorkTime,
 			"shipping_work_end":             shippingOutput.ShippingEndWorkTime,
+			"shipping_work_hours_for_week":  shippingOutput.ShippingWorkHoursForWeek,
 			"shipping_prices":               shippingOutput.ShippingPrices,
 			"shipping_free_delivery_prices": shippingOutput.ShippingFreeDeliveryPrices,
 			"shapes":                        shippingOutput.Shapes,

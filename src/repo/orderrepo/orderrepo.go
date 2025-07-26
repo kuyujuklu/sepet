@@ -38,6 +38,7 @@ type OrderRepo interface {
 	UpdateOrderCourierInfo(orderID int, courierInfo models.OrderCourierInfo) (models.OrderCourierInfo, error)
 	UpdateOrderCourierInfoWithingTransaction(tx *gorm.DB, orderID int, courierInfo models.OrderCourierInfo) (models.OrderCourierInfo, error)
 	RateOrderWithinTransaction(tx *gorm.DB, orderID int, rating int) error
+	GetAllOrdersForPubWithinTransaction(tx *gorm.DB, pubID int) ([]models.Order, error)
 }
 
 type orderRepo struct {
@@ -56,7 +57,7 @@ func (r *orderRepo) NewTransaction() *gorm.DB {
 
 func (r *orderRepo) GetAllOrders() ([]models.Order, error) {
 	orders := []models.Order{}
-	resp := r.Database.Preload("Client").Preload("Pub").Preload("OrderCourierInfo").Find(&orders)
+	resp := r.Database.Preload("Client").Preload("Pub.Shipping").Preload("OrderCourierInfo").Find(&orders)
 	if resp.Error != nil {
 		return nil, ordererrors.ErrUnableToGetOrder
 	}
@@ -70,7 +71,7 @@ func (r *orderRepo) GetAllOrdersWithSpecificStatuses(statuses ...string) ([]mode
 		return r.GetAllOrders()
 	}
 
-	resp := r.Database.Preload("Client").Preload("Pub").Preload("OrderCourierInfo").Find(&orders, "status in (?)", statuses)
+	resp := r.Database.Preload("Client").Preload("Pub.Shipping").Preload("OrderCourierInfo").Find(&orders, "status in (?)", statuses)
 	if resp.Error != nil {
 		return nil, ordererrors.ErrUnableToGetOrder
 	}
@@ -80,7 +81,7 @@ func (r *orderRepo) GetAllOrdersWithSpecificStatuses(statuses ...string) ([]mode
 
 func (r *orderRepo) GetAllOrdersWithPreparingStatus() ([]models.Order, error) {
 	orders := []models.Order{}
-	resp := r.Database.Preload("Client").Preload("Pub").Preload("OrderCourierInfo").Find(&orders, "status = ?", models.PREPARING_ORDER_STATUS)
+	resp := r.Database.Preload("Client").Preload("Pub.Shipping").Preload("OrderCourierInfo").Find(&orders, "status = ?", models.PREPARING_ORDER_STATUS)
 	if resp.Error != nil {
 		return nil, ordererrors.ErrUnableToGetOrder
 	}
@@ -91,7 +92,7 @@ func (r *orderRepo) GetAllOrdersWithPreparingStatus() ([]models.Order, error) {
 func (r *orderRepo) GetOrdersForPub(pubID int) ([]models.Order, error) {
 	var orders []models.Order
 
-	resp := r.Database.Model(&models.Order{}).Preload("Client").Preload("Pub").Preload("OrderCourierInfo").Find(&orders, "pub_id = ?", pubID)
+	resp := r.Database.Model(&models.Order{}).Preload("Client").Preload("Pub.Shipping").Preload("OrderCourierInfo").Find(&orders, "pub_id = ?", pubID)
 
 	if resp.Error != nil {
 		return nil, servererrors.ErrInternalServerError
@@ -102,7 +103,7 @@ func (r *orderRepo) GetOrdersForPub(pubID int) ([]models.Order, error) {
 
 func (r *orderRepo) GetOrdersForClient(clientID int) ([]models.Order, error) {
 	var orders []models.Order
-	resp := r.Database.Model(&models.Order{}).Preload("Client").Preload("Pub").Preload("OrderCourierInfo").Find(&orders, "client_id = ?", clientID)
+	resp := r.Database.Model(&models.Order{}).Preload("Client").Preload("Pub.Shipping").Preload("OrderCourierInfo").Find(&orders, "client_id = ?", clientID)
 
 	if resp.Error != nil {
 		return nil, servererrors.ErrInternalServerError
@@ -113,7 +114,7 @@ func (r *orderRepo) GetOrdersForClient(clientID int) ([]models.Order, error) {
 
 func (r *orderRepo) GetOrderByID(orderID int) (models.Order, error) {
 	order := models.Order{}
-	resp := r.Database.Model(&models.Order{}).Preload("Client").Preload("Pub").Preload("OrderCourierInfo").First(&order, "id = ?", orderID)
+	resp := r.Database.Model(&models.Order{}).Preload("Client").Preload("Pub.Shipping").Preload("OrderCourierInfo").First(&order, "id = ?", orderID)
 
 	if resp.Error != nil {
 		if errors.Is(resp.Error, gorm.ErrRecordNotFound) {
@@ -127,7 +128,7 @@ func (r *orderRepo) GetOrderByID(orderID int) (models.Order, error) {
 
 func (r *orderRepo) GetOrderByIDWithinTransaction(tx *gorm.DB, orderID int) (models.Order, error) {
 	order := models.Order{}
-	resp := tx.Model(&models.Order{}).Preload("Client").Preload("Pub").Preload("OrderCourierInfo").First(&order, "id = ?", orderID)
+	resp := tx.Model(&models.Order{}).Preload("Client").Preload("Pub.Shipping").Preload("OrderCourierInfo").First(&order, "id = ?", orderID)
 
 	if resp.Error != nil {
 		if errors.Is(resp.Error, gorm.ErrRecordNotFound) {
@@ -150,7 +151,7 @@ func (r *orderRepo) CreateOrder(order models.Order, courierInfo models.OrderCour
 
 	order.OrderCourierInfo = courierInfo
 
-	result = r.Database.Preload("Client").Preload("Pub").Preload("OrderCourierInfo").Create(&order)
+	result = r.Database.Preload("Client").Preload("Pub.Shipping").Preload("OrderCourierInfo").Create(&order)
 	if result.Error != nil {
 		return models.Order{}, ordererrors.ErrUnableToCreateOrder
 	}
@@ -162,6 +163,7 @@ func (r *orderRepo) CreateOrder(order models.Order, courierInfo models.OrderCour
 
 	return order, nil
 }
+
 func (r *orderRepo) CreateOrderWithinTransaction(tx *gorm.DB, order models.Order, courierInfo models.OrderCourierInfo) (models.Order, error) {
 	var err error
 	result := r.Database.Create(&courierInfo)
@@ -172,7 +174,7 @@ func (r *orderRepo) CreateOrderWithinTransaction(tx *gorm.DB, order models.Order
 
 	order.OrderCourierInfo = courierInfo
 
-	result = tx.Preload("Pub").Create(&order)
+	result = tx.Preload("Pub.Shipping").Create(&order)
 
 	if result.Error != nil {
 		return models.Order{}, ordererrors.ErrUnableToCreateOrder
@@ -191,6 +193,7 @@ func (r *orderRepo) UpdateOrderTotalPrice(orderID int, totalPrice float64) error
 	err := r.Database.Model(&models.Order{}).Where("id = ?", orderID).UpdateColumn("total_dishes_price_without_commission", totalPrice).Error
 	return err
 }
+
 func (r *orderRepo) UpdateOrderPrepared(orderID int, prepared bool) error {
 	fmt.Println("updat inal =========================================")
 	err := r.Database.Model(&models.Order{}).Where("id = ?", orderID).UpdateColumn("prepared", prepared).Error
@@ -302,4 +305,14 @@ func (r *orderRepo) UpdateOrderCourierInfoWithingTransaction(tx *gorm.DB, orderI
 func (r *orderRepo) RateOrderWithinTransaction(tx *gorm.DB, orderID int, rating int) error {
 	err := tx.Model(&models.Order{}).Where("id = ?", orderID).UpdateColumn("rating", rating).Error
 	return err
+}
+
+func (r *orderRepo) GetAllOrdersForPubWithinTransaction(tx *gorm.DB, pubID int) ([]models.Order, error) {
+	orders := make([]models.Order, 0)
+	result := tx.Find(&orders, "pub_id = ?", pubID)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return orders, nil
 }

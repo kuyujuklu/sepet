@@ -81,6 +81,7 @@ func New() CourierService {
 
 	return singleton
 }
+
 func (s *courierService) GetAllCouriers() ([]models.Courier, error) {
 	return s.CourierRepo.GetAllCouriers()
 }
@@ -123,7 +124,7 @@ func (s *courierService) GetAllCourierDeliveredOrders(courierID int) ([]models.O
 	return availableOrders, nil
 }
 
-func (s *courierService) UpdateOrderCallback(order models.Order, sendTelegram bool) {
+func (s *courierService) UpdateOrderCallback(order models.Order, prevOrder models.Order, isNew bool) {
 	fmt.Println("update callback")
 
 	pub, err := s.PubsRepo.GetPubById(order.PubID)
@@ -131,7 +132,10 @@ func (s *courierService) UpdateOrderCallback(order models.Order, sendTelegram bo
 		return
 	}
 
-	if sendTelegram && order.Status == models.PREPARING_ORDER_STATUS && !order.OrderCourierInfo.IsReserved && pub.Shipping.DeliveryType == models.DELIVERY_TYPE_DELIVERY_SERVICE {
+	fmt.Println("new order status: ", order.Status)
+	fmt.Println("prev order status: ", prevOrder.Status)
+
+	if order.Status == models.PREPARING_ORDER_STATUS && prevOrder.Status != models.PREPARING_ORDER_STATUS && !order.OrderCourierInfo.IsReserved && pub.Shipping.DeliveryType == models.DELIVERY_TYPE_DELIVERY_SERVICE {
 		fmt.Println("sending order for couriers in telegram")
 		s.SendActiveOrderUpdateForAllCouriersTelegram(order)
 	}
@@ -179,6 +183,7 @@ func (s *courierService) UpdateCourier(courierID int, courier models.Courier) (m
 	courier.Email = courierFromDB.Email
 	courier.HashedPassword = courierFromDB.HashedPassword
 	courier.ImageFileName = courierFromDB.ImageFileName
+	courier.Balance = courierFromDB.Balance
 
 	return s.CourierRepo.UpdateCourier(courierID, courier)
 }
@@ -198,7 +203,6 @@ func (s *courierService) AddToCourierBalance(courierID int, amount float64) (flo
 	}
 
 	return newCourier.Balance, nil
-
 }
 
 func (s *courierService) AddOrderCourierDebitToCourier(courierID int, order models.Order) (float64, error) {
@@ -207,7 +211,7 @@ func (s *courierService) AddOrderCourierDebitToCourier(courierID int, order mode
 		return 0, err
 	}
 
-	//If debit already added then just considering that it was added
+	// If debit already added then just considering that it was added
 	if order.OrderCourierInfo.IsDebitAddedToCourier {
 		return courierFromDB.Balance, nil
 	}
@@ -237,7 +241,7 @@ func (s *courierService) RemoveOrderCourierDebitFromCourier(courierID int, order
 		return 0, err
 	}
 
-	//If debit isnt yet added then just considering that all normal
+	// If debit isnt yet added then just considering that all normal
 	if !order.OrderCourierInfo.IsDebitAddedToCourier {
 		return courierFromDB.Balance, nil
 	}
@@ -420,7 +424,6 @@ func (s *courierService) RemoveConnectionFromCourierConnections(courierID int, c
 }
 
 func (s *courierService) SendActiveOrderUpdateForAllCouriersWebSocket(order models.Order) error {
-
 	conns := wshelpers.ConnectionsSet{}
 	for _, value := range s.WebSocketCourierConnections.Connections {
 		for conn := range value {

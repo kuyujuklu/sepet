@@ -81,7 +81,6 @@ func (c *clientController) RefreshToken(ctx *fiber.Ctx) error {
 		client.Role.SignificanceNumber,
 		models.CLIENT_ROLE_NAME,
 		jwtservice.STANDARD_ACCESS_LIFE_TIME)
-
 	if err != nil {
 		return h.SendError(ctx, servererrors.ErrInternalServerError, h.AUTOMATIC_STATUS_CODE)
 	}
@@ -133,4 +132,11 @@ func (c *clientController) DeleteClientByToken(ctx *fiber.Ctx) error {
 	}
 
 	return h.SendSuccess(ctx, fiber.Map{}, h.AUTOMATIC_STATUS_CODE)
+}
+
+func (c *clientController) GetAppVersion(ctx *fiber.Ctx) error {
+	return h.SendSuccess(ctx, fiber.Map{
+		"min_active_version": c.ClientApplicationMinActiveVersion,
+		"newest_version":     c.ClientApplicationNewestVersion,
+	}, h.AUTOMATIC_STATUS_CODE)
 }

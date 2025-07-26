@@ -2,10 +2,12 @@ package auth
 
 import (
 	"errors"
+	"fmt"
 
 	h "github.com/alexkalak/qrmenu/src/controllers/httpv1/httphelpers"
 	"github.com/alexkalak/qrmenu/src/controllers/httpv1/input"
 	"github.com/alexkalak/qrmenu/src/errors/companyerrors"
+	"github.com/alexkalak/qrmenu/src/errors/couriererrors"
 	"github.com/alexkalak/qrmenu/src/errors/jwterrors"
 	"github.com/alexkalak/qrmenu/src/errors/servererrors"
 	"github.com/alexkalak/qrmenu/src/models"
@@ -13,6 +15,7 @@ import (
 	"github.com/alexkalak/qrmenu/src/services/authservice"
 	"github.com/alexkalak/qrmenu/src/services/clientservice"
 	"github.com/alexkalak/qrmenu/src/services/companyservice"
+	"github.com/alexkalak/qrmenu/src/services/courierservice"
 	"github.com/alexkalak/qrmenu/src/services/jwtservice"
 	"github.com/alexkalak/qrmenu/src/services/roleservice"
 	"github.com/gofiber/fiber/v2"
@@ -26,6 +29,7 @@ const (
 type authController struct {
 	JwtService     jwtservice.JwtService
 	CompanyService companyservice.CompanyService
+	CourierService courierservice.CourierService
 	RoleService    roleservice.RoleService
 	AdminService   adminservice.AdminService
 	ClientService  clientservice.ClientService
@@ -39,6 +43,7 @@ func New() *authController {
 		RoleService:    roleservice.New(),
 		AdminService:   adminservice.New(),
 		ClientService:  clientservice.New(),
+		CourierService: courierservice.New(),
 		AuthService:    authservice.New(),
 	}
 }
@@ -50,9 +55,9 @@ func (c *authController) UnauthorizedRouter(router fiber.Router) {
 }
 
 type loginInput struct {
-	Email       string `json:"email" example:"alex@alex.alex"`                          //for companies and admins
-	PhoneNumber string `json:"phone" example:"37367507188"`                             //for users
-	Password    string `json:"password" validate:"omitempty,min=3" example:"123123123"` //for companies and admins
+	Email       string `json:"email" example:"alex@alex.alex"`                          // for companies and admins
+	PhoneNumber string `json:"phone" example:"37367507188"`                             // for users
+	Password    string `json:"password" validate:"omitempty,min=3" example:"123123123"` // for companies and admins
 	As          string `json:"as" validate:"" example:"company"`                        // for all
 }
 
@@ -101,13 +106,18 @@ func (c *authController) loginAsUnknown(ctx *fiber.Ctx, email string, password s
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
+	if user.Role == models.ADMIN_ROLE_NAME {
+		err = h.SendAdminRefreshTokenInHttpOnlyCookies(ctx, user.ID, user.SignificanceNumber, user.Role)
+		if err != nil {
+			return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+		}
+	}
 
 	accessToken, err := c.JwtService.GetAccessTokenString(
 		user.ID,
 		user.SignificanceNumber,
 		user.Role,
 		jwtservice.STANDARD_ACCESS_LIFE_TIME)
-
 	if err != nil {
 		return h.SendError(ctx, servererrors.ErrInternalServerError, h.AUTOMATIC_STATUS_CODE)
 	}
@@ -143,7 +153,6 @@ func (c *authController) loginAsCompany(ctx *fiber.Ctx, email string, password s
 		role.SignificanceNumber,
 		models.COMPANY_ROLE_NAME,
 		jwtservice.STANDARD_ACCESS_LIFE_TIME)
-
 	if err != nil {
 		return h.SendError(ctx, servererrors.ErrInternalServerError, h.AUTOMATIC_STATUS_CODE)
 	}
@@ -173,13 +182,17 @@ func (c *authController) loginAsAdmin(ctx *fiber.Ctx, adminName string, password
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
+	err = h.SendAdminRefreshTokenInHttpOnlyCookies(ctx, int(admin.ID), role.SignificanceNumber, models.ADMIN_ROLE_NAME)
+	if err != nil {
+		fmt.Println("Error in sending admin refresh_token")
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
 
 	accessToken, err := c.JwtService.GetAccessTokenString(
 		int(admin.ID),
 		role.SignificanceNumber,
 		models.ADMIN_ROLE_NAME,
 		jwtservice.ADMIN_ACCESS_LIFE_TIME)
-
 	if err != nil {
 		return h.SendError(ctx, servererrors.ErrInternalServerError, h.AUTOMATIC_STATUS_CODE)
 	}
@@ -196,6 +209,7 @@ func (c *authController) loginAsAdmin(ctx *fiber.Ctx, adminName string, password
 
 func (c *authController) Logout(ctx *fiber.Ctx) error {
 	h.DeleteRefreshToken(ctx)
+	h.DeleteAdminRefreshToken(ctx)
 	return h.SendSuccess(ctx, fiber.Map{}, fiber.StatusOK)
 }
 
@@ -209,26 +223,58 @@ func (c *authController) RefreshToken(ctx *fiber.Ctx) error {
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
-
 	if !valid {
 		return h.SendError(ctx, jwterrors.ErrNotValidSignature, h.AUTOMATIC_STATUS_CODE)
 	}
 
-	user, err := c.CompanyService.GetCompanyById(userClaims.ID)
-	if err != nil {
-		return h.SendError(
-			ctx,
-			companyerrors.ErrCompanyNotFound,
-			h.AUTOMATIC_STATUS_CODE,
-		)
+	adminRefreshToken := ctx.Cookies(("admin_refresh_token"))
+	adminClaims, valid, err := c.JwtService.ParseJwtTokenString(adminRefreshToken)
+	if err == nil && valid && adminClaims.RoleName == models.ADMIN_ROLE_NAME {
+		fmt.Println("IS ADDDDDDMIn")
+	}
+
+	userID := 0
+	company := models.Company{}
+	courier := models.Courier{}
+	client := models.Client{}
+
+	if userClaims.RoleName == models.COMPANY_ROLE_NAME {
+		company, err = c.CompanyService.GetCompanyById(userClaims.ID)
+		if err != nil {
+			return h.SendError(
+				ctx,
+				companyerrors.ErrCompanyNotFound,
+				h.AUTOMATIC_STATUS_CODE,
+			)
+		}
+		userID = int(company.ID)
+	} else if userClaims.RoleName == models.COURIER_ROLE_NAME {
+		courier, err = c.CourierService.GetCourierByID(userClaims.ID)
+		if err != nil {
+			return h.SendError(
+				ctx,
+				couriererrors.ErrCourierNotFound,
+				h.AUTOMATIC_STATUS_CODE,
+			)
+		}
+		userID = int(courier.ID)
+	} else if userClaims.RoleName == models.CLIENT_ROLE_NAME {
+		client, err = c.ClientService.GetClientByID(userClaims.ID)
+		if err != nil {
+			return h.SendError(
+				ctx,
+				couriererrors.ErrCourierNotFound,
+				h.AUTOMATIC_STATUS_CODE,
+			)
+		}
+		userID = int(client.ID)
 	}
 
 	accessToken, err := c.JwtService.GetAccessTokenString(
-		int(user.ID),
+		int(userID),
 		userClaims.Significance,
 		userClaims.RoleName,
 		jwtservice.STANDARD_ACCESS_LIFE_TIME)
-
 	if err != nil {
 		return h.SendError(ctx, servererrors.ErrInternalServerError, h.AUTOMATIC_STATUS_CODE)
 	}

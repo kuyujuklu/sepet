@@ -44,7 +44,7 @@ func (c *pubController) SetShapesForPub(ctx *fiber.Ctx) error {
 		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
 	}
 
-	//Checking access for action with pub for company
+	// Checking access for action with pub for company
 	err = h.CheckCompanyAccess(userID, companyID, userSignificance, userRole, models.PUB_COMPANY_ENTITY, pubID)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
@@ -104,7 +104,7 @@ func (c *pubController) SetAvailableShipping(ctx *fiber.Ctx) error {
 		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
 	}
 
-	//Checking access for action with pub for company
+	// Checking access for action with pub for company
 	err = h.CheckCompanyAccess(userID, companyID, userSignificance, userRole, models.PUB_COMPANY_ENTITY, pubID)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
@@ -162,7 +162,7 @@ func (c *pubController) SetShippingTime(ctx *fiber.Ctx) error {
 		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
 	}
 
-	//Checking access for action with pub for company
+	// Checking access for action with pub for company
 	err = h.CheckCompanyAccess(userID, companyID, userSignificance, userRole, models.PUB_COMPANY_ENTITY, pubID)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
@@ -206,7 +206,7 @@ type SetShippingWorkingHours struct {
 // @Router       /company/{companyID}/pubs/{pubID}/shipping-work-hours [POST]
 // @Security ApiKeyAuth
 // @Param AccessToken header string  true "accesstoken"
-func (c *pubController) SetShippingWorkHours(ctx *fiber.Ctx) error {
+func (c *pubController) SetShippingWorkHoursForWeek(ctx *fiber.Ctx) error {
 	userID, userSignificance, userRole, err := h.GetUserIDSignificanceAndRoleFromLocals(ctx)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
@@ -222,13 +222,13 @@ func (c *pubController) SetShippingWorkHours(ctx *fiber.Ctx) error {
 		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
 	}
 
-	//Checking access for action with pub for company
+	// Checking access for action with pub for company
 	err = h.CheckCompanyAccess(userID, companyID, userSignificance, userRole, models.PUB_COMPANY_ENTITY, pubID)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
 
-	input, validationErrors, err := input.ParseRequestBody[entities.SetShippingWorkHours](ctx)
+	input, validationErrors, err := input.ParseRequestBody[entities.SetShippingWorkHoursInput](ctx)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
@@ -237,7 +237,7 @@ func (c *pubController) SetShippingWorkHours(ctx *fiber.Ctx) error {
 		return h.SendValidationErrors(ctx, validationErrors)
 	}
 
-	err = c.PubService.SetShippingWorkingTime(pubID, input.Start, input.End)
+	err = c.PubService.SetShippingWorkHoursForWeek(pubID, input.ConvertToModel())
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
@@ -282,7 +282,7 @@ func (c *pubController) SetShippingPrice(ctx *fiber.Ctx) error {
 		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
 	}
 
-	//Checking access for action with pub for company
+	// Checking access for action with pub for company
 	err = h.CheckCompanyAccess(userID, companyID, userSignificance, userRole, models.PUB_COMPANY_ENTITY, pubID)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
@@ -338,7 +338,7 @@ func (c *pubController) SetShippingFreeDeliveryPrice(ctx *fiber.Ctx) error {
 		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
 	}
 
-	//Checking access for action with pub for company
+	// Checking access for action with pub for company
 	err = h.CheckCompanyAccess(userID, companyID, userSignificance, userRole, models.PUB_COMPANY_ENTITY, pubID)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
@@ -398,7 +398,7 @@ func (c *pubController) GetShapesForPub(ctx *fiber.Ctx) error {
 		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
 	}
 
-	//Checking access for action with pub for company
+	// Checking access for action with pub for company
 	err = h.CheckCompanyAccess(userID, companyID, userSignificance, userRole, models.PUB_COMPANY_ENTITY, pubID)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
@@ -423,6 +423,7 @@ func (c *pubController) GetShapesForPub(ctx *fiber.Ctx) error {
 			"shipping_time_to":              shippingOutput.ShippingTimeTo,
 			"shipping_work_start":           shippingOutput.ShippingStartWorkTime,
 			"shipping_work_end":             shippingOutput.ShippingEndWorkTime,
+			"shipping_work_hours_for_week":  shippingOutput.ShippingWorkHoursForWeek,
 			"shipping_prices":               shippingOutput.ShippingPrices,
 			"shipping_free_delivery_prices": shippingOutput.ShippingFreeDeliveryPrices,
 			"shapes":                        shippingOutput.Shapes,
@@ -462,7 +463,7 @@ func (c *pubController) SetDeliveryType(ctx *fiber.Ctx) error {
 		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
 	}
 
-	//Checking access for action with pub for company
+	// Checking access for action with pub for company
 	err = h.CheckCompanyAccess(userID, companyID, userSignificance, userRole, models.PUB_COMPANY_ENTITY, pubID)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
@@ -522,7 +523,7 @@ func (c *pubController) SetAddCommissionToDishPrices(ctx *fiber.Ctx) error {
 		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
 	}
 
-	//Checking access for action with pub for company
+	// Checking access for action with pub for company
 	err = h.CheckCompanyAccess(userID, companyID, userSignificance, userRole, models.PUB_COMPANY_ENTITY, pubID)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)

@@ -26,23 +26,23 @@ import (
 //@description simple description
 
 func main() {
-	//configure
+	// configure
 	loadEnv()
 	configureTime()
 	configure()
 	initiatePostgresDB()
 	configureTelegram()
 
-	//create app
+	// create app
 	app := createApp()
 	setupRoutes(app)
 	configureSWAG(app)
 	configureFileSystem(app)
 
-	//print time in console
+	// print time in console
 	fmt.Println("Time Now: ", time.Now().Format("2006-01-02 15:04:05"))
 
-	//start app
+	// start app
 	log.Fatal(app.Listen(":" + getPort()))
 }
 
@@ -80,7 +80,7 @@ func configureTelegram() {
 }
 
 func configureLogs() {
-	file, err := os.OpenFile("logs.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0777)
+	file, err := os.OpenFile("logs.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o777)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -114,7 +114,7 @@ func getPort() string {
 
 func createApp() *fiber.App {
 	app := fiber.New(fiber.Config{
-		BodyLimit: 20 * 1024 * 1024, //20MB
+		BodyLimit: 20 * 1024 * 1024, // 20MB
 	})
 
 	app.Use(cors.New())

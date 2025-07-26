@@ -8,6 +8,7 @@ import (
 	"github.com/alexkalak/qrmenu/src/services/notificationservice"
 	"github.com/alexkalak/qrmenu/src/services/orderservice"
 	"github.com/alexkalak/qrmenu/src/services/pubservice"
+	"github.com/alexkalak/qrmenu/src/services/telegramservice"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -18,9 +19,15 @@ type adminController struct {
 	OrderService        orderservice.OrderService
 	ClientService       clientservice.ClientService
 	NotificationService notificationservice.NotificationService
+	TelegramService     telegramservice.TelegramService
 }
 
 func New() *adminController {
+	tservice, err := telegramservice.New()
+	if err != nil {
+		tservice = nil
+	}
+
 	return &adminController{
 		PubService:          pubservice.New(),
 		CompanyService:      companyservice.New(),
@@ -28,6 +35,8 @@ func New() *adminController {
 		OrderService:        orderservice.New(),
 		ClientService:       clientservice.New(),
 		NotificationService: notificationservice.New(),
+
+		TelegramService: tservice,
 	}
 }
 
@@ -47,4 +56,6 @@ func (c *adminController) Router(router fiber.Router) {
 	router.Get("/couriers", c.GetAllCouriers)
 	router.Post("/add-to-order-courier-debit/:orderID<int>", c.AddToOrderCourierDebit)
 	router.Post("/add-to-courier-balance/:courierID<int>", c.AddToCourierBalance)
+	router.Post("/create-telegram-super-user", c.CreateTelegramSuperUser)
+	router.Post("/set-pubs-for-super-user", c.SetPubsForSuperUser)
 }

@@ -42,7 +42,7 @@ type OrderService interface {
 
 	RateOrder(orderID int, rating int) error
 
-	SubscribeOnOrderUpdates(callback func(order models.Order, sendTelegram bool))
+	SubscribeOnOrderUpdates(callback func(newOrder models.Order, prevOrder models.Order, isNew bool))
 
 	AddConnectionToOrdersForPubConnections(pubID int, conn *websocket.Conn) error
 	AddConnectionToOrdersForClientConnections(pubID int, conn *websocket.Conn) error
@@ -62,7 +62,7 @@ type orderService struct {
 	RoleRepo                        rolerepo.RoleRepo
 	TelegramService                 telegramservice.TelegramService
 	NotificationService             notificationservice.NotificationService
-	SubsribedOnOrdersUpdateCallback []func(order models.Order, sendTelegram bool)
+	SubsribedOnOrdersUpdateCallback []func(newOrder models.Order, prevOrder models.Order, isNew bool)
 }
 
 var singleton *orderService = nil
@@ -87,7 +87,6 @@ func New() OrderService {
 
 		var err error
 		singleton.TelegramService, err = telegramservice.New()
-
 		if err != nil {
 			singleton = nil
 			fmt.Println("in orders singleton constructor")
@@ -101,11 +100,12 @@ func New() OrderService {
 func (s *orderService) GetAllOrders() ([]models.Order, error) {
 	return s.OrderRepo.GetAllOrders()
 }
+
 func (s *orderService) GetAllOrdersWithSpecificStatuses(statuses ...string) ([]models.Order, error) {
 	return s.OrderRepo.GetAllOrdersWithSpecificStatuses(statuses...)
 }
 
-func (s *orderService) SubscribeOnOrderUpdates(callback func(order models.Order, sendTelegram bool)) {
+func (s *orderService) SubscribeOnOrderUpdates(callback func(newOrder models.Order, prevOrder models.Order, isNew bool)) {
 	s.SubsribedOnOrdersUpdateCallback = append(s.SubsribedOnOrdersUpdateCallback, callback)
 }
 
@@ -165,8 +165,12 @@ func (s *orderService) FillDishPricesForOrder(order *models.Order, addCommission
 		return err
 	}
 
-	//adding total dishes price wihthout commission field to order
+	// adding total dishes price wihthout commission field to order
 	commissionInFraction := float64(models.DELIVERY_SERVICE_DISHES_COMMISSION_IN_PERCENT) / 100
+
+	if !addCommission {
+		commissionInFraction = 0
+	}
 
 	dishesTotalPriceWithoutCommission := dishesTotalPrice / float64(1+commissionInFraction)
 	fmt.Println("dishes total price without commission: ", dishesTotalPriceWithoutCommission)
@@ -244,19 +248,24 @@ func (s *orderService) CreateOrder(order models.Order) (models.Order, error) {
 	if err != nil {
 		return models.Order{}, err
 	}
+	order.DeliveryPrice = realDeliveryPrice
+
+	fmt.Println("real Price: ", realDeliveryPrice)
+	fmt.Println("free delivery Price: ", freeDeliveryPrice)
 
 	commission := dishesTotalPrice - order.TotalDishesPriceWithoutCommission
 
 	courierInfo := models.OrderCourierInfo{
 		IsReserved:        false,
 		ReserverCourierID: 0,
-		CourierReward:     realDeliveryPrice, //half of commission is for courier
+		CourierReward:     realDeliveryPrice, // half of commission is for courier
 		CourierDebit:      commission,
 		Distance:          distance,
 	}
 
 	if freeDeliveryPrice > 0 && freeDeliveryPrice < dishesTotalPrice {
 		courierInfo.CourierDebit = commission - realDeliveryPrice
+		order.DeliveryPrice = 0
 	}
 
 	order.Status = models.NOT_HANDLED_ORDER_STATUS
@@ -269,14 +278,14 @@ func (s *orderService) CreateOrder(order models.Order) (models.Order, error) {
 		return models.Order{}, err
 	}
 
-	//sending for admin panel
+	// sending for admin panel
 	err = s.SendSingleOrderMessageForPubConnections(order.PubID, order, CREATE_EVENT_TYPE)
 	if err != nil {
 		fmt.Println("sending notification error")
 		return models.Order{}, err
 	}
 
-	//sending for clients
+	// sending for clients
 	err = s.SendSingleOrderMessageForClientConnections(order.ClientID, order, CREATE_EVENT_TYPE)
 	if err != nil {
 		fmt.Println("sending notification error")
@@ -325,7 +334,6 @@ func (s *orderService) CreateOrderForUnknownClient(order models.Order) (models.O
 		Phone:  uuid.New().String(),
 		RoleID: int(role.ID),
 	})
-
 	if err != nil {
 		return models.Order{}, err
 	}
@@ -341,7 +349,7 @@ func (s *orderService) UpdateOrderStatus(orderID int, status string) error {
 		return err
 	}
 
-	_, err = s.OrderRepo.GetOrderByID(orderID)
+	prevOrder, err := s.OrderRepo.GetOrderByID(orderID)
 	if err != nil {
 		return err
 	}
@@ -358,17 +366,17 @@ func (s *orderService) UpdateOrderStatus(orderID int, status string) error {
 		return err
 	}
 
-	//send for all subscribed callbacks
-	s.SendUpdatedOrderToAllCallbacks(order)
+	// send for all subscribed callbacks
+	s.SendUpdatedOrderToAllCallbacks(order, prevOrder, false)
 
-	//sending for admin panel
+	// sending for admin panel
 	err = s.SendSingleOrderMessageForPubConnections(order.PubID, order, UPDATE_EVENT_TYPE)
 	if err != nil {
 		fmt.Println("sending notification error")
 		return err
 	}
 
-	//sending for clients
+	// sending for clients
 	err = s.SendSingleOrderMessageForClientConnections(order.ClientID, order, UPDATE_EVENT_TYPE)
 	if err != nil {
 		fmt.Println("sending notification error")
@@ -376,7 +384,12 @@ func (s *orderService) UpdateOrderStatus(orderID int, status string) error {
 	}
 	tx.Commit()
 
-	err = s.NotificationService.SendNotification(order.ClientID, getBodyForOrderUpdateStatusNotification(int(order.ID), order.Status), getTitleForOrderUpdateStatus())
+	err = s.NotificationService.SendNotificationLinkedToOrderInfoPage(
+		order.ClientID,
+		getBodyForOrderUpdateStatusNotification(int(order.ID), order.Status),
+		getTitleForOrderUpdateStatus(),
+		orderID,
+	)
 	if err != nil {
 		fmt.Println("sending notification error")
 		return nil
@@ -386,7 +399,7 @@ func (s *orderService) UpdateOrderStatus(orderID int, status string) error {
 }
 
 func (s *orderService) UpdateOrderDeliveryPrice(orderID int, deliveryPrice float64) error {
-	_, err := s.OrderRepo.GetOrderByID(orderID)
+	prevOrder, err := s.OrderRepo.GetOrderByID(orderID)
 	if err != nil {
 		return err
 	}
@@ -403,17 +416,17 @@ func (s *orderService) UpdateOrderDeliveryPrice(orderID int, deliveryPrice float
 		return err
 	}
 
-	//send for all subscribed callbacks
-	s.SendUpdatedOrderToAllCallbacks(order)
+	// send for all subscribed callbacks
+	s.SendUpdatedOrderToAllCallbacks(order, prevOrder, false)
 
-	//sending for admin panel
+	// sending for admin panel
 	err = s.SendSingleOrderMessageForPubConnections(order.PubID, order, UPDATE_EVENT_TYPE)
 	if err != nil {
 		fmt.Println("sending notification error")
 		return err
 	}
 
-	//sending for clients
+	// sending for clients
 	err = s.SendSingleOrderMessageForClientConnections(order.ClientID, order, UPDATE_EVENT_TYPE)
 	if err != nil {
 		fmt.Println("sending notification error")
@@ -447,6 +460,11 @@ func (s *orderService) AddToOrderCourierInfoCourierDebit(orderID int, amount flo
 }
 
 func (s *orderService) UpdateOrderCourierInfo(orderID int, courierInfo models.OrderCourierInfo) (models.OrderCourierInfo, error) {
+	prevOrder, err := s.OrderRepo.GetOrderByID(orderID)
+	if err != nil {
+		return models.OrderCourierInfo{}, err
+	}
+
 	tx := s.OrderRepo.NewTransaction()
 
 	updatedCourierInfo, err := s.OrderRepo.UpdateOrderCourierInfoWithingTransaction(tx, orderID, courierInfo)
@@ -459,17 +477,17 @@ func (s *orderService) UpdateOrderCourierInfo(orderID int, courierInfo models.Or
 		return models.OrderCourierInfo{}, err
 	}
 
-	//send for all subscribed callbacks
-	s.SendUpdatedOrderToAllCallbacks(order)
+	// send for all subscribed callbacks
+	s.SendUpdatedOrderToAllCallbacks(order, prevOrder, false)
 
-	//sending for admin panel
+	// sending for admin panel
 	err = s.SendSingleOrderMessageForPubConnections(order.PubID, order, UPDATE_EVENT_TYPE)
 	if err != nil {
 		fmt.Println("sending notification error")
 		return models.OrderCourierInfo{}, err
 	}
 
-	//sending for clients
+	// sending for clients
 	err = s.SendSingleOrderMessageForClientConnections(order.ClientID, order, UPDATE_EVENT_TYPE)
 	if err != nil {
 		fmt.Println("sending notification error")
@@ -481,8 +499,13 @@ func (s *orderService) UpdateOrderCourierInfo(orderID int, courierInfo models.Or
 }
 
 func (s *orderService) UpdateOrderPrepared(orderID int, prepared bool) error {
+	prevOrder, err := s.OrderRepo.GetOrderByID(orderID)
+	if err != nil {
+		return err
+	}
+
 	tx := s.OrderRepo.NewTransaction()
-	err := s.OrderRepo.UpdateOrderPreparedWithinTransaction(tx, orderID, prepared)
+	err = s.OrderRepo.UpdateOrderPreparedWithinTransaction(tx, orderID, prepared)
 	if err != nil {
 		return err
 	}
@@ -492,17 +515,17 @@ func (s *orderService) UpdateOrderPrepared(orderID int, prepared bool) error {
 		return err
 	}
 
-	//send for all subscribed callbacks
-	s.SendUpdatedOrderToAllCallbacksWithoutTelegram(order)
+	// send for all subscribed callbacks
+	s.SendUpdatedOrderToAllCallbacks(order, prevOrder, false)
 
-	//sending for admin panel
+	// sending for admin panel
 	err = s.SendSingleOrderMessageForPubConnections(order.PubID, order, UPDATE_EVENT_TYPE)
 	if err != nil {
 		fmt.Println("sending notification error")
 		return err
 	}
 
-	//sending for clients
+	// sending for clients
 	err = s.SendSingleOrderMessageForClientConnections(order.ClientID, order, UPDATE_EVENT_TYPE)
 	if err != nil {
 		fmt.Println("sending notification error")
@@ -514,7 +537,7 @@ func (s *orderService) UpdateOrderPrepared(orderID int, prepared bool) error {
 }
 
 func (s *orderService) UpdateOrderDishes(orderID int, orderDishes []models.OrderDish) error {
-	_, err := s.OrderRepo.GetOrderByID(orderID)
+	prevOrder, err := s.OrderRepo.GetOrderByID(orderID)
 	if err != nil {
 		return err
 	}
@@ -580,17 +603,17 @@ func (s *orderService) UpdateOrderDishes(orderID int, orderDishes []models.Order
 	if err != nil {
 		return err
 	}
-	//send for all subscribed callbacks
-	s.SendUpdatedOrderToAllCallbacks(orderInTransaction)
+	// send for all subscribed callbacks
+	s.SendUpdatedOrderToAllCallbacks(orderInTransaction, prevOrder, false)
 
-	//sending for admin panel
+	// sending for admin panel
 	err = s.SendSingleOrderMessageForPubConnections(orderInTransaction.PubID, orderInTransaction, UPDATE_EVENT_TYPE)
 	if err != nil {
 		fmt.Println("sending notification error")
 		return err
 	}
 
-	//sending for clients
+	// sending for clients
 	err = s.SendSingleOrderMessageForClientConnections(orderInTransaction.ClientID, orderInTransaction, UPDATE_EVENT_TYPE)
 	if err != nil {
 		fmt.Println("sending notification error")
@@ -631,6 +654,7 @@ func getBodyForOrderUpdateStatusNotification(orderID int, orderStatus string) no
 		Ro: fmt.Sprintf("Ordinul nr. %d a fost actualizat și acum este: %s", orderID, models.TranslateStatus(orderStatus, "ro")),
 	}
 }
+
 func getTitleForOrderUpdateStatus() notificationservice.NotificaitonText {
 	return notificationservice.NotificaitonText{
 		Ru: "Обновление статуса заказа",
@@ -639,7 +663,7 @@ func getTitleForOrderUpdateStatus() notificationservice.NotificaitonText {
 }
 
 func (s *orderService) RateOrder(orderID int, rating int) error {
-	_, err := s.OrderRepo.GetOrderByID(orderID)
+	prevOrder, err := s.OrderRepo.GetOrderByID(orderID)
 	if err != nil {
 		return err
 	}
@@ -651,23 +675,34 @@ func (s *orderService) RateOrder(orderID int, rating int) error {
 		return ordererrors.ErrUnableToUpdateOrder
 	}
 
-	order, err := s.OrderRepo.GetOrderByIDWithinTransaction(tx, orderID)
+	orders, err := s.OrderRepo.GetAllOrdersForPubWithinTransaction(tx, prevOrder.PubID)
 	if err != nil {
-		fmt.Println("gettign order withing transaction error")
+		return ordererrors.ErrUnableToGetOrder
+	}
+
+	newPubRating := s.CountPubRating(orders)
+	err = s.PubsRepo.UpdatePubRatingWithinTransaction(tx, prevOrder.PubID, newPubRating)
+	if err != nil {
 		return err
 	}
 
-	//send for all subscribed callbacks
-	s.SendUpdatedOrderToAllCallbacks(order)
+	order, err := s.OrderRepo.GetOrderByIDWithinTransaction(tx, orderID)
+	if err != nil {
+		fmt.Println("getting order withing transaction error")
+		return err
+	}
 
-	//sending for admin panel
+	// send for all subscribed callbacks
+	s.SendUpdatedOrderToAllCallbacks(order, prevOrder, false)
+
+	// sending for admin panel
 	err = s.SendSingleOrderMessageForPubConnections(order.PubID, order, UPDATE_EVENT_TYPE)
 	if err != nil {
 		fmt.Println("sending admin notification error")
 		return err
 	}
 
-	//sending for clients
+	// sending for clients
 	err = s.SendSingleOrderMessageForClientConnections(order.ClientID, order, UPDATE_EVENT_TYPE)
 	if err != nil {
 		fmt.Println("sending client notification error")
@@ -678,15 +713,26 @@ func (s *orderService) RateOrder(orderID int, rating int) error {
 	return nil
 }
 
-func (s *orderService) SendUpdatedOrderToAllCallbacks(order models.Order) {
-	for _, f := range s.SubsribedOnOrdersUpdateCallback {
-		f(order, true)
+func (s *orderService) CountPubRating(orders []models.Order) float64 {
+	if orders == nil || len(orders) < 3 {
+		return 0
 	}
+	totalSum := 0
+	amountOfCountedOrders := 0
+	for _, order := range orders {
+		if order.Rating == 0 {
+			continue
+		}
+		amountOfCountedOrders++
+		totalSum += order.Rating
+	}
+
+	return float64(totalSum) / float64(amountOfCountedOrders)
 }
 
-func (s *orderService) SendUpdatedOrderToAllCallbacksWithoutTelegram(order models.Order) {
+func (s *orderService) SendUpdatedOrderToAllCallbacks(newOrder models.Order, prevOrder models.Order, isNew bool) {
 	for _, f := range s.SubsribedOnOrdersUpdateCallback {
-		f(order, false)
+		f(newOrder, prevOrder, isNew)
 	}
 }
 

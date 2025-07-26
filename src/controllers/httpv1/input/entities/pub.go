@@ -85,6 +85,7 @@ type PubOutput struct {
 	TelegramUserName string          `json:"telegram_username"`
 	HasInPlaceOrder  bool            `json:"has_in_place_order"`
 	Couriers         []CourierOutput `json:"couriers"`
+	Rating           float64         `json:"rating"`
 }
 
 func (p *PubOutput) FillFromModel(pub models.Pub) error {
@@ -120,6 +121,7 @@ func (p *PubOutput) FillFromModel(pub models.Pub) error {
 	p.Lng = pub.Lng
 	p.TelegramUserName = pub.TelegramUsername
 	p.HasInPlaceOrder = pub.HasInPlaceOrder
+	p.Rating = pub.Rating
 
 	for _, courier := range pub.Couriers {
 		courierOutput := CourierOutput{}
@@ -168,6 +170,7 @@ func (p *PubWithDishesAndDistanceOutput) FillFromModel(pub models.Pub, distance 
 	p.CompanyID = int(pub.CompanyID)
 	p.Lat = pub.Lat
 	p.Lng = pub.Lng
+	p.Rating = pub.Rating
 
 	p.Dishes = make([]DishOutput, 0, len(dishes))
 

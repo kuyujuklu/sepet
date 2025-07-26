@@ -26,9 +26,26 @@ type SetFreeDeliveryFrom struct {
 	FreeDeliveryFrom int `json:"free_delivery_from" example:"300"`
 }
 
-type SetShippingWorkHours struct {
-	Start int `json:"shipping_work_start" example:"360"`
-	End   int `json:"shipping_work_end" example:"1080"`
+type ShippingWorkTimeForDay struct {
+	Start int `json:"start"`
+	End   int `json:"end"`
+}
+
+type SetShippingWorkHoursInput struct {
+	WorkHours []ShippingWorkTimeForDay `json:"work_hours"`
+}
+
+func (e *SetShippingWorkHoursInput) ConvertToModel() []models.ShippingWorkTimeForDay {
+	output := make([]models.ShippingWorkTimeForDay, 0, len(e.WorkHours))
+
+	for _, workHour := range e.WorkHours {
+		output = append(output, models.ShippingWorkTimeForDay{
+			Start: workHour.Start,
+			End:   workHour.End,
+		})
+	}
+
+	return output
 }
 
 type SetShippingPrices struct {
@@ -65,20 +82,21 @@ func (s *ShapeOutput) FillFromModel(shape models.Shape) error {
 }
 
 type ShippingOutput struct {
-	ID                         int                `json:"id"`
-	Available                  bool               `json:"available"`
-	ShippingTimeFrom           int                `json:"shipping_time_from"`
-	ShippingTimeTo             int                `json:"shipping_time_to"`
-	ShippingStartWorkTime      int                `json:"shipping_work_start"`
-	ShippingEndWorkTime        int                `json:"shipping_work_end"`
-	ShippingPrices             map[string]float64 `json:"shipping_prices"`
-	ShippingFreeDeliveryPrices map[string]float64 `json:"shipping_free_delivery_prices"`
-	StandardShippingPrice      string             `json:"standard_shipping_price"`
-	Shapes                     []ShapeOutput      `json:"shapes"`
-	ShippingPrice              float64            `json:"shipping_price"`
-	DeliveryType               string             `json:"delivery_type"`
-	AddCommissionToDishPrices  bool               `json:"add_commission_to_dish_prices"`
-	CommissionForDishPrices    int                `json:"commission_for_dish_prices"` //standard commission in percent
+	ID                         int                      `json:"id"`
+	Available                  bool                     `json:"available"`
+	ShippingTimeFrom           int                      `json:"shipping_time_from"`
+	ShippingTimeTo             int                      `json:"shipping_time_to"`
+	ShippingWorkHoursForWeek   []ShippingWorkTimeForDay `json:"shipping_work_hours_for_week"`
+	ShippingStartWorkTime      int                      `json:"shipping_work_start"`
+	ShippingEndWorkTime        int                      `json:"shipping_work_end"`
+	ShippingPrices             map[string]float64       `json:"shipping_prices"`
+	ShippingFreeDeliveryPrices map[string]float64       `json:"shipping_free_delivery_prices"`
+	StandardShippingPrice      string                   `json:"standard_shipping_price"`
+	Shapes                     []ShapeOutput            `json:"shapes"`
+	ShippingPrice              float64                  `json:"shipping_price"`
+	DeliveryType               string                   `json:"delivery_type"`
+	AddCommissionToDishPrices  bool                     `json:"add_commission_to_dish_prices"`
+	CommissionForDishPrices    int                      `json:"commission_for_dish_prices"` // standard commission in percent
 }
 
 func (s *ShippingOutput) FillFromModel(shipping models.Shipping) error {
@@ -106,6 +124,18 @@ func (s *ShippingOutput) FillFromModel(shipping models.Shipping) error {
 		shapesOutput = append(shapesOutput, shapeOutput)
 	}
 
+	workHours, err := shipping.GetWorkHoursForWeek()
+	if err != nil {
+		return err
+	}
+	workHoursOutput := make([]ShippingWorkTimeForDay, 0, len(workHours))
+	for _, workHour := range workHours {
+		workHoursOutput = append(workHoursOutput, ShippingWorkTimeForDay{
+			Start: workHour.Start,
+			End:   workHour.End,
+		})
+	}
+
 	s.ID = int(shipping.ID)
 	s.Available = shipping.Available
 	s.Shapes = shapesOutput
@@ -113,6 +143,7 @@ func (s *ShippingOutput) FillFromModel(shipping models.Shipping) error {
 	s.ShippingTimeTo = shipping.ShippingTimeTo
 	s.ShippingPrices = prices
 	s.ShippingFreeDeliveryPrices = freeDeliveryPrices
+	s.ShippingWorkHoursForWeek = workHoursOutput
 	s.ShippingStartWorkTime = shipping.ShippingStartWorkTime
 	s.ShippingEndWorkTime = shipping.ShippingEndWorkTime
 	s.DeliveryType = shipping.DeliveryType

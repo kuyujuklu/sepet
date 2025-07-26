@@ -1,6 +1,8 @@
 package client
 
 import (
+	"os"
+
 	"github.com/alexkalak/qrmenu/src/controllers/httpv1/middleware"
 	"github.com/alexkalak/qrmenu/src/services/categoryservice"
 	"github.com/alexkalak/qrmenu/src/services/clientservice"
@@ -16,30 +18,34 @@ import (
 )
 
 type clientController struct {
-	JwtService         jwtservice.JwtService
-	PubService         pubservice.PubService
-	MenuService        menuservice.MenuService
-	CategoryService    categoryservice.CategoryService
-	DishService        dishesservice.DishesService
-	ClientService      clientservice.ClientService
-	NotificationSevice notificationservice.NotificationService
-	RoleService        roleservice.RoleService
-	OrderService       orderservice.OrderService
-	DistanceService    osrmservice.OsrmService
+	JwtService                        jwtservice.JwtService
+	PubService                        pubservice.PubService
+	MenuService                       menuservice.MenuService
+	CategoryService                   categoryservice.CategoryService
+	DishService                       dishesservice.DishesService
+	ClientService                     clientservice.ClientService
+	NotificationSevice                notificationservice.NotificationService
+	RoleService                       roleservice.RoleService
+	OrderService                      orderservice.OrderService
+	DistanceService                   osrmservice.OsrmService
+	ClientApplicationNewestVersion    string
+	ClientApplicationMinActiveVersion string
 }
 
 func New() *clientController {
 	return &clientController{
-		JwtService:         jwtservice.New(),
-		PubService:         pubservice.New(),
-		MenuService:        menuservice.New(),
-		CategoryService:    categoryservice.New(),
-		DishService:        dishesservice.New(),
-		ClientService:      clientservice.New(),
-		RoleService:        roleservice.New(),
-		OrderService:       orderservice.New(),
-		DistanceService:    osrmservice.New(),
-		NotificationSevice: notificationservice.New(),
+		JwtService:                        jwtservice.New(),
+		PubService:                        pubservice.New(),
+		MenuService:                       menuservice.New(),
+		CategoryService:                   categoryservice.New(),
+		DishService:                       dishesservice.New(),
+		ClientService:                     clientservice.New(),
+		RoleService:                       roleservice.New(),
+		OrderService:                      orderservice.New(),
+		DistanceService:                   osrmservice.New(),
+		NotificationSevice:                notificationservice.New(),
+		ClientApplicationMinActiveVersion: os.Getenv("APPLICATION_MIN_ACTIVE_VERSION"),
+		ClientApplicationNewestVersion:    os.Getenv("APPLICATION_NEWEST_VERSION"),
 	}
 }
 
@@ -50,6 +56,7 @@ func (c *clientController) UnauthorizedRouter(router fiber.Router) {
 	router.Get("/pub/:pubID<int>/preorder", c.GetPubPreorder)
 	router.Post("/registration", c.RegistrateClient)
 	router.Post("/delete-client", c.DeleteClient)
+	router.Get("/app-version-info", c.GetAppVersion)
 
 	router.Post("/auth/check-validation-number", c.CheckPhoneValidationNumber)
 	router.Post("/registration/generate-phone-validation-session", c.GenerateClientRegistrationSession)
@@ -68,7 +75,7 @@ func (c *clientController) AuthorizedRouter(router fiber.Router) {
 	router.Use(middleware.StrictAuthMW)
 	router.Get("/", c.GetClient)
 
-	//Orders
+	// Orders
 	router.Post("/delete-client-by-token", c.DeleteClientByToken)
 	router.Post("/orders", c.CreateOrder)
 	router.Post("/orders/:orderID<int>/rate", c.RateOrder)
