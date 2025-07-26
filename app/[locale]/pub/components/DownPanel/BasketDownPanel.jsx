@@ -25,6 +25,7 @@ const DownPanel = ({ reference, pubID }) => {
   const pub = useSelector(selectData)?.pub
 
   const pubWorkHours = getPubWorkHours(pub)
+  console.log("PUB WORK HOURS: ", pubWorkHours)
   const isDeliveryAvailable = pubWorkHours.isDeliveryAvailable
   console.log("IS DEL AV: ", isDeliveryAvailable)
   //const hasOrder = isDeliveryAvailable || pub?.has_in_place_order; Removed in place order 
@@ -54,23 +55,16 @@ const DownPanel = ({ reference, pubID }) => {
                   variant="contained"
                   disabled={!count || !isDeliveryAvailable}
                   style={{
-                    background: themeContext.color,
+                    background: "rgb(17 24 39)",
                   }}
                   sx={{
-                    color: themeContext.textColor,
                     fontSize: ".7rem",
                     fontWeight: "medium",
                     padding: ".7rem 1rem",
                     borderRadius: "10px",
                     width: "100%",
                     color: "white",
-                    background: "rgb(17 24 39)",
-                    ":disabled": {
-                      color: "rgb(31, 41, 55)"
-                    },
-                    ":hover": {
-                      bgcolor: "rgb(17 24 39)",
-                    },
+                    bgcolor: "rgb(17 24 39)",
                   }}
                   onClick={() => dispatch(openCreateOrderPopup())}
                 >

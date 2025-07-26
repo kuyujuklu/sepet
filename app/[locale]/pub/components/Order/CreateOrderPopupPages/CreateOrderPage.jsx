@@ -91,15 +91,11 @@ const CreateOrderPage = ({
           fontWeight: "medium",
           padding: ".7rem 1rem",
           borderRadius: "10px",
+          backgroundColor: "rgb(17 24 39)",
+          background: "rgb(17 24 39)",
         }}
         sx={{
           bgcolor: "rgb(17, 24, 39)",
-          ":disabled": {
-            bgcolor: "#a5aab0"
-          },
-          ":hover": {
-            bgcolor: "rgb(17 24 39)",
-          },
         }}
         onClick={createOrder}
       >

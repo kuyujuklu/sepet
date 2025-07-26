@@ -97,6 +97,7 @@ export const deliveryTypes = {
 }
 
 export const locations = {
+  Ceadir_Lunga: "Ceadir_Lunga",
   Alekseevka: "Alekseevka",
   Avdarma: "Avdarma",
   Baurchi: "Baurchi",
@@ -130,6 +131,7 @@ export const locations = {
 }
 
 export const ru_translates = {
+  [locations.Ceadir_Lunga]: "Чадыр-лунга",
   [locations.Komrat]: "Комрат",
   [locations.Alekseevka]: "Алексеевка",
   [locations.Avdarma]: "Авдарма",
@@ -163,6 +165,7 @@ export const ru_translates = {
 }
 
 export const ro_translates = {
+  [locations.Ceadir_Lunga]: "Ceadir-Lunga",
   [locations.Komrat]: "Comrat",
   [locations.Alekseevka]: "Alexeevca",
   [locations.Avdarma]: "Avdarma",
@@ -199,6 +202,7 @@ export const ro_translates = {
 
 
 export const latlng_for_location = {
+  [locations.Ceadir_Lunga]: { lat: 46.06098910418434, lng: 28.81794290657357 },
   [locations.Komrat]: { lat: 46.29702416981608, lng: 28.657744568868456 },
   [locations.Alekseevka]: { lat: 46.028814992444154, lng: 28.56631606808621 },
   [locations.Avdarma]: { lat: 46.25376233043438, lng: 28.835899136330227 },
@@ -232,7 +236,9 @@ export const latlng_for_location = {
 };
 
 export const select_location_options_ru = [
+  { value: locations.Ceadir_Lunga, label: ru_translates[locations.Ceadir_Lunga] },
   { value: locations.Komrat, label: ru_translates[locations.Komrat] },
+  { value: locations.Alekseevka, label: ru_translates[locations.Alekseevka] },
   { value: locations.Alekseevka, label: ru_translates[locations.Alekseevka] },
   { value: locations.Avdarma, label: ru_translates[locations.Avdarma] },
   { value: locations.Baurchi, label: ru_translates[locations.Baurchi] },
@@ -266,6 +272,7 @@ export const select_location_options_ru = [
 ]
 
 export const select_location_options_ro = [
+  { value: locations.Ceadir_Lunga, label: ro_translates[locations.Ceadir_Lunga] },
   { value: locations.Komrat, label: ro_translates[locations.Komrat] },
   { value: locations.Alekseevka, label: ro_translates[locations.Alekseevka] },
   { value: locations.Avdarma, label: ro_translates[locations.Avdarma] },
