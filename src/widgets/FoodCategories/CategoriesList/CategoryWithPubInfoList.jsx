@@ -74,7 +74,6 @@ const CategoryWithPubInfoList = ({ foodFilter, selectCategory }) => {
           contentContainerStyle={{ paddingBottom: 120, gap: 10 }}
           renderItem={({ item }) => (
             <TouchableOpacity
-              disabled={!item.pub.isOpen}
               onPress={() => {
                 selectCategory({
                   id: item?.category?.id,

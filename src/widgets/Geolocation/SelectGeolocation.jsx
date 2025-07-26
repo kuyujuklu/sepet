@@ -26,7 +26,7 @@ const mapStyle = {
     height: "100%",
   },
 };
-const SelectGeolocation = ({setGeolocation, goBack}) => {
+const SelectGeolocation = ({ setGeolocation, goBack }) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const navigator = useNavigation();
@@ -210,7 +210,7 @@ const SelectGeolocation = ({setGeolocation, goBack}) => {
             region={Platform.OS === "android" ? undefined : selectedRegion}
           />
         </View>
-    
+
         <Button
           disabled={!nearLocation}
           background={!nearLocation ? "coolGray.400" : "emerald.600"}

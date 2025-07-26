@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "281824649414",
-    "project_id": "sandex-d360b",
-    "storage_bucket": "sandex-d360b.appspot.com"
+    "project_number": "570621119117",
+    "project_id": "sepet-app",
+    "storage_bucket": "sepet-app.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:281824649414:android:0c981602ca4b329ffe37c7",
+        "mobilesdk_app_id": "1:570621119117:android:e495cdd90f849c118230c4",
         "android_client_info": {
           "package_name": "com.camelapp.app"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDCZdsWVh1j5sgVqwx_FZZjFQP5JCdhmX0"
+          "current_key": "AIzaSyDcpnH7T427ItDN1OdDMW__qNf2l-L_VMk"
         }
       ],
       "services": {

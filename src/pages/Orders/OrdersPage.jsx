@@ -16,6 +16,7 @@ const LazyLargeComponent = lazy(() => {
 });
 
 const OrdersPage = () => {
+
   const { t } = useTranslation();
   const orders = useSelector(selectOrders);
   const navigator = useNavigation();

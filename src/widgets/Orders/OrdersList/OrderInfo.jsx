@@ -1,12 +1,13 @@
 import { useDispatch, useSelector } from "react-redux";
 import { selectOrders } from "../../../features/store/orders/ordersSlice";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { ScrollView, Spinner, Text, View } from "native-base";
 import {
   ConvertApiTimeToLocalDayMonth,
   ConvertApiTimeToLocalDayMonthYear,
 } from "../../../shared/utils/time";
 import { SafeAreaView, TouchableOpacity } from "react-native";
+import { Pressable } from "native-base";
 import {
   useGetNearbyPubsQuery,
   useGetPubInfoQuery,
@@ -30,6 +31,8 @@ import {
   getOrderStatusColor,
   getOrderStatusText,
 } from "../../../shared/utils/order-utils";
+import { setNavbarExpanded } from "../../../features/store/navbar/navbarSlice";
+import { Screens } from "../../../../App";
 
 const OrderInfo = ({ orderID }) => {
   const { t, i18n } = useTranslation();
@@ -39,6 +42,11 @@ const OrderInfo = ({ orderID }) => {
   const order = useMemo(() => {
     return orders?.find((order) => order.id === orderID);
   }, [orders]);
+
+  useEffect(() => {
+    if (!orders) return;
+    if (!order) navigator.navigate(Screens.Orders)
+  }, [order, orders])
 
   const location = useSelector(selectGeolocation);
 
@@ -50,7 +58,7 @@ const OrderInfo = ({ orderID }) => {
       { pollingInterval: 20000, skipPollingIfUnfocused: true },
     );
   const { data: pubData, isLoading: isPubDataLoading } = useGetPubInfoQuery({
-    pubID: order.pub_id,
+    pubID: order?.pub_id,
   });
   const pub = pubData ?? null;
 
@@ -95,7 +103,7 @@ const OrderInfo = ({ orderID }) => {
     if (!pubsData || !pubsData?.pubs) return;
     if (!pubData || !pubData.dishes) return;
 
-    if (!order.dishes || order.dishes.length === 0) {
+    if (!order?.dishes || order?.dishes.length === 0) {
       dispatch(
         pushAlert({
           status: alertStatuses.warning,
@@ -139,7 +147,7 @@ const OrderInfo = ({ orderID }) => {
 
     const newBasket = {};
 
-    for (const { dish_id, count } of order.dishes) {
+    for (const { dish_id, count } of order?.dishes) {
       let smallestPrice = 0;
       let dishFound = false;
       for (const dish of pubData.dishes) {
@@ -167,7 +175,7 @@ const OrderInfo = ({ orderID }) => {
       newBasket[dish_id] = { count: count, price: smallestPrice };
       navigator.navigate("Basket");
     }
-    dispatch(setBasket({ basket: newBasket, pubID: order.pub_id }));
+    dispatch(setBasket({ basket: newBasket, pubID: order?.pub_id }));
   };
 
   return (
@@ -207,7 +215,7 @@ const OrderInfo = ({ orderID }) => {
         >
           {t(getOrderStatusText(order?.status))}
           {"  "}
-          {ConvertApiTimeToLocalDayMonthYear(order.created_time, i18n.language)}
+          {ConvertApiTimeToLocalDayMonthYear(order?.created_time, i18n.language)}
         </Text>
       </View>
       {isPubDataLoading && <Spinner />}
@@ -240,7 +248,7 @@ const OrderInfo = ({ orderID }) => {
           </View>
         </ScrollView>
       )}
-      <View px="6" gap="2" mb="4" mt="6">
+      <View px="6" gap="1" mb="4" mt="6">
         <Text color="gray.600" fontFamily={AnonymousProRegular} fontSize={18}>
           {t("create_order_page.additional_data.items_price")}: {itemsPrice} Lei
         </Text>
@@ -252,6 +260,15 @@ const OrderInfo = ({ orderID }) => {
           {t("create_order_page.additional_data.total_sum")}: {totalSum} Lei
         </Text>
       </View>
+
+      <Pressable px="6" py="1" gap="2" mb="4" m="2" borderWidth={2} borderColor="coolGray.500" borderRadius="xl" onPress={() => dispatch(setNavbarExpanded(true))}>
+        <Text color="gray.600" fontFamily={AnonymousProRegular} lineHeight={22} fontSize={18}>
+          {t("order_info_page.all_changes_from_tech")}{" "}
+          <Text color="emerald.600" textDecorationLine="underline" fontFamily={AnonymousProRegular} lineHeight={22} fontSize={18}>
+            {t("order_info_page.support")}.
+          </Text>
+        </Text>
+      </Pressable>
       <View
         px="6"
         mt={2}

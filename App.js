@@ -1,9 +1,9 @@
 import {
   NavigationContainer,
-  useNavigation,
   useNavigationContainerRef,
-  useRoute,
 } from "@react-navigation/native";
+import "@/global.css";
+
 
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import Navbar from "./src/widgets/Navbar/Navbar";
@@ -11,7 +11,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Provider, useDispatch, useSelector } from "react-redux";
 import { store } from "./src/features/store/configureStore";
 import Registration from "./src/pages/Auth/Registration/Registration";
-import { NativeBaseProvider, Text, View } from "native-base";
+import { NativeBaseProvider } from "native-base";
 import ErrorHandlers from "./src/features/store/errorHandling/ErrorHandlers";
 import AlertWrapper from "./src/widgets/Alerts/AlertWrapper";
 import AuthWatcher from "./src/features/store/auth/AuthWatcher";
@@ -30,20 +30,24 @@ import SelectGeolocationPage from "./src/pages/Geolocation/SelectGeolocationPage
 import OrdersPreloader from "./src/features/store/orders/OrdersPreloader";
 
 import "./src/i18n/i18n.config";
-// import "./firebaseConfig"
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import NotificationHandler from "./src/features/store/notifications/NotificationHandler";
-import { Platform, StatusBar, TouchableOpacity } from "react-native";
+import { StatusBar } from "react-native";
 import DishImagePopup from "./src/widgets/Dish/DishImagePopup";
 import ChangePassword from "./src/pages/Auth/ChangePassword/ChangePassword";
 import OrderInfoPage from "./src/pages/Orders/OrderInfoPage";
 import { setSavedAddresses } from "./src/features/store/geolocation/geolocationSlice";
-import { useNetInfo } from "@react-native-community/netinfo";
 import InternetChecker from "./src/widgets/InternetChecker";
 import NoInternetPage from "./src/pages/Internet/NoInternetPage";
 import DeleteClientPopup from "./src/widgets/Client/DeleteClientPopup";
+
+import LinkingWathcer from "./src/features/store/linking/LinkingWathcer";
+import VersionWatcher from "./src/features/store/version/VersionWatcher.jsx";
+import PubNotAvailableForDeliveryPopup from "./src/widgets/Pub/PubNotAvailableForDeliveryPopup";
+import ExpiredVersionPage from "./src/pages/Version/ExpiredVersionPage.jsx";
+
 
 export default function App() {
   return (
@@ -56,7 +60,24 @@ export default function App() {
   );
 }
 
+export const Screens = {
+  Home: "Home",
+  Registration: "Registration",
+  Authentication: "Authentication",
+  ChangePassword: "ChangePassword",
+  SelectGeolocationPage: "SelectGeolocationPage",
+  FoodCategories: "FoodCategories",
+  PubInfo: "PubInfo",
+  Basket: "Basket",
+  CreateOrder: "CreateOrder",
+  Orders: "Orders",
+  OrderInfoPage: "OrderInfoPage",
+  NoInternetPage: "NoInternetPage",
+  ExpiredVersionPage: "ExpiredVersionPage",
+}
+
 const AppInner = () => {
+
   const isNavbarEnabled = useSelector(selectNavbarIsEnabled);
 
   const { i18n } = useTranslation();
@@ -73,7 +94,7 @@ const AppInner = () => {
 
   //i18n set language
   useEffect(() => {
-    (async function () {
+    (async function() {
       try {
         const value = await AsyncStorage.getItem("lang");
         if (value !== null) {
@@ -86,7 +107,7 @@ const AppInner = () => {
   }, []);
   //load saved addresses
   useEffect(() => {
-    (async function () {
+    (async function() {
       try {
         const value = await AsyncStorage.getItem("saved_addresses");
         if (value !== null) {
@@ -118,48 +139,47 @@ const AppInner = () => {
           setRouteName(currentRouteName);
 
           // Replace the line below to add the tracker from a mobile analytics SDK
-          await trackScreenView(currentRouteName);
+          trackScreenView(currentRouteName);
         }
       }}
     >
       <Stack.Navigator
-        initialRouteName="SelectGeolocationPage"
+        initialRouteName={Screens.SelectGeolocationPage}
         screenOptions={{ headerShown: false }}
       >
-        <Stack.Screen name="Home" component={Home} />
-        <Stack.Screen name="Registration" component={Registration} />
+
+        <Stack.Screen name={Screens.Home} component={Home} />
         <Stack.Screen
-          name="SelectGeolocationPage"
+          name={Screens.SelectGeolocationPage}
           component={SelectGeolocationPage}
         />
-        <Stack.Screen name="Authentication" component={Authentication} />
-        <Stack.Screen name="ChangePassword" component={ChangePassword} />
-        <Stack.Screen name="FoodCategories" component={FoodCategoriesPage} />
-        <Stack.Screen name="PubInfo" component={PubInfoPage} />
-        <Stack.Screen name="Basket" component={BasketPage} />
-        <Stack.Screen name="CreateOrder" component={CreateOrderPage} />
-        <Stack.Screen name="Orders" component={OrdersPage} />
-        <Stack.Screen name="OrderInfoPage" component={OrderInfoPage} />
-        <Stack.Screen name="NoInternetPage" component={NoInternetPage} />
+        <Stack.Screen name={Screens.Registration} component={Registration} />
+        <Stack.Screen name={Screens.Authentication} component={Authentication} />
+        <Stack.Screen name={Screens.ChangePassword} component={ChangePassword} />
+        <Stack.Screen name={Screens.FoodCategories} component={FoodCategoriesPage} />
+        <Stack.Screen name={Screens.PubInfo} component={PubInfoPage} />
+        <Stack.Screen name={Screens.Basket} component={BasketPage} />
+        <Stack.Screen name={Screens.CreateOrder} component={CreateOrderPage} />
+        <Stack.Screen name={Screens.Orders} component={OrdersPage} />
+        <Stack.Screen name={Screens.OrderInfoPage} component={OrderInfoPage} />
+        <Stack.Screen name={Screens.NoInternetPage} component={NoInternetPage} />
+        <Stack.Screen name={Screens.ExpiredVersionPage} component={ExpiredVersionPage} />
       </Stack.Navigator>
       {isNavbarEnabled && <Navbar routeName={routeName} />}
-
       <ErrorHandlers />
-
       <OrdersPreloader />
-
       <AlertWrapper />
-
       <AuthWatcher />
-
-      <GeolocationFinder />
-
+      <LinkingWathcer />
+      <VersionWatcher />
       <NotificationHandler />
+      <InternetChecker />
+      <GeolocationFinder />
 
       <ClearBasketPopup />
       <DishImagePopup />
       <DeleteClientPopup />
-      <InternetChecker />
-    </NavigationContainer>
+      <PubNotAvailableForDeliveryPopup />
+    </NavigationContainer >
   );
 };

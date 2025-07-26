@@ -3,7 +3,7 @@ import DishList from "./DishList";
 import { useGetPubInfoQuery } from "../../shared/api/pubs/pubsApi";
 import PubInfoHeader from "../Pub/PubInfoHeader";
 
-const DishListForCategory = ({ pubID, categoryID }) => {
+const DishListForCategory = ({ pubID, categoryID, isPubOpen, isAvailableForDelivery }) => {
   const { data: pubData, error: pubError } = useGetPubInfoQuery(
     { pubID },
     { skip: !pubID },
@@ -27,6 +27,8 @@ const DishListForCategory = ({ pubID, categoryID }) => {
       pubID={pubID}
       pub={pubData?.pub}
       upperElement={<PubInfoHeader pubID={pubID} />}
+      isPubOpen={isPubOpen}
+      isAvailableForDelivery={isAvailableForDelivery}
     />
   );
 };

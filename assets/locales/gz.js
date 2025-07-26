@@ -58,8 +58,8 @@ export default {
     go_to_change_password: "Unuttunuz parolü? Diiştirmää",
     go_to_delete_account: "Isteersiniz akauntu silmää? Basınız burayı",
     privacy_policy_text:
-      "Продолжая пользоваться этим приложением вы соглашаетесь с",
-    privacy_policy_link: "политикой конфиденциальности",
+      "Kullanmak icin bu programmı siz  kabul edersiniz",
+    privacy_policy_link: "politika konfidencialnosti",
     inputs: {
       phone_number: {
         label: "Telefonun nomeri",
@@ -141,7 +141,7 @@ export default {
     create_order_button: "Ileri",
     pub_is_closed_error:
       "Restoran kapalı, savaşın soran, yada yapın sımarlamak başka restoranda",
-    go_to_registration: "Чтобы продолжить - зарегистрируйтесь"
+    go_to_registration: "Ilerlemek için - registratiya yapın",
     },
   basket_popup: {
     another_pub_warning:
@@ -231,19 +231,25 @@ export default {
     meat: "Lokma",
     all_publishments: "Hepsi restorannar",
   },
-
   order_info_page: {
     order: "Sımarlamak",
+    all_changes_from_tech: "Hepsi disiklikler yapiler",
+    support: "operatordan",
   },
   delete_account_popup: {
-    headline: "Удалить мой аккаунт",
+    headline: "Benim akauntımı sil",
     main_text:
-      "Внимание! Удаление аккаунта Sepet, означает удаление всех данных о вас, такие как: ваши заказы, ваше имя, емейл, телефон, адреса доставок, выбранные местоположения, оценки ресторанов, история создания заказов, информация о вашем устройстве, и кукис.",
-    subscription: "Это действие необратимо.",
-    back: "Назад",
-    delete: "Удалить",
+      "Sepet accaautsı silinirse, tüm verileriniz silinecektir, bilgileriniz, siparişleriniz, adınız, e-posta adresiniz, telefon numaranız, teslimat adresleriniz, seçilen konumlarınız, restoran değerlendirmeleriniz, sipariş oluşturma geçmişiniz, cihazınıza ilişkin bilgiler ve çerezler gibi tüm veriler silinecektir.",
+    subscription: "Bu işlem geri alınamaz.",
+    back: "Geeri",
+    delete: "Sil",
   },
   pub_card: {
-    free_delivery_from: "Бесплатная доставка от"
+    free_delivery_from: "Parasiz götürmäk",
+  },
+  pub_not_available_for_delivery: {
+    pub_is_not_open: "Bu restoran kapalı, yada siz bu restorandan uzaktaysınız",
+    choose_another_pub: "Başka restoranı ayırın",
+    change_geolocation: "Diiştirin lokaţiyayı"
   }
 };

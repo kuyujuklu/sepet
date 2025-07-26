@@ -13,7 +13,7 @@ import BasketCreateOrderButton from "../../widgets/Basket/BasketCreateOrderButto
 import Wrapper from "../Wrapper";
 import { Text, View } from "native-base";
 import { useTranslation } from "react-i18next";
-import { memo, useEffect } from "react";
+import { memo, useEffect, useState } from "react";
 import AnimatedNumber from "react-native-animated-numbers";
 import { AnonymousProBold } from "../../constants/styles-constants";
 import { deliveryTypes } from "../../app/static-data/data";
@@ -45,12 +45,14 @@ const BasketPage = () => {
     { skip: !location, pollingInterval: 20000 },
   );
 
+  const [isAvailableForDelivery, setIsAvailableForDelivery] = useState(true);
   useEffect(() => {
     if (!pubsData || !pubsData.pubs) {
       return;
     }
     if (!pubsData.pubs.find((pub) => pub.id === pubID)) {
-      dispatch(clearBasket());
+      setIsAvailableForDelivery(false);
+      return;
     }
   }, [pubsData]);
 
@@ -63,8 +65,8 @@ const BasketPage = () => {
 
     let commission = shouldAddCommission
       ? dish.count *
-        dish.price *
-        (pubData?.pub?.shipping?.commission_for_dish_prices / 100)
+      dish.price *
+      (pubData?.pub?.shipping?.commission_for_dish_prices / 100)
       : 0;
 
     if (!commission) commission = 0;
@@ -102,6 +104,8 @@ const BasketPage = () => {
           dishes={pubData?.dishes?.filter(
             (dish) => basket[dish.id]?.count && basket[dish.id]?.count > 0,
           )}
+          isAvailableForDelivery={isAvailableForDelivery}
+          isPubOpen={pubData?.pub.isOpen}
           pub={pubData?.pub}
         />
       </View>
@@ -118,7 +122,8 @@ const BasketPage = () => {
         ) : (
           <BasketCreateOrderButton
             itemsPrice={itemsPrice}
-            isClosed={!pubData?.pub.isOpen}
+            isAvailableForDelivery={isAvailableForDelivery}
+            isPubOpen={pubData?.pub.isOpen}
           />
         )}
       </View>

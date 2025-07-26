@@ -10,6 +10,8 @@ export const dishImagePopupSlice = createSlice({
       pubID: null,
       dish: null,
       commission: null,
+      isAvailableForDelivery: false,
+      isPubOpen: null
     },
     basket: {},
   },
@@ -20,8 +22,10 @@ export const dishImagePopupSlice = createSlice({
       state.dishImagePopup.dishID = action.payload.dishID
       state.dishImagePopup.pubID = action.payload.pubID
       state.dishImagePopup.imagePath = action.payload.imagePath ?? "";
-      state.dishImagePopup.dish = action.payload.dish,
+      state.dishImagePopup.dish = action.payload.dish;
       state.dishImagePopup.commission = action.payload.commission
+      state.dishImagePopup.isAvailableForDelivery = action.payload.isAvailableForDelivery
+      state.dishImagePopup.isPubOpen = action.payload.isPubOpen
     },
     closeDishImagePopup(state) {
       state.dishImagePopup.isOpened = false;

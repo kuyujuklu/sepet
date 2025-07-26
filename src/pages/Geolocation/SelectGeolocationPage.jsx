@@ -28,6 +28,7 @@ const SelectGeolocationPage = () => {
   const nearLocaiton = useSelector(selectNearGeolocation);
   const hasPerm = useSelector(selectHasGeolocationPerm);
 
+
   const dispatch = useDispatch();
   useEffect(() => {
     if (!location) dispatch(disableNavbar());
@@ -87,14 +88,14 @@ const SelectGeolocationPage = () => {
                 </Text>
               </View>
               <View flex={1}>
-                <SelectGeolocation setGeolocation={setGeolocationOnMap} goBack={() => setPage("select_from_previous")}/>
+                <SelectGeolocation setGeolocation={setGeolocationOnMap} goBack={() => setPage("select_from_previous")} />
               </View>
             </>
           )}
           {page === "new_address_inputs" && (
             <>
               <View flex={1}>
-                <SelectGeolocationInputs geolocation={geolocationOnMap} setPage={() => setPage("select_from_previous")} goBack={() => setPage("new_address_map")}/>
+                <SelectGeolocationInputs geolocation={geolocationOnMap} setPage={() => setPage("select_from_previous")} goBack={() => setPage("new_address_map")} />
               </View>
             </>
           )}

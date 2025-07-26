@@ -116,7 +116,7 @@ export default {
     continue: "Далее",
     back: "Назад",
     add_new_address: "Добавить адрес доставки",
-  add_address_inputs_headline: "Укажите свой адрес",
+    add_address_inputs_headline: "Укажите свой адрес",
 
     select_by_yourself_button: "Выбрать самому",
     wait_geolocation_is_loading: "Подождите, мы загружаем ваше местоположение",
@@ -145,7 +145,7 @@ export default {
     pub_is_closed_error:
       "Этот ресторан сейчас закрыт попробуйте позже или сделайте заказ в другом",
     go_to_registration: "Чтобы продолжить - зарегистрируйтесь"
-    },
+  },
   basket_popup: {
     another_pub_warning:
       "Вы пытаетесь добавить товар из другого ресторана.  Корзина будет очищена.",
@@ -215,6 +215,7 @@ export default {
     pub_is_closed: "Закрыто. Время работы",
   },
   categories: {
+    sales: "скидки",
     asian: "азиатск.",
     flowers: "цветы",
     fast_food: "фаст-фуд",
@@ -236,6 +237,8 @@ export default {
   },
   order_info_page: {
     order: "Заказ",
+    all_changes_from_tech: "Все изменения в заказе делаются только через",
+    support: "поддержку",
   },
   address_info: {
     your_address: "Ваш адрес",
@@ -250,5 +253,15 @@ export default {
   },
   pub_card: {
     free_delivery_from: "Бесплатная доставка от"
+  },
+  pub_not_available_for_delivery: {
+    pub_is_not_open: "Данное заведение сейчас закрыто или вы находитесь вне зоны доставки этого заведения",
+    choose_another_pub: "Выбрать другое заведение",
+    change_geolocation: "Изменить местоположение"
+  },
+  version: {
+    version_expired_message: "Кажется версия вашего приложения устарела :(",
+    update: "Обновить"
   }
+
 };

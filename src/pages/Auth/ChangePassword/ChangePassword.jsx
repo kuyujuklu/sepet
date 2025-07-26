@@ -6,11 +6,14 @@ import ChangePasswordForm from "../../../widgets/Auth/ChangePassword/ChangePassw
 
 const ChangePassword = () => {
   const dispatch = useDispatch();
+
+
   useEffect(() => {
     dispatch(disableNavbar());
   }, [dispatch]);
+
   return (
-    <Wrapper style={{paddingBottom: 0}}>
+    <Wrapper style={{ paddingBottom: 0 }}>
       <ChangePasswordForm />
     </Wrapper>
   );

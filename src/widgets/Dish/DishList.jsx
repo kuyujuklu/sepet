@@ -3,7 +3,7 @@ import { SafeAreaView } from "react-native";
 import DishCard from "./DishCard";
 import PubInfoHeader from "../Pub/PubInfoHeader";
 
-const DishList = ({ dishes, pubID, pub, upperElement }) => {
+const DishList = ({ dishes, pubID, pub, upperElement, isPubOpen, isAvailableForDelivery }) => {
   return (
     <SafeAreaView edges={[]} >
       {(!dishes || dishes.length === 0) && upperElement}
@@ -12,7 +12,7 @@ const DishList = ({ dishes, pubID, pub, upperElement }) => {
         renderItem={({ item: dish, index }) => (
           <>
             {index === 0 ? upperElement : <></>}
-            <DishCard key={dish?.id} pubID={pubID} pub={pub} dish={dish} />
+            <DishCard key={dish?.id} pubID={pubID} pub={pub} dish={dish} isPubOpen={isPubOpen} isAvailableForDelivery={isAvailableForDelivery} />
           </>
         )}
         data={dishes || []}

@@ -13,12 +13,13 @@ import { memo, useEffect, useState } from "react";
 import { ENV } from "../../constants/env/env";
 import { currencies, deliveryTypes } from "../../app/static-data/data";
 import { openDishImagePopup } from "../../features/store/dishes/dishesSlice";
+import { openPubNotAvailableForDeliveryPopup } from "../../features/store/pubs/pubsSlice";
 
 const addCommissionToPrice = (price, commission) => {
   return price + (price / 100) * commission;
 };
 
-const DishCard = ({ dish, pubID, pub }) => {
+const DishCard = ({ dish, pubID, pub, isPubOpen, isAvailableForDelivery }) => {
   const dispatch = useDispatch();
   const imagePath =
     ENV.API_HTTP_URL +
@@ -55,6 +56,23 @@ const DishCard = ({ dish, pubID, pub }) => {
     }
   }, [dish]);
 
+  const handleIncreaseDish = () => {
+    console.log("isPubOpen", isPubOpen);
+    console.log("isAvailableForDelivery", isAvailableForDelivery);
+    if (!isPubOpen || !isAvailableForDelivery) {
+      dispatch(openPubNotAvailableForDeliveryPopup())
+      return;
+    };
+
+    dispatch(
+      increaseDish({
+        id: dish?.id,
+        pubID: pubID,
+        price: smallestPrice,
+      }),
+    )
+  }
+
   return (
     <View maxWidth={400} style={{ width: "100%", alignSelf: "center" }}>
       {/* Image container */}
@@ -67,6 +85,8 @@ const DishCard = ({ dish, pubID, pub }) => {
               dishID: dish?.id,
               pubID: pubID,
               commission,
+              isAvailableForDelivery,
+              isPubOpen
             }),
           )
         }
@@ -104,11 +124,11 @@ const DishCard = ({ dish, pubID, pub }) => {
             alignItems={"center"}
             justifyContent={"center"}
           >
-              <Text px={2} w="full" textAlign="center" numberOfLines={1} fontSize={"2xl"} fontWeight={"bold"} color={"#fff"}>
-                {dish?.name}
-              </Text>
+            <Text px={2} w="full" textAlign="center" numberOfLines={1} fontSize={"2xl"} fontWeight={"bold"} color={"#fff"}>
+              {dish?.name}
+            </Text>
 
-          {!imageLoaded && <Spinner color="white" w="25" h="25" />}
+            {!imageLoaded && <Spinner color="white" w="25" h="25" />}
           </View>
         </View>
       </Pressable>
@@ -195,15 +215,7 @@ const DishCard = ({ dish, pubID, pub }) => {
 
             {/* increase button */}
             <TouchableOpacity
-              onPress={() =>
-                dispatch(
-                  increaseDish({
-                    id: dish?.id,
-                    pubID: pubID,
-                    price: smallestPrice,
-                  }),
-                )
-              }
+              onPress={handleIncreaseDish}
             >
               <Image
                 style={{

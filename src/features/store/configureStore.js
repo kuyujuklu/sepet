@@ -1,10 +1,12 @@
 import { configureStore } from "@reduxjs/toolkit";
-import pubsReducer from "./pubs/pubsSlice";
+import pubReducer from "./pubs/pubsSlice";
 import navbarReducer from "./navbar/navbarSlice";
+import versionReducer from "./version/versionSlice.js";
 import { clientAuthApi } from "../../shared/api/client/clientAuth";
 import { clientApi } from "../../shared/api/client/clientApi";
 import errorHandlingReducer from "./errorHandling/errorHandlingSlice";
 import alertReducer from "./alerts/alertSlice";
+import linkingReducer from "./linking/linkingSlice";
 import authReducer from "./auth/authSlice";
 import geolocationReducer from "./geolocation/geolocationSlice";
 import basketReducer from "./basket/basketSlice";
@@ -23,14 +25,16 @@ export const store = configureStore({
     [categoriesApi.reducerPath]: categoriesApi.reducer,
     [ordersApi.reducerPath]: ordersApi.reducer,
     navbar: navbarReducer,
+    version: versionReducer,
     orders: ordersReducer,
-    pubs: pubsReducer,
+    pub: pubReducer,
     basket: basketReducer,
     dishImagePopup: dishImagePopupReducer,
     errorHandling: errorHandlingReducer,
     alerts: alertReducer,
     geolocation: geolocationReducer,
     auth: authReducer,
+    linking: linkingReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware()

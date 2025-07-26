@@ -5,7 +5,7 @@ import { useSelector } from "react-redux";
 import { selectBasket } from "../../features/store/basket/basketSlice";
 import { useTranslation } from "react-i18next";
 import { selectGeolocation } from "../../features/store/geolocation/geolocationSlice";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import {
   useGetNearbyPubsQuery,
   useGetPubInfoQuery,
@@ -13,6 +13,7 @@ import {
 import { deliveryTypes } from "../../app/static-data/data";
 
 const CreateOrderPage = ({ route }) => {
+
   const { t } = useTranslation();
   const shippingTimeFrom = route?.params?.shippingTimeFrom;
   const shippingTimeTo = route?.params?.shippingTimeTo;
@@ -44,8 +45,8 @@ const CreateOrderPage = ({ route }) => {
 
     let commission = shouldAddCommission
       ? dish.count *
-        dish.price *
-        (pubData?.pub?.shipping?.commission_for_dish_prices / 100)
+      dish.price *
+      (pubData?.pub?.shipping?.commission_for_dish_prices / 100)
       : 0;
 
     if (!commission) commission = 0;
@@ -53,7 +54,7 @@ const CreateOrderPage = ({ route }) => {
 
     return acc + dish.count * dish.price + commission;
   }, 0);
-  
+
   const deliveryPrice = useMemo(() => {
     if (!pubsData || !pubID) return;
 

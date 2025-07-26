@@ -6,6 +6,16 @@ export const clientApi = createApi({
   baseQuery: authenticationBasedQuery,
   tagTypes: ["Client"],
   endpoints: (builder) => ({
+    getAppVersionInfo: builder.query({
+      query: () => ({
+        url: `/api/client/app-version-info`,
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }),
+      keepUnusedDataFor: 0.0001,
+    }),
     getClient: builder.query({
       query: () => ({
         url: `/api/client`,
@@ -30,4 +40,4 @@ export const clientApi = createApi({
   }),
 });
 
-export const { useGetClientQuery, useLazyGetClientQuery, useDeleteAccountMutation } = clientApi;
+export const { useGetClientQuery, useLazyGetClientQuery, useDeleteAccountMutation, useGetAppVersionInfoQuery } = clientApi;

@@ -4,13 +4,31 @@ import {
   closeDeleteClientPopup,
   selectDeleteClientPopup,
 } from "../../features/store/auth/authSlice";
-import { Button, Modal, Text, View } from "native-base";
+import { Button, Text, View } from "native-base";
+import { Modal, Pressable } from "react-native";
 import { useDeleteAccountMutation } from "../../shared/api/client/clientApi";
 import { useEffect } from "react";
 import { clearAuthenticationData } from "../../shared/api/auth/authBasedQuery";
 import { useNavigation } from "@react-navigation/native";
 import { pushAlert } from "../../features/store/alerts/alertSlice";
 import { setNavbarExpanded } from "../../features/store/navbar/navbarSlice";
+
+const styles = {
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'flex-end', // Aligns content to the bottom
+    backgroundColor: 'transparent', // Semi-transparent background
+  },
+  modalContent: {
+    backgroundColor: 'white', // Your desired background color for the modal
+    borderTopLeftRadius: 20, // Optional: for rounded corners
+    borderTopRightRadius: 20, // Optional: for rounded corners
+    paddingTop: 50,
+    paddingBottom: 100,
+    gap: 20,
+    paddingHorizontal: 10,
+  },
+};
 
 const DeleteClientPopup = () => {
   const dispatch = useDispatch();
@@ -54,62 +72,70 @@ const DeleteClientPopup = () => {
   }, [deleteAccountError]);
 
   return (
-    <Modal isOpen={popupState.opened} animationPreset="fade">
-      <Modal.Content style={{ width: "100%" }}>
-        <Modal.Header>
-          <Text fontSize="2xl" fontWeight="bold">
-            {t("delete_account_popup.headline")}
-          </Text>
-        </Modal.Header>
-        <Modal.CloseButton onPress={() => dispatch(closeDeleteClientPopup())} />
-        <Modal.Body>
-          <View
-            rounded="2xl"
-            style={{
-              overflow: "hidden",
-              borderRadius: 26,
-              alignItems: "center",
-              justifyContent: "center",
-              maxHeight: 500,
-              width: "100%",
-            }}
-          >
-            <Text fontSize="lg" mt={2}>
-              {t("delete_account_popup.main_text")}
-            </Text>
-            <Text fontSize="lg" w="full" textAlign="left" mt={3} pb={3}>
-              {t("delete_account_popup.headline")}
-            </Text>
-          </View>
-          <View
-            flex={1}
-            flexDir="row"
-            justifyContent="space-between"
-            mt="5"
-            gap={5}
-          >
-            <Button
-              background="red.600"
-              flex={1}
-              minW={120}
-              onPress={() => {
-                dispatch(closeDeleteClientPopup());
-              }}
-            >
-              {t("delete_account_popup.back")}
-            </Button>
-            <Button
-              background="coolGray.800"
-              minW={120}
-              onPress={() => {
-                deleteAccount();
-              }}
-            >
-              {t("delete_account_popup.delete")}
-            </Button>
-          </View>
-        </Modal.Body>
-      </Modal.Content>
+    <Modal visible={popupState.opened} backdropColor="transparent" animationType="slide">
+      <Pressable flex={1} onPress={() => dispatch((closeDeleteClientPopup()))}>
+        <View style={styles.modalOverlay} >
+          <Pressable onPress={(e) => e.stopPropagation()}>
+            <View style={styles.modalContent}>
+              <View>
+                <Text fontSize="2xl" fontWeight="bold">
+                  {t("delete_account_popup.headline")}
+                </Text>
+              </View>
+              <View>
+                <View
+                  rounded="2xl"
+                  style={{
+                    overflow: "hidden",
+                    borderRadius: 26,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    maxHeight: 500,
+                    width: "100%",
+                  }}
+                >
+                  <Text fontSize="lg" mt={2}>
+                    {t("delete_account_popup.main_text")}
+                  </Text>
+                  <Text fontSize="lg" w="full" textAlign="left" mt={3} pb={3}>
+                    {t("delete_account_popup.headline")}
+                  </Text>
+                </View>
+                <View
+                  flex={1}
+                  flexDir="row"
+                  justifyContent="space-between"
+                  mt="5"
+                  gap={5}
+                >
+                  <Button
+                    background="red.600"
+                    height={12}
+                    flex={1}
+                    minW={120}
+                    onPress={() => {
+                      dispatch(closeDeleteClientPopup());
+                    }}
+                  >
+                    {t("delete_account_popup.back")}
+                  </Button>
+                  <Button
+                    height={12}
+                    background="coolGray.800"
+                    minW={120}
+                    onPress={() => {
+                      deleteAccount();
+                    }}
+                  >
+                    {t("delete_account_popup.delete")}
+                  </Button>
+                </View>
+              </View>
+            </View>
+
+          </Pressable>
+        </View>
+      </Pressable>
     </Modal>
   );
 };

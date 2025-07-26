@@ -1,5 +1,5 @@
 import { FlatList, ScrollView, View } from "native-base";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { Animated, TouchableOpacity } from "react-native";
 import CategoryNavbarImage from "./CategoryNavbarImage";
 import { categories } from "../../../app/static-data/data";
@@ -11,6 +11,11 @@ export const placeholderAllCategory = {
 };
 
 export const placeholderCategories = {
+  [categories.Sales]: {
+    image: images.Sales,
+    value: categories.Sales,
+    priority: 1
+  },
   [categories.Asian]: {
     image: images.Sushi,
     value: categories.Asian,
@@ -84,6 +89,26 @@ export const placeholderCategories = {
 export const categoryNamesArray = Object.keys(placeholderCategories);
 
 const FoodCategoriesNavbar = ({ selectedCategory, possibleCategoryNames = [] }) => {
+  const possibleCategoryNamesSorted = useMemo(() => {
+    if (!possibleCategoryNames) return [];
+
+    return possibleCategoryNames.sort((x, y) => {
+      const a = placeholderCategories[x];
+      const b = placeholderCategories[y];
+
+      if (a?.priority && b?.priority) {
+        return a?.priority - b?.priority
+      }
+      if (!a?.priority && b?.priority) {
+        return 1;
+      }
+      if (!b?.priority && a?.priority) {
+        return -1;
+      }
+      return 0
+    });
+  }, [possibleCategoryNames])
+
   const underScoreAnimation = useRef(new Animated.Value(0)).current;
   useEffect(() => {
     if (!selectedCategory) return;
@@ -102,9 +127,9 @@ const FoodCategoriesNavbar = ({ selectedCategory, possibleCategoryNames = [] }) 
 
   const scrollFlatListToActiveIndex = useCallback(() => {
     if (!flatListRef?.current) return;
-    if (!possibleCategoryNames) return;
+    if (!possibleCategoryNamesSorted) return;
 
-    const indexOfSelectedCategory = possibleCategoryNames.findIndex(
+    const indexOfSelectedCategory = possibleCategoryNamesSorted.findIndex(
       (categoryName) =>
         placeholderCategories[categoryName].value === selectedCategory,
     );
@@ -161,7 +186,7 @@ const FoodCategoriesNavbar = ({ selectedCategory, possibleCategoryNames = [] }) 
                 />
               </View>
             )}
-            data={possibleCategoryNames || []}
+            data={possibleCategoryNamesSorted || []}
             ItemSeparatorComponent={() => <View width={4} />}
           />
         </View>

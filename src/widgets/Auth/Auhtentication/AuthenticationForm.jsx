@@ -36,6 +36,8 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { selectGeolocation } from "../../../features/store/geolocation/geolocationSlice";
+import { selectPubID, selectPath, selectOrderID, selectPubName } from "../../../features/store/linking/linkingSlice";
+import { Screens } from "../../../../App";
 
 const AuthenticationForm = () => {
   const dispatch = useDispatch();
@@ -46,6 +48,10 @@ const AuthenticationForm = () => {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const location = useSelector(selectGeolocation);
+  const path = useSelector(selectPath);
+  const urlPubID = useSelector(selectPubID)
+  const urlPubName = useSelector(selectPubName)
+  const urlOrderID = useSelector(selectOrderID)
 
   const [
     authenticationQuery,
@@ -60,6 +66,7 @@ const AuthenticationForm = () => {
     authenticationQuery({ phone: trimPhone(phone), password });
   };
 
+
   //Handling authentication data sending success
   useEffect(() => {
     if (!authenticationQueryData || !authenticationQueryData.ok) return;
@@ -73,12 +80,28 @@ const AuthenticationForm = () => {
     );
 
     if (location && location.lat && location.lng) {
-      navigator.navigate("Home");
+      if (path === Screens.PubInfo && (urlPubID || urlPubName)) {
+        navigator.navigate(Screens.PubInfo, {
+          pubID: urlPubID,
+          pubName: urlPubName
+        });
+      }
+      else if (path === Screens.OrderInfoPage && urlOrderID) {
+        navigator.navigate(Screens.OrderInfoPage, {
+          orderID: urlOrderID,
+        });
+      }
+      else if (Screens[path]) {
+        navigator.navigate(Screens[path]);
+      }
+      else {
+        navigator.navigate(Screens.Home);
+      }
       return;
     }
 
     navigator.navigate("SelectGeolocationPage");
-  }, [authenticationQueryData]);
+  }, [authenticationQueryData, path]);
 
   // Handling authentication data sending error
   useEffect(() => {

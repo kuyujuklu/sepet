@@ -19,6 +19,8 @@ import { Image } from "expo-image";
 import { images } from "../../app/images/images";
 
 const Home = () => {
+
+
   const { t } = useTranslation();
   const navigator = useNavigation();
   const [selectedPub, setSelectedPub] = useState(null);

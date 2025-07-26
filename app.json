@@ -1,11 +1,13 @@
 {
   "expo": {
+    "newArchEnabled": true,
     "name": "Sepet",
     "slug": "camelapp",
-    "version": "1.2.18",
+    "version": "1.2.32",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
+    "scheme": "sepetmd",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
@@ -20,10 +22,16 @@
       "googleServicesFile": "./GoogleService-Info.plist",
       "infoPlist": {
         "NSLocationAlwaysAndWhenInUseUsageDescription": "Разрешить SepetMD использовать геолокацию для определения расстояния и цены доставки.",
-        "NSLocationWhenInUseUsageDescription": "Разрешить SepetMD использовать геолокацию для определения расстояния и цены доставки."
-      }
+        "NSLocationWhenInUseUsageDescription": "Разрешить SepetMD использовать геолокацию для определения расстояния и цены доставки.",
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "associatedDomains": [
+        "applinks:sepet.md"
+      ],
+      "buildNumber": "4"
     },
     "android": {
+      "versionCode": 41,
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
@@ -34,13 +42,29 @@
         "android.permission.ACCESS_FINE_LOCATION",
         "android.permission.FOREGROUND_SERVICE"
       ],
-      "versionCode": 18,
       "package": "com.camelapp.app",
       "config": {
         "googleMaps": {
           "apiKey": "AIzaSyDewxZSRZGrEek6CmiGGi2ps2CNlZIr8Qc"
         }
-      }
+      },
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "sepet.md",
+              "pathPrefix": "/pub"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        }
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -75,13 +99,25 @@
           "color": "#000000",
           "defaultChannel": "default"
         }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 35,
+            "targetSdkVersion": 35,
+            "buildToolsVersion": "35.0.0"
+          },
+          "ios": {
+            "deploymentTarget": "15.1"
+          }
+        }
       ]
     ],
     "extra": {
       "eas": {
         "projectId": "e149f77b-df25-4a08-a7e7-d885dc5397ab"
       }
-    },
-    "owner": "alex_kalak"
+    }
   }
 }

@@ -14,12 +14,20 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Image } from "expo-image";
 import { images } from "../../app/images/images";
 import { useMemo } from "react";
+import { selectPubID, selectPath, selectOrderID, selectPubName } from "../../features/store/linking/linkingSlice";
+import { useGetPubInfoQuery } from "../../shared/api/pubs/pubsApi";
+import { Screens } from "../../../App";
 
-const SelectFromPreviousGeolocations = ({goToSelectGeolocationOnMap}) => {
+const SelectFromPreviousGeolocations = ({ goToSelectGeolocationOnMap }) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const navigator = useNavigation();
   const savedAddressesFromSlice = useSelector(selectSavedAddresses);
+  const path = useSelector(selectPath);
+  const urlPubID = useSelector(selectPubID)
+  const urlPubName = useSelector(selectPubName)
+  const urlOrderID = useSelector(selectOrderID)
+
 
   const savedAddresses = useMemo(() => {
     if (!savedAddressesFromSlice || savedAddressesFromSlice.length === 0)
@@ -41,14 +49,32 @@ const SelectFromPreviousGeolocations = ({goToSelectGeolocationOnMap}) => {
         lat,
       }),
     );
-    navigator.navigate("Home");
+
+    if (path === Screens.PubInfo && (urlPubID || urlPubName)) {
+      navigator.navigate(Screens.PubInfo, {
+        pubID: urlPubID,
+        pubName: urlPubName
+      });
+    }
+    else if (path === Screens.OrderInfoPage && urlOrderID) {
+      navigator.navigate(Screens.OrderInfoPage, {
+        orderID: urlOrderID,
+      });
+    }
+    else if (Screens[path]) {
+      navigator.navigate(Screens[path]);
+    }
+    else {
+      navigator.navigate(Screens.Home);
+    }
+
   };
 
   const removeWithIndex = async (index) => {
     const newAddresses = savedAddressesFromSlice
       ? [...savedAddressesFromSlice]
       : [];
-    const indexInSavedAddressesFromSlice = savedAddressesFromSlice.length - 3 + index 
+    const indexInSavedAddressesFromSlice = savedAddressesFromSlice.length - 3 + index
     newAddresses.splice(indexInSavedAddressesFromSlice, 1);
     AsyncStorage.setItem("saved_addresses", JSON.stringify(newAddresses));
     dispatch(setSavedAddresses({ addresses: newAddresses }));
@@ -62,16 +88,16 @@ const SelectFromPreviousGeolocations = ({goToSelectGeolocationOnMap}) => {
     <View px={5} w="full" py="5">
       <View my="20" style={{
         width: 200,
-         height: 200,
+        height: 200,
         margin: "auto"
-  }}>
+      }}>
         <Image
           contentFit="contain"
           source={images.Sepet}
           style={{ width: "100%", height: "100%" }}
         />
       </View>
-      {(savedAddresses && savedAddresses.length > 0) && 
+      {(savedAddresses && savedAddresses.length > 0) &&
         <Text fontSize={28} mb="5" fontWeight="bold" textAlign="center" fontFamily={AnonymousProBold}>
           {t("select_geolocation.saved_addresses")}
         </Text>
@@ -123,30 +149,30 @@ const SelectFromPreviousGeolocations = ({goToSelectGeolocationOnMap}) => {
             </TouchableOpacity>
           </View>
         ))}
-          <View
-            w="full"
-            justifyContent="space-between"
-            flexDir="row"
-            alignItems="center" 
-            mt="5"
+        <View
+          w="full"
+          justifyContent="space-between"
+          flexDir="row"
+          alignItems="center"
+          mt="5"
+        >
+          <TouchableOpacity
+            style={{
+              flex: 1,
+              borderRadius: 50,
+              paddingVertical: 10,
+              paddingHorizontal: 20,
+              backgroundColor: "#059669",
+            }}
+            onPress={() =>
+              goToSelectGeolocationOnMap()
+            }
           >
-              <TouchableOpacity
-                style={{
-                  flex: 1,
-                  borderRadius: 50,
-                  paddingVertical: 10,
-                  paddingHorizontal: 20,
-                  backgroundColor: "#059669",
-                }}
-                onPress={() =>
-                  goToSelectGeolocationOnMap()
-                }
-              >
-                <Text fontSize={14} color="white" textAlign="center" numberOfLines={1}>
-                  + {t("select_geolocation.add_new_address")}
-                </Text>
-              </TouchableOpacity>
-  
+            <Text fontSize={14} color="white" textAlign="center" numberOfLines={1}>
+              + {t("select_geolocation.add_new_address")}
+            </Text>
+          </TouchableOpacity>
+
         </View>
       </View>
     </View>

@@ -18,11 +18,13 @@ export const images = {
 
   StarFilled: require("../../../assets/images/star.png"),
   StarEmpty: require("../../../assets/images/star-empty.png"),
-  
+
   MapAndCompass: require("../../../assets/images/map-and-compas.png"),
+  BrokenCable: require("../../../assets/images/broken-cable-multicolor.png"),
 
   //Food categories
   AllFood: require("../../../assets/images/all_foods.png"),
+  Sales: require("../../../assets/images/discount-colored.png"),
   Flowers: require("../../../assets/images/tulip-colored.png"),
   AllFoodHighQuality: require("../../../assets/images/all_foods_high_quality.png"),
   Sushi: require("../../../assets/images/colored-sushi.png"),

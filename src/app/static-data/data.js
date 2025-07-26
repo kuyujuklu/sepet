@@ -1,4 +1,5 @@
 export const categories = {
+  Sales: "sales",
   Flowers: "flowers",
   Asian: "asian",
   FastFood: "fast_food",

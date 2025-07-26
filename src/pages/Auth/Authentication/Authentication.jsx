@@ -9,8 +9,10 @@ const Authentication = () => {
   useEffect(() => {
     dispatch(disableNavbar());
   }, [dispatch]);
+
+
   return (
-    <Wrapper style={{paddingBottom: 0}}>
+    <Wrapper style={{ paddingBottom: 0 }}>
       <AuthenticationForm />
     </Wrapper>
   );

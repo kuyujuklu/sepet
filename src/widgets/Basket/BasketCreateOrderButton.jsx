@@ -17,7 +17,7 @@ import {
 import { selectGeolocation } from "../../features/store/geolocation/geolocationSlice";
 import { useCallback, useMemo } from "react";
 
-const BasketCreateOrderButton = ({ itemsPrice, isClosed }) => {
+const BasketCreateOrderButton = ({ itemsPrice, isPubOpen, isAvailableForDelivery }) => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
   const basket = useSelector(selectBasket);
@@ -44,7 +44,7 @@ const BasketCreateOrderButton = ({ itemsPrice, isClosed }) => {
 
 
   const handleButtonPress = () => {
-    if (isClosed) {
+    if (!isPubOpen || !isAvailableForDelivery) {
       dispatch(
         pushAlert({
           status: alertStatuses.warning,

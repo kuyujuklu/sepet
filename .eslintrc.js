@@ -3,6 +3,7 @@ module.exports = {
 
   overrides: [
     {
+      "no-trailing-spaces": "error",
       files: ["*.ts", "*.tsx", "*.d.ts"],
 
       parserOptions: {

@@ -21,6 +21,11 @@ const CategoryCardWithPubInfo = ({ category, pub, usePubBg, distance }) => {
 
   const shippingTimeString = GetShippingTimeString(shippingWorkHours);
 
+  const hasFreeDeliveryPrice =
+    !isNaN(+pub?.shipping_free_delivery_price) &&
+    +pub?.shipping_free_delivery_price > 0;
+
+
   return (
     <View maxWidth={400} style={{ width: "100%", alignSelf: "center" }}>
       {/* Image container */}
@@ -43,7 +48,7 @@ const CategoryCardWithPubInfo = ({ category, pub, usePubBg, distance }) => {
             justifyContent="flex-end"
             alignItems="center"
             zIndex={10}
-            opacity={0.7}
+            opacity={0.3}
             style={{ height: "120%" }}
           ></View>
         )}
@@ -61,12 +66,53 @@ const CategoryCardWithPubInfo = ({ category, pub, usePubBg, distance }) => {
           h="120%"
           backgroundColor={"rgba(0, 0, 0, 0.5)"}
           borderWidth={2}
-          alignItems={"center"}
-          justifyContent={"center"}
+          px="15%"
+          alignItems="center"
+          justifyContent="center"
         >
-          <Text numberOfLines={1} fontSize={"2xl"} fontWeight={"bold"} color={"#fff"}>
-            {pub?.name}
-          </Text>
+          <View
+            alignItems={"center"}
+            justifyContent={"center"}
+            flexDir={"row"}
+
+          >
+            <Text numberOfLines={1} fontSize={"2xl"} mr="5" fontWeight={"bold"} color={"#fff"} style={{ includeFontPadding: false, }}>
+
+              {pub?.name}
+            </Text>
+            {/* free delivery price */}
+            {
+              (!isNaN(+pub?.rating) && (+pub?.rating) > 0) &&
+              <>
+                <Text fontSize="2xl" mr="1" fontWeight="bold" color="white" >{pub?.rating?.toFixed(1)}</Text>
+
+                <Image
+                  contentFit="contain"
+                  style={{ width: 20, position: "relative", aspectRatio: 1 / 1 }}
+                  source={images.StarFilled}
+                  alt=""
+                />
+              </>
+            }
+
+
+          </View>
+          {hasFreeDeliveryPrice && (
+            <View
+              style={{
+                paddingRight: 20,
+                paddingLeft: 20,
+                alignItems: "center",
+                justifyContent: "center",
+                flexDirection: "row",
+              }}
+            >
+              <Text style={{ fontSize: 14 }} textAlign="center" color="white" fontWeight="bold">
+                {t("pub_card.free_delivery_from")}{" "}
+                {pub?.shipping_free_delivery_price} Lei
+              </Text>
+            </View>
+          )}
           {!pub.isOpen && (
             <>
               <Text color="white" fontSize={18}>
@@ -78,6 +124,8 @@ const CategoryCardWithPubInfo = ({ category, pub, usePubBg, distance }) => {
             </>
           )}
         </View>
+
+
       </View>
 
       {/* Info container */}
@@ -92,9 +140,9 @@ const CategoryCardWithPubInfo = ({ category, pub, usePubBg, distance }) => {
         }}
       >
         <View flexDir="row" alignItems="center" gap="1">
-          <View style={{ width: 20, height: 20 }}>
+          <View style={{ width: 15, height: 15 }}>
             {pub?.shipping?.shipping_time_from ||
-            pub?.shipping?.shipping_time_to ? (
+              pub?.shipping?.shipping_time_to ? (
               <Image
                 source={images.ClockBlack}
                 style={{ width: "100%", height: "100%" }}
@@ -104,12 +152,12 @@ const CategoryCardWithPubInfo = ({ category, pub, usePubBg, distance }) => {
               ""
             )}
           </View>
-          <Text fontSize={"md"} fontWeight={"medium"}>
+          <Text style={{ fontSize: 14, fontWeight: "bold" }}>
             {pub?.shipping?.shipping_time_from
               ? pub?.shipping?.shipping_time_from
               : ""}
             {pub?.shipping?.shipping_time_from &&
-            pub?.shipping?.shipping_time_to
+              pub?.shipping?.shipping_time_to
               ? " - "
               : ""}
             {pub?.shipping?.shipping_time_to
@@ -161,7 +209,7 @@ const CategoryCardWithPubInfo = ({ category, pub, usePubBg, distance }) => {
           </View>
         </View>
       </View>
-    </View>
+    </View >
   );
 };
 

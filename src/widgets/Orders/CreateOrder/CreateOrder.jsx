@@ -173,7 +173,9 @@ const CreateOrder = ({
 
     dispatch(addOrder(createOrderResponse.order));
     dispatch(clearBasket());
-    navigator.navigate("Orders");
+    navigator.navigate("OrderInfoPage", {
+      orderID: createOrderResponse.order.id,
+    })
   }, [createOrderResponse]);
 
   return (

@@ -21,6 +21,8 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { images } from "../../app/images/images";
 import { AnonymousProBold } from "../../constants/styles-constants";
+import { selectPubID, selectPath, selectOrderID, selectPubName } from "../../features/store/linking/linkingSlice";
+import { Screens } from "../../../App";
 
 const mapStyle = {
   map: {
@@ -28,7 +30,7 @@ const mapStyle = {
     height: "100%",
   },
 };
-const SelectGeolocationInputs = ({setPage, geolocation, goBack}) => {
+const SelectGeolocationInputs = ({ setPage, geolocation, goBack }) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const navigator = useNavigation();
@@ -44,8 +46,14 @@ const SelectGeolocationInputs = ({setPage, geolocation, goBack}) => {
     setZoom(10);
   };
 
+  const path = useSelector(selectPath);
+  const urlPubID = useSelector(selectPubID)
+  const urlPubName = useSelector(selectPubName)
+  const urlOrderID = useSelector(selectOrderID)
+
+
   const handleSetLocationButtonClick = () => {
-    (async function () {
+    (async function() {
       const townError = validateTown(town);
       const fullAddressError = validateFullAddress(fullAddress);
       if (townError !== null || fullAddressError !== null) {
@@ -87,14 +95,31 @@ const SelectGeolocationInputs = ({setPage, geolocation, goBack}) => {
           fullAddress: fullAddress,
         }),
       );
-      
+
       setPage()
-      navigator.navigate("Home");
+
+      if (path === Screens.PubInfo && (urlPubID || urlPubName)) {
+        navigator.navigate(Screens.PubInfo, {
+          pubID: urlPubID,
+          pubName: urlPubName
+        });
+      }
+      else if (path === Screens.OrderInfoPage && urlOrderID) {
+        navigator.navigate(Screens.OrderInfoPage, {
+          orderID: urlOrderID,
+        });
+      }
+      else if (Screens[path]) {
+        navigator.navigate(Screens[path]);
+      }
+      else {
+        navigator.navigate(Screens.Home);
+      }
     })();
   };
 
   const [scrollViewHeight, setScrollViewHeight] = useState(0);
-   const shouldHideImage = Dimensions.get("window").height - scrollViewHeight > 300;
+  const shouldHideImage = Dimensions.get("window").height - scrollViewHeight > 300;
   //  const shouldHideImage = true;
   const [animatedHeight] = useState(new Animated.Value(0));
   useEffect(() => {
@@ -112,99 +137,99 @@ const SelectGeolocationInputs = ({setPage, geolocation, goBack}) => {
 
   return (
     <KeyboardAvoidingView
-    behavior={Platform.OS === "ios" ? "padding" : null}
-    flex={1}
-  >
-    <ScrollView
+      behavior={Platform.OS === "ios" ? "padding" : null}
       flex={1}
-      onLayout={(event) => {
-        const { height } = event.nativeEvent.layout;
-        setScrollViewHeight(height);
-      }}
-      keyboardShouldPersistTaps={"handled"}
-      contentContainerStyle={{
-        justifyContent: "center",
-        alignItems: "center",
-      }}
     >
-      <View px="4" w="full" flex={1}>
+      <ScrollView
+        flex={1}
+        onLayout={(event) => {
+          const { height } = event.nativeEvent.layout;
+          setScrollViewHeight(height);
+        }}
+        keyboardShouldPersistTaps={"handled"}
+        contentContainerStyle={{
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <View px="4" w="full" flex={1}>
 
-        <View
-          flex={1}
-          justifyContent="space-around"
-          alignItems="center"
-          py={10}
-          w="full"
-        >
-          <Animated.View
-            style={{
-              width: 200,
-              height: animatedHeight.interpolate({
-                inputRange: [0, 1],
-                outputRange: [0, 200],
-              }),
-            }}
+          <View
+            flex={1}
+            justifyContent="space-around"
+            alignItems="center"
+            py={10}
+            w="full"
           >
-            <Image
-              contentFit="contain"
-              source={images.Sepet}
-              style={{ width: "100%", height: "100%" }}
-            />
-          </Animated.View>
+            <Animated.View
+              style={{
+                width: 200,
+                height: animatedHeight.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [0, 200],
+                }),
+              }}
+            >
+              <Image
+                contentFit="contain"
+                source={images.Sepet}
+                style={{ width: "100%", height: "100%" }}
+              />
+            </Animated.View>
           </View>
-              <View>
-                <Text
-                  fontSize={28}
-                  mb="5"
-                  fontWeight="bold"
-                  textAlign="center"
-                  fontFamily={AnonymousProBold}
-                >
-                  {t("select_geolocation.add_address_inputs_headline")}
-                </Text>
-              </View>
-        <InputWithValidation
-          resetErrors={resetErrors}
-          setResetErrors={setResetErrors}
-          value={town}
-          setValue={setTown}
-          label={t("create_order_page.additional_data.inputs.town.label")}
-          keyboardType={"default"}
-          validators={[validateTown]}
-          validatedOutside={triedToSelectGeolocation}
-        />
-        <InputWithValidation
-          resetErrors={resetErrors}
-          setResetErrors={setResetErrors}
-          value={fullAddress}
-          setValue={setFullAddress}
-          label={t(
-            "create_order_page.additional_data.inputs.full_address.label",
-          )}
-          keyboardType={"default"}
-          validators={[validateFullAddress]}
-          validatedOutside={triedToSelectGeolocation}
-        />
-        <Button
-          disabled={!geolocation}
-          background={!geolocation ? "coolGray.400" : "emerald.600"}
-          borderRadius={15}
-          mt={8}
-          mb={4}
-          onPress={handleSetLocationButtonClick}
-        >
-          {t("select_geolocation.continue")}
-        </Button>
-        <Button
-          background={"red.600"}
-          borderRadius={15}
-          mb={10}
-          onPress={goBack}
-        >
-          {t("select_geolocation.back")}
-        </Button>
-      </View>
-    </ScrollView>
+          <View>
+            <Text
+              fontSize={28}
+              mb="5"
+              fontWeight="bold"
+              textAlign="center"
+              fontFamily={AnonymousProBold}
+            >
+              {t("select_geolocation.add_address_inputs_headline")}
+            </Text>
+          </View>
+          <InputWithValidation
+            resetErrors={resetErrors}
+            setResetErrors={setResetErrors}
+            value={town}
+            setValue={setTown}
+            label={t("create_order_page.additional_data.inputs.town.label")}
+            keyboardType={"default"}
+            validators={[validateTown]}
+            validatedOutside={triedToSelectGeolocation}
+          />
+          <InputWithValidation
+            resetErrors={resetErrors}
+            setResetErrors={setResetErrors}
+            value={fullAddress}
+            setValue={setFullAddress}
+            label={t(
+              "create_order_page.additional_data.inputs.full_address.label",
+            )}
+            keyboardType={"default"}
+            validators={[validateFullAddress]}
+            validatedOutside={triedToSelectGeolocation}
+          />
+          <Button
+            disabled={!geolocation}
+            background={!geolocation ? "coolGray.400" : "emerald.600"}
+            borderRadius={15}
+            mt={8}
+            mb={4}
+            onPress={handleSetLocationButtonClick}
+          >
+            {t("select_geolocation.continue")}
+          </Button>
+          <Button
+            background={"red.600"}
+            borderRadius={15}
+            mb={10}
+            onPress={goBack}
+          >
+            {t("select_geolocation.back")}
+          </Button>
+        </View>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 };

@@ -86,11 +86,11 @@ export default {
   select_geolocation: {
     saved_addresses: "Adrese salvate",
     headline: "Selectați locația dvs.",
-    
+
     continue: "Continua",
     back: "înapoi",
     add_new_address: "Adăugați adresa de livrare",
-   add_address_inputs_headline: "Introduceți adresa dvs",
+    add_address_inputs_headline: "Introduceți adresa dvs",
 
     select_by_yourself_button: "Selectați manual",
     wait_geolocation_is_loading: "Așteptați, încărcăm locația dvs.",
@@ -115,9 +115,9 @@ export default {
     create_order_button: "Creați comanda",
     pub_is_closed_error:
       "Acest restaurant este în prezent închis, vă rugăm să încercați mai târziu sau să comandați de la altul.",
-      go_to_registration: "Pentru a continua - înregistrează-te"
-  
-    },
+    go_to_registration: "Pentru a continua - înregistrează-te"
+
+  },
   basket_popup: {
     another_pub_warning:
       "Încercați să adăugați un articol dintr-un alt restaurant. Căruciorul va fi gol.",
@@ -174,6 +174,7 @@ export default {
     pub_is_closed: "Închis. Timp de lucru",
   },
   categories: {
+    sales: "promoții",
     asian: "asiatice",
     flowers: "flori",
     fast_food: "fast-food",
@@ -195,6 +196,8 @@ export default {
   },
   order_info_page: {
     order: "Comanda",
+    all_changes_from_tech: "Toate modificările comenzii se fac numai prin",
+    support: "asistență tehnică",
   },
   delete_account_popup: {
     headline: "Ștergeți contul meu",
@@ -206,5 +209,10 @@ export default {
   },
   pub_card: {
     free_delivery_from: "Livrare gratuita de la"
+  },
+  pub_not_available_for_delivery: {
+    pub_is_not_open: "Acest local este închis în prezent sau vă aflați în afara zonei de livrare a acestui local.",
+    choose_another_pub: "Selectați o altă instituție",
+    change_geolocation: "Schimbați locația"
   }
 };

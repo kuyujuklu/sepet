@@ -53,12 +53,18 @@ import { appErrors } from "../../../app/errors/appErrors";
 import { convertRespError } from "../../../app/errors/convertApiErrors";
 import { trimPhone } from "../../../shared/utils/phone-utils";
 import { selectGeolocation } from "../../../features/store/geolocation/geolocationSlice";
+import { selectPubID, selectPath, selectOrderID, selectPubName } from "../../../features/store/linking/linkingSlice";
+import { Screens } from "../../../../App";
 
 const RegistrationForm = () => {
   const { t } = useTranslation();
   const timestampRef = useRef(Date.now()).current;
   const dispatch = useDispatch();
   const location = useSelector(selectGeolocation);
+  const path = useSelector(selectPath);
+  const urlPubID = useSelector(selectPubID)
+  const urlPubName = useSelector(selectPubName)
+  const urlOrderID = useSelector(selectOrderID)
 
   const navigator = useNavigation();
   const [phone, setPhone] = useState("");
@@ -117,16 +123,30 @@ const RegistrationForm = () => {
     setaccesstoken(validateSessionNumberData.access_token);
     dispatch(enableNavbar());
     dispatch(setRefetchClient(true));
-    
+
     if (location && location.lat && location.lng) {
-      navigator.navigate("Home");
+
+      if (path === Screens.PubInfo && (urlPubID || urlPubName)) {
+        navigator.navigate(Screens.PubInfo, {
+          pubID: urlPubID,
+          pubName: urlPubName,
+        });
+      }
+      else if (path === Screens.OrderInfoPage && urlOrderID) {
+        navigator.navigate(Screens.OrderInfoPage, {
+          orderID: urlOrderID,
+        });
+      }
+      else if (Screens[path]) {
+        navigator.navigate(Screens[path]);
+      }
+      else {
+        navigator.navigate(Screens.Home);
+      }
       return;
     }
     navigator.navigate("SelectGeolocationPage");
 
-
-
-    navigator.navigate("SelectGeolocationPage");
   }, [validateSessionNumberData]);
 
   useEffect(() => {
@@ -249,9 +269,27 @@ const RegistrationForm = () => {
     if (location && location.lat && location.lng) {
       // setaccesstoken(validateSessionNumberData.access_token);
       // dispatch(setRefetchClient(true));
+
       dispatch(enableNavbar());
       dispatch(setRefetchClient(false));
-      navigator.navigate("Home");
+
+      if (path === Screens.PubInfo && (urlPubID || urlPubName)) {
+        navigator.navigate(Screens.PubInfo, {
+          pubID: urlPubID,
+          pubName: urlPubName,
+        });
+      }
+      else if (path === Screens.OrderInfoPage && urlOrderID) {
+        navigator.navigate(Screens.OrderInfoPage, {
+          orderID: urlOrderID,
+        });
+      }
+      else if (Screens[path]) {
+        navigator.navigate(Screens[path]);
+      }
+      else {
+        navigator.navigate(Screens.Home);
+      }
       return;
     }
     // setaccesstoken(validateSessionNumberData.access_token);

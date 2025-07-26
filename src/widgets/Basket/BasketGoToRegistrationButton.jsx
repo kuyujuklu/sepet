@@ -4,6 +4,7 @@ import { useDispatch } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { setClient } from "../../features/store/auth/authSlice";
 import { disableNavbar } from "../../features/store/navbar/navbarSlice";
+import { setPath } from "../../features/store/linking/linkingSlice";
 
 const BasketGoToRegistrationButton = ({}) => {
   const dispatch = useDispatch();
@@ -14,6 +15,7 @@ const BasketGoToRegistrationButton = ({}) => {
   const handleButtonPress = () => {
     dispatch(disableNavbar())
     dispatch(setClient({ phone: "", name: "", isGuest: false }));
+    dispatch(setPath("Basket"));
     navigator.dispatch(
       CommonActions.reset({
         index: 0,

@@ -56,7 +56,7 @@ const PubList = ({ selectedPub, selectPub }) => {
   }, [sortedPubs]);
 
   // Log error on getting error from api
-  useEffect(() => {}, [pubsError]);
+  useEffect(() => { }, [pubsError]);
 
   // Scroll flatlist on changing selected pub
   useEffect(() => {
@@ -134,7 +134,6 @@ const PubList = ({ selectedPub, selectPub }) => {
             <TouchableOpacity
               key={item.id}
               // id={index}
-              disabled={!item.isOpen}
               onPress={() => {
                 handlePubPress(item?.id);
               }}

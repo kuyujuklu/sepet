@@ -3,7 +3,7 @@ import { createSlice } from "@reduxjs/toolkit";
 export const authSlice = createSlice({
   name: "auth",
   initialState: {
-    isAuthRequiredAtApplicationStart: true,
+    isAuthRequiredAtApplicationStart: false,
     isRequiringAuthentication: false,
     client: {
       phone: "",

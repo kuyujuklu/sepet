@@ -1,17 +1,25 @@
 {
   "cli": {
     "version": ">= 7.8.3",
-    "promptToConfigurePushNotifications": false
+    "promptToConfigurePushNotifications": false,
+    "appVersionSource": "local"
   },
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "autoIncrement": true
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "autoIncrement": true
     },
-    "production": {}
+    "production": {
+      "ios": {
+        "image": "macos-sequoia-15.3-xcode-16.2"
+      },
+      "autoIncrement": true
+    }
   },
   "submit": {
     "production": {

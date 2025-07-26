@@ -12,12 +12,17 @@ import { categories } from "../../app/static-data/data";
 import { useSelector } from "react-redux";
 import { selectGeolocation } from "../../features/store/geolocation/geolocationSlice";
 import { useGetNearbyCategoriesQuery } from "../../shared/api/categories/categoriesApi";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useGetNearbyPubsQuery } from "../../shared/api/pubs/pubsApi";
 import { Platform } from "react-native";
+import { TouchableOpacity } from "react-native";
+import { Image } from "expo-image";
+import { images } from "../../app/images/images";
 
 const translateFoodCategories = (foodCategory) => {
   switch (foodCategory) {
+    case categories.Sales:
+      return "categories.sales";
     case categories.Asian:
       return "categories.asian";
     case categories.Flowers:
@@ -58,6 +63,7 @@ const translateFoodCategories = (foodCategory) => {
 };
 
 const FoodCategoriesPage = ({ route }) => {
+
   const { t } = useTranslation();
   const foodFilter = route?.params?.foodCategory ?? "";
   const navigator = useNavigation();
@@ -109,7 +115,7 @@ const FoodCategoriesPage = ({ route }) => {
       }
     });
 
-    return Array.from(categoryNamesSet);
+    return Array.from(categoryNamesSet)
   }, [nearCategoriesData, nearPubsData]);
 
   return (
@@ -119,7 +125,6 @@ const FoodCategoriesPage = ({ route }) => {
           px={5}
           fontFamily={AnonymousProBold}
           fontSize={32}
-          mb="2"
           textAlign="center"
           flexDir="row"
           flexWrap="wrap"
@@ -129,6 +134,36 @@ const FoodCategoriesPage = ({ route }) => {
             {t(translateFoodCategories(foodFilter))}
           </Text>
         </Text>
+        <View px="5" width="100%" top="-5">
+          <TouchableOpacity
+            style={{
+              flexDirection: "row",
+              gap: 5,
+              alignItems: "center",
+            }}
+            onPress={() => {
+              navigator.navigate("SelectGeolocationPage");
+            }}
+          >
+            <View style={{ width: 20, height: 20 }}>
+              <Image
+                source={images.Locaiton}
+                style={{ width: "100%", height: "100%" }}
+              />
+            </View>
+
+            <Text
+              fontWeight={"medium"}
+              background={"#fff"}
+              color="emerald.600"
+              fontSize={18}
+              numberOfLines={1}
+              mr={3}
+            >
+              {location.town + ", " + location.fullAddress}
+            </Text>
+          </TouchableOpacity>
+        </View>
         <View flex={1}>
           <CategoryWithPubInfoList
             selectCategory={(category) =>

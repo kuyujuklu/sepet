@@ -16,13 +16,13 @@ const Pub = ({ pub, isViewable, distance }) => {
     "/images/pubs/bgs/" +
     pub.bg_image_file_name;
 
-    const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
 
-    useEffect(() => {
-      if (pub && !pub.bg_image_file_name) {
-        setImageLoaded(true);
-      }
-    }, [pub]);
+  useEffect(() => {
+    if (pub && !pub.bg_image_file_name) {
+      setImageLoaded(true);
+    }
+  }, [pub]);
   const scaleAnimation = useRef(new Animated.Value(0)).current;
 
   const shippingWorkHours = {
@@ -45,6 +45,8 @@ const Pub = ({ pub, isViewable, distance }) => {
     !isNaN(+pub?.shipping_free_delivery_price) &&
     +pub?.shipping_free_delivery_price > 0;
 
+  console.log("__________________________________RATING: ", pub?.rating)
+
   return (
     <View style={{ width: 300 }}>
       {/* Image container */}
@@ -62,18 +64,20 @@ const Pub = ({ pub, isViewable, distance }) => {
       >
         {!pub.isOpen && (
           <View
-            bg={"black"}
+            bg={pub.isOpen ? "transparent" : "black"}
             w="full"
             position="absolute"
             justifyContent="center"
             alignItems="center"
             zIndex={10}
-            opacity={0.8}
+            opacity={pub.isOpen ? 1 : 0.8}
             h="full"
           >
-            <Text color="white" fontSize={18}>
-              {t("home_page.pub_is_closed")}
-            </Text>
+            {!pub.isOpen && (
+              <Text color="white" fontSize={18} >
+                {t("home_page.pub_is_closed")}
+              </Text>
+            )}
             <Text color="white" fontSize={18}>
               {shippingTimeString}
             </Text>
@@ -98,9 +102,24 @@ const Pub = ({ pub, isViewable, distance }) => {
           source={{ uri: bgPath }}
           alt=""
         />
+        {
+          //(!isNaN(+pub?.rating) && (+pub?.rating) > 0) &&
+          //<View w="full" h="full" flexDir="row" justifyContent="center" gap="1" alignItems="center" position="absolute">
+          //  <View flexDir="row" justifyContent="center" gap="1" alignItems="center" px="5" py="2" borderRadius="2xl" bgColor="#00000088" >
+          //    <Text color="white" fontSize="xl">{pub?.rating?.toFixed(1)}</Text>
+          //    <Image
+          //      contentFit="contain"
+          //      style={{ width: 20, aspectRatio: 1 / 1 }}
+          //      source={images.StarFilled}
+          //      alt=""
+          //    />
+          //
+          //  </View>
+          //</View>
+        }
       </Animated.View>
 
-        {/* free delivery price */}
+      {/* free delivery price */}
       {hasFreeDeliveryPrice && (
         <View
           style={{
@@ -120,16 +139,35 @@ const Pub = ({ pub, isViewable, distance }) => {
       {/* Info container */}
       <View
         style={{
-          paddingTop: 10,
           paddingRight: 20,
           paddingLeft: 20,
           justifyContent: "space-between",
           flexDirection: "row",
+          alignItems: "center"
         }}
       >
-        <View flex={1} flexDir="column">
-          {/* pub name */}
-          <Text style={{ fontSize: 18 }}>{pub.name}</Text>
+        <View flex={1} flexDir="column" mr={7}>
+          <View flexDir="row" alignItems="center" gap="1">
+            <Text numberOfLines={1} style={{ includeFontPadding: false, flex: 1, fontSize: 14, marginRight: 5 }}>{pub?.name}</Text>
+
+            {
+              (!isNaN(+pub?.rating) && (+pub?.rating) > 0) &&
+              <>
+                <Text fontSize="xl" style={{ fontSize: 14 }}>{pub?.rating?.toFixed(1)}</Text>
+                <Image
+                  contentFit="contain"
+
+                  style={{ width: 15, position: "relative", aspectRatio: 1 / 1 }}
+                  source={images.StarFilled}
+                  alt=""
+                />
+              </>
+            }
+
+
+          </View>
+
+          {pub?.isOpen && <Text style={{ fontSize: 14, fontWeight: "bold" }}>{shippingTimeString}</Text>}
           {/* free delivery price */}
         </View>
         <View flexDir="column">
@@ -139,6 +177,8 @@ const Pub = ({ pub, isViewable, distance }) => {
             alignItems="center"
             flexDir="row"
             gap={1}
+
+            py={1}
           >
             <View style={{ width: 15, height: 15 }}>
               <Image
@@ -173,7 +213,7 @@ const Pub = ({ pub, isViewable, distance }) => {
           </View> */}
         </View>
       </View>
-    </View>
+    </View >
   );
 };
 

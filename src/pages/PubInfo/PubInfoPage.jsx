@@ -5,10 +5,12 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import MenuListForPub from "../../widgets/Menu/MenuListForPub";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import CategoryList from "../../widgets/FoodCategories/CategoriesList/CategoryList";
-import { createContext, memo, useContext } from "react";
+import { createContext, memo, useContext, useEffect, useState } from "react";
 import DishListForCategory from "../../widgets/Dish/DishListForCategory";
-import { useGetPubInfoQuery } from "../../shared/api/pubs/pubsApi";
+import { useGetNearbyPubsQuery, useGetPubInfoQuery } from "../../shared/api/pubs/pubsApi";
 import { Platform } from "react-native";
+import { selectGeolocation } from "../../features/store/geolocation/geolocationSlice";
+import { useSelector } from "react-redux";
 
 export const PubInfoRouteContext = createContext();
 
@@ -16,6 +18,7 @@ const CategoriesScreen = memo(() => {
   const contextValue = useContext(PubInfoRouteContext);
   const navigator = useNavigation();
   const route = useRoute();
+
   return (
     <View>
       <CategoryList
@@ -33,33 +36,79 @@ const CategoriesScreen = memo(() => {
 const DishesScreen = () => {
   const contextValue = useContext(PubInfoRouteContext);
   const route = useRoute();
+  console.log("DISHES SCREEN: ", contextValue?.isAvailableForDelivery);
 
   return (
     <>
       <DishListForCategory
         pubID={contextValue?.pubID}
         categoryID={route?.params?.categoryID}
+        isPubOpen={contextValue?.isOpen}
+        isAvailableForDelivery={contextValue?.isAvailableForDelivery}
       />
     </>
   );
 };
 
 const PubInfoPage = () => {
+
+  const location = useSelector(selectGeolocation);
+
+  const {
+    data: nearPubsData,
+    error: nearPubsError,
+    // isLoading: nearCategoriesIsLoading,
+  } = useGetNearbyPubsQuery(
+    { coords: { lat: location?.lat, lng: location?.lng } },
+    { skip: !location, pollingInterval: 20000 },
+  );
+
+
   const route = useRoute();
 
   const selectedMenu = route?.params?.selectedMenu;
-  const pubID = route?.params?.pubID;
+  const paramsPubID = route?.params?.pubID;
+  const paramsPubName = route?.params?.pubName;
+  useEffect(() => {
+    if (paramsPubID) {
+      setPubID(paramsPubID)
+    }
+    if (paramsPubName) {
+      setPubName(paramsPubName)
+    }
+  }, [paramsPubID, paramsPubName])
+
+  const [pubID, setPubID] = useState()
+  const [pubName, setPubName] = useState()
+
+  console.log("IN PUB NAME: ", pubName)
   const categoryID = route?.params?.categoryID;
   const navigator = useNavigation();
+
+  const isAvailableForDelivery = !!(nearPubsData?.pubs?.find((pub) => pub.id === pubID));
 
   const {
     data: pubData,
     error: pubError,
     pubIsLoading,
+
   } = useGetPubInfoQuery(
-    { pubID },
-    { skip: !pubID, pollingInterval: 20000, skipPollingIfUnfocused: true },
+    { pubID, pubName },
+    { skip: (!pubID && !pubName), pollingInterval: 20000, skipPollingIfUnfocused: true },
   );
+
+  useEffect(() => {
+    console.log("PUBDATA: ", pubData);
+    if (!pubData) return;
+
+    setPubID(pubData.pub?.id)
+    setPubName(pubData.pub?.url_name)
+
+  }, [pubData])
+
+  useEffect(() => {
+    console.log("PUB INFO PAGE GETTING ERROR: ", pubError);
+  }, [pubError])
 
   const Stack = createNativeStackNavigator();
 
@@ -70,6 +119,8 @@ const PubInfoPage = () => {
           pubID,
           selectedMenu,
           categoryID,
+          isOpen: pubData?.pub?.isOpen,
+          isAvailableForDelivery: isAvailableForDelivery,
         }}
       >
         <Stack.Navigator
@@ -105,6 +156,7 @@ const PubInfoPage = () => {
                 screen: "PubInfo/Categories",
                 params: {
                   selectedMenu: menuID,
+                  categoryID: null,
                 },
                 pubID,
                 selectedMenu: menuID,

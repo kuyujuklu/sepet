@@ -1,6 +1,6 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { authenticationBasedQuery } from "../auth/authBasedQuery";
-import { isPubOpened } from "../../utils/pub";
+import { getPubWorkHours } from "../../utils/pub";
 
 export const pubsApi = createApi({
   reducerPath: "pubsQuery",
@@ -17,30 +17,37 @@ export const pubsApi = createApi({
       }),
 
       transformResponse: (response, meta, arg) => {
+
         if (!response.pubs) return response;
 
         for (let i in response.pubs) {
-          if (isPubOpened(response.pubs[i])) {
-            response.pubs[i].isOpen = true;
-          } else response.pubs[i].isOpen = false;
+          let pubWorkHours = getPubWorkHours(response.pubs[i])
+          response.pubs[i].isOpen = pubWorkHours.isDeliveryAvailable;
+          response.pubs[i].shipping.shipping_work_start = pubWorkHours.shippingWorkStart;
+          response.pubs[i].shipping.shipping_work_end = pubWorkHours.shippingWorkEnd;
         }
         return response;
       },
     }),
     getPubInfo: builder.query({
-      query: ({ pubID }) => ({
-        url: `/api/client/pub/id/${pubID}`,
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }),
+      query: ({ pubID, pubName }) => {
+        console.log("PNAME: ", pubName, "PID", pubID)
+        return {
+          url: pubID ? `/api/client/pub/id/${pubID}` : `/api/client/pub/${pubName}`,
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      },
       transformResponse: (response, meta, arg) => {
         if (!response.pub) return response;
 
-        if (isPubOpened(response.pub)) {
-          response.pub.isOpen = true;
-        } else response.pub.isOpen = false;
+        let pubWorkHours = getPubWorkHours(response?.pub)
+        console.log("PUB WORK HOURS: ", pubWorkHours)
+        response.pub.isOpen = pubWorkHours.isDeliveryAvailable;
+        response.pub.shipping.shipping_work_start = pubWorkHours.shippingWorkStart;
+        response.pub.shipping.shipping_work_end = pubWorkHours.shippingWorkEnd;
 
         console.log("IS OPEN: ", response.pub.isOpen)
         return response;

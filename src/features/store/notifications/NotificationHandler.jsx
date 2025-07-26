@@ -64,7 +64,7 @@ async function registerForPushNotificationsAsync() {
 
 export default function NotificationHandler() {
   const client = useSelector(selectClient)
-  const {i18n} = useTranslation()
+  const { i18n } = useTranslation()
 
   const [expoPushToken, setExpoPushToken] = useState('');
   const [notification, setNotification] = useState(
@@ -72,6 +72,22 @@ export default function NotificationHandler() {
   );
   const notificationListener = useRef();
   const responseListener = useRef();
+
+  useEffect(() => {
+    // This is where we handle notifications if the app was launched from one
+    const checkInitialNotification = async () => {
+      const response = await Notifications.getLastNotificationResponseAsync();
+      if (response) {
+        const { notification } = response;
+        const data = notification.request.content.data;
+        console.log('App launched from terminated state with notification data:', data);
+
+        // You can navigate or handle data here
+      }
+    };
+
+    checkInitialNotification();
+  }, [])
 
   useEffect(() => {
     subscribeNotificationTokenOnServer()
@@ -82,6 +98,8 @@ export default function NotificationHandler() {
 
     notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
       setNotification(notification);
+      console.log("NOTIFICATION : ", notification)
+      console.log("WAAAAAAFLE: ", notification?.request?.content?.data)
     });
 
     responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
@@ -97,8 +115,8 @@ export default function NotificationHandler() {
   }, []);
 
   useEffect(() => {
-    if(!client || !expoPushToken || !i18n.language) {
-      return 
+    if (!client || !expoPushToken || !i18n.language) {
+      return
     }
 
     subscribeNotificationTokenOnServer(client.phone, expoPushToken, i18n.language)
