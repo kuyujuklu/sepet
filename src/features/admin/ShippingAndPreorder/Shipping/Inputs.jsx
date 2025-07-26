@@ -8,7 +8,6 @@ import TimeInput from "./TimeInput";
 import { useTranslation } from "react-i18next";
 import DeliveryPriceInput from "./DeliveryPriceInput";
 import WorkHoursInput from "./WorkHoursInput";
-import PubCouriersInput from "./PubCouriersInput";
 import DeliveryTypeInput from "./DeliveryTypeInput";
 import { useSetAddCommissionToDishPricesMutation } from "../../../../api/pub/pub";
 import { fixedCacheKeys } from "../../../../api/fixedCacheKeys";
@@ -88,9 +87,8 @@ const Inputs = ({ pub }) => {
             <hr className="border-gray-300 my-4" />
             <div>
               <WorkHoursInput
-                shipping_start={pub?.shipping?.shipping_work_start}
-                shipping_end={pub?.shipping?.shipping_work_end}
                 companyID={pub?.company_id}
+                workHours={pub?.shipping?.shipping_work_hours_for_week}
                 pubID={pub?.id}
               />
             </div>

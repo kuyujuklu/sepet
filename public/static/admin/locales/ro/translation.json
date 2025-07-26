@@ -267,6 +267,7 @@
         "categories": {
             "add_category_button": "Adăugați categorie",
             "category_types": {
+                "sales": "Promoții",
                 "asian": "Bucătărie asiatică",
                 "fast_food": "Fast food",
                 "flowers": "Flori",

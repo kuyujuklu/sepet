@@ -271,6 +271,7 @@
         "categories": { 
             "add_category_button": "Добавить категорию",
             "category_types": {
+                "sales": "Акции",
                 "asian": "Азиатская кухня",
                 "flowers": "Цветы",
                 "fast_food": "Фастфуд",

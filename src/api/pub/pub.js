@@ -2,281 +2,280 @@ import { createApi } from "@reduxjs/toolkit/query/react";
 import { authenticationBasedQuery } from "../auth/authBasedQuery";
 
 export const pub = createApi({
-    reducerPath: "pubQuery",
-    baseQuery: authenticationBasedQuery,
-    tagTypes: ["Pub", "Shipping", "Preorder", "Geolocation"],
-    endpoints: (builder) => ({
-        createPub: builder.mutation({
-            query: ({ companyID, data }) => ({
-                url: `/api/company/${companyID}/pubs/`,
-                method: "POST",
-                body: {
-                    name: data.name,
-                    url_name: data.urlName,
-                },
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            }),
-            invalidatesTags: ["Pub"],
-        }),
-        updatePub: builder.mutation({
-            query: ({ companyID, data, pubID }) => ({
-                url: `/api/company/${companyID}/pubs/${pubID}/`,
-                method: "PUT",
-                body: {
-                    name: data.name,
-                    color_theme: data.colorTheme,
-                    color: data.color,
-                    wifi_password: data.wifiPassword,
-                    address: data.address,
-                    additional_info: data.additionalInfo,
-                    currency_id: data.currencyID,
-                    telegram_username: data.telegramUsername,
-                    has_in_place_order: data.hasInPlaceOrder,
-                },
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            }),
-            invalidatesTags: ["Pub"],
-        }),
-        deletePub: builder.mutation({
-            query: ({ companyID, pubID }) => ({
-                url: `/api/company/${companyID}/pubs/${pubID}/`,
-                method: "Delete",
-            }),
-            invalidatesTags: ["Pub"],
-        }),
-        getPubs: builder.query({
-            query: ({ companyID }) => ({
-                url: `/api/company/${companyID}/pubs/`,
-                method: "GET",
-            }),
-            providesTags: ["Pub"],
-        }),
-        getPub: builder.query({
-            query: ({ companyID, pubID }) => ({
-                url: `/api/company/${companyID}/pubs/${pubID}/`,
-                method: "GET",
-            }),
-            providesTags: ["Pub"],
-        }),
-        getFullPubInfo: builder.query({
-            query: ({ pubUrlName }) => ({
-                url: `/api/client/pub/${pubUrlName}/`,
-                method: "GET",
-            }),
-            providesTags: ["Pub"],
-        }),
-        uploadPubBG: builder.mutation({
-            query: ({ companyID, pubID, data }) => ({
-                url: `/api/company/${companyID}/pubs/${pubID}/bg`,
-                method: "PATCH",
-                body: data,
-            }),
-            invalidatesTags: ["Pub"],
-        }),
-        getShipping: builder.query({
-            query: ({ pubID }) => ({
-                url: `/api/client/pub/${pubID}/shipping`,
-                method: "GET",
-            }),
-            providesTags: ["Pub", "Shipping"],
-        }),
-        setShipping: builder.mutation({
-            query: ({ companyID, shapes, pubID }) => ({
-                url: `/api/company/${companyID}/pubs/${pubID}/shipping`,
-                method: "POST",
-                body: {
-                    shapes
-                },
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            }),
-            invalidatesTags: ["Shipping"],
-        }),
-        setShippingAvailability: builder.mutation({
-            query: ({ companyID, pubID, available }) => ({
-                url: `/api/company/${companyID}/pubs/${pubID}/shipping-availability`,
-                method: "POST",
-                body: {
-                    available: available
-                },
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            }),
-            invalidatesTags: ["Shipping", "Pub"],
-        }),
-        getPreorder: builder.query({
-            query: ({ pubID }) => ({
-                url: `/api/client/pub/${pubID}/preorder`,
-                method: "GET",
-            }),
-            providesTags: ["Pub", "Preorder"],
-        }),
-        setPreorder: builder.mutation({
-            query: ({ companyID, preorder, pubID }) => ({
-                url: `/api/company/${companyID}/pubs/${pubID}/preorder`,
-                method: "POST",
-                body: {
-                    "card_preorder": preorder.cardPreorder,
-                    "cash_preorder": preorder.cashPreorder
-                },
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            }),
-            invalidatesTags: ["Preorder"],
-        }),
-        getGeolocation: builder.query({
-            query: ({ companyID, pubID }) => ({
-                url: `/api/company/${companyID}/pubs/${pubID}/geolocation`,
-                method: "GET",
-            }),
-            providesTags: ["Geolocation"],
-        }),
-        setGeolocation: builder.mutation({
-            query: ({ companyID, pubID, lat, lng }) => ({
-                url: `/api/company/${companyID}/pubs/${pubID}/geolocation`,
-                method: "POST",
-                body: {
-                    "lat": lat,
-                    "lng": lng
-                },
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            }),
-            invalidatesTags: ["Geolocation", "Pub"],
-        }),
-        setShippingTime: builder.mutation({
-            query: ({ companyID, pubID, from, to }) => ({
-                url: `/api/company/${companyID}/pubs/${pubID}/shipping-time`,
-                method: "POST",
-                body: {
-                    "from": +from,
-                    "to": +to
-                },
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            }),
-            invalidatesTags: ["Pub"],
-        }), 
-        setShippingWorkHours: builder.mutation({
-            query: ({ companyID, pubID, start, end }) => ({
-                url: `/api/company/${companyID}/pubs/${pubID}/shipping-work-hours`,
-                method: "POST",
-                body: {
-                    "shipping_work_start": +start,
-                    "shipping_work_end": +end
-                },
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            }),
-            invalidatesTags: ["Pub"],
-        }), 
-        setShippingPrices: builder.mutation({
-            query: ({ companyID, pubID, prices }) => ({
-                url: `/api/company/${companyID}/pubs/${pubID}/shipping-price`,
-                method: "POST",
-                body: {
-                    "prices": prices,
-                },
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            }),
-            invalidatesTags: ["Pub"],
-        }), 
-        setShippingFreeDeliveryPrices: builder.mutation({
-            query: ({ companyID, pubID, prices }) => ({
-                url: `/api/company/${companyID}/pubs/${pubID}/shipping-free-delivery-prices`,
-                method: "POST",
-                body: {
-                    "prices": prices,
-                },
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            }),
-            invalidatesTags: ["Pub"],
-        }), 
-        removeCourier: builder.mutation({
-            query: ({ companyID, pubID, courierID }) => ({
-                url: `/api/company/${companyID}/pubs/${pubID}/couriers/${courierID}`,
-                method: "Delete",
-            }),
-            invalidatesTags: ["Pub"],
-        }),
-        addCourier: builder.mutation({
-            query: ({ companyID, pubID, courierID }) => ({
-                url: `/api/company/${companyID}/pubs/${pubID}/couriers`,
-                method: "POST",
-                body: {
-                    courier_id: +courierID,
-                },
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            }),
-            invalidatesTags: ["Pub"],
-        }),
-        updateDeliveryType: builder.mutation({
-            query: ({ companyID, pubID, deliveryType }) => ({
-                url: `/api/company/${companyID}/pubs/${pubID}/delivery-type`,
-                method: "POST",
-                body: {
-                    delivery_type: deliveryType
-                },
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            }),
-            invalidatesTags: ["Pub"],
-        }), 
-        setAddCommissionToDishPrices: builder.mutation({
-            query: ({ companyID, pubID, addCommission }) => ({
-                url: `/api/company/${companyID}/pubs/${pubID}/add-commission-to-dish-prices`,
-                method: "POST",
-                body: {
-                    add_commission_to_dish_prices: addCommission
-                },
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            }),
-            invalidatesTags: ["Pub"],
-        }), 
+  reducerPath: "pubQuery",
+  baseQuery: authenticationBasedQuery,
+  tagTypes: ["Pub", "Shipping", "Preorder", "Geolocation"],
+  endpoints: (builder) => ({
+    createPub: builder.mutation({
+      query: ({ companyID, data }) => ({
+        url: `/api/company/${companyID}/pubs/`,
+        method: "POST",
+        body: {
+          name: data.name,
+          url_name: data.urlName,
+        },
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }),
+      invalidatesTags: ["Pub"],
     }),
+    updatePub: builder.mutation({
+      query: ({ companyID, data, pubID }) => ({
+        url: `/api/company/${companyID}/pubs/${pubID}/`,
+        method: "PUT",
+        body: {
+          name: data.name,
+          color_theme: data.colorTheme,
+          color: data.color,
+          wifi_password: data.wifiPassword,
+          address: data.address,
+          additional_info: data.additionalInfo,
+          currency_id: data.currencyID,
+          telegram_username: data.telegramUsername,
+          has_in_place_order: data.hasInPlaceOrder,
+        },
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }),
+      invalidatesTags: ["Pub"],
+    }),
+    deletePub: builder.mutation({
+      query: ({ companyID, pubID }) => ({
+        url: `/api/company/${companyID}/pubs/${pubID}/`,
+        method: "Delete",
+      }),
+      invalidatesTags: ["Pub"],
+    }),
+    getPubs: builder.query({
+      query: ({ companyID }) => ({
+        url: `/api/company/${companyID}/pubs/`,
+        method: "GET",
+      }),
+      providesTags: ["Pub"],
+    }),
+    getPub: builder.query({
+      query: ({ companyID, pubID }) => ({
+        url: `/api/company/${companyID}/pubs/${pubID}/`,
+        method: "GET",
+      }),
+      providesTags: ["Pub"],
+    }),
+    getFullPubInfo: builder.query({
+      query: ({ pubUrlName }) => ({
+        url: `/api/client/pub/${pubUrlName}/`,
+        method: "GET",
+      }),
+      providesTags: ["Pub"],
+    }),
+    uploadPubBG: builder.mutation({
+      query: ({ companyID, pubID, data }) => ({
+        url: `/api/company/${companyID}/pubs/${pubID}/bg`,
+        method: "PATCH",
+        body: data,
+      }),
+      invalidatesTags: ["Pub"],
+    }),
+    getShipping: builder.query({
+      query: ({ pubID }) => ({
+        url: `/api/client/pub/${pubID}/shipping`,
+        method: "GET",
+      }),
+      providesTags: ["Pub", "Shipping"],
+    }),
+    setShipping: builder.mutation({
+      query: ({ companyID, shapes, pubID }) => ({
+        url: `/api/company/${companyID}/pubs/${pubID}/shipping`,
+        method: "POST",
+        body: {
+          shapes
+        },
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }),
+      invalidatesTags: ["Shipping"],
+    }),
+    setShippingAvailability: builder.mutation({
+      query: ({ companyID, pubID, available }) => ({
+        url: `/api/company/${companyID}/pubs/${pubID}/shipping-availability`,
+        method: "POST",
+        body: {
+          available: available
+        },
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }),
+      invalidatesTags: ["Shipping", "Pub"],
+    }),
+    getPreorder: builder.query({
+      query: ({ pubID }) => ({
+        url: `/api/client/pub/${pubID}/preorder`,
+        method: "GET",
+      }),
+      providesTags: ["Pub", "Preorder"],
+    }),
+    setPreorder: builder.mutation({
+      query: ({ companyID, preorder, pubID }) => ({
+        url: `/api/company/${companyID}/pubs/${pubID}/preorder`,
+        method: "POST",
+        body: {
+          "card_preorder": preorder.cardPreorder,
+          "cash_preorder": preorder.cashPreorder
+        },
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }),
+      invalidatesTags: ["Preorder"],
+    }),
+    getGeolocation: builder.query({
+      query: ({ companyID, pubID }) => ({
+        url: `/api/company/${companyID}/pubs/${pubID}/geolocation`,
+        method: "GET",
+      }),
+      providesTags: ["Geolocation"],
+    }),
+    setGeolocation: builder.mutation({
+      query: ({ companyID, pubID, lat, lng }) => ({
+        url: `/api/company/${companyID}/pubs/${pubID}/geolocation`,
+        method: "POST",
+        body: {
+          "lat": lat,
+          "lng": lng
+        },
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }),
+      invalidatesTags: ["Geolocation", "Pub"],
+    }),
+    setShippingTime: builder.mutation({
+      query: ({ companyID, pubID, from, to }) => ({
+        url: `/api/company/${companyID}/pubs/${pubID}/shipping-time`,
+        method: "POST",
+        body: {
+          "from": +from,
+          "to": +to
+        },
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }),
+      invalidatesTags: ["Pub"],
+    }),
+    setShippingWorkHours: builder.mutation({
+      query: ({ companyID, pubID, workHours }) => ({
+        url: `/api/company/${companyID}/pubs/${pubID}/shipping-work-hours`,
+        method: "POST",
+        body: {
+          "work_hours": workHours,
+        },
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }),
+      invalidatesTags: ["Pub"],
+    }),
+    setShippingPrices: builder.mutation({
+      query: ({ companyID, pubID, prices }) => ({
+        url: `/api/company/${companyID}/pubs/${pubID}/shipping-price`,
+        method: "POST",
+        body: {
+          "prices": prices,
+        },
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }),
+      invalidatesTags: ["Pub"],
+    }),
+    setShippingFreeDeliveryPrices: builder.mutation({
+      query: ({ companyID, pubID, prices }) => ({
+        url: `/api/company/${companyID}/pubs/${pubID}/shipping-free-delivery-prices`,
+        method: "POST",
+        body: {
+          "prices": prices,
+        },
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }),
+      invalidatesTags: ["Pub"],
+    }),
+    removeCourier: builder.mutation({
+      query: ({ companyID, pubID, courierID }) => ({
+        url: `/api/company/${companyID}/pubs/${pubID}/couriers/${courierID}`,
+        method: "Delete",
+      }),
+      invalidatesTags: ["Pub"],
+    }),
+    addCourier: builder.mutation({
+      query: ({ companyID, pubID, courierID }) => ({
+        url: `/api/company/${companyID}/pubs/${pubID}/couriers`,
+        method: "POST",
+        body: {
+          courier_id: +courierID,
+        },
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }),
+      invalidatesTags: ["Pub"],
+    }),
+    updateDeliveryType: builder.mutation({
+      query: ({ companyID, pubID, deliveryType }) => ({
+        url: `/api/company/${companyID}/pubs/${pubID}/delivery-type`,
+        method: "POST",
+        body: {
+          delivery_type: deliveryType
+        },
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }),
+      invalidatesTags: ["Pub"],
+    }),
+    setAddCommissionToDishPrices: builder.mutation({
+      query: ({ companyID, pubID, addCommission }) => ({
+        url: `/api/company/${companyID}/pubs/${pubID}/add-commission-to-dish-prices`,
+        method: "POST",
+        body: {
+          add_commission_to_dish_prices: addCommission
+        },
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }),
+      invalidatesTags: ["Pub"],
+    }),
+  }),
 });
 
 export const {
-    useGetPubsQuery,
-    useCreatePubMutation,
-    useUpdatePubMutation,
-    useDeletePubMutation,
-    useGetPubQuery,
-    useGetFullPubInfoQuery,
-    useUploadPubBGMutation,
-    useGetShippingQuery,
-    useSetShippingMutation,
-    useSetShippingAvailabilityMutation,
-    useGetPreorderQuery,
-    useSetPreorderMutation,
-    useGetGeolocationQuery,
-    useLazyGetGeolocationQuery,
-    useSetGeolocationMutation,
-    useSetShippingTimeMutation,
-    useSetShippingWorkHoursMutation,
-    useSetShippingPricesMutation,
-    useRemoveCourierMutation,
-    useAddCourierMutation,
-    useUpdateDeliveryTypeMutation,
-    useSetAddCommissionToDishPricesMutation,
-    useSetShippingFreeDeliveryPricesMutation
+  useGetPubsQuery,
+  useCreatePubMutation,
+  useUpdatePubMutation,
+  useDeletePubMutation,
+  useGetPubQuery,
+  useGetFullPubInfoQuery,
+  useUploadPubBGMutation,
+  useGetShippingQuery,
+  useSetShippingMutation,
+  useSetShippingAvailabilityMutation,
+  useGetPreorderQuery,
+  useSetPreorderMutation,
+  useGetGeolocationQuery,
+  useLazyGetGeolocationQuery,
+  useSetGeolocationMutation,
+  useSetShippingTimeMutation,
+  useSetShippingWorkHoursMutation,
+  useSetShippingPricesMutation,
+  useRemoveCourierMutation,
+  useAddCourierMutation,
+  useUpdateDeliveryTypeMutation,
+  useSetAddCommissionToDishPricesMutation,
+  useSetShippingFreeDeliveryPricesMutation
 } = pub;
