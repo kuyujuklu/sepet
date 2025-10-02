@@ -150,8 +150,8 @@ const CourierOrderCard = ({ courierID, order, courierOrdersFilter }) => {
           courierOrdersFilter === courierOrderFilters.active
             ? "#059669"
             : courierOrdersFilter === courierOrderFilters.available
-            ? "#ed5e21"
-            : "black",
+              ? "#ed5e21"
+              : "black",
       }}
     >
       <div className="grid gap-y-3 items-center gap-x-2 grid-cols-3">
@@ -174,7 +174,7 @@ const CourierOrderCard = ({ courierID, order, courierOrdersFilter }) => {
             />
           </div>
           <span>{t(translateOrderStatus(order?.status))}</span>
-          
+
         </div>
 
         <div className="grid col-span-3 grid-cols-6 gap-y-1 gap-x-2">
@@ -183,9 +183,8 @@ const CourierOrderCard = ({ courierID, order, courierOrdersFilter }) => {
             <a
               class="text-blue-600"
               target="_blank"
-              href={`http://maps.google.com/?q=${
-                order?.pub?.lat + "," + order?.pub?.lng
-              }`}
+              href={`http://maps.google.com/?q=${order?.pub?.lat + "," + order?.pub?.lng
+                }`}
             >
               {order?.pub?.address}
             </a>
@@ -276,98 +275,108 @@ const CourierOrderCard = ({ courierID, order, courierOrdersFilter }) => {
                     )} */}
             <>
               <span>
-                Заработок 
+                Заработок
                 <div>
                   {order?.courier_info?.courier_reward?.toFixed(2)} Lei
-                  </div>
+                </div>
               </span>
             </>
           </span>
         </div>
+        {order.pub.phone_number && (
+          <div className="flex items-center gap-2 justify-start col-span-3">
+            <span className="font-bold">
+              {t("courier.courier_order.client_second_phone")}:
+            </span>{" "}
+            <span>{order.pub.phone_number}</span>
+          </div>
+        )}
+
         {(courierOrdersFilter === courierOrderFilters.completed ||
           courierOrdersFilter === courierOrderFilters.active) && (
-          <>
-            <div className="flex items-center gap-2 justify-start col-span-3">
-              <span className="font-bold">
-                {t("courier.courier_order.client_name")}:
-              </span>
-              <span>{order.client_name}</span>
-            </div>
-            <div className="flex items-center gap-2 justify-start col-span-3">
-              <span className="font-bold">
-                {t("courier.courier_order.client_main_phone")}:
-              </span>
-              <span>{order.main_phone_number}</span>
-            </div>
-            {order.second_phone_number && (
+            <>
               <div className="flex items-center gap-2 justify-start col-span-3">
                 <span className="font-bold">
-                  {t("courier.courier_order.client_second_phone")}:
-                </span>{" "}
-                <span>{order.second_phone_number}</span>
+                  {t("courier.courier_order.client_name")}:
+                </span>
+                <span>{order.client_name}</span>
               </div>
-            )}
-            {order.comments && (
               <div className="flex items-center gap-2 justify-start col-span-3">
                 <span className="font-bold">
-                  {t("courier.courier_order.comments")}:
-                </span>{" "}
-                <span>{order.comments}</span>
+                  {t("courier.courier_order.client_main_phone")}:
+                </span>
+                <span>{order.main_phone_number}</span>
               </div>
-            )}
-            {shownDishesArray && (
-              <>
+              {order.second_phone_number && (
                 <div className="flex items-center gap-2 justify-start col-span-3">
                   <span className="font-bold">
-                    {t("courier.courier_order.positions")}:
+                    {t("courier.courier_order.client_second_phone")}:
                   </span>{" "}
+                  <span>{order.second_phone_number}</span>
                 </div>
-                <ol className="text-xs w-full col-span-3">
-                  {shownDishesArray.map((dishObject, index) => (
-                    <li>
-                      <span className="font-bold">{index + 1}.</span>{" "}
-                      {dishObject.pub_dish.name} - {dishObject.order_dish.count}
-                      {t("courier.courier_order.pieces_shortcut")}.{" "}
-                      {/* {(dishObject.order_dish.dish_price *
+              )}
+              {order.comments && (
+                <div className="flex items-center gap-2 justify-start col-span-3">
+                  <span className="font-bold">
+                    {t("courier.courier_order.comments")}:
+                  </span>{" "}
+                  <span>{order.comments}</span>
+                </div>
+              )}
+              {shownDishesArray && (
+                <>
+                  <div className="flex items-center gap-2 justify-start col-span-3">
+                    <span className="font-bold">
+                      {t("courier.courier_order.positions")}:
+                    </span>{" "}
+                  </div>
+                  <ol className="text-xs w-full col-span-3">
+                    {shownDishesArray.map((dishObject, index) => (
+                      <li>
+                        <span className="font-bold">{index + 1}.</span>{" "}
+                        {dishObject.pub_dish.name} - {dishObject.order_dish.count}
+                        {t("courier.courier_order.pieces_shortcut")}.{" "}
+                        {/* {(dishObject.order_dish.dish_price *
                         dishObject.order_dish.count).toFixed(2)} {" "} Lei */}
-                    </li>
-                  ))}
-                </ol>
-                <div className="col-span-3 ml-3 flex flex-col">
-                  {/* <div>
+                      </li>
+                    ))}
+                  </ol>
+                  <div className="col-span-3 ml-3 flex flex-col">
+                    {/* <div>
                     <span className="font-bold">{t("courier.courier_order.products_price")}:</span> {productsPrice.toFixed(2)} Lei
                   </div> */}
-                  {/* <div>
+                    {/* <div>
                     <span className="font-bold">{t("courier.courier_order.delivery_price")}:</span> {order.delivery_price.toFixed(2)} Lei
                     </div> */}
                     <div>
                       <span className="font-bold">{t("Отдать в ресторан")}:</span>{" "}
                       {productsPriceWithoutCommission?.toFixed(2)} Lei
                     </div>
-                  <div>
-                    <span className="font-bold">
-                      {t("courier.courier_order.total_from_client")}:
-                    </span>{" "}
-                    {totalFromClient.toFixed(2)} Lei
-                  </div>
-                  {/* <div>
+                    <div>
+                      <span className="font-bold">
+                        {t("courier.courier_order.total_from_client")}:
+                      </span>{" "}
+                      {totalFromClient.toFixed(2)} Lei
+                    </div>
+                    {/* <div>
                     <span className="font-bold">
                       Оставить у себя:
                     </span>
                       {moneyLeftFromClient?.toFixed(2)}
                     Lei
                   </div> */}
-                  <div>
-                    <span className="font-bold">
-                      {courierRewardWithBonus > 0 ? "Бонус на баланс" : "Комиссия с баланса"}{": "}
-                    </span>{" "}
-                    {courierRewardWithBonus?.toFixed(2)} Lei
+                    <div>
+                      <span className="font-bold">
+                        {courierRewardWithBonus > 0 ? "Бонус на баланс" : "Комиссия с баланса"}{": "}
+                      </span>{" "}
+                      {courierRewardWithBonus?.toFixed(2)} Lei
+                    </div>
                   </div>
-                </div>
-              </>
-            )}
-          </>
-        )}
+                </>
+              )}
+            </>
+          )}
+
         {isAvailableForReservation && (
           <Button
             className="col-span-3"
@@ -403,10 +412,20 @@ const CourierOrderCard = ({ courierID, order, courierOrdersFilter }) => {
           </Button>
         )}
 
-        {(order?.status === orderStatuses.preparing && order?.prepared) && 
+        {(order?.status === orderStatuses.preparing && order?.prepared) &&
           <div className="col-span-3 font-bold text-lg text-center animate-pulse">
             Ресторан отметил что заказ можно забрать
           </div>}
+        {
+          (order?.status === orderStatuses.preparing) && order.approximate_preparation_time && (
+            <div className="flex items-center gap-2 justify-start col-span-3">
+              <div className="col-span-3 flex items-center font-bold text-lg text-center gap-2">
+                {t("Приехать к")}:
+                <span>{ConvertQrMenuApiTimeToLocal(order.approximate_preparation_time)}</span>
+              </div>
+            </div>
+          )
+        }
 
         {isAvailableForCompletion && (
           <Button

@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from "react-redux";
-import { selectOrders, setDeleteFromOrderDishPopupState } from "../ordersSlice";
+import { selectOrders, setDeleteFromOrderDishPopupState, setUpdateOrderApproximateTimePopup } from "../ordersSlice";
 import { useEffect, useMemo, useState } from "react";
 import OrderCard from "../OrderCard";
 import { useParams } from "react-router-dom";
@@ -22,6 +22,7 @@ import OrderCourierInfo from "../OrderCourierInfo";
 import { deliveryTypes } from "../../../../static-data/data";
 import { KeyboardReturnTwoTone } from "@mui/icons-material";
 import CheckboxWithLabel from "../../../../components/Inputs/CheckboxWithLabel";
+import { ConvertQrMenuApiTimeToLocal } from "../../../../utils/time";
 
 const OrderInfoPage = ({ pubUrlName }) => {
   const { t } = useTranslation();
@@ -77,10 +78,10 @@ const OrderInfoPage = ({ pubUrlName }) => {
       ?.map((item) =>
         dishCountsAndFixedPrice[item.id]
           ? {
-              dish: item,
-              count: dishCountsAndFixedPrice[item.id].count,
-              fixedPrice: dishCountsAndFixedPrice[item.id].fixedPrice,
-            }
+            dish: item,
+            count: dishCountsAndFixedPrice[item.id].count,
+            fixedPrice: dishCountsAndFixedPrice[item.id].fixedPrice,
+          }
           : false
       )
       .filter((item) => !!item);
@@ -166,6 +167,20 @@ const OrderInfoPage = ({ pubUrlName }) => {
     ? [0, ...Object.values(pubData?.pub?.shipping?.shipping_prices)]
     : [0];
 
+  const openOrderUpdateApproximateTimePopup = () => {
+    const companyID = pubData?.pub?.company_id;
+    const pubID = pubData?.pub?.id;
+
+    if (!companyID || !pubID || !orderID) return;
+
+    dispatch(setUpdateOrderApproximateTimePopup({
+      opened: true,
+      pubID,
+      companyID,
+      orderID
+    }))
+  }
+
   return (
     <div className="flex flex-col items-center m-auto">
       {!order && (
@@ -183,11 +198,11 @@ const OrderInfoPage = ({ pubUrlName }) => {
               <OrderCard order={order} hasArrow={false} />
             </div>
 
-          {pubData?.pub?.shipping?.delivery_type === deliveryTypes.deliveryService &&
-            <div className="w-full mb-4">
-              <OrderCourierInfo order={order} />
-            </div>
-          }
+            {pubData?.pub?.shipping?.delivery_type === deliveryTypes.deliveryService &&
+              <div className="w-full mb-4">
+                <OrderCourierInfo order={order} />
+              </div>
+            }
 
             <div className="mb-6">
               <OrderStatuses
@@ -197,17 +212,47 @@ const OrderInfoPage = ({ pubUrlName }) => {
                 status={order.status}
               />
 
-              {order.status === "preparing" && 
-                <div className="flex items-center">
-                  <span>Заказ готов </span>
-                  <CheckboxWithLabel 
-                      value={order?.prepared} 
-                      setValue={(prep) => setPrepared(prep)} 
-                  />
-                </div>
-              }
+              <div className="flex flex-row justify-between w-full gap-5">
+                {order.status === "preparing" &&
+                  <div className="flex items-center">
+                    <span onClick={() => setPrepared(!order?.prepared)}>Заказ готов </span>
+                    <CheckboxWithLabel
+                      value={order?.prepared}
+                      setValue={(prep) => setPrepared(prep)}
+                    />
+                  </div>
+                }
+
+                {order.status === "preparing" &&
+                  <div className="flex items-center gap-2">
+                    <span>Курьер приедет к: </span>
+                    <span>{ConvertQrMenuApiTimeToLocal(order?.approximate_preparation_time)}</span>
+                    <Button
+                      variant="contained"
+                      sx={{
+                        color: "white",
+                        bgcolor: "#3b82f6",
+                        fontSize: ".6rem",
+                        fontWeight: "medium",
+                        padding: ".2rem",
+                        borderRadius: "10px",
+                        width: "fit-content",
+                        ":hover": {
+                          bgcolor: "#3b82f6",
+                        },
+                      }}
+                      onClick={openOrderUpdateApproximateTimePopup}
+                    >
+                      <div className="flex items-center">
+                        <span className="font-bold">{t("изменить")}</span>
+                      </div>
+                    </Button>
+
+                  </div>
+                }
+              </div>
             </div>
-          
+
 
             <div className="grid grid-cols-2 w-full px-10 mb-10">
               {order.order_type === orderTypes.delivery && (
@@ -307,21 +352,21 @@ const OrderInfoPage = ({ pubUrlName }) => {
                 <div className="w-full px-20 py-5">
                   <div>
                     {t("admin.admin_panel.order_page.total_price_of_products")}:{" "}
-                   
-                   
+
+
                     {pubData?.pub?.shipping?.add_commission_to_dish_prices ?
-                      (orderItemsPrice / 1.1).toFixed(2)  :
+                      (orderItemsPrice / 1.1).toFixed(2) :
                       orderItemsPrice.toFixed(2)
                     } Lei
 
 
                   </div>
-                  {pubData?.pub?.shipping?.add_commission_to_dish_prices && 
+                  {pubData?.pub?.shipping?.add_commission_to_dish_prices &&
                     <div>
                       {/* commission */}
                       {t("commission")}:{" "}
-                      {(orderItemsPrice- orderItemsPrice / 1.1).toFixed(2)} Lei
-                      
+                      {(orderItemsPrice - orderItemsPrice / 1.1).toFixed(2)} Lei
+
                     </div>
                   }
                   {order.order_type === orderTypes.delivery && (

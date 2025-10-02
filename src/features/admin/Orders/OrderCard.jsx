@@ -9,29 +9,43 @@ const OrderCard = ({ order, hasArrow = true }) => {
 
   return (
     <div
-      className="grid grid-cols-1 gap-y-3 sm:flex flex-wrap justify-between gap-x-10 rounded-2xl shadow-xl border-gray-300 border px-10 py-5"
+      className="grid grid-cols-2 relative sm:grid-cols-3 justify-between items-center overflow-visible rounded-2xl gap-y-2 shadow-xl border-gray-300 border px-10 py-5"
       style={{
         maxWidth: "900px",
         border: "solid 2px",
         borderColor: getOrderColor(order.status),
       }}
     >
-      <div className="flex gap-x-20">
-        <div className="font-bold">
-          {t("admin.admin_panel.order_page.order")} №{order?.id}
-        </div>
-        <div className="">{order?.client_name}</div>
+      <div className="font-bold">
+        {t("admin.admin_panel.order_page.order")} №{order?.id}
+      </div>
+      {order?.client_name === "delivery order from web menu" &&
+        <div className="absolute bg-red-500 text-white rounded-xl shadow-xl border-white p-1" style={{ top: -14, right: -10 }}>Обзвонить</div>
+      }
+
+      <div className="truncate overflow-visible" style={{ maxWidth: 130 }}>
+        <div className="truncate overflow-visible">{order?.client_name}</div>
       </div>
 
-      <div className="flex-col sm:flex-row flex gap-x-10 gap-y-3">
+      <div className="flex justify-start sm:justify-end">
         <div
           className="w-fit px-6 py rounded-md text-white"
           style={{ background: getOrderColor(order?.status) }}
         >
           {t(translateOrderStatus(order?.status))}
         </div>
+      </div>
+
+      <div className="flex justify-between gap-x-4">
+        {ConvertQrMenuApiTimeToLocal(order?.created_time, i18n.language)}
+      </div>
+      <div
+        className="w-fit"
+      >
+        {order?.total_dishes_price_without_commission?.toFixed(2)} Lei
+      </div>
+      <div className="flex justify-start sm:justify-end">
         <div className="flex justify-between gap-x-4">
-          {ConvertQrMenuApiTimeToLocal(order?.created_time, i18n.language)}
           {hasArrow && (
             <img
               src={"/static/admin/images/svg/arrow-right-black.svg"}
@@ -42,7 +56,7 @@ const OrderCard = ({ order, hasArrow = true }) => {
           )}
         </div>
       </div>
-    </div>
+    </div >
   );
 };
 

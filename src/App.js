@@ -35,6 +35,7 @@ import AddCourierPopup from "./features/admin/ShippingAndPreorder/Shipping/AddCo
 import CourierReserveOrderPopup from "./features/courier/popups/CourierReserveOrderPopup"
 import DeleteClientAccount from "./components/DeleteClientAccount/DeleteClientAccount"
 import AdministrationOrders from "./features/administration/AdministrationOrders"
+import UpdateOrderApproximateTimePopup from "./features/admin/Orders/OrderInfo/UpdateOrderApproximatePreparationTime"
 
 const App = () => {
   return (
@@ -54,7 +55,7 @@ const AppInner = () => {
     }
   }, [navigate])
   return (
-    <div 
+    <div
       style={{
         maxWidth: 1280,
         padding: "0 10px",
@@ -67,7 +68,7 @@ const AppInner = () => {
         <Route path="/administration/orders" element={<AdministrationOrders />} />
         <Route path="/courier/*" element={<CourierPage />} />
       </Routes>
-      
+
       <Alerts />
       <ErrorHandlers />
       <AuthWatcher />
@@ -79,7 +80,7 @@ const AppInner = () => {
   )
 }
 
-const Popups =() => {
+const Popups = () => {
   return (
     <>
       <TariffPopup />
@@ -88,11 +89,11 @@ const Popups =() => {
       <CreatePubPopup />
       <UpdatePubPopup />
       <DeletePubPopup />
-      
+
       <CreateMenuPopup />
       <UpdateMenuPopup />
       <DeleteMenuPopup />
-      
+
       <CreateCategoryPopup />
       <UpdateCategoryPopup />
       <DeleteCategoryPopup />
@@ -105,6 +106,7 @@ const Popups =() => {
 
       <DeleteDishFromOrderPopup />
       <AddDishToOrderPopup />
+      <UpdateOrderApproximateTimePopup />
 
       <CourierInfoPopup />
       <AddCourierPopup />
@@ -114,15 +116,15 @@ const Popups =() => {
   )
 }
 
-const AdminInner  = () => {
+const AdminInner = () => {
   return (
-  <Routes>
-    <Route path="/auth/registration" element={<Registration />} />
+    <Routes>
+      <Route path="/auth/registration" element={<Registration />} />
       <Route path="/auth/authentication" element={<Authentication />} />
       <Route path="/company" element={<CompanyPage />} />
       <Route path="/pub/:pubID/*" element={<AdminPanel />} />
       <Route path="/delete-client*" element={<DeleteClientAccount />} />
-  </Routes>
+    </Routes>
   )
 
 }
