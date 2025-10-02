@@ -3,6 +3,7 @@ package orderservice
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/alexkalak/qrmenu/src/controllers/httpv1/input/entities"
 	"github.com/alexkalak/qrmenu/src/errors/ordererrors"
@@ -29,10 +30,13 @@ type OrderService interface {
 	GetOrderByID(orderID int) (models.Order, error)
 	CreateOrder(models.Order) (models.Order, error)
 	CreateOrderForUnknownClient(models.Order) (models.Order, error)
+
 	UpdateOrderStatus(orderID int, status string) error
 	UpdateOrderDeliveryPrice(orderID int, deliveryPrice float64) error
 	UpdateOrderCourierInfo(orderID int, courierInfo models.OrderCourierInfo) (models.OrderCourierInfo, error)
 	UpdateOrderPrepared(orderID int, prepared bool) error
+	UpdateOrderApproximatePreparationTime(orderID int, approximatePreparationTime time.Time) error
+
 	AddToOrderCourierInfoCourierDebit(orderID int, amount float64) (models.OrderCourierInfo, error)
 	IsCommissionNeededForOrderArgsIDs(orderID int, pubID int) (bool, error)
 	IsCommissionNeededForOrderArgsModels(order models.Order, pub models.Pub) (bool, error)
@@ -269,6 +273,7 @@ func (s *orderService) CreateOrder(order models.Order) (models.Order, error) {
 	}
 
 	order.Status = models.NOT_HANDLED_ORDER_STATUS
+	order.ApproximatePreparationTime = time.Now().Add(time.Minute * 20)
 
 	tx := s.OrderRepo.NewTransaction()
 
@@ -506,6 +511,44 @@ func (s *orderService) UpdateOrderPrepared(orderID int, prepared bool) error {
 
 	tx := s.OrderRepo.NewTransaction()
 	err = s.OrderRepo.UpdateOrderPreparedWithinTransaction(tx, orderID, prepared)
+	if err != nil {
+		return err
+	}
+
+	order, err := s.OrderRepo.GetOrderByIDWithinTransaction(tx, orderID)
+	if err != nil {
+		return err
+	}
+
+	// send for all subscribed callbacks
+	s.SendUpdatedOrderToAllCallbacks(order, prevOrder, false)
+
+	// sending for admin panel
+	err = s.SendSingleOrderMessageForPubConnections(order.PubID, order, UPDATE_EVENT_TYPE)
+	if err != nil {
+		fmt.Println("sending notification error")
+		return err
+	}
+
+	// sending for clients
+	err = s.SendSingleOrderMessageForClientConnections(order.ClientID, order, UPDATE_EVENT_TYPE)
+	if err != nil {
+		fmt.Println("sending notification error")
+		return err
+	}
+	tx.Commit()
+
+	return nil
+}
+
+func (s *orderService) UpdateOrderApproximatePreparationTime(orderID int, approximatePreparationTime time.Time) error {
+	prevOrder, err := s.OrderRepo.GetOrderByID(orderID)
+	if err != nil {
+		return err
+	}
+
+	tx := s.OrderRepo.NewTransaction()
+	err = s.OrderRepo.UpdateOrderApproximatePreparationTimeWithinTransaction(tx, orderID, approximatePreparationTime)
 	if err != nil {
 		return err
 	}

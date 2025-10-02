@@ -3,6 +3,7 @@ package orderrepo
 import (
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/alexkalak/qrmenu/src/db/postgresql"
 	"github.com/alexkalak/qrmenu/src/errors/ordererrors"
@@ -29,6 +30,8 @@ type OrderRepo interface {
 	UpdateOrderTotalPrice(orderID int, totalPrice float64) error
 	UpdateOrderPrepared(orderID int, prepared bool) error
 	UpdateOrderPreparedWithinTransaction(tx *gorm.DB, orderID int, prepared bool) error
+	UpdateOrderApproximatePreparationTime(orderID int, approximatePreparationTime time.Time) error
+	UpdateOrderApproximatePreparationTimeWithinTransaction(tx *gorm.DB, orderID int, approximatePreparationTime time.Time) error
 	UpdateOrderStatus(orderID int, status string) error
 	UpdateOrderStatusWithinTransaction(tx *gorm.DB, orderID int, status string) error
 	UpdateOrderDeliveryPrice(orderID int, price float64) error
@@ -203,6 +206,16 @@ func (r *orderRepo) UpdateOrderPrepared(orderID int, prepared bool) error {
 func (r *orderRepo) UpdateOrderPreparedWithinTransaction(tx *gorm.DB, orderID int, prepared bool) error {
 	fmt.Println("updat inal =========================================")
 	err := tx.Model(&models.Order{}).Where("id = ?", orderID).UpdateColumn("prepared", prepared).Error
+	return err
+}
+
+func (r *orderRepo) UpdateOrderApproximatePreparationTime(orderID int, approximatePreparationTime time.Time) error {
+	err := r.Database.Model(&models.Order{}).Where("id = ?", orderID).UpdateColumn("approximate_preparation_time", approximatePreparationTime).Error
+	return err
+}
+
+func (r *orderRepo) UpdateOrderApproximatePreparationTimeWithinTransaction(tx *gorm.DB, orderID int, approximatePreparationTime time.Time) error {
+	err := tx.Model(&models.Order{}).Where("id = ?", orderID).UpdateColumn("approximate_preparation_time", approximatePreparationTime).Error
 	return err
 }
 

@@ -7,6 +7,7 @@ import (
 	"github.com/alexkalak/qrmenu/src/controllers/httpv1/input"
 	"github.com/alexkalak/qrmenu/src/controllers/httpv1/input/entities"
 	"github.com/alexkalak/qrmenu/src/errors/httperrors"
+	"github.com/alexkalak/qrmenu/src/helpers"
 	"github.com/alexkalak/qrmenu/src/models"
 	"github.com/gofiber/fiber/v2"
 )
@@ -53,7 +54,7 @@ func (c *ordersController) UpdateOrderStatus(ctx *fiber.Ctx) error {
 		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
 	}
 
-	//Checking access for action with pub for company
+	// Checking access for action with pub for company
 	err = h.CheckCompanyAccess(userID, companyID, userSignificance, userRole, models.PUB_COMPANY_ENTITY, pubID)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
@@ -106,7 +107,7 @@ func (c *ordersController) UpdateOrderDeliveryPrice(ctx *fiber.Ctx) error {
 		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
 	}
 
-	//Checking access for action with pub for company
+	// Checking access for action with pub for company
 	err = h.CheckCompanyAccess(userID, companyID, userSignificance, userRole, models.PUB_COMPANY_ENTITY, pubID)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
@@ -165,7 +166,7 @@ func (c *ordersController) UpdateOrderDishes(ctx *fiber.Ctx) error {
 		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
 	}
 
-	//Checking access for action with pub for company
+	// Checking access for action with pub for company
 	err = h.CheckCompanyAccess(userID, companyID, userSignificance, userRole, models.PUB_COMPANY_ENTITY, pubID)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
@@ -238,7 +239,7 @@ func (c *ordersController) UpdateOrderPrepared(ctx *fiber.Ctx) error {
 		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
 	}
 
-	//Checking access for action with pub for company
+	// Checking access for action with pub for company
 	err = h.CheckCompanyAccess(userID, companyID, userSignificance, userRole, models.PUB_COMPANY_ENTITY, pubID)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
@@ -261,6 +262,68 @@ func (c *ordersController) UpdateOrderPrepared(ctx *fiber.Ctx) error {
 		ctx,
 		fiber.Map{
 			"prepared": input.Prepared,
+		},
+		fiber.StatusOK)
+}
+
+type UpdateOrderApproximatePreparationTimeInput struct {
+	ApproximatePreparationTime string `json:"approximate_preparation_time"`
+}
+
+type UpdateOrderApproximatePreparationTimeOutput struct {
+	ApproximatePreparationTime string `json:"approximate_preparation_time"`
+}
+
+func (c *ordersController) UpdateOrderApproximatePreparationTime(ctx *fiber.Ctx) error {
+	userID, userSignificance, userRole, err := h.GetUserIDSignificanceAndRoleFromLocals(ctx)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	companyID, err := strconv.Atoi(ctx.Params("companyID"))
+	if err != nil {
+		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	pubID, err := strconv.Atoi(ctx.Params("pubID"))
+	if err != nil {
+		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	orderID, err := strconv.Atoi(ctx.Params("orderID"))
+	if err != nil {
+		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	// Checking access for action with pub for company
+	err = h.CheckCompanyAccess(userID, companyID, userSignificance, userRole, models.PUB_COMPANY_ENTITY, pubID)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	input, validationErrors, err := input.ParseRequestBody[UpdateOrderApproximatePreparationTimeInput](ctx)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+	if len(validationErrors) > 0 {
+		return h.SendValidationErrors(ctx, validationErrors)
+	}
+
+	parsedTime := helpers.ConvertFromStandardApiTime(input.ApproximatePreparationTime)
+
+	if parsedTime.IsZero() {
+		return h.SendError(ctx, httperrors.ErrBadBody, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	err = c.OrderService.UpdateOrderApproximatePreparationTime(orderID, parsedTime)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	return h.SendSuccess(
+		ctx,
+		fiber.Map{
+			"prepared": helpers.ConvertToStandardApiTime(parsedTime),
 		},
 		fiber.StatusOK)
 }

@@ -100,6 +100,7 @@ type OrderOutput struct {
 	Lng                               float64                `json:"lng"`
 	TotalDishesPriceWithoutCommission float64                `json:"total_dishes_price_without_commission"`
 	Prepared                          bool                   `json:"prepared"`
+	ApproximatePreparationTime        string                 `json:"approximate_preparation_time"`
 }
 
 func (o *OrderOutput) FillFromModel(order models.Order) error {
@@ -141,6 +142,7 @@ func (o *OrderOutput) FillFromModel(order models.Order) error {
 	o.Lng = order.Lng
 	o.TotalDishesPriceWithoutCommission = order.TotalDishesPriceWithoutCommission
 	o.Prepared = order.Prepared
+	o.ApproximatePreparationTime = helpers.ConvertToStandardApiTime(order.ApproximatePreparationTime)
 
 	for _, orderDish := range orderDishes {
 		o.Dishes = append(o.Dishes, OrderDishOutput{Count: orderDish.Count, DishID: orderDish.DishID, DishPrice: orderDish.DishPrice})
@@ -174,6 +176,7 @@ type OrderOutputWithoutPub struct {
 	Lng                               float64                `json:"lng"`
 	TotalDishesPriceWithoutCommission float64                `json:"total_dishes_price_without_commission"`
 	Prepared                          bool                   `json:"prepared"`
+	ApproximatePreparationTime        string                 `json:"approximate_preparation_time"`
 }
 
 func (o *OrderOutputWithoutPub) FillFromModel(order models.Order) error {
@@ -214,6 +217,7 @@ func (o *OrderOutputWithoutPub) FillFromModel(order models.Order) error {
 	o.Lng = order.Lng
 	o.TotalDishesPriceWithoutCommission = order.TotalDishesPriceWithoutCommission
 	o.Prepared = order.Prepared
+	o.ApproximatePreparationTime = helpers.ConvertToStandardApiTime(order.ApproximatePreparationTime)
 
 	for _, orderDish := range orderDishes {
 		o.Dishes = append(o.Dishes, OrderDishOutput{Count: orderDish.Count, DishID: orderDish.DishID, DishPrice: orderDish.DishPrice})

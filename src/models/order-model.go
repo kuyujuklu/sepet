@@ -2,6 +2,7 @@ package models
 
 import (
 	"encoding/json"
+	"time"
 
 	"github.com/alexkalak/qrmenu/src/errors/ordererrors"
 	"gorm.io/gorm"
@@ -108,10 +109,11 @@ type Order struct {
 	OrderType                         string
 	TableForInPlaceOrder              int
 	Status                            string
-	Rating                            int //from 1 to 5
+	Rating                            int // from 1 to 5
 	DeliveryPrice                     float64
 	Lat                               float64
 	Lng                               float64
+	ApproximatePreparationTime        time.Time // in minutes
 
 	OrderCourierInfo   OrderCourierInfo
 	OrderCourierInfoID int
