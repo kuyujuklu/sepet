@@ -37,7 +37,7 @@ const PubNotAvailableForDeliveryPopup = () => {
   const navigator = useNavigation();
 
   return (
-    <Modal visible={popupState.isOpened} backdropColor="transparent" animationType="fade">
+    <Modal visible={popupState.isOpened} transparent={true} animationType="fade">
       <Pressable flex={1} onPress={() => dispatch((closePubNotAvailableForDeliveryPopup()))}>
         <View style={styles.modalOverlay} >
           <Pressable onPress={(e) => e.stopPropagation()}>

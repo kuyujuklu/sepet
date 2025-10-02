@@ -32,7 +32,7 @@ const ClearBasketPopup = () => {
   const popupState = useSelector(selectClearBasketPopup);
 
   return (
-    <Modal visible={popupState.isOpened} backdropColor="rgba(0, 0, 0, 0.0)" animationType="slide">
+    <Modal visible={popupState.isOpened} transparent={true} animationType="slide">
       <Pressable flex={1} onPress={() => { dispatch((closeClearBasketPopup())) }}>
         <View style={styles.modalOverlay} >
           <Pressable onPress={(e) => e.stopPropagation()}>

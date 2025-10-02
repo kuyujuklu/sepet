@@ -34,7 +34,7 @@ import "./src/i18n/i18n.config";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import NotificationHandler from "./src/features/store/notifications/NotificationHandler";
-import { StatusBar } from "react-native";
+import { ActivityIndicator, StatusBar } from "react-native";
 import DishImagePopup from "./src/widgets/Dish/DishImagePopup";
 import ChangePassword from "./src/pages/Auth/ChangePassword/ChangePassword";
 import OrderInfoPage from "./src/pages/Orders/OrderInfoPage";
@@ -51,12 +51,13 @@ import ExpiredVersionPage from "./src/pages/Version/ExpiredVersionPage.jsx";
 
 export default function App() {
   return (
-    <NativeBaseProvider>
-      <Provider store={store}>
-        <AppInner />
-      </Provider>
-      <StatusBar barStyle="dark-content" backgroundColor="#f5f5f5" />
-    </NativeBaseProvider>
+    <>
+      <NativeBaseProvider>
+        <Provider store={store}>
+          <AppInner />
+        </Provider>
+      </NativeBaseProvider>
+    </>
   );
 }
 

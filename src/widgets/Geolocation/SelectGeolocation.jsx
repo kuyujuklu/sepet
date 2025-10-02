@@ -9,8 +9,8 @@ import {
   setSavedAddresses,
 } from "../../features/store/geolocation/geolocationSlice";
 import { useEffect, useRef, useState } from "react";
-import { Button, ScrollView, Spinner, Text, View } from "native-base";
-import { Animated, Dimensions, Image, Platform } from "react-native";
+import { Button, ScrollView, Text, View } from "native-base";
+import { ActivityIndicator, Animated, Dimensions, Image, Platform } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import InputWithValidation from "../Inputs/InputWithValidation";
@@ -128,32 +128,33 @@ const SelectGeolocation = ({ setGeolocation, goBack }) => {
           alignItems="center"
         >
           {/* No near location screen */}
-          {!nearLocation && (
-            <View
-              position="absolute"
-              zIndex="100"
-              style={{ width: "100%", height: "100%" }}
-              justifyContent="center"
-              alignItems="center"
-            >
-              {hasPerm && (
-                <View h="53%" justifyContent="flex-end">
-                  <Spinner size="xl" />
+          {
+            !nearLocation && (
+              <View
+                position="absolute"
+                zIndex="100"
+                style={{ width: "100%", height: "100%" }}
+                justifyContent="center"
+                alignItems="center"
+              >
+                {hasPerm ? (
+                  <ActivityIndicator animating={true} size="small" />
+                ) : <></>
+                }
+                <View h="47%">
+                  <Button
+                    background={"emerald.600"}
+                    borderRadius={15}
+                    mt={8}
+                    mb={4}
+                    onPress={handleSelectLocationByYourself}
+                  >
+                    {t("select_geolocation.select_by_yourself_button")}
+                  </Button>
                 </View>
-              )}
-              <View h="47%">
-                <Button
-                  background={"emerald.600"}
-                  borderRadius={15}
-                  mt={8}
-                  mb={4}
-                  onPress={handleSelectLocationByYourself}
-                >
-                  {t("select_geolocation.select_by_yourself_button")}
-                </Button>
               </View>
-            </View>
-          )}
+            )
+          }
           {/* Mark to center */}
           <View zIndex={100} position="absolute">
             <View

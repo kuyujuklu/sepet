@@ -19,6 +19,7 @@ import { useTranslation } from "react-i18next";
 import SelectFromPreviousGeolocations from "../../widgets/Geolocation/SelectFromPreviousGeolocations";
 import { Animated, Dimensions, Platform } from "react-native";
 import SelectGeolocationInputs from "../../widgets/Geolocation/SelectGeolocationInputs";
+import { ActivityIndicator } from "react-native";
 import { Image } from "expo-image";
 import { images } from "../../app/images/images";
 
@@ -80,7 +81,7 @@ const SelectGeolocationPage = () => {
             <>
               <View>
                 <Text fontFamily={AnonymousProBold} fontSize={22} px={5}>
-                  {location || nearLocaiton
+                  {(location || nearLocaiton)
                     ? t("select_geolocation.headline")
                     : hasPerm
                       ? t("select_geolocation.wait_geolocation_is_loading")
@@ -88,7 +89,9 @@ const SelectGeolocationPage = () => {
                 </Text>
               </View>
               <View flex={1}>
-                <SelectGeolocation setGeolocation={setGeolocationOnMap} goBack={() => setPage("select_from_previous")} />
+                {
+                  <SelectGeolocation setGeolocation={setGeolocationOnMap} goBack={() => setPage("select_from_previous")} />
+                }
               </View>
             </>
           )}

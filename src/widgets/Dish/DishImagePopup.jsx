@@ -72,7 +72,7 @@ const DishImagePopup = () => {
   }
 
   return (
-    <Modal visible={popupState.isOpened} backdropColor="transparent" animationType="slide">
+    <Modal visible={popupState.isOpened} transparent={true} animationType="slide">
       <Pressable flex={1} onPress={() => { dispatch((closeDishImagePopup())) }}>
         <View style={styles.modalOverlay} >
           <Pressable onPress={(e) => e.stopPropagation()}>

@@ -31,7 +31,7 @@ const PubsMap = ({ selectPub, selectedPub }) => {
   });
 
   // Log error on getting nearby pubs error from api
-  useEffect(() => {}, [error]);
+  useEffect(() => { }, [error]);
 
   const pubs = useMemo(() => {
     if (!data?.pubs) return [];
@@ -65,7 +65,7 @@ const PubsMap = ({ selectPub, selectedPub }) => {
         },
         { duration: 800 },
       );
-    } 
+    }
     //ios
     else {
       mapRef.current.animateToRegion(
@@ -111,6 +111,7 @@ const PubsMap = ({ selectPub, selectedPub }) => {
         {!location && <Spinner size="lg" />}
         {location && (
           <MapView
+            googleRenderer="LEGACY"
             provider={Platform.OS === "android" ? PROVIDER_GOOGLE : undefined}
             onMapLoaded={() => {
               setMapLoaded(true);
@@ -144,30 +145,33 @@ const PubsMap = ({ selectPub, selectedPub }) => {
             })}
 
             {/* Client geolocation marker */}
-            {location && (
-              <Marker
-                tracksViewChanges={false}
-                coordinate={{
-                  latitude: location.lat,
-                  longitude: location.lng,
-                }}
-                style={{ elevation: 10 }}
-              >
-                <View
-                  style={{
-                    width: 40,
-                    height: 40,
-                  }}
-                >
-                  <Image
-                    alt="smthng"
-                    resizeMode="contain"
-                    style={{ aspectRatio: 1, width: "100%", height: "100%" }}
-                    source={require("assets/images/user_marker.png")}
-                  />
-                </View>
-              </Marker>
-            )}
+            {
+              //{location && (
+              //  <Marker
+              //    tracksViewChanges={false}
+              //    coordinate={{
+              //      latitude: location.lat,
+              //      longitude: location.lng,
+              //    }}
+              //    style={{}}
+              //    zIndex={200}
+              //  >
+              //    <View
+              //      style={{
+              //        width: 40,
+              //        height: 40,
+              //      }}
+              //    >
+              //      <Image
+              //        alt="smthng"
+              //        resizeMode="contain"
+              //        style={{ aspectRatio: 1, width: "100%", height: "100%" }}
+              //        source={require("assets/images/user_marker.png")}
+              //      />
+              //    </View>
+              //  </Marker>
+              //)}
+            }
           </MapView>
         )}
       </View>

@@ -72,9 +72,9 @@ const DeleteClientPopup = () => {
   }, [deleteAccountError]);
 
   return (
-    <Modal visible={popupState.opened} backdropColor="transparent" animationType="slide">
+    <Modal visible={popupState.opened} transparent={true} animationType="slide">
       <Pressable flex={1} onPress={() => dispatch((closeDeleteClientPopup()))}>
-        <View style={styles.modalOverlay} >
+        <View style={styles.modalOverlay}>
           <Pressable onPress={(e) => e.stopPropagation()}>
             <View style={styles.modalContent}>
               <View>

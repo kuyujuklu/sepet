@@ -10,32 +10,38 @@ import { useEffect } from "react";
 
 const GeolocationFinder = () => {
   const dispatch = useDispatch();
-  const nearLocaiton = useSelector(selectNearGeolocation);
+  const nearLocation = useSelector(selectNearGeolocation);
   useEffect(() => {
     (async () => {
-      if (nearLocaiton) return;
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        console.log("NOT GRANTED, CURRENT STATUS: ", status)
+      if (nearLocation) return;
+      const statusObj = await Location.requestForegroundPermissionsAsync();
+
+      if (statusObj.status !== "granted") {
+        console.log("NOT GRANTED, CURRENT STATUS: ", statusObj.status)
         dispatch(setHasPermission(false))
         return;
       }
+
       dispatch(setHasPermission(true))
 
 
+      console.log("REQUESTING NEAR LOCATION", statusObj)
       const location = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.BestForNavigation,
+        accuracy: Location.Accuracy.Balanced,
         maximumAge: 10000,
       });
       console.log("SETTING NEAR LOCATION: ", location.coords)
-      dispatch(
-        setNearGeolocation({
-          lng: location.coords.longitude,
-          lat: location.coords.latitude,
-        }),
-      );
+
+      if (location) {
+        dispatch(
+          setNearGeolocation({
+            lng: location?.coords?.longitude,
+            lat: location?.coords?.latitude,
+          }),
+        );
+      }
     })();
-  }, []);
+  }, [nearLocation]);
   return <></>;
 };
 
