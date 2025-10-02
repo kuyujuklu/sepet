@@ -9,7 +9,7 @@ import {
   selectLastOrder,
   setBasketPubID,
 } from "../../store/basketSlice";
-import { useTranslation } from "next-i18next";
+import { useTranslation } from "react-i18next";
 import LastOrder from "./LastOrder";
 
 const BasketPage = ({ data }) => {

@@ -1,6 +1,9 @@
 import Link from "next/link";
-import { useTranslation } from "next-i18next";
+import { useTranslation } from "react-i18next";
 import { useState, useEffect } from "react";
+import { getPubWorkHours } from "../../utils/pub";
+import { convertMinsToTime } from "../../utils/time";
+import Image from "next/image"
 
 const PubCard = ({ pub }) => {
   const [imageIsLoaded, setImageIsLoaded] = useState(false);
@@ -10,6 +13,11 @@ const PubCard = ({ pub }) => {
   }, [])
 
   const { i18n } = useTranslation()
+
+  const deliveryWorkHours = getPubWorkHours(pub)
+  const workStart = convertMinsToTime(deliveryWorkHours.shippingWorkStart)
+  const workEnd = convertMinsToTime(deliveryWorkHours.shippingWorkEnd)
+  console.log("LSDJFLSDSKDLJF", pub)
 
   return (
     <Link
@@ -31,6 +39,7 @@ const PubCard = ({ pub }) => {
             src={`/api-static/images/pubs/bgs/${pub?.bg_image_file_name}`}
             alt="pub_bg"
             style={{
+              opacity: 0.55,
               display: "block",
               width: "100%",
               height: "100%",
@@ -48,7 +57,35 @@ const PubCard = ({ pub }) => {
             className="p-4 text-2xl font-medium w-fit m-auto"
             style={{ textShadow: "0px 0px 3px black" }}
           >
-            {pub?.name}
+            <div className="flex flex-col">
+              <div className="flex gap-3 justify-center items-center text-md">
+                <div className="">
+                  {pub?.name}
+                </div>
+                {pub?.rating !== 0 &&
+                  <div className="flex items-center gap-1">
+                    <div className="">
+                      {pub?.rating?.toFixed(2)}
+                    </div>
+                    <div style={{ width: 23, height: 23 }}>
+                      <Image width={23} height={23} src="/images/png/star.png" />
+                    </div>
+                  </div>
+                }
+              </div>
+              <div className="text-sm">
+                Цена доставки {pub?.shipping_price.toFixed(2)} Lei
+              </div>
+
+              {pub?.shipping_free_delivery_price !== 0 &&
+                <div className="text-sm">
+                  Бесплатная доставка от {pub?.shipping_free_delivery_price.toFixed(2)} Lei
+                </div>
+              }
+              <div className="text-sm">
+                Время работы {workStart + "-" + workEnd}
+              </div>
+            </div>
             {
               (pub?.bg_image_file_name && !imageIsLoaded) && (<div className="w-full h-full flex pt-3 justify-center">Loading...</div>)
             }

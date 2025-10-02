@@ -37,3 +37,13 @@ export const ConvertQrMenuApiTimeToLocal = (time, lang) => {
 
   return `${day} ${month} ${year} ${hours}:${minutesStr}`;
 };
+
+export const convertMinsToTime = (minutes) => {
+  let hours = Math.floor(minutes / 60);
+  let remainingMinutes = minutes % 60;
+
+  // Pad the minutes with a leading zero if needed
+  let formattedMinutes = String(remainingMinutes).padStart(2, '0');
+
+  return `${hours}:${formattedMinutes}`;
+}

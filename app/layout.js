@@ -20,6 +20,7 @@ function RootLayout({ children }) {
                     })(window,document,'script','dataLayer','GTM-WGQVXPGB');` }}>
 
         </script>
+
         <noscript>
           <iframe
             src="https://www.googletagmanager.com/ns.html?id=GTM-WGQVXPGB"
@@ -28,11 +29,6 @@ function RootLayout({ children }) {
             style={{ display: 'none', visibility: 'hidden' }}
           ></iframe>
         </noscript>
-        <script type="text/javascript" dangerouslySetInnerHTML={{
-          __html: ``
-        }}>
-
-        </script>
         <link
           rel="apple-touch-icon"
           sizes="192x192"
@@ -54,8 +50,17 @@ function RootLayout({ children }) {
         <meta httpEquiv="Content-Type" content="text/html; charset=utf-8" />
         <meta httpEquiv="Content-Language" content="ro,ru" />
       </head>
-      <body className="bg-cyan-50 h-full">{children}</body>
-    </html>
+      <body className="bg-cyan-50 h-full">
+        {children}
+        <Script
+          id="jivo-head"
+          type="text/javascript"
+          strategy="afterInteractive"
+          src="https://code.jivo.ru/widget/cFI9nv5DI4"
+        >
+        </Script>
+      </body>
+    </html >
   );
 }
 

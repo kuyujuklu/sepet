@@ -21,6 +21,9 @@ const Main = () => {
       if (location) {
         setLocation(location);
       }
+      else {
+        setLocation(locations.Ceadir_Lunga)
+      }
     }
   }, [setLocation]);
 

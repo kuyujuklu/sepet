@@ -2,7 +2,7 @@ import { useContext, useEffect } from "react";
 import { ThemeContext } from "./ThemeContextProvider";
 import { useSelector, useDispatch } from "react-redux";
 import { selectLocation, openSelectLocationPopup } from "../../store/locationSlice";
-import { useTranslation } from "next-i18next";
+import { useTranslation } from "react-i18next";
 import { translateLocation } from "../../../../utils/location";
 
 const PubPageUpper = ({ pub }) => {

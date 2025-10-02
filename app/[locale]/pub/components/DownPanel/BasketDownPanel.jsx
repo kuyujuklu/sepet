@@ -19,15 +19,14 @@ const DownPanel = ({ reference, pubID }) => {
   const dispatch = useDispatch()
   const { t, i18n } = useTranslation()
   const selectedDishes = useSelector(selectDishes);
+
   const count = Object.keys(selectedDishes)
     .reduce((acc, id) => (acc += selectedDishes[id].count ?? 0), 0);
 
   const pub = useSelector(selectData)?.pub
 
   const pubWorkHours = getPubWorkHours(pub)
-  console.log("PUB WORK HOURS: ", pubWorkHours)
   const isDeliveryAvailable = pubWorkHours.isDeliveryAvailable
-  console.log("IS DEL AV: ", isDeliveryAvailable)
   //const hasOrder = isDeliveryAvailable || pub?.has_in_place_order; Removed in place order 
 
   return (
@@ -50,7 +49,7 @@ const DownPanel = ({ reference, pubID }) => {
           <div className="relative">
             <div className="relative">
 
-              <div style={{}} className="w-full flex-col px-5 left-0 right-0 mx-auto bottom-0 flex items-center justify-center">
+              <div className="w-full flex-col px-5 left-0 right-0 mx-auto bottom-0 flex items-center justify-center">
                 <Button
                   variant="contained"
                   disabled={!count || !isDeliveryAvailable}

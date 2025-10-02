@@ -1,7 +1,7 @@
 "use client"
 import Select, { components } from 'react-select'
 import style from "../sass/index.module.scss";
-import { useTranslation } from 'next-i18next';
+import { useTranslation } from 'react-i18next';
 import { locations, select_location_options_ro, select_location_options_ru } from '../../static-data/data';
 import { translateLocation } from '../../utils/location';
 import { useState, useEffect } from 'react';
@@ -19,11 +19,13 @@ const ChooseLocation = ({ location, setLocation }) => {
         //CHOOSE GEOLOCATION
       }
       <div className="flex flex-col gap-5 w-full items-center">
-        <h1 className="font-medium text-xl sm:text-3xl text-gray-600 text-center">
+        {!location &&
+          <h1 className="font-medium text-xl sm:text-3xl text-gray-600 text-center">
 
-          Выберите ваш город, чтобы увидеть доступные заведения
+            Выберите ваш город, чтобы увидеть доступные заведения
 
           </h1>
+        }
         <div className="w-full" style={{ maxWidth: 400, position: "relative", zIndex: 200 }}>
           <Select
             menuPosition={"absolute"}
@@ -33,7 +35,6 @@ const ChooseLocation = ({ location, setLocation }) => {
             minMenuHeight={400}
             components={{
               Control,
-              Placeholder: i18n.language === "ro" ? PlaceholderRo : PlaceholderRu
             }}
             styles={{
               control: (base, state) => ({
