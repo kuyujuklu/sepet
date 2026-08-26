@@ -3,7 +3,6 @@ import { Button } from "native-base";
 import { useDispatch } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { setClient } from "../../features/store/auth/authSlice";
-import { disableNavbar } from "../../features/store/navbar/navbarSlice";
 import { setPath } from "../../features/store/linking/linkingSlice";
 
 const BasketGoToRegistrationButton = ({}) => {
@@ -13,7 +12,6 @@ const BasketGoToRegistrationButton = ({}) => {
   const navigator = useNavigation();
 
   const handleButtonPress = () => {
-    dispatch(disableNavbar())
     dispatch(setClient({ phone: "", name: "", isGuest: false }));
     dispatch(setPath("Basket"));
     navigator.dispatch(

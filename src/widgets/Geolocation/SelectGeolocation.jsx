@@ -19,6 +19,7 @@ import {
   validateTown,
 } from "../../shared/validation/validators/order/order-validator";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { defaultCity } from "../../shared/utils/cities";
 
 const mapStyle = {
   map: {
@@ -38,9 +39,13 @@ const SelectGeolocation = ({ setGeolocation, goBack }) => {
   const hasPerm = useSelector(selectHasGeolocationPerm);
   const [center, setCenter] = useState(null);
 
+  // Falls back to the city we deliver in most, instead of a bare pair of
+  // magic numbers repeated across the file
   const handleSelectLocationByYourself = () => {
-    setCenter({ lat: 47.00367, lng: 28.907089 });
-    dispatch(setNearGeolocation({ lat: 47.00367, lng: 28.907089 }));
+    const center = { lat: defaultCity.lat, lng: defaultCity.lng };
+
+    setCenter(center);
+    dispatch(setNearGeolocation(center));
     setZoom(10);
   };
 

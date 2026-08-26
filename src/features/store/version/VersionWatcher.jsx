@@ -6,7 +6,7 @@ const parsedCurrentVersion = parseInt(pkg.expo.version?.split(".")?.join('')) ||
 import { selectIsVersionExpired, setVersion } from './versionSlice';
 import { useGetAppVersionInfoQuery } from '../../../shared/api/client/clientApi';
 import { CommonActions, useNavigation, useRoute } from '@react-navigation/native';
-import { Screens } from '../../../../App';
+import { Screens } from '../../../app/navigation/screens';
 
 const LinkingWathcer = () => {
   const dispatch = useDispatch();
@@ -14,11 +14,16 @@ const LinkingWathcer = () => {
   const isExpired = useSelector(selectIsVersionExpired)
 
 
+  // Was every 5 seconds - 720 requests an hour to learn a number that only
+  // changes on a release. Five minutes, and not at all in the background.
   const {
     data: versionInfoData,
     error: versionInfoError,
     versionInfoIsLoading,
-  } = useGetAppVersionInfoQuery({}, { pollingInterval: 5000 });
+  } = useGetAppVersionInfoQuery(
+    {},
+    { pollingInterval: 300000, skipPollingIfUnfocused: true },
+  );
 
 
   useEffect(() => {
@@ -27,11 +32,7 @@ const LinkingWathcer = () => {
       return;
     }
 
-    console.log("VERSION INFO DATA: ", versionInfoData)
-
     const parsedMinVersion = parseInt(versionInfoData?.min_active_version?.split(".")?.join(''))
-    console.log("MIN VERSION: ", parsedMinVersion)
-    console.log("CURRENT VERSION: ", parsedCurrentVersion)
 
     if (!parsedMinVersion || !parsedCurrentVersion) {
       dispatch(setVersion({ version: pkg.expo.version, isExpired: false }))
@@ -39,7 +40,6 @@ const LinkingWathcer = () => {
     }
 
     if (parsedCurrentVersion < parsedMinVersion) {
-      console.log("VERSION IS EXPIRED")
       dispatch(setVersion({ version: pkg.expo.version, isExpired: true }))
       return;
     }

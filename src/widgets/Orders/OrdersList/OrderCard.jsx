@@ -1,241 +1,173 @@
-import { Image, Spinner, Text, View } from "native-base";
-import { AnonymousProBold } from "../../../constants/styles-constants";
-import { images } from "../../../app/images/images";
-import { ConvertApiTimeToLocalDayMonthYear } from "../../../shared/utils/time";
-import { orderStatuses } from "../../../app/static-data/data";
-import { useEffect, useMemo, useRef } from "react";
-import { Pressable, TouchableOpacity } from "react-native";
+import { useMemo } from "react";
+import { Image } from "expo-image";
 import {
-  useGetNearbyPubsQuery,
-  useGetPubInfoQuery,
-} from "../../../shared/api/pubs/pubsApi";
-import { useDispatch, useSelector } from "react-redux";
-import { selectGeolocation } from "../../../features/store/geolocation/geolocationSlice";
-import {
-  alertStatuses,
-  pushAlert,
-} from "../../../features/store/alerts/alertSlice";
-import forbidPropTypes from "eslint-plugin-react/lib/rules/forbid-prop-types";
-import { setBasket } from "../../../features/store/basket/basketSlice";
-import { Link, useNavigation } from "@react-navigation/native";
+  ActivityIndicator,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { useNavigation } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
-import { useRateOrderMutation } from "../../../shared/api/ordersApi/ordersApi";
 import RateOrderButton from "./RateOrderButton";
-import { getOrderStatusColor, getOrderStatusText } from "../../../shared/utils/order-utils";
+import { useRepeatOrder } from "../useRepeatOrder";
+import { images } from "../../../app/images/images";
+import { Screens } from "../../../app/navigation/screens";
+import { ConvertApiTimeToLocalDayMonthYear } from "../../../shared/utils/time";
+import {
+  getOrderStatusColors,
+  getOrderStatusText,
+} from "../../../shared/utils/order-utils";
 
-const OrderCard = ({ order, allPubs }) => {
-  const { t } = useTranslation();
-  const dispatch = useDispatch();
+const styles = StyleSheet.create({
+  card: {
+    backgroundColor: "#fff",
+    borderRadius: 20,
+    padding: 16,
+    gap: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.07,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  topRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  orderNumber: { flex: 1, fontSize: 14, color: "#6b7280" },
+  badge: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 12,
+  },
+  badgeText: { fontSize: 12, fontWeight: "bold" },
+  pubName: { fontSize: 18, fontWeight: "bold", color: "#111" },
+  metaRow: { flexDirection: "row", alignItems: "center", gap: 16 },
+  meta: { flexDirection: "row", alignItems: "center", gap: 6 },
+  metaIcon: { width: 15, height: 15, opacity: 0.55 },
+  metaText: { fontSize: 13, color: "#6b7280" },
+  divider: { height: 1, backgroundColor: "#f1f1f3" },
+  actions: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+  },
+  repeat: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 16,
+    backgroundColor: "#ecfdf5",
+  },
+  repeatIcon: { width: 15, height: 15 },
+  repeatText: { fontSize: 13, fontWeight: "bold", color: "#047857" },
+});
+
+// One order in the list. The whole card opens the order; the two buttons at
+// the bottom are the only things that do something else.
+const OrderCard = ({ order }) => {
+  const { t, i18n } = useTranslation();
   const navigator = useNavigation();
-  const positionsCount = useMemo(() => {
-    return order?.dishes?.reduce((acc, item) => acc + item.count, 0);
-  }, [order]);
+
+  const positionsCount = useMemo(
+    () => order?.dishes?.reduce((acc, item) => acc + item.count, 0) ?? 0,
+    [order],
+  );
+
+  const { repeatOrder, isLoading: isRepeatLoading } = useRepeatOrder(order);
+
+  const status = getOrderStatusColors(order?.status);
 
   const goToOrderInfoPage = () => {
-    if(!order) return;
-    navigator.navigate("OrderInfoPage", {orderID: order?.id})
-  }
+    if (!order) return;
 
-  const location = useSelector(selectGeolocation);
-
-  const { data: pubsData, isLoading: isPubsDataLoading } =
-    useGetNearbyPubsQuery(
-      {
-        coords: { lat: location.lat, lng: location.lng },
-      },
-      { pollingInterval: 20000, skipPollingIfUnfocused: true },
-    );
-
-  const { data: pubData, isLoading: isPubDataLoading } = useGetPubInfoQuery({
-    pubID: order.pub_id,
-  });
-
-  const handleRepeatClick = () => {
-    if (!pubsData || !pubsData?.pubs) return;
-    if (!pubData || !pubData.dishes) return;
-
-    if (!order.dishes || order.dishes.length === 0) {
-      dispatch(
-        pushAlert({
-          status: alertStatuses.warning,
-          delay: 2000,
-          title: t("order_page.order_card.unable_to_repeat_order"),
-        }),
-      );
-      return;
-    }
-
-    let foundID = false;
-    let foundPub = null;
-    for (const pub of pubsData.pubs) {
-      if (order.pub_id === pub.id) {
-        foundID = true;
-        foundPub = pub;
-      }
-    }
-
-    if (!foundPub || !foundID) {
-      dispatch(
-        pushAlert({
-          title: t("errors.this_pub_is_not_delivering_in_your_area"),
-          status: alertStatuses.error,
-          delay: 3000,
-        }),
-      );
-      return;
-    }
-
-    if(!foundPub?.isOpen) {
-      dispatch(
-        pushAlert({
-          title: t("errors.in_this_time_delivery_not_working"),
-          status: alertStatuses.error,
-          delay: 3000,
-        }),
-      );
-      return;
-    }
-
-    const newBasket = {};
-
-    for (const { dish_id, count } of order.dishes) {
-      let smallestPrice = 0;
-      let dishFound = false;
-      for (const dish of pubData.dishes) {
-        if (dish.id !== dish_id) continue;
-
-        dishFound = true;
-
-        smallestPrice = +dish.price;
-        if (+dish.sale_price && +dish.sale_price < +dish.price) {
-          smallestPrice = dish.sale_price;
-        }
-        break;
-      }
-      if (!dishFound) {
-        dispatch(
-          pushAlert({
-            status: alertStatuses.warning,
-            delay: 2000,
-            title: t("order_page.order_card.unable_to_repeat_order"),
-          }),
-        );
-        return;
-      }
-
-      newBasket[dish_id] = { count: count, price: smallestPrice };
-      navigator.navigate("Basket");
-    }
-    dispatch(setBasket({ basket: newBasket, pubID: order.pub_id }));
+    navigator.navigate(Screens.OrderInfoPage, { orderID: order.id });
   };
 
-  if (isPubsDataLoading || isPubDataLoading) {
-    return (
-      <View
-        style={{ height: 110 }}
-        px="5"
-        py="2"
-        shadow={"9"}
-        // borderWidth={1}
-        background={"white"}
-        // borderColor={getOrderStatusColor(order?.status) || "#aaa"}
-        rounded="2xl"
-        w="full"
-        flexDir="row"
-      >
-        <Spinner />
-      </View>
-    );
-  }
-
   return (
-    <Pressable onPress={goToOrderInfoPage}>
-      <View background={"white"} shadow={"9"} rounded="2xl" px="5" py="2">
-        <View flex={1} justifyContent="center" overflow="hidden">
-          <Text fontSize="19" fontFamily={AnonymousProBold}>
-            {t("order_page.order_card.order")} {order?.id}
+    <TouchableOpacity activeOpacity={0.85} onPress={goToOrderInfoPage}>
+      <View style={styles.card}>
+        <View style={styles.topRow}>
+          <Text style={styles.orderNumber} numberOfLines={1}>
+            {t("order_page.order_card.order")} №{order?.id}
           </Text>
+
+          <View style={[styles.badge, { backgroundColor: status.background }]}>
+            <Text style={[styles.badgeText, { color: status.color }]}>
+              {t(getOrderStatusText(order?.status))}
+            </Text>
+          </View>
         </View>
-        <View
-          style={{ height: 90 }}
-          // borderWidth={1}
-          // borderColor={getOrderStatusColor(order?.status) || "#aaa"}
-          w="full"
-          flexDir="row"
-        >
-          <View w="65%" h="full" justifyContent="space-between">
-            <View flex={1} justifyContent="center" overflow="hidden">
-              <Text fontSize="19" fontFamily={AnonymousProBold}>
-                {order?.pub_name}
+
+        <Text style={styles.pubName} numberOfLines={1}>
+          {order?.pub_name}
+        </Text>
+
+        <View style={styles.metaRow}>
+          <View style={styles.meta}>
+            <Image
+              source={images.DishPlateBlack}
+              style={styles.metaIcon}
+              contentFit="contain"
+              alt=""
+            />
+            <Text style={styles.metaText}>
+              {positionsCount} {t("order_page.order_card.positions")}
+            </Text>
+          </View>
+
+          <View style={styles.meta}>
+            <Image
+              source={images.CalendarBlack}
+              style={styles.metaIcon}
+              contentFit="contain"
+              alt=""
+            />
+            <Text style={styles.metaText}>
+              {ConvertApiTimeToLocalDayMonthYear(
+                order?.created_time,
+                i18n.language,
+              )}
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.divider} />
+
+        <View style={styles.actions}>
+          <RateOrderButton
+            orderStatus={order?.status}
+            rating={order?.rating}
+            orderID={order?.id}
+            iconSize={18}
+            fontSize={14}
+          />
+
+          <TouchableOpacity activeOpacity={0.8} onPress={repeatOrder}>
+            <View style={styles.repeat}>
+              {isRepeatLoading ? (
+                <ActivityIndicator size="small" color="#047857" />
+              ) : (
+                <Image
+                  source={images.AgainBlack}
+                  style={styles.repeatIcon}
+                  contentFit="contain"
+                  alt=""
+                />
+              )}
+              <Text style={styles.repeatText}>
+                {t("order_page.order_card.repeat_button")}
               </Text>
             </View>
-            <View flex={1} justifyContent="center">
-              <View flexDir="row" alignItems="center" gap={2}>
-                <View width={17} height={17}>
-                  <Image
-                    source={images.DishPlateBlack}
-                    alt=""
-                    style={{ width: "100%", height: "100%" }}
-                  />
-                </View>
-                <Text fontSize="12">
-                  {positionsCount} {t("order_page.order_card.positions")}
-                </Text>
-              </View>
-            </View>
-            <View flex={1} justifyContent="center">
-              <RateOrderButton
-                orderStatus={order.status}
-                rating={order.rating}
-                orderID={order.id}
-              />
-            </View>
-          </View>
-          <View w="90%" h="full" justifyContent="space-between">
-            <View flex={1} justifyContent="center">
-              <View flexDir="row" alignItems="center" gap={2}>
-                <Text
-                  fontWeight="bold"
-                  color={getOrderStatusColor(order?.status)}
-                >
-                  {t(getOrderStatusText(order?.status))}
-                </Text>
-              </View>
-            </View>
-            <View flex={1} justifyContent="center">
-              <View flexDir="row" alignItems="center" gap={2}>
-                <View width={15} height={15}>
-                  <Image
-                    source={images.CalendarBlack}
-                    alt=""
-                    style={{ width: "100%", height: "100%" }}
-                  />
-                </View>
-                <Text fontSize="12">
-                  {ConvertApiTimeToLocalDayMonthYear(order?.created_time)}
-                </Text>
-              </View>
-            </View>
-            <View flex={1} justifyContent="center">
-              <TouchableOpacity onPress={handleRepeatClick}>
-                <View flexDir="row" alignItems="center" gap={2}>
-                  <View width={15} height={15}>
-                    <Image
-                      source={images.AgainBlack}
-                      alt=""
-                      style={{ width: "100%", height: "100%" }}
-                    />
-                  </View>
-                  <Text fontSize="12">
-                    {t("order_page.order_card.repeat_button")}
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            </View>
-          </View>
+          </TouchableOpacity>
         </View>
       </View>
-    </Pressable>
+    </TouchableOpacity>
   );
 };
 

@@ -24,7 +24,6 @@ import {
   errorKeys,
   pushError,
 } from "../../../features/store/errorHandling/errorHandlingSlice";
-import { enableNavbar } from "../../../features/store/navbar/navbarSlice";
 
 import { useTranslation } from "react-i18next";
 import { Image } from "expo-image";
@@ -147,9 +146,8 @@ const ChangePasswordForm = () => {
 
     setValidationNumber("");
     setaccesstoken(changePasswordQueryData.access_token);
-    dispatch(enableNavbar());
     dispatch(setRefetchClient(true));
-    navigator.navigate("SelectGeolocationPage");
+    navigator.navigate("Home");
   }, [changePasswordQueryData]);
 
   useEffect(() => {

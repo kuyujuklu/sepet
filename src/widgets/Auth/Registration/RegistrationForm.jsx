@@ -24,7 +24,6 @@ import {
   errorKeys,
   pushError,
 } from "../../../features/store/errorHandling/errorHandlingSlice";
-import { enableNavbar } from "../../../features/store/navbar/navbarSlice";
 import { useTranslation } from "react-i18next";
 import { ENV } from "../../../constants/env/env";
 import { validateRegistrationData } from "../../../shared/validation/validators/client/client-validation";
@@ -54,7 +53,7 @@ import { convertRespError } from "../../../app/errors/convertApiErrors";
 import { trimPhone } from "../../../shared/utils/phone-utils";
 import { selectGeolocation } from "../../../features/store/geolocation/geolocationSlice";
 import { selectPubID, selectPath, selectOrderID, selectPubName } from "../../../features/store/linking/linkingSlice";
-import { Screens } from "../../../../App";
+import { Screens } from "../../../app/navigation/screens";
 
 const RegistrationForm = () => {
   const { t } = useTranslation();
@@ -121,7 +120,6 @@ const RegistrationForm = () => {
 
     setValidationNumber("");
     setaccesstoken(validateSessionNumberData.access_token);
-    dispatch(enableNavbar());
     dispatch(setRefetchClient(true));
 
     if (location && location.lat && location.lng) {
@@ -145,7 +143,7 @@ const RegistrationForm = () => {
       }
       return;
     }
-    navigator.navigate("SelectGeolocationPage");
+    navigator.navigate("Home");
 
   }, [validateSessionNumberData]);
 
@@ -270,7 +268,6 @@ const RegistrationForm = () => {
       // setaccesstoken(validateSessionNumberData.access_token);
       // dispatch(setRefetchClient(true));
 
-      dispatch(enableNavbar());
       dispatch(setRefetchClient(false));
 
       if (path === Screens.PubInfo && (urlPubID || urlPubName)) {
@@ -294,9 +291,8 @@ const RegistrationForm = () => {
     }
     // setaccesstoken(validateSessionNumberData.access_token);
     // dispatch(setRefetchClient(true));
-    dispatch(enableNavbar());
     dispatch(setRefetchClient(false));
-    navigator.navigate("SelectGeolocationPage");
+    navigator.navigate("Home");
   };
 
   return (

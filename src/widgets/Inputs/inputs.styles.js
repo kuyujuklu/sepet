@@ -16,9 +16,12 @@ export const inputStyles = StyleSheet.create({
     },
     inputField: {
         padding: 10,
-        borderRadius: 15,
+        // There was a borderColor but no borderWidth, so the field had no
+        // outline at all - invisible as soon as it sits on a white card
+        borderWidth: 1.5,
+        borderRadius: 14,
         fontSize: 16,
-        borderColor: "red"
+        borderColor: "#d4d4d8"
     },
     label: {
         fontSize: 16,

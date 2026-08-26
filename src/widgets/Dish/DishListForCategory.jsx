@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import DishList from "./DishList";
 import { useGetPubInfoQuery } from "../../shared/api/pubs/pubsApi";
-import PubInfoHeader from "../Pub/PubInfoHeader";
+import { BigCardsSkeleton } from "../Skeletons/Skeleton";
 
 const DishListForCategory = ({ pubID, categoryID, isPubOpen, isAvailableForDelivery }) => {
   const { data: pubData, error: pubError } = useGetPubInfoQuery(
@@ -21,12 +21,13 @@ const DishListForCategory = ({ pubID, categoryID, isPubOpen, isAvailableForDeliv
     setShownDishes(filteredDishes);
   }, [pubData, categoryID]);
 
+  if (!pubData) return <BigCardsSkeleton count={3} />;
+
   return (
     <DishList
       dishes={shownDishes}
       pubID={pubID}
       pub={pubData?.pub}
-      upperElement={<PubInfoHeader pubID={pubID} />}
       isPubOpen={isPubOpen}
       isAvailableForDelivery={isAvailableForDelivery}
     />

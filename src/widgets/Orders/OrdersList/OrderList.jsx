@@ -1,42 +1,38 @@
-import { FlatList, Spinner, Text, View } from "native-base";
+import { useMemo } from "react";
+import { FlatList, View } from "react-native";
 import OrderCard from "./OrderCard";
 import { GetTimeFromApiTimeString } from "../../../shared/utils/time";
-import { Suspense, useMemo } from "react";
-import { images } from "../../../app/images/images";
-import { Image, TouchableOpacity } from "react-native";
-import { AnonymousProBold } from "../../../constants/styles-constants";
+import { CARD_GAP, SCREEN_PADDING } from "../../../constants/layout";
 
-const OrderList = ({ orders, upperComponent }) => {
-  const filteredOrders = useMemo(() => {
-    let filteredOrders = [...orders];
-
-    filteredOrders?.sort(
-      (a, b) =>
-        GetTimeFromApiTimeString(b.created_time).getTime() -
-        GetTimeFromApiTimeString(a.created_time).getTime(),
-    );
-
-    if (filteredOrders.length > 6) {
-      filteredOrders = filteredOrders.slice(0, 6);
-    }
-
-    return filteredOrders;
-  }, [orders]);
+// Newest first. The list used to be cut to the six latest orders because
+// every card fetched a whole menu; the cards are cheap now, so the client
+// gets the history they came for.
+const OrderList = ({ orders, ListHeaderComponent }) => {
+  const sortedOrders = useMemo(
+    () =>
+      [...(orders ?? [])].sort(
+        (a, b) =>
+          GetTimeFromApiTimeString(b.created_time).getTime() -
+          GetTimeFromApiTimeString(a.created_time).getTime(),
+      ),
+    [orders],
+  );
 
   return (
-    <>
-      <FlatList
-        contentContainerStyle={{ paddingHorizontal: 10, paddingBottom: 10 }}
-        renderItem={({ item: order, index }) => (
-          <>
-            {index === 0 && upperComponent}
-            <OrderCard key={order?.id} order={order} />
-          </>
-        )}
-        data={filteredOrders || []}
-        ItemSeparatorComponent={() => <View height={5} />}
-      />
-    </>
+    <FlatList
+      data={sortedOrders}
+      keyExtractor={(order) => String(order?.id)}
+      showsVerticalScrollIndicator={false}
+      initialNumToRender={6}
+      ListHeaderComponent={ListHeaderComponent}
+      contentContainerStyle={{
+        paddingHorizontal: SCREEN_PADDING,
+        paddingTop: 4,
+        paddingBottom: 24,
+      }}
+      ItemSeparatorComponent={() => <View style={{ height: CARD_GAP }} />}
+      renderItem={({ item: order }) => <OrderCard order={order} />}
+    />
   );
 };
 

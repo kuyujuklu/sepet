@@ -20,7 +20,6 @@ import {
   pushError,
 } from "../../../features/store/errorHandling/errorHandlingSlice";
 import AuthenticationDataInputs from "./AuthenticationDataInputs";
-import { enableNavbar } from "../../../features/store/navbar/navbarSlice";
 
 import { useTranslation } from "react-i18next";
 import { Image } from "expo-image";
@@ -37,7 +36,7 @@ import {
 } from "react-native";
 import { selectGeolocation } from "../../../features/store/geolocation/geolocationSlice";
 import { selectPubID, selectPath, selectOrderID, selectPubName } from "../../../features/store/linking/linkingSlice";
-import { Screens } from "../../../../App";
+import { Screens } from "../../../app/navigation/screens";
 
 const AuthenticationForm = () => {
   const dispatch = useDispatch();
@@ -72,7 +71,6 @@ const AuthenticationForm = () => {
     if (!authenticationQueryData || !authenticationQueryData.ok) return;
 
     setaccesstoken(authenticationQueryData.access_token);
-    dispatch(enableNavbar());
     dispatch(setRefetchClient(true));
     SecureStore.setItemAsync(
       "refresh_token",
@@ -100,7 +98,7 @@ const AuthenticationForm = () => {
       return;
     }
 
-    navigator.navigate("SelectGeolocationPage");
+    navigator.navigate("Home");
   }, [authenticationQueryData, path]);
 
   // Handling authentication data sending error

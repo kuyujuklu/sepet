@@ -1,228 +1,140 @@
-import { Button, Text, View } from "native-base";
-import { Modal, Pressable } from "react-native";
+import { Image } from "expo-image";
+import { StyleSheet, Text, View } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
+import { useTranslation } from "react-i18next";
+import BottomSheet from "../Common/BottomSheet";
+import QuantityStepper from "../Common/QuantityStepper";
 import {
-  closeClearBasketPopup,
   decreaseDish,
-  doClearPopupConfirmingAction,
   increaseDish,
   selectDishFromBasket,
 } from "../../features/store/basket/basketSlice";
-import { useTranslation } from "react-i18next";
 import {
   closeDishImagePopup,
   selectDishImagePopup,
 } from "../../features/store/dishes/dishesSlice";
-import { Image } from "expo-image";
-import { TouchableOpacity } from "react-native";
-import { memo } from "react";
-import AnimatedNumber from "react-native-animated-numbers";
-import { AnonymousProBold } from "../../constants/styles-constants";
-import { images } from "../../app/images/images";
 import { openPubNotAvailableForDeliveryPopup } from "../../features/store/pubs/pubsSlice";
+import { addCommissionToPrice, formatPrice } from "../../shared/utils/dish";
+import { images } from "../../app/images/images";
 
-const addCommissionToPrice = (price, commission) => {
-  return price + (price / 100) * commission;
-};
-
-const styles = {
-  modalOverlay: {
-    flex: 1,
-    justifyContent: 'flex-end', // Aligns content to the bottom
-    backgroundColor: 'transparent', // Semi-transparent background
+const styles = StyleSheet.create({
+  imageBox: {
+    height: 220,
+    borderRadius: 20,
+    overflow: "hidden",
+    backgroundColor: "#f1f1f3",
+    alignItems: "center",
+    justifyContent: "center",
   },
-  modalContent: {
-    backgroundColor: 'white', // Your desired background color for the modal
-    borderTopLeftRadius: 20, // Optional: for rounded corners
-    borderTopRightRadius: 20, // Optional: for rounded corners
-    paddingTop: 50,
-    paddingBottom: 50,
-    gap: 20,
-    paddingHorizontal: 10,
+  image: { width: "100%", height: "100%" },
+  placeholder: { width: 56, height: 56, opacity: 0.35 },
+  bottom: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: 18,
+    gap: 16,
   },
-};
+  prices: { flexDirection: "row", alignItems: "flex-end", gap: 8 },
+  price: { fontSize: 24, fontWeight: "bold", color: "#111" },
+  oldPrice: {
+    fontSize: 15,
+    color: "#9ca3af",
+    textDecorationLine: "line-through",
+    marginBottom: 3,
+  },
+  inBasket: { marginTop: 12, fontSize: 13, color: "#059669", fontWeight: "bold" },
+});
 
 const DishImagePopup = () => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
-  const popupState = useSelector(selectDishImagePopup);
-  const pubID = popupState?.pubID ?? 0;
-  const dishInBasket = useSelector(selectDishFromBasket(popupState?.dishID));
-  const dishCount = (dishInBasket && +dishInBasket.count) ?? 0;
 
+  const popupState = useSelector(selectDishImagePopup);
   const dish = popupState?.dish;
-  const smallestPrice =
-    dish?.sale_price && dish?.sale_price < dish?.price
-      ? dish?.sale_price
-      : dish?.price;
+
+  const dishInBasket = useSelector(selectDishFromBasket(popupState?.dishID));
+  const dishCount = +dishInBasket?.count || 0;
+
+  const commission = popupState?.commission ?? 0;
+  const isOnSale = !!dish?.sale_price && +dish.sale_price < +dish.price;
+  const priceToPay = isOnSale ? +dish.sale_price : +dish?.price;
+
+  const canOrder =
+    popupState?.isPubOpen !== false &&
+    popupState?.isAvailableForDelivery !== false;
 
   const handleIncreaseDish = () => {
-    if (!popupState?.isPubOpen || !popupState?.isAvailableForDelivery) {
-      dispatch(openPubNotAvailableForDeliveryPopup())
+    if (!canOrder) {
+      dispatch(openPubNotAvailableForDeliveryPopup());
       return;
-    };
+    }
 
     dispatch(
       increaseDish({
         id: dish?.id,
-        pubID: pubID,
-        price: smallestPrice,
+        pubID: popupState?.pubID ?? 0,
+        price: priceToPay,
       }),
-    )
-  }
+    );
+  };
 
   return (
-    <Modal visible={popupState.isOpened} transparent={true} animationType="slide">
-      <Pressable flex={1} onPress={() => { dispatch((closeDishImagePopup())) }}>
-        <View style={styles.modalOverlay} >
-          <Pressable onPress={(e) => e.stopPropagation()}>
-            <View style={styles.modalContent}>
-              {/*Header*/}
-              <View >
-                <Text fontSize="2xl" fontWeight="bold">
-                  {popupState?.dish?.name}
-                </Text>
-                <Text fontSize="sm" fontWeight="medium" color="coolGray.600">
-                  {popupState?.dish?.ingredients}
-                </Text>
-              </View>
-              {/*Main*/}
-              <View>
-                <View
-                  rounded="2xl"
-                  style={{
-                    overflow: "hidden",
-                    borderRadius: 26,
-                    alignItems: "center",
-                    justifyContent: "center",
-                    maxHeight: 300,
-                    width: "100%",
-                  }}
-                >
-                  <Image
-                    alt="adsf"
-                    contentFit="cover"
-                    style={{ width: "100%", height: "100%" }}
-                    source={
-                      !!popupState.imagePath
-                        ? { uri: popupState.imagePath }
-                        : require("../../../assets/images/photo-black.png")
-                    }
-                  />
-                </View>
-                <View justifyContent="space-between" mt="5" gap={5}>
-                  <View
-                    flexDir="row"
-                    justifyContent="space-between"
-                    alignItems="center"
-                  >
-                    {/* Prices */}
-                    <View flexDir={"row"} gap={4}>
-                      {/* Striked Higher price */}
-                      {
-                        //if there is sale, show real price with line-through
-                        !!dish?.sale_price && dish?.sale_price < dish?.price && (
-                          <Text
-                            fontSize={"md"}
-                            color={"red.500"}
-                            fontWeight="bold"
-                            style={{
-                              textDecorationLine: "line-through",
-                              textDecorationStyle: "solid",
-                            }}
-                          >
-                            {addCommissionToPrice(
-                              dish?.price,
-                              popupState?.commission,
-                            )}{" "}
-                            Lei
-                          </Text>
-                        )
-                      }
-                      {/* Lower price */}
-                      <Text
-                        fontSize={"md"}
-                        color="coolGray.700"
-                        fontWeight={"medium"}
-                      >
-                        {addCommissionToPrice(smallestPrice, popupState?.commission)}{" "}
-                        Lei
-                      </Text>
-                    </View>
-                    {/* Add and remove buttons */}
-                    <View flexDir={"row"} alignItems={"center"} gap="3">
-                      {/* show count and decrease button if count > 0 */}
-                      {dishInBasket?.count > 0 && (
-                        <>
-                          {/* decrease button */}
-                          <TouchableOpacity
-                            onPress={() =>
-                              dispatch(decreaseDish({ id: popupState?.dishID }))
-                            }
-                          >
-                            <Image
-                              style={{
-                                width: 30,
-                                height: 30,
-                              }}
-                              alt=""
-                              source={require("../../../assets/images/minus-in-circle-black.png")}
-                            />
-                          </TouchableOpacity>
-                        </>
-                      )}
+    <BottomSheet
+      isOpened={popupState.isOpened}
+      onClose={() => dispatch(closeDishImagePopup())}
+      title={dish?.name}
+      subtitle={dish?.ingredients}
+      scrollable
+    >
+      <View style={styles.imageBox}>
+        {popupState?.imagePath ? (
+          <Image
+            source={{ uri: popupState.imagePath }}
+            style={styles.image}
+            contentFit="cover"
+            cachePolicy="memory-disk"
+            transition={120}
+            alt=""
+          />
+        ) : (
+          <Image
+            source={images.KnifeInPlateBlack}
+            style={styles.placeholder}
+            contentFit="contain"
+            alt=""
+          />
+        )}
+      </View>
 
-                      {/* COUNTER */}
-                      <View opacity={dishInBasket?.count > 0 ? 1 : 0}>
-                        <Number number={dishCount} />
-                      </View>
-
-                      {/* increase button */}
-                      <TouchableOpacity
-                        onPress={
-                          handleIncreaseDish
-                        }
-                      >
-                        <Image
-                          style={{
-                            width: 30,
-                            height: 30,
-                          }}
-                          alt=""
-                          source={require("../../../assets/images/plus-in-circle-black.png")}
-                        />
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                  <Button
-                    height={12}
-                    background="red.600"
-                    minW={120}
-                    onPress={() => {
-                      dispatch(closeDishImagePopup());
-                    }}
-                  >
-                    {t("dish_popup.back")}
-                  </Button>
-                </View>
-              </View>
-            </View>
-          </Pressable>
+      <View style={styles.bottom}>
+        <View style={styles.prices}>
+          <Text style={styles.price}>
+            {formatPrice(addCommissionToPrice(priceToPay, commission))} Lei
+          </Text>
+          {isOnSale && (
+            <Text style={styles.oldPrice}>
+              {formatPrice(addCommissionToPrice(+dish.price, commission))} Lei
+            </Text>
+          )}
         </View>
-      </Pressable >
-    </Modal >
+
+        <QuantityStepper
+          size="lg"
+          count={dishCount}
+          canOrder={canOrder}
+          onIncrease={handleIncreaseDish}
+          onDecrease={() => dispatch(decreaseDish({ id: popupState?.dishID }))}
+        />
+      </View>
+
+      {dishCount > 0 && (
+        <Text style={styles.inBasket}>
+          {t("dish_popup.in_basket", { value: dishCount })}
+        </Text>
+      )}
+    </BottomSheet>
   );
 };
-
-const Number = memo(function Number({ number }) {
-  return (
-    <AnimatedNumber
-      includeComma
-      animateToNumber={number}
-      animationDuration={500}
-      fontStyle={{ fontSize: 20, fontFamily: AnonymousProBold }}
-    />
-  );
-});
 
 export default DishImagePopup;

@@ -3,7 +3,8 @@ import { memo, useEffect, useState } from "react";
 import { Pressable, SafeAreaView, TouchableOpacity } from "react-native";
 import { useGetPubInfoQuery } from "../../../shared/api/pubs/pubsApi";
 import CategoryCard from "./CategoryCard";
-import PubInfoHeader from "../../Pub/PubInfoHeader";
+import { BigCardsSkeleton } from "../../Skeletons/Skeleton";
+import { SCREEN_PADDING, CARD_GAP } from "../../../constants/layout";
 
 const CategoryList = ({
   pubID,
@@ -18,15 +19,14 @@ const CategoryList = ({
 
   const [shownCategories, setShownCategories] = useState([]);
 
-  // Set shown categories based on menuID
+  // Set shown categories based on menuID. Without one every visible category
+  // is shown: the bottom menu tabs are gone, so there is nothing to scope to.
   useEffect(() => {
-    if (!menuID) return;
-
     if (!pubData?.categories) return;
 
     let filteredCategories = pubData.categories
       .filter((category) => category.visible)
-      .filter((category) => category.menu_id === menuID)
+      .filter((category) => !menuID || category.menu_id === menuID)
       .map((category) => {
         return {
           ...category,
@@ -45,14 +45,18 @@ const CategoryList = ({
 
   useEffect(() => {}, [pubData]);
 
+  if (!pubData) return <BigCardsSkeleton count={3} />;
+
   return (
-    <SafeAreaView edges={[]}>
-      {(!shownCategories || shownCategories.length === 0) && <PubInfoHeader pubID={pubID} />}
+    <SafeAreaView edges={[]} style={{ flex: 1 }}>
       <FlatList
-        contentContainerStyle={{ paddingHorizontal: 10, paddingBottom: 80 }}
-        renderItem={({ item: category, index }) => (
+        contentContainerStyle={{
+          paddingHorizontal: SCREEN_PADDING,
+          paddingTop: 4,
+          paddingBottom: 150,
+        }}
+        renderItem={({ item: category }) => (
           <View key={category.id}>
-            {index === 0 && <PubInfoHeader pubID={pubID} />}
             <TouchableOpacity onPress={() => selectCategory(category?.id)}>
               <CategoryCard
                 isHightlighted={category?.highlighted}
@@ -63,7 +67,7 @@ const CategoryList = ({
           </View>
         )}
         data={shownCategories || []}
-        ItemSeparatorComponent={() => <View height={5} />}
+        ItemSeparatorComponent={() => <View style={{ height: CARD_GAP }} />}
       />
     </SafeAreaView>
   );

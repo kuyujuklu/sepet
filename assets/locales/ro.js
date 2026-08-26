@@ -84,6 +84,16 @@ export default {
     },
   },
   select_geolocation: {
+    title: "Adresa de livrare",
+    subtitle: "Alegeți o adresă salvată sau adăugați una nouă — curierul va veni la ea",
+    current_section: "Locația curentă",
+    use_current: "Folosiți și continuați",
+    no_saved_title: "Încă nu aveți adrese salvate",
+    no_saved_text: "Adăugați o adresă — data viitoare o alegeți dintr-o singură atingere",
+    add_address_inputs_hint: "Cum se numește acest loc? Strada și numărul îi trebuie curierului",
+    point_on_map: "Punctul pe hartă este ales",
+    change_point: "Schimbați",
+    save_address: "Salvați adresa",
     saved_addresses: "Adrese salvate",
     headline: "Selectați locația dvs.",
 
@@ -99,17 +109,122 @@ export default {
       "Nu am putut încărca locația, vă rugăm să o selectați manual",
     change_geolocation: "Schimba locatia",
   },
+  sections: {
+    headline: "Ce comandăm?",
+    subheadline:
+      "Alegeți secțiunea — adresa de livrare o indicați mai târziu, la plasarea comenzii",
+    coming_soon: "În curând",
+    coming_soon_alert: "Această secțiune se deschide în curând",
+    food: {
+      title: "Mâncare",
+      subtitle: "Preparate din restaurantele și cafenelele de lângă dvs.",
+      feed_subtitle:
+        "Preparate avantajoase din restaurantele din apropiere — comandă din câteva atingeri",
+    },
+    flowers: {
+      title: "Flori",
+      subtitle: "Buchete și aranjamente cu livrare",
+      feed_subtitle: "Buchete din florăriile din apropiere — livrăm astăzi",
+    },
+    groceries: {
+      title: "Produse",
+      subtitle: "Magazine alimentare și tot pentru casă",
+      feed_subtitle: "Produse din magazinele din apropiere",
+    },
+  },
+  cities: {
+    chisinau: "Chișinău",
+    balti: "Bălți",
+    comrat: "Comrat",
+    cahul: "Cahul",
+    orhei: "Orhei",
+    ungheni: "Ungheni",
+    ceadir_lunga: "Ceadîr-Lunga",
+    tiraspol: "Tiraspol",
+  },
+  city_picker: {
+    headline: "În ce oraș vă aflați?",
+    subheadline:
+      "Ne trebuie doar ca să arătăm localurile din apropiere. Adresa exactă o indicați la plasarea comenzii",
+    open_settings: "Permiteți accesul la locație în setări",
+    detecting: "Determinăm locația dvs…",
+    select_manually: "Alegeți orașul manual",
+  },
+  header: {
+    near_you: "Lângă dvs.",
+    approximate_hint: "Determinat prin geolocație · atingeți pentru a preciza",
+    set_address: "Indicați adresa de livrare",
+    specify_address: "precizați adresa",
+  },
+  profile: {
+    title: "Profil",
+    orders: "Comenzile mele",
+    change_address: "Schimbați adresa",
+    language: "Limba interfeței",
+    support: "Suport",
+  },
   home_page: {
     pubs_near_you: "Restaurante din apropiere",
     pub_is_closed: "Închis. Timp de lucru",
+    top_dishes: {
+      title: "Cele mai vândute",
+      subtitle: "Preparate avantajoase din restaurantele din apropiere",
+      filter_top: "Populare",
+      filter_deals: "Cu reducere",
+      filter_near: "În apropiere",
+      filter_pubs: "Localuri",
+      hit_badge: "Top",
+      closed: "Închis",
+      no_dishes: "Deocamdată nu sunt preparate disponibile",
+      no_deals: "Acum nu sunt preparate cu reducere",
+      go_to_basket: "Spre coș",
+      no_dishes_in_category: "În această categorie încă nu sunt preparate în apropiere",
+      show_all_dishes: "Arată toate preparatele",
+      filters_button: "Filtre",
+      filters_title: "Filtre",
+      filters_dishes_group: "Arată preparate",
+      filters_pubs_group: "Sau vezi localurile",
+    },
   },
   pub_info_page: {
+    is_open: "Deschis",
+    phone: "Telefon",
+    close: "Închide",
+    empty_menu: "În acest meniu încă nu sunt preparate",
+    dishes_count: "Preparate: {{value}}",
     pub_header: {
       address: "Adresă",
       additional_info: "Informații suplimentare",
     },
   },
+  view_modes: {
+    as_list: "Ca listă",
+    by_categories: "Pe categorii",
+  },
   basket_page: {
+    subtotal: "Subtotal",
+    delivery: "Livrare",
+    delivery_free: "Gratuit",
+    total: "Total",
+    free_delivery_left: "Până la livrarea gratuită mai trebuie {{amount}}",
+    positions: "Poziții: {{value}}",
+    minutes: "min",
+    open_pub: "La meniu",
+    add_more: "Mai adaugă",
+    per_item: "pe bucată",
+    clear: "Golește",
+    clear_confirm: "Goliți coșul?",
+    clear_ok: "Golește",
+    not_available_for_delivery:
+      "Acest local nu livrează acum la adresa dvs.",
+    empty_title: "Coșul este gol",
+    empty_text: "Adăugați preparate — vor apărea aici",
+    empty_button: "Alegeți preparate",
+    remove_dish: {
+      title: "Ștergeți poziția din coș?",
+      cancel: "Păstrează",
+      confirm: "Șterge",
+    },
     headline: "Coșul",
     empty: "gol",
     create_order_button: "Creați comanda",
@@ -125,11 +240,36 @@ export default {
     ok_button: "ok",
   },
   dish_popup: {
+    in_basket: "În coș: {{value}}",
     back: "Înapoi",
   },
   create_order_page: {
+    address: {
+      current: "Livrăm comanda aici",
+      unknown: "Adresa nu este determinată",
+      change: "Schimbați adresa",
+      saved_title: "Adrese salvate",
+      no_saved: "Încă nu aveți adrese salvate — adăugați prima pe hartă",
+      add_new: "Adăugați o adresă nouă",
+      title: "Unde livrăm",
+      hint: "Adresa este necesară abia acum — curierul va veni la ea",
+    },
+    contacts: {
+      title: "Contacte",
+    },
+    comment: {
+      title: "Comentariu la comandă",
+    },
+    order: {
+      title: "Comanda dvs.",
+    },
     headline: "Creați comanda",
     additional_data: {
+      fill_inputs: "Completați câmpurile obligatorii",
+      empty_basket: "Coșul este gol",
+      no_location: "Nu știm unde să livrăm — indicați adresa",
+      approximate_location:
+        "Am afișat localurile după o locație aproximativă. Verificați adresa de livrare de mai jos.",
       headline: "Detalii despre comandă",
       inputs: {
         town: { label: "Oraș/Raion" },
@@ -152,6 +292,9 @@ export default {
   order_page: {
     headline: "Ultimele comenzi",
     headline_no_orders: "Nu ați făcut încă nicio comandă",
+    no_orders_text:
+      "Aici vor apărea comenzile dvs. — oricare dintre ele poate fi repetată dintr-o atingere",
+    no_orders_button: "Spre preparate",
     order_card: {
       unable_to_repeat_order: "Din păcate, nu putem repeta această comanda.",
       order_is_not_completed_alert: "Comanda nu a fost încă livrată",
@@ -170,8 +313,11 @@ export default {
     },
   },
   near_categories_page: {
-    headline: "Restaurante",
-    pub_is_closed: "Închis. Timp de lucru",
+    nothing_found: "Aici încă nu este nimic — încercați altă categorie",
+  },
+  internet: {
+    no_internet_title: "Nu există conexiune la internet",
+    no_internet_text: "Verificați conexiunea și încercați din nou",
   },
   categories: {
     sales: "promoții",
@@ -192,12 +338,18 @@ export default {
     salad: "salate",
     snacks: "gustări",
     meat: "mâncăruri din carne",
+    all: "Toate",
     all_publishments: "Toate unitățile",
+    show_all: "Mai multe",
+    sheet_title: "Categorii",
+    sheet_subtitle: "Alegeți o categorie pentru a filtra preparatele",
   },
   order_info_page: {
     order: "Comanda",
     all_changes_from_tech: "Toate modificările comenzii se fac numai prin",
     support: "asistență tehnică",
+    dishes_title: "Conținutul comenzii",
+    no_dishes: "Nu am reușit să încărcăm conținutul comenzii",
   },
   delete_account_popup: {
     headline: "Ștergeți contul meu",
@@ -211,6 +363,7 @@ export default {
     free_delivery_from: "Livrare gratuita de la"
   },
   pub_not_available_for_delivery: {
+    title: "Comanda nu poate fi plasată",
     pub_is_not_open: "Acest local este închis în prezent sau vă aflați în afara zonei de livrare a acestui local.",
     choose_another_pub: "Selectați o altă instituție",
     change_geolocation: "Schimbați locația"

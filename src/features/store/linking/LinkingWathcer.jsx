@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import * as Linking from 'expo-linking';
 import { selectPubID, setPubID, setPath, setOrderID, setPubName, selectPubName } from './linkingSlice';
 import { useGetPubInfoQuery } from '../../../shared/api/pubs/pubsApi';
-import { Screens } from '../../../../App';
+import { Screens } from '../../../app/navigation/screens';
 
 const LinkingWathcer = () => {
   const dispatch = useDispatch();
@@ -13,7 +13,6 @@ const LinkingWathcer = () => {
 
   useEffect(() => {
     if (url) {
-      console.log("-----------URL: ", url)
       const parsedUrl = Linking.parse(url);
       const queryParams = parsedUrl.queryParams;
 
@@ -23,17 +22,13 @@ const LinkingWathcer = () => {
       let pubID = queryParams.PubID
 
       let partsOfPath = parsedUrl?.path?.split("/") ?? [];
-      console.log("parts of path: ", partsOfPath)
       let indexOfPubWord = partsOfPath.findIndex((part) => part === "pub");
-      console.log("idx: ", indexOfPubWord);
 
 
       if (indexOfPubWord >= 0 && partsOfPath.length > indexOfPubWord + 1) {
         path = Screens.PubInfo
-        console.log("here: ", indexOfPubWord);
 
         const pubIdentifier = partsOfPath[indexOfPubWord + 1] || queryParams.PubID;
-        console.log("identifier: ", pubIdentifier);
         if (isNaN(+pubIdentifier)) {
           pubName = pubIdentifier
         }
@@ -41,12 +36,6 @@ const LinkingWathcer = () => {
           pubID = +pubIdentifier
         }
       }
-
-      console.log("-----------QUERY PARAMS: ", queryParams)
-      console.log("-----------PATH: ", path)
-      console.log("-------------------------------------------------PUB ID: ", pubID)
-      console.log("-------------------------------------------------PUB NAME: ", pubName)
-      console.log("-------------------------------------------------ORDER ID: ", queryParams.OrderID)
       dispatch(setPath(path));
 
       if (pubID) {
@@ -60,7 +49,6 @@ const LinkingWathcer = () => {
       }
     }
     else {
-      console.log("CANNOT FIND URL FOR Linking.useURL()")
     }
   }, [url])
 

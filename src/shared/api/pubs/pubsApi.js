@@ -31,7 +31,6 @@ export const pubsApi = createApi({
     }),
     getPubInfo: builder.query({
       query: ({ pubID, pubName }) => {
-        console.log("PNAME: ", pubName, "PID", pubID)
         return {
           url: pubID ? `/api/client/pub/id/${pubID}` : `/api/client/pub/${pubName}`,
           method: "GET",
@@ -44,12 +43,9 @@ export const pubsApi = createApi({
         if (!response.pub) return response;
 
         let pubWorkHours = getPubWorkHours(response?.pub)
-        console.log("PUB WORK HOURS: ", pubWorkHours)
         response.pub.isOpen = pubWorkHours.isDeliveryAvailable;
         response.pub.shipping.shipping_work_start = pubWorkHours.shippingWorkStart;
         response.pub.shipping.shipping_work_end = pubWorkHours.shippingWorkEnd;
-
-        console.log("IS OPEN: ", response.pub.isOpen)
         return response;
       },
     }),

@@ -1,18 +1,14 @@
-import { useDispatch } from "react-redux";
 import AuthenticationForm from "../../../widgets/Auth/Auhtentication/AuthenticationForm";
+import AppHeader from "../../../widgets/AppHeader/AppHeader";
 import Wrapper from "../../Wrapper";
-import { useEffect } from "react";
-import { disableNavbar } from "../../../features/store/navbar/navbarSlice";
 
 const Authentication = () => {
-  const dispatch = useDispatch();
-  useEffect(() => {
-    dispatch(disableNavbar());
-  }, [dispatch]);
-
-
   return (
-    <Wrapper style={{ paddingBottom: 0 }}>
+    <Wrapper>
+      {/* The form is reachable from the basket, the profile and a deep link,
+          and none of them left a way back before this header */}
+      <AppHeader showBack showAddress={false} right={null} />
+
       <AuthenticationForm />
     </Wrapper>
   );

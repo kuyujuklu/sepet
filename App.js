@@ -6,7 +6,6 @@ import "@/global.css";
 
 
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import Navbar from "./src/widgets/Navbar/Navbar";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Provider, useDispatch, useSelector } from "react-redux";
 import { store } from "./src/features/store/configureStore";
@@ -18,23 +17,26 @@ import AuthWatcher from "./src/features/store/auth/AuthWatcher";
 import Authentication from "./src/pages/Auth/Authentication/Authentication";
 import Home from "./src/pages/Home/Home";
 import GeolocationFinder from "./src/widgets/Geolocation/GeolocationFinder";
-import FoodCategoriesPage from "./src/pages/FoodCategories/FoodCategoriesPage";
 import { useFonts } from "expo-font";
 import PubInfoPage from "./src/pages/PubInfo/PubInfoPage";
 import ClearBasketPopup from "./src/widgets/Basket/ClearBasketPopup";
 import BasketPage from "./src/pages/Basket/BasketPage";
 import CreateOrderPage from "./src/pages/CreateOrder/CreateOrderPage";
-import { selectNavbarIsEnabled } from "./src/features/store/navbar/navbarSlice";
 import OrdersPage from "./src/pages/Orders/OrdersPage";
+import ProfilePage from "./src/pages/Profile/ProfilePage";
 import SelectGeolocationPage from "./src/pages/Geolocation/SelectGeolocationPage";
+import SectionPickerPage from "./src/pages/Sections/SectionPickerPage";
 import OrdersPreloader from "./src/features/store/orders/OrdersPreloader";
+
+import { Screens } from "./src/app/navigation/screens";
 
 import "./src/i18n/i18n.config";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
+import { trackScreen } from "./src/shared/analytics/analytics";
 import { useTranslation } from "react-i18next";
 import NotificationHandler from "./src/features/store/notifications/NotificationHandler";
-import { ActivityIndicator, StatusBar } from "react-native";
+import { StatusBar } from "expo-status-bar";
 import DishImagePopup from "./src/widgets/Dish/DishImagePopup";
 import ChangePassword from "./src/pages/Auth/ChangePassword/ChangePassword";
 import OrderInfoPage from "./src/pages/Orders/OrderInfoPage";
@@ -42,6 +44,7 @@ import { setSavedAddresses } from "./src/features/store/geolocation/geolocationS
 import InternetChecker from "./src/widgets/InternetChecker";
 import NoInternetPage from "./src/pages/Internet/NoInternetPage";
 import DeleteClientPopup from "./src/widgets/Client/DeleteClientPopup";
+import RemoveDishPopup from "./src/widgets/Basket/RemoveDishPopup";
 
 import LinkingWathcer from "./src/features/store/linking/LinkingWathcer";
 import VersionWatcher from "./src/features/store/version/VersionWatcher.jsx";
@@ -49,9 +52,20 @@ import PubNotAvailableForDeliveryPopup from "./src/widgets/Pub/PubNotAvailableFo
 import ExpiredVersionPage from "./src/pages/Version/ExpiredVersionPage.jsx";
 
 
+// Logging is a real cost in production: every call serialises its arguments
+// and crosses the bridge. The app logs whole API responses in places.
+if (!__DEV__) {
+  console.log = () => {};
+  console.debug = () => {};
+}
+
 export default function App() {
   return (
     <>
+      {/* Android runs edge-to-edge, so the status bar is drawn over the app:
+          on the light background of every screen its icons have to be dark */}
+      <StatusBar style="dark" />
+
       <NativeBaseProvider>
         <Provider store={store}>
           <AppInner />
@@ -61,25 +75,9 @@ export default function App() {
   );
 }
 
-export const Screens = {
-  Home: "Home",
-  Registration: "Registration",
-  Authentication: "Authentication",
-  ChangePassword: "ChangePassword",
-  SelectGeolocationPage: "SelectGeolocationPage",
-  FoodCategories: "FoodCategories",
-  PubInfo: "PubInfo",
-  Basket: "Basket",
-  CreateOrder: "CreateOrder",
-  Orders: "Orders",
-  OrderInfoPage: "OrderInfoPage",
-  NoInternetPage: "NoInternetPage",
-  ExpiredVersionPage: "ExpiredVersionPage",
-}
+export { Screens };
 
 const AppInner = () => {
-
-  const isNavbarEnabled = useSelector(selectNavbarIsEnabled);
 
   const { i18n } = useTranslation();
   const dispatch = useDispatch();
@@ -91,7 +89,9 @@ const AppInner = () => {
   const Stack = createNativeStackNavigator();
 
   const navigationRef = useNavigationContainerRef();
-  const [routeName, setRouteName] = useState();
+  // onStateChange fires on every navigation; the ref is what keeps the
+  // "did the screen actually change" check reliable across batched renders
+  const previousRouteName = useRef(null);
 
   //i18n set language
   useEffect(() => {
@@ -126,29 +126,29 @@ const AppInner = () => {
     <NavigationContainer
       ref={navigationRef}
       onReady={() => {
-        setRouteName(navigationRef.getCurrentRoute().name);
+        const currentRouteName = navigationRef.getCurrentRoute()?.name;
+
+        previousRouteName.current = currentRouteName;
+        trackScreen(currentRouteName);
       }}
       onStateChange={async () => {
-        const previousRouteName = routeName;
-        const currentRouteName = navigationRef.getCurrentRoute().name;
-        const trackScreenView = () => {
-          // Your implementation of analytics goes here!
-        };
+        const currentRouteName = navigationRef.getCurrentRoute()?.name;
 
-        if (previousRouteName !== currentRouteName) {
-          // Save the current route name for later comparison
-          setRouteName(currentRouteName);
+        if (previousRouteName.current === currentRouteName) return;
 
-          // Replace the line below to add the tracker from a mobile analytics SDK
-          trackScreenView(currentRouteName);
-        }
+        previousRouteName.current = currentRouteName;
+        trackScreen(currentRouteName);
       }}
     >
       <Stack.Navigator
-        initialRouteName={Screens.SelectGeolocationPage}
+        // The app opens with the section question, not with an address form:
+        // the location is guessed in the background and the exact address is
+        // collected at checkout
+        initialRouteName={Screens.SectionPicker}
         screenOptions={{ headerShown: false }}
       >
 
+        <Stack.Screen name={Screens.SectionPicker} component={SectionPickerPage} />
         <Stack.Screen name={Screens.Home} component={Home} />
         <Stack.Screen
           name={Screens.SelectGeolocationPage}
@@ -157,16 +157,15 @@ const AppInner = () => {
         <Stack.Screen name={Screens.Registration} component={Registration} />
         <Stack.Screen name={Screens.Authentication} component={Authentication} />
         <Stack.Screen name={Screens.ChangePassword} component={ChangePassword} />
-        <Stack.Screen name={Screens.FoodCategories} component={FoodCategoriesPage} />
         <Stack.Screen name={Screens.PubInfo} component={PubInfoPage} />
         <Stack.Screen name={Screens.Basket} component={BasketPage} />
         <Stack.Screen name={Screens.CreateOrder} component={CreateOrderPage} />
         <Stack.Screen name={Screens.Orders} component={OrdersPage} />
         <Stack.Screen name={Screens.OrderInfoPage} component={OrderInfoPage} />
+        <Stack.Screen name={Screens.Profile} component={ProfilePage} />
         <Stack.Screen name={Screens.NoInternetPage} component={NoInternetPage} />
         <Stack.Screen name={Screens.ExpiredVersionPage} component={ExpiredVersionPage} />
       </Stack.Navigator>
-      {isNavbarEnabled && <Navbar routeName={routeName} />}
       <ErrorHandlers />
       <OrdersPreloader />
       <AlertWrapper />
@@ -178,6 +177,7 @@ const AppInner = () => {
       <GeolocationFinder />
 
       <ClearBasketPopup />
+      <RemoveDishPopup />
       <DishImagePopup />
       <DeleteClientPopup />
       <PubNotAvailableForDeliveryPopup />

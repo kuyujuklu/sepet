@@ -10,6 +10,13 @@ export const basketSlice = createSlice({
       okButtonText: "basket_popup.ok_button",
       cancelButtonText: "basket_popup.cancel_button",
     },
+    // Asking before a line disappears: a stepper tapped one time too many
+    // used to silently delete the position
+    removeDishPopup: {
+      isOpened: false,
+      dishID: null,
+      dishName: "",
+    },
     basket: {},
     pubID: null,
   },
@@ -19,8 +26,16 @@ export const basketSlice = createSlice({
       state.basket = {};
       state.pubID = null;
     },
-    openClearBasketPopup(state) {
+    // The texts are part of the payload so the same popup can also ask
+    // "empty the whole basket?" from the basket screen
+    openClearBasketPopup(state, action) {
       state.clearBasketPopup.isOpened = true;
+
+      if (action?.payload?.text) state.clearBasketPopup.text = action.payload.text;
+      if (action?.payload?.okButtonText)
+        state.clearBasketPopup.okButtonText = action.payload.okButtonText;
+      if (action?.payload?.cancelButtonText)
+        state.clearBasketPopup.cancelButtonText = action.payload.cancelButtonText;
     },
     closeClearBasketPopup(state) {
       state.clearBasketPopup.confirmingAction = null;
@@ -32,7 +47,10 @@ export const basketSlice = createSlice({
     doClearPopupConfirmingAction(state) {
       state.basket = {};
 
-      if (!state.clearBasketPopup.confirmingAction) return;
+      if (!state.clearBasketPopup.confirmingAction) {
+        state.pubID = null;
+        return;
+      }
 
       const action = state.clearBasketPopup.confirmingAction;
       state.clearBasketPopup.confirmingAction = null;
@@ -51,6 +69,24 @@ export const basketSlice = createSlice({
 
       state.basket = action.payload.basket;
       state.pubID = action.payload.pubID;
+    },
+    openRemoveDishPopup(state, action) {
+      state.removeDishPopup.isOpened = true;
+      state.removeDishPopup.dishID = action.payload?.dishID ?? null;
+      state.removeDishPopup.dishName = action.payload?.dishName ?? "";
+    },
+    closeRemoveDishPopup(state) {
+      state.removeDishPopup.isOpened = false;
+      state.removeDishPopup.dishID = null;
+      state.removeDishPopup.dishName = "";
+    },
+    removeDish(state, action) {
+      const id = +action.payload?.id;
+      if (!id) return;
+
+      delete state.basket[id];
+
+      if (Object.keys(state.basket).length === 0) state.pubID = null;
     },
     increaseDish(state, action) {
       const id = +action.payload?.id;
@@ -104,6 +140,9 @@ export const basketSlice = createSlice({
 export const {
   increaseDish,
   decreaseDish,
+  removeDish,
+  openRemoveDishPopup,
+  closeRemoveDishPopup,
   openClearBasketPopup,
   closeClearBasketPopup,
   doClearPopupConfirmingAction,
@@ -116,5 +155,6 @@ export const selectBasketPubID = (state) => state.basket.pubID;
 export const selectDishFromBasket = (id) => (state) =>
   state.basket.basket[id] || null;
 export const selectClearBasketPopup = (state) => state.basket.clearBasketPopup;
+export const selectRemoveDishPopup = (state) => state.basket.removeDishPopup;
 
 export default basketSlice.reducer;

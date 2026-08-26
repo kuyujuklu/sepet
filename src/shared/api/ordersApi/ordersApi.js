@@ -1,6 +1,7 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { authenticationBasedQuery } from "../auth/authBasedQuery";
 import { orderTypes } from "../../../app/static-data/data";
+import { events, track } from "../../analytics/analytics";
 
 export const ordersApi = createApi({
   reducerPath: "ordersQuery",
@@ -39,6 +40,32 @@ export const ordersApi = createApi({
         },
       }),
       invalidatesTags: ["Orders"],
+
+      // The whole order funnel is tracked here instead of in the screens,
+      // so every future caller of createOrder is covered
+      async onQueryStarted({ order }, { queryFulfilled }) {
+        const orderProps = {
+          pub_id: +order?.pubID,
+          items_count: order?.dishes?.length ?? 0,
+          payment_type: order?.paymentType,
+        };
+
+        track(events.orderSubmitted, orderProps);
+
+        try {
+          const { data } = await queryFulfilled;
+
+          track(events.orderSucceeded, {
+            ...orderProps,
+            order_id: data?.order?.id ?? data?.id,
+          });
+        } catch (error) {
+          track(events.orderFailed, {
+            ...orderProps,
+            status: error?.error?.status,
+          });
+        }
+      },
     }),
     rateOrder: builder.mutation({
       query: ({ orderID, rating }) => ({

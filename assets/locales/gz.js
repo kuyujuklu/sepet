@@ -108,6 +108,16 @@ export default {
     send_again: "Enidän yolla",
   },
   select_geolocation: {
+    title: "Teslimat adresi",
+    subtitle: "Saklanan adresi seçin osa eni ekleyin — kuryer oraya gelecek",
+    current_section: "Şindiki er",
+    use_current: "Kullanın hem ileri",
+    no_saved_title: "Saklanan adres şindilik yok",
+    no_saved_text: "Adres ekleyin — gelän sıra onu bir dokunuşlan seçeceniz",
+    add_address_inputs_hint: "Bu erin adı nedir? Sokak hem ev nomeri kuryerä lääzım",
+    point_on_map: "Haritada nokta seçildi",
+    change_point: "Diiştirin",
+    save_address: "Adresi sakla",
     saved_addresses: "Yazılı adreslar",
     headline: "Ayırın lokaţıyayı",
 
@@ -123,19 +133,124 @@ export default {
       "Biz  bulamadık sizin adrezinizi, ayırın noktayı kendiniz",
     change_geolocation: "Diiştirin lokaţiyayı",
   },
+  sections: {
+    headline: "Ne sipariş ederiz?",
+    subheadline:
+      "Bölümü seçin — teslimat adresini sonra, sipariş verirkän gösterirsiniz",
+    coming_soon: "Tezdä",
+    coming_soon_alert: "Bu bölüm tezdä açılacek",
+    food: {
+      title: "Imäk",
+      subtitle: "Yakındakı restoranlardan hem kafelerdän imäklär",
+      feed_subtitle:
+        "Yakındakı restoranlardan faydalı imäklär — birkaç dokunuşlan sipariş",
+    },
+    flowers: {
+      title: "Çiçeklär",
+      subtitle: "Buketlär hem kompozițiyalar teslimatlan",
+      feed_subtitle: "Yakındakı çiçek dükkanlarından buketlär — bugün getireriz",
+    },
+    groceries: {
+      title: "Produktlar",
+      subtitle: "Produkt dükkanları hem ev için hepsi",
+      feed_subtitle: "Yakındakı dükkanlardan produktlar",
+    },
+  },
+  cities: {
+    chisinau: "Kişinöv",
+    balti: "Bälț",
+    comrat: "Komrat",
+    cahul: "Kagul",
+    orhei: "Orhey",
+    ungheni: "Ungen",
+    ceadir_lunga: "Çadır-Lunga",
+    tiraspol: "Tiraspol",
+  },
+  city_picker: {
+    headline: "Angı kasabadasınız?",
+    subheadline:
+      "Sade yakındakı erleri göstermää lääzım. Tam adresi sipariş verirkän gösterirsiniz",
+    open_settings: "Ayarlarda geolokațiyaya izin verin",
+    detecting: "Erinizi bulêrız…",
+    select_manually: "Kasabayı kendiniz seçin",
+  },
+  header: {
+    near_you: "Sizin yanınızda",
+    approximate_hint: "Geolokațiyaya görä bulundu · tam etmää için basın",
+    set_address: "Gösterin teslimat adresini",
+    specify_address: "adresi gösterin",
+  },
+  profile: {
+    title: "Profil",
+    orders: "Benim siparişlerim",
+    change_address: "Diiştirin adresi",
+    language: "İnterfeys dili",
+    support: "Yardım",
+  },
   home_page: {
     select_another_geolocation: "Ayırın eni lokaţıyayı",
     no_available_pubs_for_location: "Biz etişämeeriz sizä",
     pubs_near_you: "Restorannar sizin yanınızda",
     pub_is_closed: "Kapalı. İş zamanı.",
+    top_dishes: {
+      title: "İi satılan imäklär",
+      subtitle: "Sizin yanınızdakı restorannardan faydalı imäklär",
+      filter_top: "Popular",
+      filter_deals: "İndirimnän",
+      filter_near: "Yakın",
+      filter_pubs: "Erlär",
+      hit_badge: "Top",
+      closed: "Kapalı",
+      no_dishes: "Şindilik yok imäklär sipariş için",
+      no_deals: "Şindi yok imäklär indirimnän",
+      go_to_basket: "Sepedä",
+      no_dishes_in_category: "Bu kategoriyada yakında şindilik yok imäklär",
+      show_all_dishes: "Göstermää hepsi imäkleri",
+      filters_button: "Filtrlar",
+      filters_title: "Filtrlar",
+      filters_dishes_group: "İmäkleri göster",
+      filters_pubs_group: "Yada erleri gör",
+    },
   },
   pub_info_page: {
+    is_open: "Açık",
+    phone: "Telefon",
+    close: "Kapat",
+    empty_menu: "Bu menüdä şindilik imäk yok",
+    dishes_count: "İmäklär: {{value}}",
     pub_header: {
       address: "Adres",
       additional_info: "Bilgi",
     },
   },
+  view_modes: {
+    as_list: "Spisokllan",
+    by_categories: "Kategoriyalara görä",
+  },
   basket_page: {
+    subtotal: "Ara toplam",
+    delivery: "Teslimat",
+    delivery_free: "Parasız",
+    total: "Hepsi",
+    free_delivery_left: "Parasız teslimata {{amount}} kaldı",
+    positions: "Poziţiya: {{value}}",
+    minutes: "min",
+    open_pub: "Menüyä",
+    add_more: "Dahaa ekle",
+    per_item: "bir dänä için",
+    clear: "Temizle",
+    clear_confirm: "Sepeti temizleyelim mi?",
+    clear_ok: "Temizle",
+    not_available_for_delivery:
+      "Bu er şindi sizin adresä getirmeer",
+    empty_title: "Sepet boş",
+    empty_text: "İmäk ekleyin — burada görünecek",
+    empty_button: "İmäk seçin",
+    remove_dish: {
+      title: "Poziţiyayı sepettän silelim mi?",
+      cancel: "Kalsın",
+      confirm: "Sil",
+    },
     headline: "Sepet",
     empty: "Boş",
     create_order_button: "Ileri",
@@ -150,11 +265,36 @@ export default {
     ok_button: "Ok",
   },
   dish_popup: {
+    in_basket: "Sepettä: {{value}}",
     back: "Hazır",
   },
   create_order_page: {
+    address: {
+      current: "Siparişi buraya getireceyiz",
+      unknown: "Adres bulunmadı",
+      change: "Adresi diiştir",
+      saved_title: "Saklanan adreslär",
+      no_saved: "Saklanan adres şindilik yok — ilkini haritada ekleyin",
+      add_new: "Eni adres ekle",
+      title: "Nereyi getirmää",
+      hint: "Adres sade şindi lääzım — kuryer oraya gelecek",
+    },
+    contacts: {
+      title: "Kontaktlar",
+    },
+    comment: {
+      title: "Siparişä komentariy",
+    },
+    order: {
+      title: "Sizin sipariş",
+    },
     headline: "Eni sımarlamak",
     additional_data: {
+      fill_inputs: "Lääzımnı erleri doldurun",
+      empty_basket: "Sepettä ürün yok",
+      no_location: "Nereyi getirmää bilmeeriz — adresi gösterin",
+      approximate_location:
+        "Erleri yaklaşık erä görä gösterdik. Aşaada teslimat adresini kontrol edin.",
       headline: "Sımarlamanın bilgileri",
       inputs: {
         town: {
@@ -190,6 +330,9 @@ export default {
   order_page: {
     headline: "Sizin sımarlamanız",
     headline_no_orders: "Bişey sımarlamadınız",
+    no_orders_text:
+      "Burada sizin sımarlamalarınız görünecek — herbirini bir kerä tekrarlamaa olêr",
+    no_orders_button: "İmäklerä geç",
     order_card: {
       unable_to_repeat_order: "Biz yakışměěr  tekrarlayalım",
       order_is_not_completed_alert: "Sımarlamak taa etişmedi",
@@ -208,10 +351,14 @@ export default {
     },
   },
   near_categories_page: {
-    headline: "Restorannar",
-    pub_is_closed: "Kapalı. İş zamanı.",
+    nothing_found: "Burada şindilik bişey yok — başka kategoriya deneyin",
+  },
+  internet: {
+    no_internet_title: "İnternet baalantısı yok",
+    no_internet_text: "Baalantıyı kontrol edin hem bir taa deneyin",
   },
   categories: {
+    sales: "İndirimnär",
     asian: "Aziatsk",
     flowers: "Çiçeklär",
     fast_food: "Fast-fud",
@@ -229,12 +376,18 @@ export default {
     salad: "Eşillik",
     snacks: "Zakuska",
     meat: "Lokma",
+    all: "Hepsi",
     all_publishments: "Hepsi restorannar",
+    show_all: "Taa",
+    sheet_title: "Kategoriyalar",
+    sheet_subtitle: "İmäkleri ayırmaa için bir kategoriya seçin",
   },
   order_info_page: {
     order: "Sımarlamak",
     all_changes_from_tech: "Hepsi disiklikler yapiler",
     support: "operatordan",
+    dishes_title: "Sımarlamanın içindekilär",
+    no_dishes: "Sımarlamanın içindekilerini üklemäk olmadı",
   },
   delete_account_popup: {
     headline: "Benim akauntımı sil",
@@ -248,6 +401,7 @@ export default {
     free_delivery_from: "Parasiz götürmäk",
   },
   pub_not_available_for_delivery: {
+    title: "Sipariş verilämeer",
     pub_is_not_open: "Bu restoran kapalı, yada siz bu restorandan uzaktaysınız",
     choose_another_pub: "Başka restoranı ayırın",
     change_geolocation: "Diiştirin lokaţiyayı"

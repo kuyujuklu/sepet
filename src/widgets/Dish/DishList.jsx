@@ -1,22 +1,30 @@
 import { FlatList, View } from "native-base";
 import { SafeAreaView } from "react-native";
 import DishCard from "./DishCard";
-import PubInfoHeader from "../Pub/PubInfoHeader";
+import { SCREEN_PADDING, CARD_GAP } from "../../constants/layout";
 
-const DishList = ({ dishes, pubID, pub, upperElement, isPubOpen, isAvailableForDelivery }) => {
+const DishList = ({ dishes, pubID, pub, isPubOpen, isAvailableForDelivery }) => {
   return (
-    <SafeAreaView edges={[]} >
-      {(!dishes || dishes.length === 0) && upperElement}
+    // flex so the list can actually scroll to its end inside the screen
+    <SafeAreaView edges={[]} style={{ flex: 1 }}>
       <FlatList
-        contentContainerStyle={{ paddingHorizontal: 10, paddingBottom: 70 }}
-        renderItem={({ item: dish, index }) => (
-          <>
-            {index === 0 ? upperElement : <></>}
-            <DishCard key={dish?.id} pubID={pubID} pub={pub} dish={dish} isPubOpen={isPubOpen} isAvailableForDelivery={isAvailableForDelivery} />
-          </>
+        contentContainerStyle={{
+          paddingHorizontal: SCREEN_PADDING,
+          paddingTop: 4,
+          paddingBottom: 150,
+        }}
+        renderItem={({ item: dish }) => (
+          <DishCard
+            key={dish?.id}
+            pubID={pubID}
+            pub={pub}
+            dish={dish}
+            isPubOpen={isPubOpen}
+            isAvailableForDelivery={isAvailableForDelivery}
+          />
         )}
         data={dishes || []}
-        ItemSeparatorComponent={() => <View height={5} />}
+        ItemSeparatorComponent={() => <View style={{ height: CARD_GAP }} />}
       />
     </SafeAreaView>
   );

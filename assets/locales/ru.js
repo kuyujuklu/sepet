@@ -111,6 +111,16 @@ export default {
     send_again: "Отравить еще раз",
   },
   select_geolocation: {
+    title: "Адрес доставки",
+    subtitle: "Выберите сохранённый адрес или добавьте новый — курьер приедет по нему",
+    current_section: "Текущее местоположение",
+    use_current: "Использовать и продолжить",
+    no_saved_title: "Сохранённых адресов пока нет",
+    no_saved_text: "Добавьте адрес — в следующий раз его можно будет выбрать в один тап",
+    add_address_inputs_hint: "Как называется это место? Улица и номер дома нужны курьеру",
+    point_on_map: "Точка на карте выбрана",
+    change_point: "Изменить",
+    save_address: "Сохранить адрес",
     saved_addresses: "Сохраненные адреса",
     headline: "Выберите локацию",
     continue: "Далее",
@@ -125,20 +135,124 @@ export default {
       "Мы не смогли загрузить ваше местоположение, выберите его сами",
     change_geolocation: "Сменить локацию",
   },
+  sections: {
+    headline: "Что закажем?",
+    subheadline:
+      "Выберите раздел — адрес доставки укажете позже, при оформлении заказа",
+    coming_soon: "Скоро",
+    coming_soon_alert: "Этот раздел скоро откроется",
+    food: {
+      title: "Еда",
+      subtitle: "Блюда из ресторанов и кафе рядом с вами",
+      feed_subtitle: "Выгодные блюда из ресторанов рядом — заказ в пару касаний",
+    },
+    flowers: {
+      title: "Цветы",
+      subtitle: "Букеты и композиции с доставкой",
+      feed_subtitle: "Букеты из цветочных рядом — доставим сегодня",
+    },
+    groceries: {
+      title: "Продукты",
+      subtitle: "Продуктовые магазины и всё для дома",
+      feed_subtitle: "Продукты из магазинов рядом",
+    },
+  },
+  cities: {
+    chisinau: "Кишинёв",
+    balti: "Бельцы",
+    comrat: "Комрат",
+    cahul: "Кагул",
+    orhei: "Орхей",
+    ungheni: "Унгены",
+    ceadir_lunga: "Чадыр-Лунга",
+    tiraspol: "Тирасполь",
+  },
+  city_picker: {
+    headline: "В каком городе вы находитесь?",
+    subheadline:
+      "Нужно только чтобы показать заведения рядом. Точный адрес укажете при оформлении заказа",
+    open_settings: "Разрешить доступ к геолокации в настройках",
+    detecting: "Определяем ваше местоположение…",
+    select_manually: "Выбрать город вручную",
+  },
+  header: {
+    near_you: "Рядом с вами",
+    approximate_hint: "Определено по геолокации · нажмите, чтобы уточнить",
+    set_address: "Указать адрес доставки",
+    specify_address: "уточнить адрес",
+  },
+  profile: {
+    title: "Профиль",
+    orders: "Мои заказы",
+    change_address: "Изменить адрес",
+    language: "Язык интерфейса",
+    support: "Поддержка",
+  },
   home_page: {
     select_another_geolocation: "Выбрать другую локацию",
     no_available_pubs_for_location:
       "К сожалению, мы пока не доставляем до вашего адреса :(",
     pubs_near_you: "Рестораны возле вас",
     pub_is_closed: "Закрыто. Время работы",
+    top_dishes: {
+      title: "Хиты продаж",
+      subtitle: "Выгодные блюда из ресторанов рядом — заказ в пару касаний",
+      filter_top: "Хиты",
+      filter_deals: "Со скидкой",
+      filter_near: "Ближайшие",
+      filter_pubs: "Заведения",
+      hit_badge: "Хит",
+      closed: "Закрыто",
+      no_dishes: "Пока нет блюд, доступных для заказа",
+      no_deals: "Сейчас нет блюд со скидкой",
+      go_to_basket: "В корзину",
+      no_dishes_in_category: "В этой категории рядом пока нет блюд",
+      show_all_dishes: "Показать все блюда",
+      filters_button: "Фильтры",
+      filters_title: "Фильтры",
+      filters_dishes_group: "Показать блюда",
+      filters_pubs_group: "Или посмотреть заведения",
+    },
   },
   pub_info_page: {
+    is_open: "Открыто",
+    phone: "Телефон",
+    close: "Закрыть",
+    empty_menu: "В этом меню пока нет блюд",
+    dishes_count: "Блюд: {{value}}",
     pub_header: {
       address: "Адрес",
       additional_info: "Дополнительная информация",
     },
   },
+  view_modes: {
+    as_list: "Списком",
+    by_categories: "По категориям",
+  },
   basket_page: {
+    subtotal: "Подытог",
+    delivery: "Доставка",
+    delivery_free: "Бесплатно",
+    total: "Итого",
+    free_delivery_left: "До бесплатной доставки не хватает {{amount}}",
+    positions: "Позиций: {{value}}",
+    minutes: "мин",
+    open_pub: "В меню",
+    add_more: "Дозаказать",
+    per_item: "за штуку",
+    clear: "Очистить",
+    clear_confirm: "Очистить корзину?",
+    clear_ok: "Очистить",
+    not_available_for_delivery:
+      "Это заведение сейчас не доставляет по вашему адресу",
+    empty_title: "Корзина пуста",
+    empty_text: "Добавьте блюда — и они появятся здесь",
+    empty_button: "Выбрать блюда",
+    remove_dish: {
+      title: "Удалить позицию из корзины?",
+      cancel: "Оставить",
+      confirm: "Удалить",
+    },
     headline: "Корзина",
     empty: "Пустая",
     create_order_button: "Дальше",
@@ -153,11 +267,36 @@ export default {
     ok_button: "Ok",
   },
   dish_popup: {
+    in_basket: "В корзине: {{value}}",
     back: "Назад",
   },
   create_order_page: {
+    address: {
+      current: "Заказ доставим сюда",
+      unknown: "Адрес не определён",
+      change: "Изменить адрес",
+      saved_title: "Сохранённые адреса",
+      no_saved: "Сохранённых адресов пока нет — добавьте первый на карте",
+      add_new: "Добавить новый адрес",
+      title: "Куда доставить",
+      hint: "Адрес нужен только сейчас — курьер приедет по нему",
+    },
+    contacts: {
+      title: "Контакты",
+    },
+    comment: {
+      title: "Комментарий к заказу",
+    },
+    order: {
+      title: "Ваш заказ",
+    },
     headline: "Создать заказ",
     additional_data: {
+      fill_inputs: "Заполните обязательные поля",
+      empty_basket: "В корзине нет товаров",
+      no_location: "Мы не знаем, куда доставлять — укажите адрес",
+      approximate_location:
+        "Мы показывали заведения по примерному местоположению. Проверьте адрес доставки ниже.",
       headline: "Информация о заказе",
       inputs: {
         town: {
@@ -193,6 +332,9 @@ export default {
   order_page: {
     headline: "Ваши заказы",
     headline_no_orders: "Вы еще ничего не заказывали",
+    no_orders_text:
+      "Здесь появятся ваши заказы — любой из них можно будет повторить в одно касание",
+    no_orders_button: "Перейти к блюдам",
     order_card: {
       unable_to_repeat_order: "К сожалению мы не можем повторить этот заказ",
       order_is_not_completed_alert: "Заказ еще не доставлен",
@@ -211,8 +353,11 @@ export default {
     },
   },
   near_categories_page: {
-    headline: "Рестораны",
-    pub_is_closed: "Закрыто. Время работы",
+    nothing_found: "Здесь пока ничего нет — попробуйте другую категорию",
+  },
+  internet: {
+    no_internet_title: "Нет соединения с интернетом",
+    no_internet_text: "Проверьте подключение и попробуйте ещё раз",
   },
   categories: {
     sales: "скидки",
@@ -233,12 +378,18 @@ export default {
     salad: "салаты",
     snacks: "закуски",
     meat: "мясо",
+    all: "Всё",
     all_publishments: "Все заведения",
+    show_all: "Ещё",
+    sheet_title: "Категории",
+    sheet_subtitle: "Выберите категорию, чтобы отфильтровать блюда",
   },
   order_info_page: {
     order: "Заказ",
     all_changes_from_tech: "Все изменения в заказе делаются только через",
     support: "поддержку",
+    dishes_title: "Состав заказа",
+    no_dishes: "Не удалось загрузить состав заказа",
   },
   address_info: {
     your_address: "Ваш адрес",
@@ -255,6 +406,7 @@ export default {
     free_delivery_from: "Бесплатная доставка от"
   },
   pub_not_available_for_delivery: {
+    title: "Заказ не получится оформить",
     pub_is_not_open: "Данное заведение сейчас закрыто или вы находитесь вне зоны доставки этого заведения",
     choose_another_pub: "Выбрать другое заведение",
     change_geolocation: "Изменить местоположение"

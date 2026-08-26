@@ -1,305 +1,315 @@
-import { useDispatch, useSelector } from "react-redux";
-import { selectOrders } from "../../../features/store/orders/ordersSlice";
 import { useEffect, useMemo } from "react";
-import { ScrollView, Spinner, Text, View } from "native-base";
-import {
-  ConvertApiTimeToLocalDayMonth,
-  ConvertApiTimeToLocalDayMonthYear,
-} from "../../../shared/utils/time";
-import { SafeAreaView, TouchableOpacity } from "react-native";
-import { Pressable } from "native-base";
-import {
-  useGetNearbyPubsQuery,
-  useGetPubInfoQuery,
-} from "../../../shared/api/pubs/pubsApi";
-import { useTranslation } from "react-i18next";
-import {
-  AnonymousProBold,
-  AnonymousProRegular,
-} from "../../../constants/styles-constants";
-import RateOrderButton from "./RateOrderButton";
 import { Image } from "expo-image";
-import { images } from "../../../app/images/images";
-import { selectGeolocation } from "../../../features/store/geolocation/geolocationSlice";
 import {
-  alertStatuses,
-  pushAlert,
-} from "../../../features/store/alerts/alertSlice";
-import { setBasket } from "../../../features/store/basket/basketSlice";
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { useSelector } from "react-redux";
 import { useNavigation } from "@react-navigation/native";
+import { useTranslation } from "react-i18next";
+import RateOrderButton from "./RateOrderButton";
+import { useRepeatOrder } from "../useRepeatOrder";
+import { Skeleton } from "../../Skeletons/Skeleton";
+import { selectOrders } from "../../../features/store/orders/ordersSlice";
+import { useGetPubInfoQuery } from "../../../shared/api/pubs/pubsApi";
+import { ConvertApiTimeToLocalDayMonthYear } from "../../../shared/utils/time";
 import {
-  getOrderStatusColor,
+  getOrderStatusColors,
   getOrderStatusText,
 } from "../../../shared/utils/order-utils";
-import { setNavbarExpanded } from "../../../features/store/navbar/navbarSlice";
-import { Screens } from "../../../../App";
+import { getCurrencySymbol } from "../../../shared/utils/dish";
+import { images } from "../../../app/images/images";
+import { Screens } from "../../../app/navigation/screens";
+import { SCREEN_PADDING } from "../../../constants/layout";
 
+const styles = StyleSheet.create({
+  content: {
+    paddingHorizontal: SCREEN_PADDING,
+    paddingTop: 4,
+    paddingBottom: 28,
+    gap: 10,
+  },
+  card: {
+    backgroundColor: "#fff",
+    borderRadius: 20,
+    padding: 16,
+    gap: 12,
+  },
+  topRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 10,
+  },
+  badge: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: 12 },
+  badgeText: { fontSize: 12, fontWeight: "bold" },
+  date: { fontSize: 13, color: "#6b7280" },
+  row: { flexDirection: "row", alignItems: "center", gap: 10 },
+  icon: { width: 20, height: 20, opacity: 0.65 },
+  pubName: { flex: 1, fontSize: 18, fontWeight: "bold", color: "#111" },
+  address: { flex: 1, fontSize: 14, color: "#6b7280", lineHeight: 19 },
+
+  cardTitle: { fontSize: 13, color: "#6b7280" },
+  dishRow: { flexDirection: "row", alignItems: "center", gap: 10 },
+  dishName: { flex: 1, fontSize: 15, color: "#111" },
+  dishCount: { fontSize: 13, color: "#6b7280" },
+  dishPrice: { fontSize: 15, fontWeight: "bold", color: "#111", minWidth: 78, textAlign: "right" },
+  noDishes: { fontSize: 14, color: "#6b7280" },
+
+  totalRow: { flexDirection: "row", justifyContent: "space-between", gap: 10 },
+  totalLabel: { fontSize: 15, color: "#6b7280" },
+  totalValue: { fontSize: 15, color: "#111" },
+  grandLabel: { fontSize: 17, fontWeight: "bold", color: "#111" },
+  grandValue: { fontSize: 17, fontWeight: "bold", color: "#047857" },
+  divider: { height: 1, backgroundColor: "#f1f1f3" },
+
+  support: {
+    backgroundColor: "#fff7ed",
+    borderRadius: 18,
+    padding: 14,
+  },
+  supportText: { fontSize: 13, lineHeight: 19, color: "#9a3412" },
+  supportLink: { fontWeight: "bold", textDecorationLine: "underline" },
+
+  actions: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+    backgroundColor: "#fff",
+    borderRadius: 20,
+    padding: 16,
+  },
+  repeat: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+    borderRadius: 16,
+    backgroundColor: "#ecfdf5",
+  },
+  repeatIcon: { width: 16, height: 16 },
+  repeatText: { fontSize: 14, fontWeight: "bold", color: "#047857" },
+});
+
+// The order screen. Same cards, same gutter and the same status badge as the
+// list it is opened from.
 const OrderInfo = ({ orderID }) => {
   const { t, i18n } = useTranslation();
-  const dispatch = useDispatch();
-  const orders = useSelector(selectOrders);
   const navigator = useNavigation();
-  const order = useMemo(() => {
-    return orders?.find((order) => order.id === orderID);
-  }, [orders]);
 
+  const orders = useSelector(selectOrders);
+
+  const order = useMemo(
+    () => orders?.find((item) => item.id === orderID),
+    [orders, orderID],
+  );
+
+  // The order can disappear from under the screen (a websocket update, a
+  // logout); there is nothing to show then
   useEffect(() => {
     if (!orders) return;
-    if (!order) navigator.navigate(Screens.Orders)
-  }, [order, orders])
+    if (!order) navigator.navigate(Screens.Orders);
+  }, [order, orders]);
 
-  const location = useSelector(selectGeolocation);
+  const { data: pubData, isLoading: isPubDataLoading } = useGetPubInfoQuery(
+    { pubID: order?.pub_id },
+    { skip: !order?.pub_id },
+  );
 
-  const { data: pubsData, isLoading: isPubsDataLoading } =
-    useGetNearbyPubsQuery(
-      {
-        coords: { lat: location.lat, lng: location.lng },
-      },
-      { pollingInterval: 20000, skipPollingIfUnfocused: true },
-    );
-  const { data: pubData, isLoading: isPubDataLoading } = useGetPubInfoQuery({
-    pubID: order?.pub_id,
-  });
-  const pub = pubData ?? null;
+  const { repeatOrder, isLoading: isRepeatLoading } = useRepeatOrder(order);
 
-  const itemsPrice = order?.dishes?.reduce((acc, dish) => {
-    acc = +acc;
-    const price = acc + dish.count * dish.dish_price;
-    if (!price) return acc;
-    else return price.toFixed(2);
-  }, 0);
-  const deliveryPrice = order?.delivery_price?.toFixed(2) ?? undefined;
-  const totalSum =
-    itemsPrice && deliveryPrice
-      ? (+itemsPrice + +deliveryPrice).toFixed(2)
-      : undefined;
+  const currency = getCurrencySymbol(pubData?.pub?.currency_id);
+  const status = getOrderStatusColors(order?.status);
 
+  // The order itself carries dish ids and the price they were bought at, but
+  // no names - those only exist in the menu of the pub
   const dishes = useMemo(() => {
-    if (!order || !order.dishes || !pub || !pub.dishes) {
-      return [];
-    }
+    if (!order?.dishes || !pubData?.dishes) return [];
 
-    const dishes = [];
-
-    for (const order_dish of order.dishes) {
-      const pub_dish = pub?.dishes?.find(
-        (dish) => dish.id === order_dish.dish_id,
-      );
-      if (!pub_dish) {
-        continue;
-      }
-
-      dishes.push({
-        ...pub_dish,
-        order_dish_count: order_dish.count,
-        order_dish_price: order_dish.dish_price,
-      });
-    }
-
-    return dishes;
-  }, [order, pub]);
-
-  const handleRepeatClick = () => {
-    if (!pubsData || !pubsData?.pubs) return;
-    if (!pubData || !pubData.dishes) return;
-
-    if (!order?.dishes || order?.dishes.length === 0) {
-      dispatch(
-        pushAlert({
-          status: alertStatuses.warning,
-          delay: 2000,
-          title: t("order_page.order_card.unable_to_repeat_order"),
-        }),
-      );
-      return;
-    }
-
-    let foundID = false;
-    let foundPub = null;
-    for (const pub of pubsData.pubs) {
-      if (order.pub_id === pub.id) {
-        foundID = true;
-        foundPub = pub;
-      }
-    }
-
-    if (!foundPub || !foundID) {
-      dispatch(
-        pushAlert({
-          title: t("errors.this_pub_is_not_delivering_in_your_area"),
-          status: alertStatuses.error,
-          delay: 3000,
-        }),
-      );
-      return;
-    }
-
-    if (!foundPub?.isOpen) {
-      dispatch(
-        pushAlert({
-          title: t("errors.in_this_time_delivery_not_working"),
-          status: alertStatuses.error,
-          delay: 3000,
-        }),
-      );
-      return;
-    }
-
-    const newBasket = {};
-
-    for (const { dish_id, count } of order?.dishes) {
-      let smallestPrice = 0;
-      let dishFound = false;
-      for (const dish of pubData.dishes) {
-        if (dish.id !== dish_id) continue;
-
-        dishFound = true;
-
-        smallestPrice = +dish.price;
-        if (+dish.sale_price && +dish.sale_price < +dish.price) {
-          smallestPrice = dish.sale_price;
-        }
-        break;
-      }
-      if (!dishFound) {
-        dispatch(
-          pushAlert({
-            status: alertStatuses.warning,
-            delay: 2000,
-            title: t("order_page.order_card.unable_to_repeat_order"),
-          }),
+    return order.dishes
+      .map((orderDish) => {
+        const menuDish = pubData.dishes.find(
+          (dish) => dish.id === orderDish.dish_id,
         );
-        return;
-      }
 
-      newBasket[dish_id] = { count: count, price: smallestPrice };
-      navigator.navigate("Basket");
-    }
-    dispatch(setBasket({ basket: newBasket, pubID: order?.pub_id }));
-  };
+        if (!menuDish) return null;
+
+        return {
+          id: orderDish.dish_id,
+          name: menuDish.name,
+          count: orderDish.count,
+          price: orderDish.dish_price,
+        };
+      })
+      .filter(Boolean);
+  }, [order, pubData]);
+
+  const itemsPrice = useMemo(
+    () =>
+      order?.dishes?.reduce(
+        (acc, dish) => acc + dish.count * +dish.dish_price,
+        0,
+      ) ?? 0,
+    [order],
+  );
+
+  const deliveryPrice = +order?.delivery_price || 0;
+  const totalSum = itemsPrice + deliveryPrice;
+
+  const address = [order?.town, order?.full_address].filter(Boolean).join(", ");
 
   return (
-    <>
-      <Text fontWeight="medium" fontSize="2xl" px="6" textAlign="center" mb="5">
-        {t("order_info_page.order")} №{orderID}
-      </Text>
-      <View flexDir="row" alignItems="center" px="6" gap="2" mb={2}>
-        <View width={25} height={25}>
+    <ScrollView
+      contentContainerStyle={styles.content}
+      showsVerticalScrollIndicator={false}
+    >
+      <View style={styles.card}>
+        <View style={styles.topRow}>
+          <View style={[styles.badge, { backgroundColor: status.background }]}>
+            <Text style={[styles.badgeText, { color: status.color }]}>
+              {t(getOrderStatusText(order?.status))}
+            </Text>
+          </View>
+
+          <Text style={styles.date}>
+            {ConvertApiTimeToLocalDayMonthYear(
+              order?.created_time,
+              i18n.language,
+            )}
+          </Text>
+        </View>
+
+        <View style={styles.row}>
           <Image
             source={images.KnifeInPlateBlack}
+            style={styles.icon}
+            contentFit="contain"
             alt=""
-            style={{ width: "100%", height: "100%" }}
           />
+          <Text style={styles.pubName} numberOfLines={2}>
+            {order?.pub_name ?? pubData?.pub?.name}
+          </Text>
         </View>
-        <Text fontWeight="medium" fontSize="xl" >
-          {order?.pub?.name}
-        </Text>
-      </View>
-      <View flexDir="row" alignItems="center" px="6" gap="2" mb="4">
-        <View width={25} height={25}>
-          <Image
-            source={images.Locaiton}
-            alt=""
-            style={{ width: "100%", height: "100%" }}
-          />
-        </View>
-        <Text fontWeight="medium" fontSize="xl" numberOfLines={1} >
-          {order?.town + ", " + order?.full_address}
-        </Text>
-      </View>
-      <View flexDir="row" alignItems="center" gap={2} mb="8" px="6">
-        <Text
-          fontSize="xl"
-          fontWeight="bold"
-          color={getOrderStatusColor(order?.status)}
-        >
-          {t(getOrderStatusText(order?.status))}
-          {"  "}
-          {ConvertApiTimeToLocalDayMonthYear(order?.created_time, i18n.language)}
-        </Text>
-      </View>
-      {isPubDataLoading && <Spinner />}
-      {!isPubDataLoading && (
-        <ScrollView>
-          <View px="8" gap={2}>
-            {dishes?.map((dish, index) => (
-              <View flexDir="row" justifyContent="space-between" gap="5">
-                <Text numberOfLines={1} flex={1} fontSize="xl" color="coolGray.600">
-                  {index + 1}.{dish.name}
-                </Text>
-                <View flexDir="row">
-                  <View flexDir="row">
-                    <Text fontSize="lg" color="coolGray.600">
-                      {(dish.order_dish_price).toFixed(
-                        2,
-                      )}{" "}
-                    </Text>
-                    <Text fontSize="lg" color="coolGray.600">
-                      Lei
-                    </Text>
-                  </View>
-                  <View ml="2" flexDir="row" alignItems="center">
-                    <Text fontSize="xs">x</Text>
-                    <Text fontSize="md">{dish.order_dish_count}</Text>
-                  </View>
-                </View>
-              </View>
-            ))}
+
+        {!!address && (
+          <View style={styles.row}>
+            <Image
+              source={images.Locaiton}
+              style={styles.icon}
+              contentFit="contain"
+              alt=""
+            />
+            <Text style={styles.address} numberOfLines={2}>
+              {address}
+            </Text>
           </View>
-        </ScrollView>
-      )}
-      <View px="6" gap="1" mb="4" mt="6">
-        <Text color="gray.600" fontFamily={AnonymousProRegular} fontSize={18}>
-          {t("create_order_page.additional_data.items_price")}: {itemsPrice} Lei
-        </Text>
-        <Text color="gray.600" fontFamily={AnonymousProRegular} fontSize={18}>
-          {t("create_order_page.additional_data.delivery_price")}:{" "}
-          {deliveryPrice} Lei
-        </Text>
-        <Text color="gray.600" fontFamily={AnonymousProBold} fontSize={18}>
-          {t("create_order_page.additional_data.total_sum")}: {totalSum} Lei
-        </Text>
+        )}
       </View>
 
-      <Pressable px="6" py="1" gap="2" mb="4" m="2" borderWidth={2} borderColor="coolGray.500" borderRadius="xl" onPress={() => dispatch(setNavbarExpanded(true))}>
-        <Text color="gray.600" fontFamily={AnonymousProRegular} lineHeight={22} fontSize={18}>
-          {t("order_info_page.all_changes_from_tech")}{" "}
-          <Text color="emerald.600" textDecorationLine="underline" fontFamily={AnonymousProRegular} lineHeight={22} fontSize={18}>
-            {t("order_info_page.support")}.
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>{t("order_info_page.dishes_title")}</Text>
+
+        {isPubDataLoading ? (
+          <View style={{ gap: 12 }}>
+            {[0, 1, 2].map((index) => (
+              <Skeleton key={index} width="100%" height={14} />
+            ))}
+          </View>
+        ) : dishes.length === 0 ? (
+          <Text style={styles.noDishes}>{t("order_info_page.no_dishes")}</Text>
+        ) : (
+          dishes.map((dish, index) => (
+            <View key={dish.id} style={styles.dishRow}>
+              <Text style={styles.dishName} numberOfLines={2}>
+                {index + 1}. {dish.name}
+              </Text>
+              <Text style={styles.dishCount}>× {dish.count}</Text>
+              <Text style={styles.dishPrice}>
+                {(+dish.price).toFixed(2)} {currency}
+              </Text>
+            </View>
+          ))
+        )}
+      </View>
+
+      <View style={styles.card}>
+        <View style={styles.totalRow}>
+          <Text style={styles.totalLabel}>
+            {t("create_order_page.additional_data.items_price")}
           </Text>
-        </Text>
-      </Pressable>
-      <View
-        px="6"
-        mt={2}
-        mb={8}
-        flexDir="row"
-        justifyContent="space-between"
-        alignItems="center"
-      >
+          <Text style={styles.totalValue}>
+            {itemsPrice.toFixed(2)} {currency}
+          </Text>
+        </View>
+
+        <View style={styles.totalRow}>
+          <Text style={styles.totalLabel}>
+            {t("create_order_page.additional_data.delivery_price")}
+          </Text>
+          <Text style={styles.totalValue}>
+            {deliveryPrice.toFixed(2)} {currency}
+          </Text>
+        </View>
+
+        <View style={styles.divider} />
+
+        <View style={styles.totalRow}>
+          <Text style={styles.grandLabel}>
+            {t("create_order_page.additional_data.total_sum")}
+          </Text>
+          <Text style={styles.grandValue}>
+            {totalSum.toFixed(2)} {currency}
+          </Text>
+        </View>
+      </View>
+
+      <View style={styles.actions}>
         <RateOrderButton
           orderStatus={order?.status}
           rating={order?.rating}
           orderID={order?.id}
-          iconSize={22}
-          fontSize={18}
+          iconSize={20}
+          fontSize={15}
         />
-        <TouchableOpacity onPress={handleRepeatClick}>
-          <View flexDir="row" alignItems="center" gap={2}>
-            <View width={22} height={22}>
+
+        <TouchableOpacity activeOpacity={0.8} onPress={repeatOrder}>
+          <View style={styles.repeat}>
+            {isRepeatLoading ? (
+              <ActivityIndicator size="small" color="#047857" />
+            ) : (
               <Image
                 source={images.AgainBlack}
+                style={styles.repeatIcon}
+                contentFit="contain"
                 alt=""
-                style={{ width: "100%", height: "100%" }}
               />
-            </View>
-            <Text fontSize="18">
+            )}
+            <Text style={styles.repeatText}>
               {t("order_page.order_card.repeat_button")}
             </Text>
           </View>
         </TouchableOpacity>
       </View>
-    </>
+
+      <TouchableOpacity
+        activeOpacity={0.8}
+        style={styles.support}
+        onPress={() => navigator.navigate(Screens.Profile)}
+      >
+        <Text style={styles.supportText}>
+          {t("order_info_page.all_changes_from_tech")}{" "}
+          <Text style={[styles.supportText, styles.supportLink]}>
+            {t("order_info_page.support")}
+          </Text>
+        </Text>
+      </TouchableOpacity>
+    </ScrollView>
   );
 };
 

@@ -1,96 +1,92 @@
-import { Text, View } from "native-base";
-import Wrapper from "../Wrapper";
-import CreateOrder from "../../widgets/Orders/CreateOrder/CreateOrder";
+import { useMemo } from "react";
+import { View } from "native-base";
 import { useSelector } from "react-redux";
-import { selectBasket } from "../../features/store/basket/basketSlice";
 import { useTranslation } from "react-i18next";
+import Wrapper from "../Wrapper";
+import AppHeader from "../../widgets/AppHeader/AppHeader";
+import CreateOrder from "../../widgets/Orders/CreateOrder/CreateOrder";
+import { RowsSkeleton } from "../../widgets/Skeletons/Skeleton";
+import { selectBasket } from "../../features/store/basket/basketSlice";
 import { selectGeolocation } from "../../features/store/geolocation/geolocationSlice";
-import { useEffect, useMemo } from "react";
 import {
   useGetNearbyPubsQuery,
   useGetPubInfoQuery,
 } from "../../shared/api/pubs/pubsApi";
-import { deliveryTypes } from "../../app/static-data/data";
+import {
+  getBasketItemsPrice,
+  getDeliveryPrice,
+} from "../../shared/utils/basket";
+import { getCurrencySymbol } from "../../shared/utils/dish";
 
 const CreateOrderPage = ({ route }) => {
-
   const { t } = useTranslation();
+
   const shippingTimeFrom = route?.params?.shippingTimeFrom;
   const shippingTimeTo = route?.params?.shippingTimeTo;
-
   const pubID = route?.params?.pubID;
 
   const basket = useSelector(selectBasket);
   const location = useSelector(selectGeolocation);
 
-  const {
-    data: pubsData,
-    error: gettingPubsError,
-    isLoading: isPubsLoading,
-  } = useGetNearbyPubsQuery(
+  const { data: pubsData } = useGetNearbyPubsQuery(
     { coords: { lat: location?.lat, lng: location?.lng } },
-    { skip: !location, pollingInterval: 20000 },
+    { skip: !location, pollingInterval: 20000, skipPollingIfUnfocused: true },
   );
-  const { data: pubData } = useGetPubInfoQuery(
+
+  const { data: pubData, isLoading: isPubLoading } = useGetPubInfoQuery(
     { pubID },
-    { pollingInterval: 20000, skip: !pubID },
+    { pollingInterval: 20000, skip: !pubID, skipPollingIfUnfocused: true },
   );
 
-  const itemsPrice = Object.keys(basket).reduce((acc, key) => {
-    const dish = basket[key];
+  const pub = pubData?.pub;
+  const currency = getCurrencySymbol(pub?.currency_id);
 
-    const shouldAddCommission =
-      pubData?.pub?.shipping?.delivery_type === deliveryTypes.deliveryService &&
-      pubData?.pub?.shipping?.add_commission_to_dish_prices;
+  const nearbyPub = useMemo(
+    () => pubsData?.pubs?.find((item) => item.id === pubID) ?? null,
+    [pubsData, pubID],
+  );
 
-    let commission = shouldAddCommission
-      ? dish.count *
-      dish.price *
-      (pubData?.pub?.shipping?.commission_for_dish_prices / 100)
-      : 0;
+  const items = useMemo(() => {
+    if (!pubData?.dishes) return [];
 
-    if (!commission) commission = 0;
-    else commission = Math.ceil(commission);
+    return pubData.dishes
+      .filter((dish) => +basket?.[dish.id]?.count > 0)
+      .map((dish) => ({ dish, item: basket[dish.id] }));
+  }, [pubData, basket]);
 
-    return acc + dish.count * dish.price + commission;
-  }, 0);
-
-  const deliveryPrice = useMemo(() => {
-    if (!pubsData || !pubID) return;
-
-    const pub = pubsData.pubs.find((pub) => pub.id === pubID);
-    if (!pub) {
-      return 0;
-    }
-
-    console.log("del price: ", pub?.shipping_free_delivery_price);
-    console.log("items price: ", itemsPrice);
-
-    if (
-      pub?.shipping_free_delivery_price &&
-      itemsPrice &&
-      itemsPrice > pub.shipping_free_delivery_price
-    ) {
-      return 0;
-    }
-
-    return pub.shipping_price;
-  }, [pubsData, pubID, itemsPrice]);
-
+  // One source of truth for the money - the basket screen shows the same numbers
+  const itemsPrice = getBasketItemsPrice(basket, pub);
+  const deliveryPrice = getDeliveryPrice(nearbyPub, itemsPrice);
 
   return (
     <Wrapper>
-      <View flex={1}>
-        <CreateOrder
-          location={location}
-          basket={basket}
-          pubID={pubID}
-          shippingTimeFrom={shippingTimeFrom}
-          shippingTimeTo={shippingTimeTo}
-          itemsPrice={itemsPrice}
-          deliveryPrice={deliveryPrice}
-        />
-      </View>
+      <AppHeader
+        showBack
+        showAddress={false}
+        right={null}
+        title={t("create_order_page.headline")}
+      />
+
+      {isPubLoading || !pubData ? (
+        <View pt="3">
+          <RowsSkeleton count={4} thumbSize={56} />
+        </View>
+      ) : (
+        <View flex={1}>
+          <CreateOrder
+            location={location}
+            basket={basket}
+            items={items}
+            pub={pub}
+            pubID={pubID}
+            currency={currency}
+            shippingTimeFrom={shippingTimeFrom}
+            shippingTimeTo={shippingTimeTo}
+            itemsPrice={itemsPrice}
+            deliveryPrice={deliveryPrice}
+          />
+        </View>
+      )}
     </Wrapper>
   );
 };
