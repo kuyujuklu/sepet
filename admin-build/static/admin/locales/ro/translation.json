@@ -256,7 +256,11 @@
                     "headline": "Selectați zonele în care efectuați livrări",
                     "not_selected_geolocation_warning": "Vă rugăm să marcați locația unității pe pagina principală a panoului de administrare",
                     "go_to_admin_panel": "Accesați pagina principală",
+                    "drawing_hint": "Faceți clic pe hartă pentru a adăuga punctele zonei. Apăsați „Finalizați zona” sau faceți clic pe primul punct pentru a încheia.",
                     "buttons": {
+                        "draw_area": "Desenați zona",
+                        "finish_area": "Finalizați zona",
+                        "cancel_drawing": "Anulați",
                         "select_and_delete_area": "Selectați și ștergeți zona",
                         "save_all": "Salvați toate"
                     }
