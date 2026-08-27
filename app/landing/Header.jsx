@@ -1,6 +1,4 @@
-import SwitchLang from "./SwitchLang";
-
-const Header = ({ lang }) => {
+const Header = () => {
   return (
     <div>
 

@@ -13,7 +13,7 @@ const page = () => {
   return (
     <div style={{ maxWidth: 1280, height: "100vh" }} className="flex flex-col mx-auto px-4 ">
       <header className="block mb-5">
-        <Header lang="ru" />
+        <Header />
       </header>
       <section className="block mt-4" style={{ flexGrow: 1 }}>
         <Main />

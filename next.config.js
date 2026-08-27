@@ -16,20 +16,20 @@ module.exports = (phase) => {
                 IS_DEV: process.env.IS_DEV
             },
             async rewrites() {
-                    return [
-                        {
-                          source: '/api/:path*',
-                          destination: `http://localhost:9999/api/:path*` // Proxy to Backend
-                        },
-                        {
-                          source: '/ws/:path*',
-                          destination: `http://localhost:9999/ws/:path*` // Proxy to Backend
-                        },
-                        {
-                            source: "/api-static/:path*",
-                            destination: `http://localhost:9999/static/:path*`, // Proxy to Backend
-                        },
-                    ];
+                return [
+                    {
+                        source: '/api/:path*',
+                        destination: `http://sepet.md/api/:path*` // Proxy to Backend
+                    },
+                    {
+                        source: '/ws/:path*',
+                        destination: `http://sepet.md/ws/:path*` // Proxy to Backend
+                    },
+                    {
+                        source: "/api-static/:path*",
+                        destination: `https://sepet.md/api-static/:path*`, // Proxy to Backend
+                    },
+                ];
             },
         };
     }
@@ -41,12 +41,12 @@ module.exports = (phase) => {
             IS_DEV: process.env.IS_DEV,
         },
         async rewrites() {
-                return [
-                    // {
-                    //   source: '/api/:path*',
-                    //   destination: `http://localhost:9999/api/:path*` // Proxy to Backend
-                    // },
-                ];
+            return [
+                // {
+                //   source: '/api/:path*',
+                //   destination: `http://localhost:9999/api/:path*` // Proxy to Backend
+                // },
+            ];
         },
     };
 };
