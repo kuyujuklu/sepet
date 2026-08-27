@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect } from "react";
 import { Image } from "expo-image";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
@@ -9,14 +9,9 @@ import AppHeader from "../../widgets/AppHeader/AppHeader";
 import OrderListWithAllClientOrders from "../../widgets/Orders/OrdersList/OrderListWithAllClientOrders";
 import { BigCardsSkeleton } from "../../widgets/Skeletons/Skeleton";
 import { selectOrders, setOrders } from "../../features/store/orders/ordersSlice";
-import { useLazyGetAllOrdersForClientQuery } from "../../shared/api/ordersApi/ordersApi";
+import { useGetAllOrdersForClientQuery } from "../../shared/api/ordersApi/ordersApi";
 import { images } from "../../app/images/images";
 import { Screens } from "../../app/navigation/screens";
-
-// The orders arrive over a websocket, so an empty list right after mount
-// means "not delivered yet", not "no orders". Without this grace period the
-// screen flashes "you have not ordered anything" at every returning client.
-const EMPTY_GRACE_MS = 900;
 
 const styles = StyleSheet.create({
   empty: {
@@ -44,31 +39,35 @@ const OrdersPage = () => {
   const dispatch = useDispatch();
 
   const orders = useSelector(selectOrders);
-  const [hasWaited, setHasWaited] = useState(false);
 
+  // GET /orders paints the screen; the websocket (OrdersPreloader) keeps it
+  // up to date afterwards. The list used to be websocket-only, which is why
+  // it needed a 900 ms grace timer before it dared say "no orders" - an empty
+  // list simply meant "the push has not landed yet". A request that has
+  // answered is an answer.
+  const {
+    data: ordersData,
+    isLoading,
+    isFetching: isRefreshing,
+    refetch,
+  } = useGetAllOrdersForClientQuery({});
+
+  // Written into the same slice OrderCard/OrderInfo already read from, so the
+  // websocket and this share one source of truth
   useEffect(() => {
-    const timeout = setTimeout(() => setHasWaited(true), EMPTY_GRACE_MS);
+    if (!Array.isArray(ordersData?.orders)) return;
 
-    return () => clearTimeout(timeout);
-  }, []);
+    dispatch(setOrders({ orders: ordersData.orders }));
+  }, [ordersData, dispatch]);
 
-  // Orders normally arrive over the websocket (OrdersPreloader); pull-to-refresh
-  // asks the REST endpoint directly instead of waiting for the next push, and
-  // writes into the exact same slice so OrderCard/OrderInfo need no changes
-  const [fetchOrders, { isFetching: isRefreshing }] =
-    useLazyGetAllOrdersForClientQuery();
-
-  const refresh = useCallback(async () => {
-    const result = await fetchOrders();
-    if (Array.isArray(result.data?.orders)) {
-      dispatch(setOrders({ orders: result.data.orders }));
-    }
-  }, [fetchOrders, dispatch]);
+  const refresh = useCallback(() => {
+    refetch();
+  }, [refetch]);
 
   const isEmpty = !orders || orders.length === 0;
 
   const renderBody = () => {
-    if (isEmpty && !hasWaited) {
+    if (isEmpty && isLoading) {
       return (
         <View style={{ paddingTop: 8 }}>
           <BigCardsSkeleton count={3} />

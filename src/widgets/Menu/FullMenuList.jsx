@@ -3,7 +3,7 @@ import { SectionList, StyleSheet, Text, View } from "react-native";
 import { useTranslation } from "react-i18next";
 import DishRow from "../Dish/DishRow";
 import { RowsSkeleton } from "../Skeletons/Skeleton";
-import { useGetPubInfoQuery } from "../../shared/api/pubs/pubsApi";
+import { usePubInfo } from "../../shared/hooks/usePubInfo";
 import { SCREEN_PADDING } from "../../constants/layout";
 
 const styles = StyleSheet.create({
@@ -37,10 +37,7 @@ const styles = StyleSheet.create({
 const FullMenuList = ({ pubID, menus, isPubOpen, isAvailableForDelivery }) => {
   const { t } = useTranslation();
 
-  const { data: pubData, isLoading } = useGetPubInfoQuery(
-    { pubID },
-    { skip: !pubID },
-  );
+  const { data: pubData, isLoading } = usePubInfo({ pubID });
 
   const sections = useMemo(() => {
     if (!pubData?.categories || !pubData?.dishes) return [];

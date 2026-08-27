@@ -1,7 +1,15 @@
-import { Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  ActivityIndicator,
+  Linking,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { useDispatch } from "react-redux";
 import { useTranslation } from "react-i18next";
-import { cities, getCityTranslationKey } from "../../shared/utils/cities";
+import { useCities } from "../../shared/hooks/useCities";
 import { setApproximateGeolocation } from "../../features/store/geolocation/geolocationSlice";
 import { events, track } from "../../shared/analytics/analytics";
 import { SCREEN_PADDING } from "../../constants/layout";
@@ -47,17 +55,25 @@ const styles = StyleSheet.create({
 // Fallback when the client refused the location permission: one screen, a list
 // of cities, no map and no street. It only needs to be good enough to show the
 // right pubs - the delivery address is asked for at checkout.
+//
+// The list comes from GET /api/client/geo/cities, names included, so adding a
+// city no longer needs an app release plus three locale edits.
 const CityPicker = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
+  const { cities, isLoading, getName } = useCities();
+
   const selectCity = (city) => {
-    track(events.citySelected, { city: city.id });
+    track(events.citySelected, { city: city.slug });
     dispatch(
       setApproximateGeolocation({
         lat: city.lat,
         lng: city.lng,
-        cityId: city.id,
+        // The name travels with the location, so the top bar can say
+        // "Кишинёв" without looking the city up again
+        town: getName(city),
+        cityId: city.slug,
       }),
     );
   };
@@ -67,6 +83,10 @@ const CityPicker = () => {
       <Text style={styles.headline}>{t("city_picker.headline")}</Text>
       <Text style={styles.subheadline}>{t("city_picker.subheadline")}</Text>
 
+      {isLoading && cities.length === 0 && (
+        <ActivityIndicator color="#059669" style={{ marginTop: 12 }} />
+      )}
+
       {cities.map((city) => (
         <TouchableOpacity
           key={city.id}
@@ -74,9 +94,7 @@ const CityPicker = () => {
           onPress={() => selectCity(city)}
         >
           <View style={styles.city}>
-            <Text style={styles.cityText}>
-              {t(getCityTranslationKey(city.id))}
-            </Text>
+            <Text style={styles.cityText}>{getName(city)}</Text>
           </View>
         </TouchableOpacity>
       ))}

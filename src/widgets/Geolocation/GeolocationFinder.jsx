@@ -50,7 +50,7 @@ const GeolocationFinder = () => {
 
       dispatch(setNearGeolocation(coords));
 
-      const description = await describeCoords(coords);
+      const description = await describeCoords(dispatch, coords);
 
       // Ignored by the reducer if the client already has a real address
       dispatch(setApproximateGeolocation({ ...coords, ...description }));
@@ -63,7 +63,7 @@ const GeolocationFinder = () => {
     if (!nearLocation?.lat || !nearLocation?.lng) return;
 
     (async () => {
-      const description = await describeCoords(nearLocation);
+      const description = await describeCoords(dispatch, nearLocation);
 
       dispatch(setApproximateGeolocation({ ...nearLocation, ...description }));
     })();

@@ -3,7 +3,6 @@ import { StyleSheet, Text, TouchableOpacity } from "react-native";
 import { createContext, memo, useContext, useEffect, useState } from "react";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import Wrapper from "../Wrapper";
 import AppHeader from "../../widgets/AppHeader/AppHeader";
@@ -13,11 +12,7 @@ import FullMenuList from "../../widgets/Menu/FullMenuList";
 import PubInfoPopup from "../../widgets/Pub/PubInfoPopup";
 import ViewModeSwitch from "../../widgets/Common/ViewModeSwitch";
 import BasketFloatingBar from "../../widgets/Basket/BasketFloatingBar";
-import {
-  useGetNearbyPubsQuery,
-  useGetPubInfoQuery,
-} from "../../shared/api/pubs/pubsApi";
-import { selectGeolocation } from "../../features/store/geolocation/geolocationSlice";
+import { usePubInfo } from "../../shared/hooks/usePubInfo";
 import { useSafeBottomInset } from "../../shared/hooks/useSafeBottomInset";
 import { SCREEN_PADDING } from "../../constants/layout";
 import { events, track } from "../../shared/analytics/analytics";
@@ -114,13 +109,6 @@ const PubInfoPage = () => {
   const route = useRoute();
   const basketBarBottom = useSafeBottomInset();
 
-  const location = useSelector(selectGeolocation);
-
-  const { data: nearPubsData } = useGetNearbyPubsQuery(
-    { coords: { lat: location?.lat, lng: location?.lng } },
-    { skip: !location },
-  );
-
   const selectedMenu = route?.params?.selectedMenu;
   const categoryID = route?.params?.categoryID;
   const paramsPubID = route?.params?.pubID;
@@ -134,14 +122,12 @@ const PubInfoPage = () => {
     if (paramsPubName) setPubName(paramsPubName);
   }, [paramsPubID, paramsPubName]);
 
-  const isAvailableForDelivery = !!nearPubsData?.pubs?.find(
-    (pub) => pub.id === pubID,
-  );
+  // Coordinates go with the request now, so this one response answers
+  // "does it deliver here", "how far is it" and what delivery costs - the
+  // screen used to have to hold the nearby-pubs list next to it and merge
+  const { data: pubData } = usePubInfo({ pubID, pubName });
 
-  const { data: pubData } = useGetPubInfoQuery(
-    { pubID, pubName },
-    { skip: !pubID && !pubName },
-  );
+  const isAvailableForDelivery = pubData?.pub?.isAvailableForDelivery !== false;
 
   useEffect(() => {
     if (!pubData) return;

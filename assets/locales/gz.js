@@ -2,6 +2,7 @@ export default {
   errors: {
     something_went_wrong: "Naşey sa gitti diil dooru?",
     unknown_error: "Dııl belli  yannışık",
+    order_below_minimum: "Sımarlamanın sayısı bu erin en küçüündän aşaa",
     unauthorized: "Neavtorizovan",
     client_with_the_same_phone_already_exists: "Kullanan bu nomeri var",
     validation_error: "Yannışlık validaţiyada",
@@ -160,16 +161,6 @@ export default {
       all_pubs_label: "Hepsi produkt dükkanları",
     },
   },
-  cities: {
-    chisinau: "Kişinöv",
-    balti: "Bälț",
-    comrat: "Komrat",
-    cahul: "Kagul",
-    orhei: "Orhey",
-    ungheni: "Ungen",
-    ceadir_lunga: "Çadır-Lunga",
-    tiraspol: "Tiraspol",
-  },
   city_picker: {
     headline: "Angı kasabadasınız?",
     subheadline:
@@ -192,6 +183,10 @@ export default {
     additional_settings: "Ek ayarlar",
     notifications: "Bildirimnär",
     support: "Yardım",
+    privacy: "Gizlilik",
+    analytics_consent: "Analitika",
+    analytics_consent_hint: "Programayı islää etmää yardım eder",
+    privacy_policy: "Gizlilik politikası",
   },
   notifications_page: {
     title: "Bildirimnär",
@@ -228,6 +223,7 @@ export default {
       search_accessibility_label: "Aaramak",
       hit_badge: "Top",
       closed: "Kapalı",
+      sold_out: "Yok",
       no_dishes: "Şindilik yok imäklär sipariş için",
       no_deals: "Şindi yok imäklär indirimnän",
       go_to_basket: "Sepedä",
@@ -251,6 +247,10 @@ export default {
     by_categories: "Kategoriyalara görä",
   },
   basket_page: {
+    unavailable_dishes:
+      "Kimi pozițiyalar şindi yok — sımarlamaa deyni onnarı çıkarın",
+    min_order_left:
+      "En küçük sımarlamak {{min}}. Taa {{amount}} koyun",
     subtotal: "Ara toplam",
     delivery: "Teslimat",
     delivery_free: "Parasız",
@@ -288,6 +288,7 @@ export default {
     ok_button: "Ok",
   },
   dish_popup: {
+    sold_out: "Bu pozițiya şindi yok",
     in_basket: "Sepettä: {{value}}",
     back: "Hazır",
   },
@@ -382,24 +383,6 @@ export default {
     no_internet_text: "Baalantıyı kontrol edin hem bir taa deneyin",
   },
   categories: {
-    sales: "İndirimnär",
-    asian: "Aziatsk",
-    flowers: "Çiçeklär",
-    fast_food: "Fast-fud",
-    breakfast: "Sabaa ekmä",
-    grill: "Gril",
-    dessert: "Tatlılıklar",
-    pasta: "Makarina",
-    pancakes: "Lalangı",
-    soup: "Borçlar",
-    alcohol: "İçmeklär",
-    east_food: "Vostç. kuhnä",
-    flour: "Undan imeklär",
-    home_food: "Ev imekleri",
-    kebab: "Kebab",
-    salad: "Eşillik",
-    snacks: "Zakuska",
-    meat: "Lokma",
     all: "Hepsi",
     all_publishments: "Hepsi restorannar",
     show_all: "Taa",

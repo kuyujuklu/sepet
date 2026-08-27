@@ -2,9 +2,17 @@ import { getPubCommission } from "./dish";
 
 // The money math of the basket, in one place.
 //
-// It used to be copy-pasted in three components (basket page, floating bar,
-// checkout page) and they drifted: the commission is rounded up *per dish*, so
-// summing first and rounding later gives a different number.
+// POST /api/client/orders/preview is the authoritative source for what a
+// basket costs - it is priced by the same code that prices the order, and it
+// is the only thing that knows the pub's minimum. What is left here is the
+// local fallback the screens fall back to while the preview is in flight or
+// when it failed (offline), so a basket still shows a total instead of a
+// dash. The two can disagree by a rounding step; the preview always wins once
+// it arrives.
+//
+// The commission is rounded up *per dish*, so summing first and rounding
+// later gives a different number - which is why this lives in one function
+// rather than copy-pasted into the basket page, the floating bar and checkout.
 //
 // Prices in the basket are stored WITHOUT the delivery-service commission - it
 // is added here, at display time.
@@ -61,4 +69,22 @@ export const getAmountLeftForFreeDelivery = (nearbyPub, itemsPrice) => {
   if (itemsPrice >= freeFrom) return null;
 
   return freeFrom - itemsPrice;
+};
+
+// Below this the pub does not take a delivery order at all. 0 = no minimum.
+// It rides on the nearby-pubs entry and on /client/pub/id/{id}?lat&lng.
+export const getMinOrderPrice = (nearbyPub) =>
+  +nearbyPub?.shipping_min_order_price || 0;
+
+// How much is missing before the order can be placed, or null when there is
+// no minimum (or it is already met). Since the server started refusing an
+// order under the minimum with a 400, this is what has to be said *before*
+// the client taps "order".
+export const getAmountLeftForMinOrder = (nearbyPub, itemsPrice) => {
+  const minOrderPrice = getMinOrderPrice(nearbyPub);
+
+  if (minOrderPrice <= 0) return null;
+  if (itemsPrice >= minOrderPrice) return null;
+
+  return minOrderPrice - itemsPrice;
 };

@@ -1,154 +1,31 @@
-import { getDiscountPercent, hasDiscount } from "./dish";
-import { getPubSectionOverride, slugsMatchSection } from "./sections";
+import { getDiscountPercent, isDishAvailable } from "./dish";
+import { matchesSection } from "./sections";
 
+// The filters of the home feed. These are the server's `?filter=` values -
+// ranking, interleaving and paging all happen in
+// GET /api/client/get-available-top-dishes now, so there is no client-side
+// `scoreDish` heuristic left to keep in sync with them.
 export const topDishesFilters = {
   top: "top",
   deals: "deals",
 };
 
-// How many dishes of one pub can get into the feed - so that the biggest
-// menu nearby does not push everybody else out. A category filter leaves far
-// fewer matching dishes per pub, so the cap is raised then.
-const MAX_DISHES_PER_PUB = 4;
-const MAX_DISHES_PER_PUB_IN_CATEGORY = 8;
-
 const isOrderableDish = (dish) =>
   !!dish && dish.visible !== false && !isNaN(+dish.price) && +dish.price > 0;
 
-// A dish only carries `category_id`; the slugs live on the category
-// (`category_types`). `categorySlugsById` comes from the nearby-categories
-// endpoint; the menu of the pub is used as a fallback in case that response
-// does not cover this category. An untagged category resolves to no slugs at
-// all, which is why the section rules have to cope with an empty list.
-const getDishSlugs = (dish, menu, categorySlugsById) => {
-  const slugs = categorySlugsById?.[dish?.category_id];
-  if (slugs) return slugs;
-
-  const menuCategory = menu?.categories?.find(
-    (category) => category?.id === dish?.category_id,
-  );
-
-  return menuCategory?.category_types ?? [];
-};
-
-// The api does not send us how often a dish is ordered yet, so "popular" is
-// built from what we do have: the discount, the place of the dish in the menu
-// (restaurants put their best dishes first) and how close the pub is
-export const scoreDish = ({ dish, pub, index }) => {
-  let score = 100 - index * 4;
-
-  score += getDiscountPercent(dish) * 3;
-
-  // Supported as soon as the backend starts sending it
-  const soldCount = +dish?.orders_count || +dish?.sales_count || 0;
-  score += soldCount * 2;
-
-  const distanceInKm = +pub?.distance / 1000;
-  if (!isNaN(distanceInKm)) score -= distanceInKm * 3;
-
-  // A dish with a photo is much easier to order from a grid
-  if (dish?.image_file_name) score += 15;
-
-  return score;
-};
-
-const byOpenPubFirst = (a, b) => {
-  const aIsOpen = a.pub?.isOpen !== false;
-  const bIsOpen = b.pub?.isOpen !== false;
-
-  if (aIsOpen === bIsOpen) return 0;
-
-  return aIsOpen ? -1 : 1;
-};
-
-const getPubDishes = (
-  menu,
-  { filter, sectionId, categorySlug, categorySlugsById, maxPerPub },
-) => {
-  const pub = menu?.pub;
-  // A pub-level override, if one exists, decides section membership for
-  // every one of its dishes at once - see pubSectionOverrides in sections.js
-  // for why individual category tags cannot be trusted for these pubs
-  const sectionOverride = getPubSectionOverride(pub?.id);
-
-  return (menu?.dishes || [])
-    .filter(isOrderableDish)
-    .filter((dish) => filter !== topDishesFilters.deals || hasDiscount(dish))
-    .filter((dish) => {
-      const slugs = getDishSlugs(dish, menu, categorySlugsById);
-
-      const matchesSection = sectionOverride
-        ? sectionOverride === sectionId
-        : slugsMatchSection(slugs, sectionId);
-      if (!matchesSection) return false;
-
-      return !categorySlug || slugs.includes(categorySlug);
-    })
-    .map((dish, index) => ({
-      key: `${pub?.id}-${dish?.id}`,
-      dish,
-      pub,
-      score: scoreDish({ dish, pub, index }),
-      discountPercent: getDiscountPercent(dish),
-      distance: +pub?.distance || 0,
-    }))
-    .sort((a, b) => b.score - a.score)
-    .slice(0, maxPerPub);
-};
-
-// Builds one feed of dishes out of the menus of all the pubs nearby
-export const buildTopDishes = (
-  pubsWithMenus = [],
-  {
-    filter = topDishesFilters.top,
-    limit = 40,
-    sectionId = null,
-    categorySlug = "",
-    categorySlugsById = {},
-  } = {},
-) => {
-  const maxPerPub = categorySlug
-    ? MAX_DISHES_PER_PUB_IN_CATEGORY
-    : MAX_DISHES_PER_PUB;
-
-  const dishesByPub = pubsWithMenus
-    .map((menu) =>
-      getPubDishes(menu, {
-        filter,
-        sectionId,
-        categorySlug,
-        categorySlugsById,
-        maxPerPub,
-      }),
-    )
-    .filter((pubDishes) => pubDishes.length > 0)
-    .sort((a, b) => b[0].score - a[0].score);
-
-  // Take the best dish of every pub, then the second best of every pub and so
-  // on, so that the feed does not start with five dishes of one restaurant
-  const feed = [];
-  for (let place = 0; place < maxPerPub; place++) {
-    for (const pubDishes of dishesByPub) {
-      if (pubDishes[place]) feed.push(pubDishes[place]);
-    }
-  }
-
-  if (filter === topDishesFilters.deals) {
-    feed.sort((a, b) => b.discountPercent - a.discountPercent);
-  }
-
-  // Closed pubs are still shown, but always at the end of the feed
-  feed.sort(byOpenPubFirst);
-
-  return feed.slice(0, limit);
-};
-
-// Dish-name search across the menus already loaded - a name match, not a
-// "best of" pick, so unlike buildTopDishes there is no per-pub cap and no
-// round-robin interleave: every match earns its place, from every pub.
+// Dish-name search across the menus already loaded.
+//
+// The feed endpoint has no `?q=`, so search is still the one thing built on
+// the client, out of the per-pub menus useTopDishes loads only while search is
+// open. It is a name match, not a "best of" pick: every match earns its place,
+// from every pub, with no per-pub cap and no interleave.
+//
+// The section check is a field comparison now (`service_type`, stamped onto
+// every dish from the pub selling it) instead of the dish -> category -> slug
+// join.
 export const searchDishes = (
   pubsWithMenus = [],
-  { query = "", sectionId = null, categorySlugsById = {}, limit = 40 } = {},
+  { query = "", sectionId = null, limit = 40 } = {},
 ) => {
   const normalizedQuery = query.trim().toLowerCase();
   if (!normalizedQuery) return [];
@@ -157,19 +34,13 @@ export const searchDishes = (
 
   for (const menu of pubsWithMenus) {
     const pub = menu?.pub;
-    const sectionOverride = getPubSectionOverride(pub?.id);
 
     for (const dish of menu?.dishes || []) {
       if (!isOrderableDish(dish)) continue;
+      if (!matchesSection(dish, sectionId)) continue;
 
       const name = dish?.name?.toLowerCase() ?? "";
       if (!name.includes(normalizedQuery)) continue;
-
-      const slugs = getDishSlugs(dish, menu, categorySlugsById);
-      const matchesSection = sectionOverride
-        ? sectionOverride === sectionId
-        : slugsMatchSection(slugs, sectionId);
-      if (!matchesSection) continue;
 
       results.push({
         key: `${pub?.id}-${dish?.id}`,
@@ -183,7 +54,17 @@ export const searchDishes = (
     }
   }
 
-  results.sort((a, b) => a.rank - b.rank);
+  results.sort((a, b) => {
+    if (a.rank !== b.rank) return a.rank - b.rank;
+
+    // A sold-out dish is still a valid answer to "do you have пицца?", but it
+    // belongs under the ones that can actually be ordered
+    const aAvailable = isDishAvailable(a.dish);
+    const bAvailable = isDishAvailable(b.dish);
+    if (aAvailable !== bAvailable) return aAvailable ? -1 : 1;
+
+    return 0;
+  });
 
   return results.slice(0, limit);
 };

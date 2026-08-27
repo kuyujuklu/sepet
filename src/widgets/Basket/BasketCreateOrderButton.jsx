@@ -6,7 +6,7 @@ import {
   selectBasket,
   selectBasketPubID,
 } from "../../features/store/basket/basketSlice";
-import { useGetPubInfoQuery } from "../../shared/api/pubs/pubsApi";
+import { usePubInfo } from "../../shared/hooks/usePubInfo";
 import {
   alertStatuses,
   pushAlert,
@@ -35,6 +35,13 @@ const BasketCreateOrderButton = ({
   currency,
   isPubOpen,
   isAvailableForDelivery,
+  // From orders/preview: false when something is on the stop list or the
+  // basket is under the pub's minimum. The server refuses such an order with
+  // a 400, so the button must not pretend otherwise.
+  canBeOrdered = true,
+  hasUnavailableDishes = false,
+  leftForMinOrder = null,
+  minOrderPrice = 0,
 }) => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
@@ -45,16 +52,41 @@ const BasketCreateOrderButton = ({
 
   const basketIsEmpty = !basket || Object.keys(basket).length === 0;
 
-  const { data: pubData, isLoading } = useGetPubInfoQuery(
-    { pubID },
-    { skip: !pubID },
-  );
+  const { data: pubData, isLoading } = usePubInfo({ pubID });
 
-  const isDisabled = basketIsEmpty || !pubData?.pub;
+  // Greyed out, but still pressable when the reason is one we can explain:
+  // tapping a dead button teaches the client nothing about the minimum order.
+  const isBlocked = basketIsEmpty || !pubData?.pub;
+  const isDisabled = isBlocked || !canBeOrdered;
   const total = (itemsPrice ?? 0) + (deliveryPrice ?? 0);
 
   const handleButtonPress = () => {
-    if (isDisabled) return;
+    if (basketIsEmpty || !pubData?.pub) return;
+
+    if (hasUnavailableDishes) {
+      dispatch(
+        pushAlert({
+          status: alertStatuses.warning,
+          delay: 3000,
+          title: t("basket_page.unavailable_dishes"),
+        }),
+      );
+      return;
+    }
+
+    if (leftForMinOrder > 0) {
+      dispatch(
+        pushAlert({
+          status: alertStatuses.warning,
+          delay: 3000,
+          title: t("basket_page.min_order_left", {
+            amount: `${formatPrice(leftForMinOrder)} ${currency}`,
+            min: `${formatPrice(minOrderPrice)} ${currency}`,
+          }),
+        }),
+      );
+      return;
+    }
 
     if (!isPubOpen || !isAvailableForDelivery) {
       dispatch(
@@ -81,7 +113,7 @@ const BasketCreateOrderButton = ({
   return (
     <TouchableOpacity
       activeOpacity={0.85}
-      disabled={isDisabled}
+      disabled={isBlocked}
       onPress={handleButtonPress}
     >
       <View style={[styles.button, isDisabled && styles.disabled]}>

@@ -10,18 +10,18 @@ import {
 } from "../../features/store/basket/basketSlice";
 import AnimatedNumber from "react-native-animated-numbers";
 import { memo, useEffect, useState } from "react";
-import { ENV } from "../../constants/env/env";
-import { formatPrice, getDishPrices } from "../../shared/utils/dish";
+import {
+  formatPrice,
+  getDishImagePath,
+  getDishPrices,
+  isDishAvailable,
+} from "../../shared/utils/dish";
 import { openDishImagePopup } from "../../features/store/dishes/dishesSlice";
 import { openPubNotAvailableForDeliveryPopup } from "../../features/store/pubs/pubsSlice";
 
 const DishCard = ({ dish, pubID, pub, isPubOpen, isAvailableForDelivery }) => {
   const dispatch = useDispatch();
-  const imagePath =
-    ENV.API_HTTP_URL +
-    ENV.API_STATIC_PATH +
-    "/images/dishes/" +
-    dish?.image_file_name;
+  const imagePath = getDishImagePath(dish, { full: true });
 
   const dishInBasket = useSelector(selectDishFromBasket(dish?.id));
 
@@ -37,9 +37,13 @@ const DishCard = ({ dish, pubID, pub, isPubOpen, isAvailableForDelivery }) => {
     }
   }, [dish]);
 
+  const isAvailable = isDishAvailable(dish);
+
   const handleIncreaseDish = () => {
-    console.log("isPubOpen", isPubOpen);
-    console.log("isAvailableForDelivery", isAvailableForDelivery);
+    // The stop list: the pub is open and delivers, this one dish is simply
+    // not there today
+    if (!isAvailable) return;
+
     if (!isPubOpen || !isAvailableForDelivery) {
       dispatch(openPubNotAvailableForDeliveryPopup())
       return;
@@ -55,19 +59,23 @@ const DishCard = ({ dish, pubID, pub, isPubOpen, isAvailableForDelivery }) => {
   }
 
   return (
-    <View maxWidth={400} style={{ width: "100%", alignSelf: "center" }}>
+    <View
+      maxWidth={400}
+      style={{ width: "100%", alignSelf: "center", opacity: isAvailable ? 1 : 0.55 }}
+    >
       {/* Image container */}
       <Pressable
         onPress={() =>
           dispatch(
             openDishImagePopup({
-              imagePath: dish?.image_file_name ? imagePath : null,
+              imagePath,
               dish: dish,
               dishID: dish?.id,
               pubID: pubID,
               commission: prices.commission,
               isAvailableForDelivery,
-              isPubOpen
+              isPubOpen,
+              isDishAvailable: isAvailable,
             }),
           )
         }
@@ -191,6 +199,7 @@ const DishCard = ({ dish, pubID, pub, isPubOpen, isAvailableForDelivery }) => {
 
             {/* increase button */}
             <TouchableOpacity
+              disabled={!isAvailable}
               onPress={handleIncreaseDish}
             >
               <Image

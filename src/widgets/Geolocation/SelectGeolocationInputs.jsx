@@ -101,7 +101,7 @@ const SelectGeolocationInputs = ({ setPage, geolocation, goBack }) => {
     let isActual = true;
     setIsDetecting(true);
 
-    describeCoords(geolocation).then((description) => {
+    describeCoords(dispatch, geolocation).then((description) => {
       if (!isActual || editedRef.current) return;
 
       if (description.town) setTown(description.town);

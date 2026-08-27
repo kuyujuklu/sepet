@@ -8,7 +8,6 @@ import { BigCardsSkeleton } from "../Skeletons/Skeleton";
 import { useGetNearbyPubsQuery } from "../../shared/api/pubs/pubsApi";
 import { useGetNearbyCategoriesQuery } from "../../shared/api/categories/categoriesApi";
 import { selectGeolocation } from "../../features/store/geolocation/geolocationSlice";
-import { pubMatchesSection } from "../../shared/utils/sections";
 import { SCREEN_PADDING, CARD_GAP } from "../../constants/layout";
 import { events, track } from "../../shared/analytics/analytics";
 
@@ -60,7 +59,10 @@ const PubsList = ({
     isFetching: pubsAreFetching,
     refetch: refetchPubs,
   } = useGetNearbyPubsQuery(
-    { coords: { lat: location?.lat, lng: location?.lng } },
+    // `?section=` does the section filtering server-side, off the service
+    // type set in the pub's own settings - the client no longer has to guess
+    // a pub's section from the tags of its categories
+    { coords: { lat: location?.lat, lng: location?.lng }, section: sectionId },
     { skip: !location },
   );
 
@@ -70,17 +72,17 @@ const PubsList = ({
     isFetching: categoriesAreFetching,
     refetch: refetchCategories,
   } = useGetNearbyCategoriesQuery(
-    { coords: { lat: location?.lat, lng: location?.lng } },
-    { skip: !location },
+    { coords: { lat: location?.lat, lng: location?.lng }, section: sectionId },
+    { skip: !location || !categorySlug },
   );
 
   const refetch = useCallback(() => {
     refetchPubs();
-    refetchCategories();
-  }, [refetchPubs, refetchCategories]);
+    if (categorySlug) refetchCategories();
+  }, [refetchPubs, refetchCategories, categorySlug]);
 
-  // pub id -> its visible categories, which is the only thing that says what
-  // a pub sells (there is no type/section field on a pub)
+  // pub id -> its visible categories. Only the "filter by category" chip
+  // needs this now; the section a pub belongs to comes off the pub itself.
   const categoriesByPub = useMemo(() => {
     const map = {};
 
@@ -99,8 +101,6 @@ const PubsList = ({
 
     const filtered = pubsData.pubs.filter((pub) => {
       const categoriesOfPub = categoriesByPub[pub.id] || [];
-
-      if (!pubMatchesSection(categoriesOfPub, sectionId, pub.id)) return false;
 
       if (categorySlug) {
         const matchesCategory = categoriesOfPub.some((category) =>
@@ -123,14 +123,14 @@ const PubsList = ({
     return [...filtered]
       .sort(sortComparators[sortBy] ?? sortComparators[defaultPubsSort])
       .sort((a, b) => (a.isOpen === b.isOpen ? 0 : a.isOpen ? -1 : 1));
-  }, [pubsData, categoriesByPub, sectionId, categorySlug, freeDeliveryOnly, sortBy]);
+  }, [pubsData, categoriesByPub, categorySlug, freeDeliveryOnly, sortBy]);
 
   const openPub = (pub) => {
     track(events.pubOpened, { pub_id: pub?.id, source: "pubs_list" });
     navigator.navigate("PubInfo", { pubID: pub?.id });
   };
 
-  if (pubsAreLoading || categoriesAreLoading || !pubsData || !categoriesData) {
+  if (pubsAreLoading || !pubsData || (categorySlug && (categoriesAreLoading || !categoriesData))) {
     return (
       <View>
         {ListHeaderComponent}
@@ -151,7 +151,7 @@ const PubsList = ({
       ListHeaderComponent={ListHeaderComponent}
       refreshControl={
         <RefreshControl
-          refreshing={pubsAreFetching || categoriesAreFetching}
+          refreshing={pubsAreFetching || (!!categorySlug && categoriesAreFetching)}
           onRefresh={refetch}
           tintColor="#059669"
           colors={["#059669"]}

@@ -17,6 +17,11 @@ const respErrors = {
 
   "client not found": appErrors.client_not_found,
 
+  // A delivery order under the pub's minimum is refused outright now; it
+  // used to be accepted
+  "order is below the minimum order price of the pub":
+    appErrors.orderBelowMinimum,
+
   "too many sessions": appErrors.too_many_sessions,
   "client with the same number already exists":
     appErrors.client_with_the_same_phone_already_exists,

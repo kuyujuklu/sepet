@@ -1,74 +1,108 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { pubsApi, useGetNearbyPubsQuery } from "../../shared/api/pubs/pubsApi";
+import {
+  pubsApi,
+  useGetNearbyPubsQuery,
+  useGetTopDishesQuery,
+} from "../../shared/api/pubs/pubsApi";
 import { selectGeolocation } from "../../features/store/geolocation/geolocationSlice";
-import { buildTopDishes, searchDishes } from "../../shared/utils/topDishes";
-import { useNearbyCategoryNames } from "../../shared/hooks/useNearbyCategoryNames";
+import { searchDishes } from "../../shared/utils/topDishes";
 
-// Every menu is a separate request, so we only load the closest pubs - for
-// the curated feed. Search widens this on demand (see maxPubs below): a
-// client typing a dish name expects it found anywhere nearby, not just
-// among the 8 pubs the Хиты feed happens to already have loaded.
-export const MAX_PUBS_TO_LOAD = 8;
+// Only search still loads menus pub by pub (see below), so this cap is no
+// longer about the feed - a client typing a dish name expects it found
+// anywhere nearby.
 export const MAX_PUBS_FOR_SEARCH = 30;
 
-// Collects the menus of the pubs nearby and turns them into one feed - either
-// the curated "top dishes" feed, or (when searchQuery is set) every dish
-// whose name matches, from every one of the (wider) maxPubs pubs loaded.
+// One page of the feed. The server caps a request at 100.
+export const FEED_PAGE_SIZE = 40;
+
+// The feed of dishes for the current point.
+//
+// The curated feed is one request: GET /api/client/get-available-top-dishes
+// ranks (hits, then orders_count, then place), interleaves so one pub cannot
+// fill the screen, sinks closed pubs and pages - all the things the client
+// used to do itself over eight parallel full-menu responses.
+//
+// Search is the one thing left on the client: the feed endpoint has no `?q=`,
+// so while the search input is open (and only then) the menus of up to
+// MAX_PUBS_FOR_SEARCH pubs are still fetched and matched by name here.
 export const useTopDishes = ({
   filter,
-  limit,
+  limit = FEED_PAGE_SIZE,
   sectionId,
   categorySlug,
   searchQuery = "",
-  maxPubs = MAX_PUBS_TO_LOAD,
-  // The pubs view shows no dishes at all - no reason to fetch eight menus
+  // The pubs view shows no dishes at all - no reason to load a feed
   skip = false,
 } = {}) => {
   const dispatch = useDispatch();
   const location = useSelector(selectGeolocation);
 
-  // Shared cache entry - the screens above already subscribe to it
-  const { categorySlugsById } = useNearbyCategoryNames();
+  const isSearching = !!searchQuery.trim();
 
+  const [offset, setOffset] = useState(0);
+
+  // A new filter/category/section is a different feed, not more of this one
+  useEffect(() => {
+    setOffset(0);
+  }, [filter, categorySlug, sectionId, location?.lat, location?.lng]);
+
+  const {
+    data: feedData,
+    isLoading: feedIsLoading,
+    isFetching: feedIsFetching,
+    error: feedError,
+    refetch: refetchFeed,
+  } = useGetTopDishesQuery(
+    {
+      coords: { lat: location?.lat, lng: location?.lng },
+      filter,
+      categorySlug,
+      section: sectionId,
+      limit,
+      offset,
+    },
+    { skip: skip || isSearching || !location },
+  );
+
+  // Still needed while searching (which pubs to load menus from) and by the
+  // callers that show "there is nothing here at all" vs "nothing matched"
   const {
     data: pubsData,
     isLoading: pubsAreLoading,
     isFetching: pubsAreFetching,
-    error: pubsError,
     refetch: refetchPubs,
   } = useGetNearbyPubsQuery(
-    { coords: { lat: location?.lat, lng: location?.lng } },
-    { skip: skip || !location },
+    { coords: { lat: location?.lat, lng: location?.lng }, section: sectionId },
+    { skip: !location },
   );
 
-  const nearbyPubs = useMemo(() => {
-    if (!pubsData?.pubs) return [];
+  const searchPubs = useMemo(() => {
+    if (!isSearching || !pubsData?.pubs) return [];
 
     const pubs = [...pubsData.pubs];
 
     pubs.sort((a, b) => a.distance - b.distance);
     pubs.sort((a, b) => (a.isOpen === b.isOpen ? 0 : a.isOpen ? -1 : 1));
 
-    return pubs.slice(0, maxPubs);
-  }, [pubsData, maxPubs]);
+    return pubs.slice(0, MAX_PUBS_FOR_SEARCH);
+  }, [pubsData, isSearching]);
 
-  const nearbyPubsKey = nearbyPubs.map((pub) => pub.id).join(",");
+  const searchPubsKey = searchPubs.map((pub) => pub.id).join(",");
 
   const [menus, setMenus] = useState([]);
   const [menusAreLoading, setMenusAreLoading] = useState(false);
 
   // Set by refetch() right before it bumps refreshIndex, read (and cleared)
   // by the effect below - a pull-to-refresh forces past the cache, an
-  // ordinary re-run (nearby pubs changed, the pubs view got toggled off)
-  // still reuses it like before.
+  // ordinary re-run still reuses it like before.
   const forceRefetchRef = useRef(false);
   const [refreshIndex, setRefreshIndex] = useState(0);
 
   useEffect(() => {
-    if (skip) return;
+    if (skip || !isSearching) return;
 
-    if (nearbyPubs.length === 0) {
+    if (searchPubs.length === 0) {
       setMenus([]);
       return;
     }
@@ -79,17 +113,19 @@ export const useTopDishes = ({
     const forceRefetch = forceRefetchRef.current;
     forceRefetchRef.current = false;
 
-    const requests = nearbyPubs.map((pub) =>
+    const coords = location ? { lat: location.lat, lng: location.lng } : undefined;
+
+    const requests = searchPubs.map((pub) =>
       dispatch(
         pubsApi.endpoints.getPubInfo.initiate(
-          { pubID: pub.id },
+          { pubID: pub.id, coords },
           { forceRefetch },
         ),
       ),
     );
 
     Promise.all(
-      // One unreachable pub should not empty the whole feed
+      // One unreachable pub should not empty the whole result
       requests.map((request) => request.unwrap().catch(() => null)),
     ).then((responses) => {
       if (!isActual) return;
@@ -98,17 +134,15 @@ export const useTopDishes = ({
         .map((response, index) => {
           if (!response?.dishes) return null;
 
-          const nearbyPub = nearbyPubs[index];
+          const nearbyPub = searchPubs[index];
 
           return {
             pub: {
               ...response.pub,
-              distance: nearbyPub?.distance,
+              distance: response.pub?.distance ?? nearbyPub?.distance,
               isOpen: response.pub?.isOpen ?? nearbyPub?.isOpen,
             },
             dishes: response.dishes,
-            // Fallback for the dish -> category-slug join
-            categories: response.categories,
           };
         })
         .filter(Boolean);
@@ -122,51 +156,74 @@ export const useTopDishes = ({
       requests.forEach((request) => request.unsubscribe());
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [nearbyPubsKey, skip, refreshIndex]);
+  }, [searchPubsKey, skip, isSearching, refreshIndex]);
 
-  // Pull-to-refresh: re-fetch the nearby-pubs list *and* force past the
-  // per-pub menu cache, so a stale discount/price does not survive a refresh
+  // Pull-to-refresh: re-ask for the first page of the feed and, while search
+  // is open, force past the per-pub menu cache too, so a stale
+  // discount/price does not survive a refresh
   const refetch = useCallback(() => {
     forceRefetchRef.current = true;
     refetchPubs();
+
+    // Dropping back to the first page is itself a fetch (offset is part of
+    // the query args); only ask for one explicitly when we are already there
+    if (offset === 0) refetchFeed();
+    else setOffset(0);
+
     setRefreshIndex((index) => index + 1);
-  }, [refetchPubs]);
+  }, [refetchPubs, refetchFeed, offset]);
 
-  const isSearching = !!searchQuery.trim();
+  // The feed arrives as flat dish objects with a `pub` on each; the cards
+  // expect the { key, dish, pub } shape the client used to build itself
+  const feedDishes = useMemo(
+    () =>
+      (feedData?.dishes ?? []).map((dish) => ({
+        key: `${dish.pub?.id}-${dish.id}`,
+        dish,
+        pub: dish.pub,
+      })),
+    [feedData],
+  );
 
-  const dishes = useMemo(
+  const searchResults = useMemo(
     () =>
       isSearching
-        ? searchDishes(menus, { query: searchQuery, sectionId, categorySlugsById, limit })
-        : buildTopDishes(menus, {
-            filter,
-            limit,
-            sectionId,
-            categorySlug,
-            categorySlugsById,
-          }),
-    [
-      menus,
-      isSearching,
-      searchQuery,
-      filter,
-      limit,
-      sectionId,
-      categorySlug,
-      categorySlugsById,
-    ],
+        ? searchDishes(menus, { query: searchQuery, sectionId, limit })
+        : [],
+    [isSearching, menus, searchQuery, sectionId, limit],
   );
+
+  const dishes = isSearching ? searchResults : feedDishes;
+
+  const total = feedData?.total ?? 0;
+  const hasMore = !isSearching && feedDishes.length < total;
+
+  const loadMore = useCallback(() => {
+    if (isSearching || feedIsFetching) return;
+    if (feedDishes.length >= total) return;
+
+    setOffset(feedDishes.length);
+  }, [isSearching, feedIsFetching, feedDishes.length, total]);
 
   return {
     dishes,
-    pubs: nearbyPubs,
-    error: pubsError,
+    pubs: pubsData?.pubs ?? [],
+    error: feedError,
     hasPubs: !!pubsData?.pubs && pubsData.pubs.length > 0,
     isSearching,
-    isLoading: pubsAreLoading || (menusAreLoading && dishes.length === 0),
-    // Distinct from isLoading: true for a pull-to-refresh too, even once the
-    // feed already has cards on screen and the skeleton is long gone
-    isRefreshing: pubsAreFetching || menusAreLoading,
+    hasMore,
+    loadMore,
     refetch,
+    isLoading: isSearching
+      ? pubsAreLoading || (menusAreLoading && dishes.length === 0)
+      : feedIsLoading || (feedIsFetching && dishes.length === 0),
+    // Distinct from isLoading: true for a pull-to-refresh too, even once the
+    // feed already has cards on screen and the skeleton is long gone. A
+    // "load more" is deliberately not a refresh - the spinner belongs at the
+    // bottom of the list, not over the whole thing.
+    isRefreshing: isSearching
+      ? pubsAreFetching || menusAreLoading
+      : feedIsFetching && offset === 0,
+    isLoadingMore: !isSearching && feedIsFetching && offset > 0,
   };
 };

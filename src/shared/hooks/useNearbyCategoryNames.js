@@ -1,60 +1,42 @@
 import { useMemo } from "react";
 import { useSelector } from "react-redux";
 import { useGetNearbyCategoriesQuery } from "../api/categories/categoriesApi";
-import { useGetNearbyPubsQuery } from "../api/pubs/pubsApi";
 import { selectGeolocation } from "../../features/store/geolocation/geolocationSlice";
-import { placeholderCategories } from "../utils/foodCategories";
+import { useCategoryTypes } from "./useCategoryTypes";
 
-// Which category slugs can actually be shown for the current address, plus the
-// slugs of every nearby category by its id (the dish feed joins on that).
-// Both queries are shared RTK Query cache entries, so calling this hook from
-// several screens at once costs nothing extra.
-export const useNearbyCategoryNames = () => {
+// Which category slugs can actually be shown for the current address and the
+// current section.
+//
+// The section filter is now a query parameter: `?section=` makes the server
+// return only the categories of pubs in that section (the service type is the
+// pub's field), and those categories only ever belong to pubs that deliver to
+// the point - so the client-side cross-check against the nearby-pubs list is
+// gone, and so is the `categorySlugsById` map the dish feed used to join on
+// (a dish carries its own `category_types` now).
+//
+// A slug that the dictionary does not know is dropped: it has no name and no
+// icon, so a chip for it would be blank.
+export const useNearbyCategoryNames = (sectionId) => {
   const location = useSelector(selectGeolocation);
 
-  const { data: nearCategoriesData } = useGetNearbyCategoriesQuery(
-    { coords: { lat: location?.lat, lng: location?.lng } },
-    { skip: !location },
-  );
+  const { categoryTypesBySlug } = useCategoryTypes();
 
-  const { data: nearPubsData } = useGetNearbyPubsQuery(
-    { coords: { lat: location?.lat, lng: location?.lng } },
+  const { data: nearCategoriesData } = useGetNearbyCategoriesQuery(
+    { coords: { lat: location?.lat, lng: location?.lng }, section: sectionId },
     { skip: !location },
   );
 
   return useMemo(() => {
-    const empty = { possibleCategoryNames: [], categorySlugsById: {} };
-
-    if (!nearCategoriesData?.categories) return empty;
-    if (!nearPubsData?.pubs) return empty;
-
     const categoryNamesSet = new Set();
-    const categoriesWithNotValidPubs = new Set();
-    const categorySlugsById = {};
 
-    nearCategoriesData.categories.forEach((category) => {
-      if (!category?.category_types) return;
+    (nearCategoriesData?.categories ?? []).forEach((category) => {
       if (!category?.visible) return;
 
-      categorySlugsById[category.id] = category.category_types;
-
-      if (categoriesWithNotValidPubs.has(category.pub_id)) return;
-
-      const pub = nearPubsData.pubs.find((pub) => pub.id === category.pub_id);
-
-      if (!pub) {
-        categoriesWithNotValidPubs.add(category.pub_id);
-        return;
-      }
-
-      for (const type of category.category_types) {
-        if (placeholderCategories[type]) categoryNamesSet.add(type);
+      for (const slug of category.category_types ?? []) {
+        if (categoryTypesBySlug[slug]) categoryNamesSet.add(slug);
       }
     });
 
-    return {
-      possibleCategoryNames: Array.from(categoryNamesSet),
-      categorySlugsById,
-    };
-  }, [nearCategoriesData, nearPubsData]);
+    return { possibleCategoryNames: Array.from(categoryNamesSet) };
+  }, [nearCategoriesData, categoryTypesBySlug]);
 };

@@ -86,10 +86,13 @@ const styles = StyleSheet.create({
 
 // One choice on the first screen. An unavailable section stays visible on
 // purpose - it tells the client the section is coming, instead of hiding it.
-const SectionCard = ({ section, onPress }) => {
+//
+// `isAvailable` comes from GET /api/client/service-types; it used to be a
+// hardcoded flag on the section itself.
+const SectionCard = ({ section, isAvailable = true, onPress }) => {
   const { t } = useTranslation();
 
-  const isDisabled = !section?.available;
+  const isDisabled = !isAvailable;
 
   return (
     <TouchableOpacity

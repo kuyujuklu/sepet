@@ -1,23 +1,3 @@
-export const categories = {
-  Sales: "sales",
-  Flowers: "flowers",
-  Asian: "asian",
-  FastFood: "fast_food",
-  Breakfast: "breakfast",
-  Grill: "grill",
-  Dessert: "dessert",
-  Pasta: "pasta",
-  Soup: "soup",
-  Alcohol: "alcohol",
-  EastFood: "east_food",
-  Flour: "flour",
-  HomeFood: "home_food",
-  Kebab: "kebab",
-  Salad: "salad",
-  Snacks: "snacks",
-  Meat: "meat",
-};
-
 export const deliveryTypes = {
   own: "own",
   deliveryService: "delivery_service"

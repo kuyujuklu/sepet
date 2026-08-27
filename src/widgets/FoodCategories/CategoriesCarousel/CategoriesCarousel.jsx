@@ -7,10 +7,8 @@ import CategoryChip, {
   CHIP_WIDTH,
   COMPACT_CHIP_HEIGHT,
 } from "./CategoryChip";
-import {
-  getCategoryImage,
-  sortCategoryNames,
-} from "../../../shared/utils/foodCategories";
+import { getCategoryImage } from "../../../shared/utils/foodCategories";
+import { useCategoryTypes } from "../../../shared/hooks/useCategoryTypes";
 import { events, track } from "../../../shared/analytics/analytics";
 import { SCREEN_PADDING } from "../../../constants/layout";
 
@@ -51,10 +49,13 @@ const CategoriesCarousel = ({
   const { t } = useTranslation();
   const flatListRef = useRef(null);
 
+  // Names and order both come from the server dictionary now
+  const { getName, sortSlugs } = useCategoryTypes();
+
   // The "all" chip is the first item of the list, not a pinned element
   const categorySlugs = useMemo(
-    () => ["", ...sortCategoryNames(possibleCategoryNames)],
-    [possibleCategoryNames],
+    () => ["", ...sortSlugs(possibleCategoryNames)],
+    [possibleCategoryNames, sortSlugs],
   );
 
   const handleSelect = (slug) => {
@@ -136,7 +137,7 @@ const CategoriesCarousel = ({
         }
         renderItem={({ item: slug }) => (
           <CategoryChip
-            slug={slug}
+            label={slug ? getName(slug) : t("categories.all")}
             image={getCategoryImage(slug)}
             isSelected={slug === selectedCategory}
             compact={compact}

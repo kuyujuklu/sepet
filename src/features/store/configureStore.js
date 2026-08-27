@@ -17,6 +17,8 @@ import { setupListeners } from "@reduxjs/toolkit/query";
 import { pubsApi } from "../../shared/api/pubs/pubsApi";
 import { categoriesApi } from "../../shared/api/categories/categoriesApi";
 import { ordersApi } from "../../shared/api/ordersApi/ordersApi";
+import { dictionariesApi } from "../../shared/api/dictionaries/dictionariesApi";
+import { geoApi } from "../../shared/api/geo/geoApi";
 import { analyticsMiddleware } from "./analytics/analyticsMiddleware";
 
 export const store = configureStore({
@@ -26,6 +28,8 @@ export const store = configureStore({
     [pubsApi.reducerPath]: pubsApi.reducer,
     [categoriesApi.reducerPath]: categoriesApi.reducer,
     [ordersApi.reducerPath]: ordersApi.reducer,
+    [dictionariesApi.reducerPath]: dictionariesApi.reducer,
+    [geoApi.reducerPath]: geoApi.reducer,
     version: versionReducer,
     orders: ordersReducer,
     pub: pubReducer,
@@ -46,6 +50,8 @@ export const store = configureStore({
       .concat(pubsApi.middleware)
       .concat(categoriesApi.middleware)
       .concat(ordersApi.middleware)
+      .concat(dictionariesApi.middleware)
+      .concat(geoApi.middleware)
       .concat(analyticsMiddleware),
 });
 

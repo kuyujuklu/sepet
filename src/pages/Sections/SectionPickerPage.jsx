@@ -9,6 +9,7 @@ import SwitchLanguage from "../../widgets/Profile/SwitchLanguage";
 import { images } from "../../app/images/images";
 import { SCREEN_PADDING } from "../../constants/layout";
 import { sectionsList, defaultSectionId } from "../../shared/utils/sections";
+import { useGetServiceTypesQuery } from "../../shared/api/dictionaries/dictionariesApi";
 import { setSection } from "../../features/store/sections/sectionSlice";
 import {
   alertStatuses,
@@ -62,6 +63,16 @@ const SectionPickerPage = () => {
 
   const { linkedDestination, goToLinkedDestination } = useLinkedDestination();
 
+  // Which sections the server actually serves. It used to be an `available`
+  // flag hand-edited in sections.js and flipped by a release; groceries in
+  // particular waited for one. Until the answer arrives every section is
+  // treated as available - the picker must not be a dead screen offline.
+  const { data: serviceTypesData } = useGetServiceTypesQuery();
+  const availableSections = serviceTypesData?.service_types ?? null;
+
+  const isSectionAvailable = (sectionId) =>
+    !availableSections || availableSections.includes(sectionId);
+
   // A deep link knows where it is going; do not stop it with a question
   useEffect(() => {
     if (!linkedDestination) return;
@@ -71,7 +82,7 @@ const SectionPickerPage = () => {
   }, [linkedDestination]);
 
   const selectSection = (section) => {
-    if (!section?.available) {
+    if (!isSectionAvailable(section?.id)) {
       track(events.sectionUnavailable, { section: section?.id });
       dispatch(
         pushAlert({
@@ -109,6 +120,7 @@ const SectionPickerPage = () => {
           <SectionCard
             key={section.id}
             section={section}
+            isAvailable={isSectionAvailable(section.id)}
             onPress={selectSection}
           />
         ))}

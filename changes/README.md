@@ -6,6 +6,24 @@ the work without re-reading the whole codebase.
 
 Newest first.
 
+- [2026-08-27 — Service type is the pub's field now (app side)](2026-08-27-service-type-on-pub.md)
+  — `service_type` moved from the category to the pub (set in the pub settings popup);
+  the app needed no functional change because it already read `pub.section` /
+  `pub.service_types` and `dish.service_type`, so this is a comment correction plus the
+  one visible consequence: a category now belongs to its pub's section.
+- [2026-08-27 — Pointing the app at the local backend (:9999)](2026-08-27-point-app-at-local-server.md)
+  — flipped `EXPO_PUBLIC_IS_DEV` on and made `dev.js` derive the host from Metro's own
+  hostUri instead of a hardcoded LAN IP that had gone stale, with an
+  `EXPO_PUBLIC_API_HOST` override for the Android emulator. `.env` is not gitignored —
+  blank the flag before a release build.
+- [2026-08-27 — Adopting the new backend API in the app](2026-08-27-adopt-backend-api-additions.md)
+  — the app side of `2026-08-26-backend-api-additions.md`: home feed is one
+  `get-available-top-dishes` request instead of eight menus, sections/categories/cities/
+  support contacts come from server dictionaries, pub-info is always asked for with
+  coordinates (one cache entry, prices included), checkout is priced by `orders/preview`
+  and refuses under the pub's minimum, order screens read the snapshot fields and
+  `status_history`. Backend gaps: no `?q=` on the feed (search still loads 30 menus), no
+  category icons, no orders pagination, no ETA per status.
 - [2026-08-27 — Analytics: fix dead basket_cleared, a double-fire, inconsistent payloads](2026-08-27-analytics-cleanup.md)
   — `basket_cleared` now actually fires (was declared, never wired); `address_selected`
   was firing twice for 2 of its 3 flows (widget + middleware both reacting to the

@@ -1,7 +1,7 @@
 import { FlatList, View } from "native-base";
 import { memo, useEffect, useState } from "react";
 import { Pressable, SafeAreaView, TouchableOpacity } from "react-native";
-import { useGetPubInfoQuery } from "../../../shared/api/pubs/pubsApi";
+import { usePubInfo } from "../../../shared/hooks/usePubInfo";
 import CategoryCard from "./CategoryCard";
 import { BigCardsSkeleton } from "../../Skeletons/Skeleton";
 import { SCREEN_PADDING, CARD_GAP } from "../../../constants/layout";
@@ -12,10 +12,7 @@ const CategoryList = ({
   highlightedCategory,
   selectCategory,
 }) => {
-  const { data: pubData, error: pubError } = useGetPubInfoQuery(
-    { pubID },
-    { skip: !pubID },
-  );
+  const { data: pubData } = usePubInfo({ pubID });
 
   const [shownCategories, setShownCategories] = useState([]);
 
@@ -40,10 +37,6 @@ const CategoryList = ({
 
     setShownCategories(filteredCategories);
   }, [pubData, menuID]);
-
-  useEffect(() => {}, [pubError]);
-
-  useEffect(() => {}, [pubData]);
 
   if (!pubData) return <BigCardsSkeleton count={3} />;
 

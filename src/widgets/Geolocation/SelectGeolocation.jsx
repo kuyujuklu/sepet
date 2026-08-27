@@ -19,7 +19,7 @@ import {
   validateTown,
 } from "../../shared/validation/validators/order/order-validator";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { defaultCity } from "../../shared/utils/cities";
+import { useCities } from "../../shared/hooks/useCities";
 
 const mapStyle = {
   map: {
@@ -39,10 +39,15 @@ const SelectGeolocation = ({ setGeolocation, goBack }) => {
   const hasPerm = useSelector(selectHasGeolocationPerm);
   const [center, setCenter] = useState(null);
 
-  // Falls back to the city we deliver in most, instead of a bare pair of
-  // magic numbers repeated across the file
+  // The city dictionary is ordered by `place`, so the first entry is the one
+  // we deliver in most - it used to be a hardcoded table in utils/cities.js
+  const { cities } = useCities();
+
   const handleSelectLocationByYourself = () => {
-    const center = { lat: defaultCity.lat, lng: defaultCity.lng };
+    const firstCity = cities[0];
+    const center = firstCity
+      ? { lat: firstCity.lat, lng: firstCity.lng }
+      : { lat: 47.00367, lng: 28.907089 };
 
     setCenter(center);
     dispatch(setNearGeolocation(center));

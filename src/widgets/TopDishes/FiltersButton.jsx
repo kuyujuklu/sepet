@@ -1,7 +1,7 @@
 import { memo } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useTranslation } from "react-i18next";
-import { getCategoryCaptionKey } from "../../shared/utils/foodCategories";
+import { useCategoryTypes } from "../../shared/hooks/useCategoryTypes";
 
 const styles = StyleSheet.create({
   button: {
@@ -24,9 +24,10 @@ const styles = StyleSheet.create({
 // now; as soon as something is picked, it says what, same as before.
 const FiltersButton = ({ selectedCategory, freeDeliveryOnly, onPress, style }) => {
   const { t } = useTranslation();
+  const { getName } = useCategoryTypes();
 
   const label = selectedCategory
-    ? t(getCategoryCaptionKey(selectedCategory))
+    ? getName(selectedCategory)
     : freeDeliveryOnly
       ? t("home_page.top_dishes.filter_free_delivery")
       : t("home_page.top_dishes.filters_button");

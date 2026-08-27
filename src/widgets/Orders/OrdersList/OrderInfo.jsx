@@ -15,10 +15,9 @@ import { useTranslation } from "react-i18next";
 import { Ionicons } from "@expo/vector-icons";
 import RateOrderButton from "./RateOrderButton";
 import OrderStatusProgress from "./OrderStatusProgress";
+import OrderStatusTimeline from "./OrderStatusTimeline";
 import { useRepeatOrder } from "../useRepeatOrder";
-import { Skeleton } from "../../Skeletons/Skeleton";
 import { selectOrders } from "../../../features/store/orders/ordersSlice";
-import { useGetPubInfoQuery } from "../../../shared/api/pubs/pubsApi";
 import { ConvertApiTimeToLocalDayMonthYear } from "../../../shared/utils/time";
 import {
   getOrderStatusColors,
@@ -129,50 +128,33 @@ const OrderInfo = ({ orderID }) => {
     if (!order) navigator.navigate(Screens.Orders);
   }, [order, orders]);
 
-  const { data: pubData, isLoading: isPubDataLoading } = useGetPubInfoQuery(
-    { pubID: order?.pub_id },
-    { skip: !order?.pub_id },
-  );
-
   const { repeatOrder, isLoading: isRepeatLoading } = useRepeatOrder(order);
 
-  const currency = getCurrencySymbol(pubData?.pub?.currency_id);
+  const currency = getCurrencySymbol(order?.pub?.currency_id);
   const status = getOrderStatusColors(order?.status);
 
-  // The order itself carries dish ids and the price they were bought at, but
-  // no names - those only exist in the menu of the pub
-  const dishes = useMemo(() => {
-    if (!order?.dishes || !pubData?.dishes) return [];
-
-    return order.dishes
-      .map((orderDish) => {
-        const menuDish = pubData.dishes.find(
-          (dish) => dish.id === orderDish.dish_id,
-        );
-
-        if (!menuDish) return null;
-
-        return {
-          id: orderDish.dish_id,
-          name: menuDish.name,
-          count: orderDish.count,
-          price: orderDish.dish_price,
-        };
-      })
-      .filter(Boolean);
-  }, [order, pubData]);
-
-  const itemsPrice = useMemo(
+  // Every line of the order carries its own `name` snapshot, taken when the
+  // order was created - so this screen no longer loads the whole menu of the
+  // pub just to print names, and an order still reads correctly after a dish
+  // is taken off the menu.
+  const dishes = useMemo(
     () =>
-      order?.dishes?.reduce(
-        (acc, dish) => acc + dish.count * +dish.dish_price,
-        0,
-      ) ?? 0,
+      (order?.dishes ?? []).map((orderDish, index) => ({
+        key: `${orderDish.dish_id}-${index}`,
+        name: orderDish.name,
+        count: orderDish.count,
+        price: orderDish.dish_price,
+      })),
     [order],
   );
 
+  // Totals the server calculated when the order was made, rather than the
+  // client adding the lines up again and hoping it matches the receipt
+  const itemsPrice = +order?.items_price || 0;
   const deliveryPrice = +order?.delivery_price || 0;
-  const totalSum = itemsPrice + deliveryPrice;
+  const totalSum = +order?.total_price || itemsPrice + deliveryPrice;
+
+  const statusHistory = order?.status_history ?? [];
 
   const address = [order?.town, order?.full_address].filter(Boolean).join(", ");
 
@@ -213,7 +195,13 @@ const OrderInfo = ({ orderID }) => {
           </Text>
         </View>
 
-        <OrderStatusProgress status={order?.status} />
+        {/* The recorded transitions when the server has them; the old
+            five-segment bar for orders from before it did */}
+        {statusHistory.length > 0 ? (
+          <OrderStatusTimeline statusHistory={statusHistory} />
+        ) : (
+          <OrderStatusProgress status={order?.status} />
+        )}
 
         <View style={styles.row}>
           <Image
@@ -223,7 +211,7 @@ const OrderInfo = ({ orderID }) => {
             alt=""
           />
           <Text style={styles.pubName} numberOfLines={2}>
-            {order?.pub_name ?? pubData?.pub?.name}
+            {order?.pub_name ?? order?.pub?.name}
           </Text>
         </View>
 
@@ -284,17 +272,11 @@ const OrderInfo = ({ orderID }) => {
       <View style={styles.card}>
         <Text style={styles.cardTitle}>{t("order_info_page.dishes_title")}</Text>
 
-        {isPubDataLoading ? (
-          <View style={{ gap: 12 }}>
-            {[0, 1, 2].map((index) => (
-              <Skeleton key={index} width="100%" height={14} />
-            ))}
-          </View>
-        ) : dishes.length === 0 ? (
+        {dishes.length === 0 ? (
           <Text style={styles.noDishes}>{t("order_info_page.no_dishes")}</Text>
         ) : (
           dishes.map((dish, index) => (
-            <View key={dish.id} style={styles.dishRow}>
+            <View key={dish.key} style={styles.dishRow}>
               <Text style={styles.dishName} numberOfLines={2}>
                 {index + 1}. {dish.name}
               </Text>

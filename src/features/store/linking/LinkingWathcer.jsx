@@ -2,7 +2,7 @@ import React, { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 import * as Linking from 'expo-linking';
 import { selectPubID, setPubID, setPath, setOrderID, setPubName, selectPubName } from './linkingSlice';
-import { useGetPubInfoQuery } from '../../../shared/api/pubs/pubsApi';
+import { usePubInfo } from '../../../shared/hooks/usePubInfo';
 import { parseDeepLink } from '../../../shared/utils/deepLink';
 
 const LinkingWathcer = () => {
@@ -28,14 +28,11 @@ const LinkingWathcer = () => {
     }
   }, [url])
 
-  const {
-    data: pubData,
-    error: pubError,
-    pubIsLoading,
-  } = useGetPubInfoQuery(
-    { pubID: urlPubID, pubName: urlPubName },
-    { skip: (!urlPubID && !urlPubName) },
-  );
+  // Warms the cache entry the pub screen is about to subscribe to, so a deep
+  // link opens on a rendered menu rather than a skeleton. Same hook the screen
+  // uses, so it is the same cache key - a second, coordinate-less request here
+  // would warm nothing.
+  usePubInfo({ pubID: urlPubID, pubName: urlPubName });
 
 
   return (
