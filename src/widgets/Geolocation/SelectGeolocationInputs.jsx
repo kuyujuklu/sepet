@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Image } from "expo-image";
 import {
+  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -18,6 +19,7 @@ import {
 } from "../../shared/validation/validators/order/order-validator";
 import { setGeolocation } from "../../features/store/geolocation/geolocationSlice";
 import { appendSavedAddress } from "../../shared/utils/savedAddresses";
+import { describeCoords } from "../../shared/utils/geolocation";
 import { useLinkedDestination } from "../../shared/hooks/useLinkedDestination";
 import { images } from "../../app/images/images";
 import { SCREEN_PADDING } from "../../constants/layout";
@@ -44,6 +46,14 @@ const styles = StyleSheet.create({
   pinIcon: { width: 18, height: 18, opacity: 0.7 },
   pinText: { flex: 1, fontSize: 13, color: "#047857", lineHeight: 18 },
   pinChange: { fontSize: 13, color: "#047857", fontWeight: "bold" },
+  detecting: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginTop: 10,
+    paddingHorizontal: 2,
+  },
+  detectingText: { fontSize: 12, color: "#6b7280" },
   card: {
     backgroundColor: "#fff",
     borderRadius: 20,
@@ -75,8 +85,50 @@ const SelectGeolocationInputs = ({ setPage, geolocation, goBack }) => {
   const [fullAddress, setFullAddress] = useState("");
   const [triedToSubmit, setTriedToSubmit] = useState(false);
   const [resetErrors, setResetErrors] = useState(false);
+  const [isDetecting, setIsDetecting] = useState(false);
 
   const { goToLinkedDestination } = useLinkedDestination();
+
+  // A guess, not a lock: reverse-geocodes the pinned point so the client
+  // corrects a suggestion instead of typing the whole address from nothing.
+  // Guarded so it never clobbers a value the client already typed - a slow
+  // network reply landing after they started writing must not erase it.
+  const editedRef = useRef(false);
+
+  useEffect(() => {
+    if (!geolocation?.lat || !geolocation?.lng) return;
+
+    let isActual = true;
+    setIsDetecting(true);
+
+    describeCoords(geolocation).then((description) => {
+      if (!isActual || editedRef.current) return;
+
+      if (description.town) setTown(description.town);
+      if (description.fullAddress) setFullAddress(description.fullAddress);
+
+      setIsDetecting(false);
+    });
+
+    return () => {
+      isActual = false;
+    };
+  }, [geolocation?.lat, geolocation?.lng]);
+
+  const markEdited = () => {
+    editedRef.current = true;
+    setIsDetecting(false);
+  };
+
+  const handleTownChange = (value) => {
+    markEdited();
+    setTown(value);
+  };
+
+  const handleFullAddressChange = (value) => {
+    markEdited();
+    setFullAddress(value);
+  };
 
   const handleSetLocationButtonClick = () => {
     (async function () {
@@ -103,7 +155,7 @@ const SelectGeolocationInputs = ({ setPage, geolocation, goBack }) => {
         }),
       );
 
-      track(events.addressSelected, { source: "new_address" });
+      track(events.addressSelected, { source: "new_address", town });
 
       setTown("");
       setFullAddress("");
@@ -150,12 +202,21 @@ const SelectGeolocationInputs = ({ setPage, geolocation, goBack }) => {
           </TouchableOpacity>
         </View>
 
+        {isDetecting && (
+          <View style={styles.detecting}>
+            <ActivityIndicator size="small" color="#059669" />
+            <Text style={styles.detectingText}>
+              {t("select_geolocation.detecting_address")}
+            </Text>
+          </View>
+        )}
+
         <View style={styles.card}>
           <InputWithValidation
             resetErrors={resetErrors}
             setResetErrors={setResetErrors}
             value={town}
-            setValue={setTown}
+            setValue={handleTownChange}
             label={t("create_order_page.additional_data.inputs.town.label")}
             keyboardType={"default"}
             validators={[validateTown]}
@@ -165,7 +226,7 @@ const SelectGeolocationInputs = ({ setPage, geolocation, goBack }) => {
             resetErrors={resetErrors}
             setResetErrors={setResetErrors}
             value={fullAddress}
-            setValue={setFullAddress}
+            setValue={handleFullAddressChange}
             label={t(
               "create_order_page.additional_data.inputs.full_address.label",
             )}

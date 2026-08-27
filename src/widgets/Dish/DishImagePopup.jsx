@@ -81,6 +81,7 @@ const DishImagePopup = () => {
 
   return (
     <BottomSheet
+      id="dishImage"
       isOpened={popupState.isOpened}
       onClose={() => dispatch(closeDishImagePopup())}
       title={dish?.name}

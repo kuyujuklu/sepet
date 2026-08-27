@@ -47,7 +47,7 @@ const BasketCreateOrderButton = ({
 
   const { data: pubData, isLoading } = useGetPubInfoQuery(
     { pubID },
-    { pollingInterval: 20000, skip: !pubID, skipPollingIfUnfocused: true },
+    { skip: !pubID },
   );
 
   const isDisabled = basketIsEmpty || !pubData?.pub;

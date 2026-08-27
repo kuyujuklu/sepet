@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import * as Linking from 'expo-linking';
 import { selectPubID, setPubID, setPath, setOrderID, setPubName, selectPubName } from './linkingSlice';
 import { useGetPubInfoQuery } from '../../../shared/api/pubs/pubsApi';
-import { Screens } from '../../../app/navigation/screens';
+import { parseDeepLink } from '../../../shared/utils/deepLink';
 
 const LinkingWathcer = () => {
   const dispatch = useDispatch();
@@ -12,43 +12,19 @@ const LinkingWathcer = () => {
   const urlPubName = useSelector(selectPubName);
 
   useEffect(() => {
-    if (url) {
-      const parsedUrl = Linking.parse(url);
-      const queryParams = parsedUrl.queryParams;
+    const parsed = parseDeepLink(url);
+    if (!parsed) return;
 
-      let path = queryParams.Path;
+    dispatch(setPath(parsed.path));
 
-      let pubName = null
-      let pubID = queryParams.PubID
-
-      let partsOfPath = parsedUrl?.path?.split("/") ?? [];
-      let indexOfPubWord = partsOfPath.findIndex((part) => part === "pub");
-
-
-      if (indexOfPubWord >= 0 && partsOfPath.length > indexOfPubWord + 1) {
-        path = Screens.PubInfo
-
-        const pubIdentifier = partsOfPath[indexOfPubWord + 1] || queryParams.PubID;
-        if (isNaN(+pubIdentifier)) {
-          pubName = pubIdentifier
-        }
-        else {
-          pubID = +pubIdentifier
-        }
-      }
-      dispatch(setPath(path));
-
-      if (pubID) {
-        dispatch(setPubID(pubID));
-      }
-      if (pubName) {
-        dispatch(setPubName(pubName));
-      }
-      if (queryParams.OrderID) {
-        dispatch(setOrderID(+queryParams.OrderID ?? null));
-      }
+    if (parsed.pubID) {
+      dispatch(setPubID(parsed.pubID));
     }
-    else {
+    if (parsed.pubName) {
+      dispatch(setPubName(parsed.pubName));
+    }
+    if (parsed.orderID) {
+      dispatch(setOrderID(parsed.orderID));
     }
   }, [url])
 

@@ -13,6 +13,7 @@ export const events = {
 
   categorySelected: "category_selected",
   feedFilterChanged: "feed_filter_changed",
+  searchOpened: "search_opened",
 
   dishOpened: "dish_opened",
   dishAdded: "dish_added",
@@ -26,6 +27,7 @@ export const events = {
   orderSubmitted: "order_submitted",
   orderSucceeded: "order_succeeded",
   orderFailed: "order_failed",
+  activeOrdersBarOpened: "active_orders_bar_opened",
 
   profileOpened: "profile_opened",
   languageChanged: "language_changed",

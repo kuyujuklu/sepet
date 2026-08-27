@@ -8,6 +8,7 @@ import NoPubsPage from "./NoPubsPage";
 import AppHeader from "../../widgets/AppHeader/AppHeader";
 import TopDishesList from "../../widgets/TopDishes/TopDishesList";
 import BasketFloatingBar from "../../widgets/Basket/BasketFloatingBar";
+import ActiveOrdersFloatingBar from "../../widgets/Orders/ActiveOrdersFloatingBar";
 import CityPicker from "../../widgets/Geolocation/CityPicker";
 import { useNearbyCategoryNames } from "../../shared/hooks/useNearbyCategoryNames";
 import { useGetNearbyPubsQuery } from "../../shared/api/pubs/pubsApi";
@@ -17,6 +18,9 @@ import {
 } from "../../features/store/geolocation/geolocationSlice";
 import { selectSection } from "../../features/store/sections/sectionSlice";
 import { filterCategoryNamesBySection } from "../../shared/utils/sections";
+import { selectBasket } from "../../features/store/basket/basketSlice";
+import { getBasketCount } from "../../shared/utils/basket";
+import { useSafeBottomInset } from "../../shared/hooks/useSafeBottomInset";
 import { SCREEN_PADDING } from "../../constants/layout";
 import { Screens } from "../../app/navigation/screens";
 
@@ -26,6 +30,10 @@ const Home = () => {
   const location = useSelector(selectGeolocation);
   const hasGeolocationPerm = useSelector(selectHasGeolocationPerm);
   const section = useSelector(selectSection);
+  const basket = useSelector(selectBasket);
+
+  const hasBasketItems = getBasketCount(basket) > 0;
+  const floatingBarBottom = useSafeBottomInset(12);
 
   const [selectedCategory, setSelectedCategory] = useState("");
   const [askForCity, setAskForCity] = useState(false);
@@ -44,7 +52,7 @@ const Home = () => {
 
   const { data: nearPubsData } = useGetNearbyPubsQuery(
     { coords: { lat: location?.lat, lng: location?.lng } },
-    { skip: !location, pollingInterval: 20000, skipPollingIfUnfocused: true },
+    { skip: !location },
   );
 
   const hasNoPubs = nearPubsData && nearPubsData?.pubs?.length === 0;
@@ -94,14 +102,15 @@ const Home = () => {
           />
         </View>
 
-        {/* The Wrapper already reserves the gesture area, so this only needs
-            the gap between the bar and the bottom of the content */}
+        {/* Explicit inset here rather than trusting the Wrapper's own
+            padding to reach an absolutely positioned child - see
+            floatingBarBottom above */}
         <View
           position="absolute"
           w="full"
-          style={{ paddingHorizontal: SCREEN_PADDING, bottom: 12 }}
+          style={{ paddingHorizontal: SCREEN_PADDING, bottom: floatingBarBottom }}
         >
-          <BasketFloatingBar />
+          {hasBasketItems ? <BasketFloatingBar /> : <ActiveOrdersFloatingBar />}
         </View>
       </>
     );
@@ -112,11 +121,11 @@ const Home = () => {
       <AppHeader
         showBack
         // Home is the root of the stack after the picker, so a plain
-        // `goBack` is not guaranteed to exist (deep links land here directly)
+        // `goBack` is not guaranteed to exist (deep links land here directly).
+        // That back arrow is also the only way to change section now - the
+        // switcher used to sit here, but the client already chose on the
+        // picker screen it leads back to.
         fallbackScreen={Screens.SectionPicker}
-        showSections
-        screen="Home"
-        onSectionChange={() => setSelectedCategory("")}
       />
 
       {renderBody()}

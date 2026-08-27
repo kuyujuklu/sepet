@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
+import { Ionicons } from "@expo/vector-icons";
 import RateOrderButton from "./RateOrderButton";
 import { useRepeatOrder } from "../useRepeatOrder";
 import { images } from "../../../app/images/images";
@@ -16,6 +17,7 @@ import { Screens } from "../../../app/navigation/screens";
 import { ConvertApiTimeToLocalDayMonthYear } from "../../../shared/utils/time";
 import {
   getOrderStatusColors,
+  getOrderStatusIcon,
   getOrderStatusText,
 } from "../../../shared/utils/order-utils";
 
@@ -38,6 +40,9 @@ const styles = StyleSheet.create({
   },
   orderNumber: { flex: 1, fontSize: 14, color: "#6b7280" },
   badge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 12,
@@ -98,6 +103,11 @@ const OrderCard = ({ order }) => {
           </Text>
 
           <View style={[styles.badge, { backgroundColor: status.background }]}>
+            <Ionicons
+              name={getOrderStatusIcon(order?.status)}
+              size={12}
+              color={status.color}
+            />
             <Text style={[styles.badgeText, { color: status.color }]}>
               {t(getOrderStatusText(order?.status))}
             </Text>
@@ -144,8 +154,7 @@ const OrderCard = ({ order }) => {
             orderStatus={order?.status}
             rating={order?.rating}
             orderID={order?.id}
-            iconSize={18}
-            fontSize={14}
+            size="sm"
           />
 
           <TouchableOpacity activeOpacity={0.8} onPress={repeatOrder}>

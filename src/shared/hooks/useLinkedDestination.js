@@ -8,6 +8,7 @@ import {
   selectPubName,
 } from "../../features/store/linking/linkingSlice";
 import { Screens } from "../../app/navigation/screens";
+import { resolveDestinationFromFields } from "../utils/deepLink";
 
 // Where a deep link wants us to go.
 //
@@ -22,26 +23,30 @@ export const useLinkedDestination = () => {
   const urlPubName = useSelector(selectPubName);
   const urlOrderID = useSelector(selectOrderID);
 
-  const linkedDestination = useMemo(() => {
-    if (path === Screens.PubInfo && (urlPubID || urlPubName)) {
-      return {
-        screen: Screens.PubInfo,
-        params: { pubID: urlPubID, pubName: urlPubName },
-      };
-    }
+  const linkedDestination = useMemo(
+    () =>
+      resolveDestinationFromFields({
+        path,
+        pubID: urlPubID,
+        pubName: urlPubName,
+        orderID: urlOrderID,
+      }),
+    [path, urlPubID, urlPubName, urlOrderID],
+  );
 
-    if (path === Screens.OrderInfoPage && urlOrderID) {
-      return { screen: Screens.OrderInfoPage, params: { orderID: urlOrderID } };
-    }
-
-    if (Screens[path]) return { screen: Screens[path], params: undefined };
-
-    return null;
-  }, [path, urlPubID, urlPubName, urlOrderID]);
-
-  // Always lands somewhere: Home is the destination when there is no link
+  // Always lands somewhere. A real deep link always wins; otherwise this is
+  // just finishing whatever flow sent the client here to pick/confirm an
+  // address (checkout, the top bar, ...), so going back to it beats bouncing
+  // everyone to Home regardless of where they actually came from. Home is
+  // only the fallback for the rare case there is nothing to go back to (e.g.
+  // this screen itself was the deep-link target of a cold start).
   const goToLinkedDestination = () => {
     if (!linkedDestination) {
+      if (navigator.canGoBack()) {
+        navigator.goBack();
+        return;
+      }
+
       navigator.navigate(Screens.Home);
       return;
     }

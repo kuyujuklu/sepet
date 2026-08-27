@@ -18,6 +18,7 @@ import {
   useGetPubInfoQuery,
 } from "../../shared/api/pubs/pubsApi";
 import { selectGeolocation } from "../../features/store/geolocation/geolocationSlice";
+import { useSafeBottomInset } from "../../shared/hooks/useSafeBottomInset";
 import { SCREEN_PADDING } from "../../constants/layout";
 import { events, track } from "../../shared/analytics/analytics";
 
@@ -111,12 +112,13 @@ const DishesScreen = () => {
 const PubInfoPage = () => {
   const { t } = useTranslation();
   const route = useRoute();
+  const basketBarBottom = useSafeBottomInset();
 
   const location = useSelector(selectGeolocation);
 
   const { data: nearPubsData } = useGetNearbyPubsQuery(
     { coords: { lat: location?.lat, lng: location?.lng } },
-    { skip: !location, pollingInterval: 20000, skipPollingIfUnfocused: true },
+    { skip: !location },
   );
 
   const selectedMenu = route?.params?.selectedMenu;
@@ -138,11 +140,7 @@ const PubInfoPage = () => {
 
   const { data: pubData } = useGetPubInfoQuery(
     { pubID, pubName },
-    {
-      skip: !pubID && !pubName,
-      pollingInterval: 20000,
-      skipPollingIfUnfocused: true,
-    },
+    { skip: !pubID && !pubName },
   );
 
   useEffect(() => {
@@ -239,12 +237,17 @@ const PubInfoPage = () => {
         )}
 
         {/* Same shortcut as on the feed: without it a dish added here has
-            nowhere to lead */}
+            nowhere to lead. `bottom` is in `style`, not a bare native-base
+            prop - a bare number there is a spacing-scale token, not pixels,
+            and useSafeBottomInset() returns real pixels */}
         <View
           position="absolute"
-          bottom={0}
           w="full"
-          style={{ paddingHorizontal: SCREEN_PADDING, paddingBottom: 12 }}
+          style={{
+            paddingHorizontal: SCREEN_PADDING,
+            paddingBottom: 12,
+            bottom: basketBarBottom,
+          }}
         >
           <BasketFloatingBar />
         </View>

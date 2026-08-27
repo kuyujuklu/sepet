@@ -1,14 +1,15 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Image } from "expo-image";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { useNavigation } from "@react-navigation/native";
 import Wrapper from "../Wrapper";
 import AppHeader from "../../widgets/AppHeader/AppHeader";
 import OrderListWithAllClientOrders from "../../widgets/Orders/OrdersList/OrderListWithAllClientOrders";
 import { BigCardsSkeleton } from "../../widgets/Skeletons/Skeleton";
-import { selectOrders } from "../../features/store/orders/ordersSlice";
+import { selectOrders, setOrders } from "../../features/store/orders/ordersSlice";
+import { useLazyGetAllOrdersForClientQuery } from "../../shared/api/ordersApi/ordersApi";
 import { images } from "../../app/images/images";
 import { Screens } from "../../app/navigation/screens";
 
@@ -40,6 +41,7 @@ const styles = StyleSheet.create({
 const OrdersPage = () => {
   const { t } = useTranslation();
   const navigator = useNavigation();
+  const dispatch = useDispatch();
 
   const orders = useSelector(selectOrders);
   const [hasWaited, setHasWaited] = useState(false);
@@ -49,6 +51,19 @@ const OrdersPage = () => {
 
     return () => clearTimeout(timeout);
   }, []);
+
+  // Orders normally arrive over the websocket (OrdersPreloader); pull-to-refresh
+  // asks the REST endpoint directly instead of waiting for the next push, and
+  // writes into the exact same slice so OrderCard/OrderInfo need no changes
+  const [fetchOrders, { isFetching: isRefreshing }] =
+    useLazyGetAllOrdersForClientQuery();
+
+  const refresh = useCallback(async () => {
+    const result = await fetchOrders();
+    if (Array.isArray(result.data?.orders)) {
+      dispatch(setOrders({ orders: result.data.orders }));
+    }
+  }, [fetchOrders, dispatch]);
 
   const isEmpty = !orders || orders.length === 0;
 
@@ -88,7 +103,12 @@ const OrdersPage = () => {
       );
     }
 
-    return <OrderListWithAllClientOrders />;
+    return (
+      <OrderListWithAllClientOrders
+        refreshing={isRefreshing}
+        onRefresh={refresh}
+      />
+    );
   };
 
   return (

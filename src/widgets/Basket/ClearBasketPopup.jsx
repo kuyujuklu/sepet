@@ -18,6 +18,7 @@ const ClearBasketPopup = () => {
 
   return (
     <BottomSheet
+      id="clearBasket"
       isOpened={popupState.isOpened}
       onClose={close}
       title={t(popupState.text)}

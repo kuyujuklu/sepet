@@ -54,6 +54,7 @@ const DeleteClientPopup = () => {
 
   return (
     <BottomSheet
+      id="deleteClient"
       isOpened={popupState.opened}
       onClose={() => dispatch(closeDeleteClientPopup())}
       title={t("delete_account_popup.headline")}

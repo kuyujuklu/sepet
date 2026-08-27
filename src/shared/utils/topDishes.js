@@ -1,10 +1,9 @@
 import { getDiscountPercent, hasDiscount } from "./dish";
-import { slugsMatchSection } from "./sections";
+import { getPubSectionOverride, slugsMatchSection } from "./sections";
 
 export const topDishesFilters = {
   top: "top",
   deals: "deals",
-  near: "near",
 };
 
 // How many dishes of one pub can get into the feed - so that the biggest
@@ -67,6 +66,10 @@ const getPubDishes = (
   { filter, sectionId, categorySlug, categorySlugsById, maxPerPub },
 ) => {
   const pub = menu?.pub;
+  // A pub-level override, if one exists, decides section membership for
+  // every one of its dishes at once - see pubSectionOverrides in sections.js
+  // for why individual category tags cannot be trusted for these pubs
+  const sectionOverride = getPubSectionOverride(pub?.id);
 
   return (menu?.dishes || [])
     .filter(isOrderableDish)
@@ -74,7 +77,10 @@ const getPubDishes = (
     .filter((dish) => {
       const slugs = getDishSlugs(dish, menu, categorySlugsById);
 
-      if (!slugsMatchSection(slugs, sectionId)) return false;
+      const matchesSection = sectionOverride
+        ? sectionOverride === sectionId
+        : slugsMatchSection(slugs, sectionId);
+      if (!matchesSection) return false;
 
       return !categorySlug || slugs.includes(categorySlug);
     })
@@ -131,12 +137,53 @@ export const buildTopDishes = (
     feed.sort((a, b) => b.discountPercent - a.discountPercent);
   }
 
-  if (filter === topDishesFilters.near) {
-    feed.sort((a, b) => a.distance - b.distance);
-  }
-
   // Closed pubs are still shown, but always at the end of the feed
   feed.sort(byOpenPubFirst);
 
   return feed.slice(0, limit);
+};
+
+// Dish-name search across the menus already loaded - a name match, not a
+// "best of" pick, so unlike buildTopDishes there is no per-pub cap and no
+// round-robin interleave: every match earns its place, from every pub.
+export const searchDishes = (
+  pubsWithMenus = [],
+  { query = "", sectionId = null, categorySlugsById = {}, limit = 40 } = {},
+) => {
+  const normalizedQuery = query.trim().toLowerCase();
+  if (!normalizedQuery) return [];
+
+  const results = [];
+
+  for (const menu of pubsWithMenus) {
+    const pub = menu?.pub;
+    const sectionOverride = getPubSectionOverride(pub?.id);
+
+    for (const dish of menu?.dishes || []) {
+      if (!isOrderableDish(dish)) continue;
+
+      const name = dish?.name?.toLowerCase() ?? "";
+      if (!name.includes(normalizedQuery)) continue;
+
+      const slugs = getDishSlugs(dish, menu, categorySlugsById);
+      const matchesSection = sectionOverride
+        ? sectionOverride === sectionId
+        : slugsMatchSection(slugs, sectionId);
+      if (!matchesSection) continue;
+
+      results.push({
+        key: `${pub?.id}-${dish?.id}`,
+        dish,
+        pub,
+        discountPercent: getDiscountPercent(dish),
+        // A name that starts with the query reads as more relevant than one
+        // that just happens to contain it somewhere in the middle
+        rank: name.startsWith(normalizedQuery) ? 0 : 1,
+      });
+    }
+  }
+
+  results.sort((a, b) => a.rank - b.rank);
+
+  return results.slice(0, limit);
 };

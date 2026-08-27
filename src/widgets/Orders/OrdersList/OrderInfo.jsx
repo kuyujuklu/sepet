@@ -2,6 +2,7 @@ import { useEffect, useMemo } from "react";
 import { Image } from "expo-image";
 import {
   ActivityIndicator,
+  Linking,
   ScrollView,
   StyleSheet,
   Text,
@@ -11,7 +12,9 @@ import {
 import { useSelector } from "react-redux";
 import { useNavigation } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
+import { Ionicons } from "@expo/vector-icons";
 import RateOrderButton from "./RateOrderButton";
+import OrderStatusProgress from "./OrderStatusProgress";
 import { useRepeatOrder } from "../useRepeatOrder";
 import { Skeleton } from "../../Skeletons/Skeleton";
 import { selectOrders } from "../../../features/store/orders/ordersSlice";
@@ -19,12 +22,14 @@ import { useGetPubInfoQuery } from "../../../shared/api/pubs/pubsApi";
 import { ConvertApiTimeToLocalDayMonthYear } from "../../../shared/utils/time";
 import {
   getOrderStatusColors,
+  getOrderStatusIcon,
   getOrderStatusText,
 } from "../../../shared/utils/order-utils";
 import { getCurrencySymbol } from "../../../shared/utils/dish";
 import { images } from "../../../app/images/images";
 import { Screens } from "../../../app/navigation/screens";
 import { SCREEN_PADDING } from "../../../constants/layout";
+import { orderPaymentTypes } from "../../../app/static-data/data";
 
 const styles = StyleSheet.create({
   content: {
@@ -45,7 +50,14 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     gap: 10,
   },
-  badge: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: 12 },
+  badge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 12,
+  },
   badgeText: { fontSize: 12, fontWeight: "bold" },
   date: { fontSize: 13, color: "#6b7280" },
   row: { flexDirection: "row", alignItems: "center", gap: 10 },
@@ -164,6 +176,17 @@ const OrderInfo = ({ orderID }) => {
 
   const address = [order?.town, order?.full_address].filter(Boolean).join(", ");
 
+  // Entered by the client at checkout and sent on order creation - shown back
+  // here if the API actually returns it on the order object (unconfirmed;
+  // each row simply stays hidden if the field is absent, see the changes
+  // note's Backend gaps section)
+  const paymentTypeLabel =
+    order?.payment_type === orderPaymentTypes.cash
+      ? t("create_order_page.additional_data.inputs.payment_type.values.cash")
+      : order?.payment_type === orderPaymentTypes.cardOffline
+        ? t("create_order_page.additional_data.inputs.payment_type.values.card_offline")
+        : null;
+
   return (
     <ScrollView
       contentContainerStyle={styles.content}
@@ -172,6 +195,11 @@ const OrderInfo = ({ orderID }) => {
       <View style={styles.card}>
         <View style={styles.topRow}>
           <View style={[styles.badge, { backgroundColor: status.background }]}>
+            <Ionicons
+              name={getOrderStatusIcon(order?.status)}
+              size={13}
+              color={status.color}
+            />
             <Text style={[styles.badgeText, { color: status.color }]}>
               {t(getOrderStatusText(order?.status))}
             </Text>
@@ -184,6 +212,8 @@ const OrderInfo = ({ orderID }) => {
             )}
           </Text>
         </View>
+
+        <OrderStatusProgress status={order?.status} />
 
         <View style={styles.row}>
           <Image
@@ -207,6 +237,45 @@ const OrderInfo = ({ orderID }) => {
             />
             <Text style={styles.address} numberOfLines={2}>
               {address}
+            </Text>
+          </View>
+        )}
+
+        {!!paymentTypeLabel && (
+          <View style={styles.row}>
+            <Ionicons
+              name={
+                order?.payment_type === orderPaymentTypes.cash
+                  ? "cash-outline"
+                  : "card-outline"
+              }
+              size={20}
+              color="#6b7280"
+            />
+            <Text style={styles.address}>
+              {t("create_order_page.additional_data.inputs.payment_type.label")}:{" "}
+              {paymentTypeLabel}
+            </Text>
+          </View>
+        )}
+
+        {!!order?.main_phone_number && (
+          <TouchableOpacity
+            activeOpacity={0.7}
+            style={styles.row}
+            onPress={() => Linking.openURL(`tel:${order.main_phone_number}`)}
+          >
+            <Ionicons name="call-outline" size={20} color="#6b7280" />
+            <Text style={styles.address}>{order.main_phone_number}</Text>
+          </TouchableOpacity>
+        )}
+
+        {!!order?.comments && (
+          <View style={styles.row}>
+            <Ionicons name="chatbubble-ellipses-outline" size={20} color="#6b7280" />
+            <Text style={styles.address}>
+              {t("create_order_page.additional_data.inputs.comments.label")}:{" "}
+              {order.comments}
             </Text>
           </View>
         )}
@@ -274,8 +343,7 @@ const OrderInfo = ({ orderID }) => {
           orderStatus={order?.status}
           rating={order?.rating}
           orderID={order?.id}
-          iconSize={20}
-          fontSize={15}
+          size="md"
         />
 
         <TouchableOpacity activeOpacity={0.8} onPress={repeatOrder}>

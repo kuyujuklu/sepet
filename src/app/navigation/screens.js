@@ -18,6 +18,7 @@ export const Screens = {
   Orders: "Orders",
   OrderInfoPage: "OrderInfoPage",
   Profile: "Profile",
+  Notifications: "Notifications",
   NoInternetPage: "NoInternetPage",
   ExpiredVersionPage: "ExpiredVersionPage",
 };

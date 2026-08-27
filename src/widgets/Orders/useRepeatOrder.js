@@ -29,7 +29,7 @@ export const useRepeatOrder = (order) => {
   // Shared cache entry: every card on the screen resolves to one request
   const { data: pubsData } = useGetNearbyPubsQuery(
     { coords: { lat: location?.lat, lng: location?.lng } },
-    { skip: !location, pollingInterval: 20000, skipPollingIfUnfocused: true },
+    { skip: !location },
   );
 
   const [fetchPubInfo, { isFetching: isLoading }] = useLazyGetPubInfoQuery();

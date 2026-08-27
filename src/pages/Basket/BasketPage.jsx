@@ -30,6 +30,7 @@ import {
 } from "../../shared/utils/basket";
 import { getCurrencySymbol } from "../../shared/utils/dish";
 import { images } from "../../app/images/images";
+import { useSafeBottomInset } from "../../shared/hooks/useSafeBottomInset";
 import { SCREEN_PADDING } from "../../constants/layout";
 
 const styles = StyleSheet.create({
@@ -84,17 +85,24 @@ const styles = StyleSheet.create({
   },
   emptyButtonText: { color: "#fff", fontSize: 15, fontWeight: "bold" },
   clear: { fontSize: 13, color: "#dc2626", fontWeight: "bold" },
-  bottomBar: {
+  // Two layers on purpose. The outer one reaches the true bottom edge and
+  // carries the safe-area clearance as plain padding - same background, no
+  // border, so it reads as ordinary bottom padding rather than part of the
+  // button's own backdrop (that reading is what made the button look like it
+  // was floating high inside an oversized box). The inner one is the actual
+  // visible card: a snug, fixed padding around the button and the border
+  // that frames it, unaffected by how tall the safe area happens to be.
+  bottomBarSafeArea: {
     position: "absolute",
-    // Without `bottom` an absolute box falls back to the top of the parent:
-    // the submit button was sitting on top of the header
     bottom: 0,
     left: 0,
     right: 0,
+    backgroundColor: "#f5f5f5",
+  },
+  bottomBar: {
     paddingHorizontal: SCREEN_PADDING,
     paddingTop: 12,
     paddingBottom: 12,
-    backgroundColor: "#f5f5f5",
     borderTopWidth: 1,
     borderTopColor: "#e8e8ea",
     gap: 8,
@@ -105,6 +113,7 @@ const BasketPage = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const navigator = useNavigation();
+  const bottomBarInset = useSafeBottomInset();
 
   const basket = useSelector(selectBasket);
   const pubID = useSelector(selectBasketPubID);
@@ -113,12 +122,12 @@ const BasketPage = () => {
 
   const { data: pubData, isLoading: isPubLoading } = useGetPubInfoQuery(
     { pubID },
-    { pollingInterval: 20000, skip: !pubID, skipPollingIfUnfocused: true },
+    { skip: !pubID },
   );
 
   const { data: pubsData } = useGetNearbyPubsQuery(
     { coords: { lat: location?.lat, lng: location?.lng } },
-    { skip: !location, pollingInterval: 20000, skipPollingIfUnfocused: true },
+    { skip: !location },
   );
 
   const pub = pubData?.pub;
@@ -284,18 +293,20 @@ const BasketPage = () => {
       )}
 
       {!isEmpty && (
-        <View style={styles.bottomBar}>
-          {!client || client.isGuest ? (
-            <BasketGoToRegistrationButton />
-          ) : (
-            <BasketCreateOrderButton
-              itemsPrice={itemsPrice}
-              deliveryPrice={deliveryPrice}
-              currency={currency}
-              isAvailableForDelivery={isAvailableForDelivery}
-              isPubOpen={isPubOpen}
-            />
-          )}
+        <View style={[styles.bottomBarSafeArea, { paddingBottom: bottomBarInset }]}>
+          <View style={styles.bottomBar}>
+            {!client || client.isGuest ? (
+              <BasketGoToRegistrationButton />
+            ) : (
+              <BasketCreateOrderButton
+                itemsPrice={itemsPrice}
+                deliveryPrice={deliveryPrice}
+                currency={currency}
+                isAvailableForDelivery={isAvailableForDelivery}
+                isPubOpen={isPubOpen}
+              />
+            )}
+          </View>
         </View>
       )}
     </Wrapper>

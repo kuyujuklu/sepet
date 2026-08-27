@@ -1,9 +1,11 @@
 import { Text, View } from "native-base";
 import { Image } from "expo-image";
 import { Linking, ScrollView, TouchableOpacity } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { useNavigation } from "@react-navigation/native";
+import { Screens } from "../../app/navigation/screens";
 import Wrapper from "../Wrapper";
 import AppHeader from "../../widgets/AppHeader/AppHeader";
 import SwitchLanguage from "../../widgets/Profile/SwitchLanguage";
@@ -12,13 +14,16 @@ import {
   openDeleteClientPopup,
   selectClient,
 } from "../../features/store/auth/authSlice";
+import { selectUnreadNotificationsCount } from "../../features/store/notifications/notificationsHistorySlice";
 import { clearAuthenticationData } from "../../shared/api/auth/authBasedQuery";
 import { events, track } from "../../shared/analytics/analytics";
 
 const SUPPORT_PHONE = "+373 605 49 995";
 const SUPPORT_TELEGRAM = "http://t.me/AlternativeGE";
 
-const ProfileRow = ({ icon, label, hint, onPress }) => (
+// `iconNode` is for the rare row with no matching image in assets/images - a
+// vector glyph instead, sized to line up with the raster icons around it
+const ProfileRow = ({ icon, iconNode, label, hint, badge, onPress }) => (
   <TouchableOpacity activeOpacity={0.7} onPress={onPress}>
     <View
       flexDir="row"
@@ -29,8 +34,8 @@ const ProfileRow = ({ icon, label, hint, onPress }) => (
       backgroundColor="#fff"
       borderRadius="2xl"
     >
-      <View style={{ width: 24, height: 24 }}>
-        <Image source={icon} style={{ width: "100%", height: "100%" }} />
+      <View style={{ width: 24, height: 24, alignItems: "center", justifyContent: "center" }}>
+        {iconNode ?? <Image source={icon} style={{ width: "100%", height: "100%" }} />}
       </View>
 
       <View flex={1}>
@@ -43,6 +48,22 @@ const ProfileRow = ({ icon, label, hint, onPress }) => (
           </Text>
         )}
       </View>
+
+      {!!badge && (
+        <View
+          minW="5"
+          h="5"
+          px="1.5"
+          borderRadius="full"
+          backgroundColor="emerald.600"
+          alignItems="center"
+          justifyContent="center"
+        >
+          <Text fontSize={11} fontWeight="bold" color="#fff">
+            {badge}
+          </Text>
+        </View>
+      )}
 
       <Text fontSize={20} color="coolGray.400">
         ›
@@ -59,6 +80,7 @@ const ProfilePage = () => {
   const navigator = useNavigation();
 
   const client = useSelector(selectClient);
+  const unreadNotificationsCount = useSelector(selectUnreadNotificationsCount);
 
   const logout = () => {
     clearAuthenticationData();
@@ -103,6 +125,18 @@ const ProfilePage = () => {
           </Text>
           <SwitchLanguage />
         </View>
+
+        {/* Additional settings */}
+        <Text px="1" pt="2" fontSize={14} color="coolGray.500">
+          {t("profile.additional_settings")}
+        </Text>
+
+        <ProfileRow
+          iconNode={<Ionicons name="notifications-outline" size={22} color="#111" />}
+          label={t("profile.notifications")}
+          badge={unreadNotificationsCount}
+          onPress={() => navigator.navigate(Screens.Notifications)}
+        />
 
         {/* Support */}
         <Text px="1" pt="2" fontSize={14} color="coolGray.500">

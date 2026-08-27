@@ -11,13 +11,9 @@ import {
 import AnimatedNumber from "react-native-animated-numbers";
 import { memo, useEffect, useState } from "react";
 import { ENV } from "../../constants/env/env";
-import { currencies, deliveryTypes } from "../../app/static-data/data";
+import { formatPrice, getDishPrices } from "../../shared/utils/dish";
 import { openDishImagePopup } from "../../features/store/dishes/dishesSlice";
 import { openPubNotAvailableForDeliveryPopup } from "../../features/store/pubs/pubsSlice";
-
-const addCommissionToPrice = (price, commission) => {
-  return price + (price / 100) * commission;
-};
 
 const DishCard = ({ dish, pubID, pub, isPubOpen, isAvailableForDelivery }) => {
   const dispatch = useDispatch();
@@ -29,22 +25,7 @@ const DishCard = ({ dish, pubID, pub, isPubOpen, isAvailableForDelivery }) => {
 
   const dishInBasket = useSelector(selectDishFromBasket(dish?.id));
 
-  const currency =
-    currencies.find((currency) => currency.id === pub?.currency_id)?.symbol ??
-    "Lei";
-
-  const smallestPrice =
-    dish?.sale_price && dish?.sale_price < dish?.price
-      ? dish?.sale_price
-      : dish?.price;
-
-  const shouldAddCommission =
-    pub?.shipping?.delivery_type === deliveryTypes.deliveryService &&
-    pub?.shipping?.add_commission_to_dish_prices;
-
-  const commission = shouldAddCommission
-    ? pub?.shipping?.commission_for_dish_prices
-    : 0;
+  const prices = getDishPrices(dish, pub);
 
   const dishCount = (dishInBasket && +dishInBasket.count) ?? 0;
 
@@ -68,7 +49,7 @@ const DishCard = ({ dish, pubID, pub, isPubOpen, isAvailableForDelivery }) => {
       increaseDish({
         id: dish?.id,
         pubID: pubID,
-        price: smallestPrice,
+        price: prices.basketPrice,
       }),
     )
   }
@@ -84,7 +65,7 @@ const DishCard = ({ dish, pubID, pub, isPubOpen, isAvailableForDelivery }) => {
               dish: dish,
               dishID: dish?.id,
               pubID: pubID,
-              commission,
+              commission: prices.commission,
               isAvailableForDelivery,
               isPubOpen
             }),
@@ -165,26 +146,21 @@ const DishCard = ({ dish, pubID, pub, isPubOpen, isAvailableForDelivery }) => {
         >
           {/* Prices */}
           <View flexDir={"row"} gap={4}>
-            {/* Striked Higher price */}
-            {
-              //if there is sale, show real price with line-through
-              !!dish?.sale_price && dish?.sale_price < dish?.price && (
-                <Text
-                  fontSize={"md"}
-                  color={"red.500"}
-                  fontWeight="bold"
-                  style={{
-                    textDecorationLine: "line-through",
-                    textDecorationStyle: "solid",
-                  }}
-                >
-                  {addCommissionToPrice(dish?.price, commission)} {currency}
-                </Text>
-              )
-            }
-            {/* Lower price */}
+            {!!prices.oldPrice && (
+              <Text
+                fontSize={"md"}
+                color={"red.500"}
+                fontWeight="bold"
+                style={{
+                  textDecorationLine: "line-through",
+                  textDecorationStyle: "solid",
+                }}
+              >
+                {formatPrice(prices.oldPrice)} {prices.currency}
+              </Text>
+            )}
             <Text fontSize={"md"} color="coolGray.700" fontWeight={"medium"}>
-              {addCommissionToPrice(smallestPrice, commission)} {currency}
+              {formatPrice(prices.price)} {prices.currency}
             </Text>
           </View>
 

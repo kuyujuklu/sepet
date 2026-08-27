@@ -8,41 +8,7 @@ import {
 } from "../../features/store/geolocation/geolocationSlice";
 import * as Location from "expo-location";
 import { useEffect } from "react";
-import { getNearestCity } from "../../shared/utils/cities";
-
-// Turns coordinates into something a person can read. The device geocoder is
-// the good case; when it is unavailable (no Google Play services, no network,
-// a simulator) we fall back to the nearest city we deliver in, so the top bar
-// never has to say "address not set" while we do know roughly where we are.
-const describeCoords = async (coords) => {
-  const nearestCity = getNearestCity(coords);
-
-  try {
-    const [place] = await Location.reverseGeocodeAsync({
-      latitude: coords.lat,
-      longitude: coords.lng,
-    });
-
-    if (place) {
-      const town = place.city || place.subregion || place.region || null;
-      const street = [place.street, place.streetNumber]
-        .filter(Boolean)
-        .join(" ");
-
-      if (town || street) {
-        return {
-          town,
-          fullAddress: street || null,
-          cityId: nearestCity?.id ?? null,
-        };
-      }
-    }
-  } catch (e) {
-    console.log("reverse geocoding failed: ", e);
-  }
-
-  return { town: null, fullAddress: null, cityId: nearestCity?.id ?? null };
-};
+import { describeCoords } from "../../shared/utils/geolocation";
 
 // Bootstraps a location for the whole app.
 //

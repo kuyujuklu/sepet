@@ -46,6 +46,7 @@ const PubInfoPopup = ({ pub, isOpened, onClose }) => {
 
   return (
     <BottomSheet
+      id="pubInfo"
       isOpened={isOpened}
       onClose={onClose}
       title={pub?.name}

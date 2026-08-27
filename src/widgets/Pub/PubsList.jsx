@@ -1,5 +1,5 @@
-import { useMemo } from "react";
-import { FlatList, StyleSheet, Text, View } from "react-native";
+import { useCallback, useMemo } from "react";
+import { FlatList, RefreshControl, StyleSheet, Text, View } from "react-native";
 import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { useNavigation } from "@react-navigation/native";
@@ -17,12 +17,36 @@ const styles = StyleSheet.create({
   emptyText: { textAlign: "center", color: "#6b7280", fontSize: 16 },
 });
 
+export const pubsSortOptions = {
+  rating: "rating",
+  distance: "distance",
+  // "Скорость доставки" - the upper bound of the pub's own delivery-time
+  // estimate (shipping_time_to), because that is the number a client actually
+  // waits up to, not the optimistic lower bound
+  speed: "speed",
+};
+
+export const defaultPubsSort = pubsSortOptions.rating;
+
+// Missing data sorts to the end no matter which order is picked, instead of
+// unpredictably to the top (NaN/undefined comparisons are not reliable)
+const sortComparators = {
+  [pubsSortOptions.rating]: (a, b) => (+b?.rating || 0) - (+a?.rating || 0),
+  [pubsSortOptions.distance]: (a, b) =>
+    (+a?.distance || Infinity) - (+b?.distance || Infinity),
+  [pubsSortOptions.speed]: (a, b) =>
+    (+a?.shipping?.shipping_time_to || Infinity) -
+    (+b?.shipping?.shipping_time_to || Infinity),
+};
+
 // The list of establishments that deliver to the client, filtered by the
 // current section and (optionally) by a category slug. Same data as the
 // dish feed, grouped by place instead of by dish.
 const PubsList = ({
   sectionId,
   categorySlug = "",
+  freeDeliveryOnly = false,
+  sortBy = defaultPubsSort,
   ListHeaderComponent,
   paddingBottom = 110,
 }) => {
@@ -30,16 +54,30 @@ const PubsList = ({
   const navigator = useNavigation();
   const location = useSelector(selectGeolocation);
 
-  const { data: pubsData, isLoading: pubsAreLoading } = useGetNearbyPubsQuery(
+  const {
+    data: pubsData,
+    isLoading: pubsAreLoading,
+    isFetching: pubsAreFetching,
+    refetch: refetchPubs,
+  } = useGetNearbyPubsQuery(
     { coords: { lat: location?.lat, lng: location?.lng } },
-    { skip: !location, pollingInterval: 20000, skipPollingIfUnfocused: true },
+    { skip: !location },
   );
 
-  const { data: categoriesData, isLoading: categoriesAreLoading } =
-    useGetNearbyCategoriesQuery(
-      { coords: { lat: location?.lat, lng: location?.lng } },
-      { skip: !location, pollingInterval: 20000, skipPollingIfUnfocused: true },
-    );
+  const {
+    data: categoriesData,
+    isLoading: categoriesAreLoading,
+    isFetching: categoriesAreFetching,
+    refetch: refetchCategories,
+  } = useGetNearbyCategoriesQuery(
+    { coords: { lat: location?.lat, lng: location?.lng } },
+    { skip: !location },
+  );
+
+  const refetch = useCallback(() => {
+    refetchPubs();
+    refetchCategories();
+  }, [refetchPubs, refetchCategories]);
 
   // pub id -> its visible categories, which is the only thing that says what
   // a pub sells (there is no type/section field on a pub)
@@ -62,19 +100,30 @@ const PubsList = ({
     const filtered = pubsData.pubs.filter((pub) => {
       const categoriesOfPub = categoriesByPub[pub.id] || [];
 
-      if (!pubMatchesSection(categoriesOfPub, sectionId)) return false;
+      if (!pubMatchesSection(categoriesOfPub, sectionId, pub.id)) return false;
 
-      if (!categorySlug) return true;
+      if (categorySlug) {
+        const matchesCategory = categoriesOfPub.some((category) =>
+          category?.category_types?.includes(categorySlug),
+        );
+        if (!matchesCategory) return false;
+      }
 
-      return categoriesOfPub.some((category) =>
-        category?.category_types?.includes(categorySlug),
-      );
+      // shipping_free_delivery_price is the threshold a pub waives delivery
+      // above (the same field the basket screen shows "до бесплатной
+      // доставки не хватает X" from) - a pub with no threshold set does not
+      // offer free delivery at all
+      if (freeDeliveryOnly && !(+pub?.shipping_free_delivery_price > 0)) {
+        return false;
+      }
+
+      return true;
     });
 
     return [...filtered]
-      .sort((a, b) => a.distance - b.distance)
+      .sort(sortComparators[sortBy] ?? sortComparators[defaultPubsSort])
       .sort((a, b) => (a.isOpen === b.isOpen ? 0 : a.isOpen ? -1 : 1));
-  }, [pubsData, categoriesByPub, sectionId, categorySlug]);
+  }, [pubsData, categoriesByPub, sectionId, categorySlug, freeDeliveryOnly, sortBy]);
 
   const openPub = (pub) => {
     track(events.pubOpened, { pub_id: pub?.id, source: "pubs_list" });
@@ -100,6 +149,14 @@ const PubsList = ({
       windowSize={7}
       removeClippedSubviews
       ListHeaderComponent={ListHeaderComponent}
+      refreshControl={
+        <RefreshControl
+          refreshing={pubsAreFetching || categoriesAreFetching}
+          onRefresh={refetch}
+          tintColor="#059669"
+          colors={["#059669"]}
+        />
+      }
       contentContainerStyle={{
         paddingHorizontal: SCREEN_PADDING,
         paddingBottom,

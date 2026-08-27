@@ -106,7 +106,7 @@ const SelectFromPreviousGeolocations = ({ goToSelectGeolocationOnMap }) => {
   const canUseCurrent = !!(location?.lat || nearLocation?.lat);
 
   const selectGeolocationAddress = ({ lat, lng, town, fullAddress }) => {
-    track(events.addressSelected, { source: "saved_list" });
+    track(events.addressSelected, { source: "saved_list", town });
 
     dispatch(setGeolocation({ lat, lng, town, fullAddress }));
     dispatch(setNearGeolocation({ lat, lng }));
@@ -115,7 +115,7 @@ const SelectFromPreviousGeolocations = ({ goToSelectGeolocationOnMap }) => {
   };
 
   const useCurrentLocation = () => {
-    track(events.addressSelected, { source: "current_location" });
+    track(events.addressSelected, { source: "current_location", town: location?.town });
     goToLinkedDestination();
   };
 

@@ -1,10 +1,8 @@
 import { StyleSheet, Text, View } from "react-native";
 import InputWithValidation from "../../../Inputs/InputWithValidation";
 import {
-  validateFullAddress,
   validatePhoneNumber,
   validatePhoneNumberOmitEmpty,
-  validateTown,
 } from "../../../../shared/validation/validators/order/order-validator";
 import { useTranslation } from "react-i18next";
 
@@ -19,12 +17,14 @@ const styles = StyleSheet.create({
 // The checkout screen groups its fields into cards now, so the inputs are
 // rendered per section instead of as one block. No `section` = everything,
 // which keeps the old call sites working.
+//
+// There used to be an "address" section here too (raw town/full-address text
+// inputs) - removed together with its call site in CreateOrder.jsx: it
+// duplicated the address card above it (current-location display + the
+// saved-addresses/add-new picker), with no indication of which one actually
+// won when they disagreed.
 const CreateOrderInputs = ({
   section,
-  town,
-  setTown,
-  fullAddress,
-  setFullAddress,
   phoneNumber,
   setPhoneNumber,
   secondPhoneNumber,
@@ -39,29 +39,6 @@ const CreateOrderInputs = ({
 
   return (
     <View style={styles.block}>
-      {shows("address") && (
-        <>
-          <InputWithValidation
-            value={town}
-            setValue={setTown}
-            label={t("create_order_page.additional_data.inputs.town.label")}
-            keyboardType={"default"}
-            validators={[validateTown]}
-            validatedOutside={validatedOutside}
-          />
-          <InputWithValidation
-            value={fullAddress}
-            setValue={setFullAddress}
-            label={t(
-              "create_order_page.additional_data.inputs.full_address.label",
-            )}
-            keyboardType={"default"}
-            validators={[validateFullAddress]}
-            validatedOutside={validatedOutside}
-          />
-        </>
-      )}
-
       {shows("phones") && (
         <>
           <View style={styles.phoneRow}>

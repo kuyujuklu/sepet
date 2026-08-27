@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
-import { Text, View, Button, Platform } from 'react-native';
+import { Platform } from 'react-native';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
 import { subscribeNotificationTokenOnServer } from '../../../shared/api/notifications-api/subscribe-token';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { selectClient } from '../auth/authSlice';
 import { useTranslation } from 'react-i18next';
+import { appendNotificationToHistory } from '../../../shared/utils/pushNotificationsHistory';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -63,6 +64,7 @@ async function registerForPushNotificationsAsync() {
 }
 
 export default function NotificationHandler() {
+  const dispatch = useDispatch();
   const client = useSelector(selectClient)
   const { i18n } = useTranslation()
 
@@ -78,9 +80,7 @@ export default function NotificationHandler() {
     const checkInitialNotification = async () => {
       const response = await Notifications.getLastNotificationResponseAsync();
       if (response) {
-        const { notification } = response;
-        const data = notification.request.content.data;
-        console.log('App launched from terminated state with notification data:', data);
+        appendNotificationToHistory(dispatch, response.notification);
 
         // You can navigate or handle data here
       }
@@ -90,20 +90,21 @@ export default function NotificationHandler() {
   }, [])
 
   useEffect(() => {
-    subscribeNotificationTokenOnServer()
-
     registerForPushNotificationsAsync()
       .then(token => setExpoPushToken(token ?? ''))
       .catch((error) => setExpoPushToken(`${error}`));
 
     notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
       setNotification(notification);
-      console.log("NOTIFICATION : ", notification)
-      console.log("WAAAAAAFLE: ", notification?.request?.content?.data)
+      appendNotificationToHistory(dispatch, notification);
     });
 
+    // Tapping a notification while the app is running (foreground or
+    // background) fires this instead of/in addition to the listener above -
+    // appendNotificationToHistory dedupes on the notification's own id, so
+    // recording here too never double-counts one push.
     responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
-      console.log(response);
+      appendNotificationToHistory(dispatch, response.notification);
     });
 
     return () => {

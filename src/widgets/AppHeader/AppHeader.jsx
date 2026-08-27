@@ -10,7 +10,6 @@ import {
 } from "../../features/store/geolocation/geolocationSlice";
 import { images } from "../../app/images/images";
 import ProfileButton from "./ProfileButton";
-import SectionSwitcher from "../Sections/SectionSwitcher";
 import { getLocationLabel } from "../../shared/utils/geolocation";
 import { Screens } from "../../app/navigation/screens";
 import { events, track } from "../../shared/analytics/analytics";
@@ -23,8 +22,7 @@ const roundButton = {
   elevation: 2,
 };
 
-// The single top bar of the app: address on the left, profile on the right and
-// - on the browsing screens - the section switcher under them.
+// The single top bar of the app: address on the left, profile on the right.
 // There is no bottom tab bar any more, so `showBack` is the only way back
 // on the inner screens (every stack screen has headerShown: false).
 const AppHeader = ({
@@ -37,9 +35,6 @@ const AppHeader = ({
   // link or a `navigate` that replaced the stack there often is not.
   // Every screen must have a way out to the first screen of the app.
   fallbackScreen = Screens.Home,
-  showSections = false,
-  onSectionChange,
-  screen,
   right,
 }) => {
   const { t } = useTranslation();
@@ -138,10 +133,6 @@ const AppHeader = ({
 
         {right === undefined ? <ProfileButton /> : right}
       </View>
-
-      {showSections && (
-        <SectionSwitcher screen={screen} onChange={onSectionChange} />
-      )}
     </View>
   );
 };

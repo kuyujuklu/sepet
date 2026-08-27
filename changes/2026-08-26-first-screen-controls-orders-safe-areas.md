@@ -193,3 +193,120 @@ text widening it.
 
 **Also from the same screenshot:** the section switcher (Еда / Цветы / Продукты) was cut
 off by the right edge of the screen — it is a horizontal `ScrollView` now.
+
+---
+
+## 2026-08-26 (even later) — reverted the home controls swap, fixed discount pricing, centered every popup
+
+Owner feedback on the redesign above: the categories-strip-and-filters-button trade went
+the wrong way. Categories (Супы, Мясо, Алкоголь, ...) are looked at rarely and belong
+behind a button; the sort/view chips (Хиты, Со скидкой, Ближайшие, Заведения) are used on
+most visits and should be one tap again, the way they were before this file's first
+section. Two unrelated asks came in at the same time: make the discount price
+(`dish.sale_price`) render as struck-through-old + current everywhere, and center every
+popup instead of anchoring it to the bottom.
+
+### 1. Home controls: swapped back
+
+- `src/widgets/TopDishes/TopDishesFilters.jsx` — `FiltersButton`/`FiltersSheet` are gone.
+  Exports `FiltersCarousel` instead: a horizontal scroll of pill chips — **Хиты · Со
+  скидкой · Ближайшие │ Заведения**, divider before the last one because it's a view swap
+  (dish grid → `PubsList`), not a sort — same as it was before this file's first section.
+  `PUBS_FILTER`/`dishFilters`/`pubsFilter` kept; `getFilterLabelKey` deleted (only
+  `FiltersButton` ever called it).
+- Added `src/widgets/FoodCategories/CategoriesButton.jsx` — the compact green pill that
+  used to be `FiltersButton`, now pointed at categories: default label
+  `t("categories.sheet_title")` ("Категории"), swaps to the selected category's caption
+  when one is active. Opens the existing `CategoriesSheet` unchanged.
+- `src/widgets/TopDishes/TopDishesList.jsx` — `controlsRow` now renders
+  `FiltersCarousel` (`flex: 1`) + `CategoriesButton` (fixed), the exact inverse of the
+  previous pairing (`CategoriesCarousel` + `FiltersButton`). One compact row, same
+  mechanics, content swapped — not two full-width rows again, since a single button no
+  longer needs the space a whole category carousel did. `showCarousel` prop renamed
+  `showCategoriesButton` (nothing outside this file ever set it). Dropped the
+  `areFiltersOpened` state/sheet; chips call `changeFilter` directly now.
+- Removed the now-dead `home_page.top_dishes.{filters_button,filters_title,
+  filters_dishes_group,filters_pubs_group}` keys from all three locale files. No new keys
+  needed anywhere.
+- `src/widgets/FoodCategories/CategoriesCarousel/CategoriesCarousel.jsx` is unused again
+  (nothing imports the component itself any more, only `CategoryChip` from its folder) —
+  left in place, same call as `PubsMap`/`PubList` in the 2026-08-24 note.
+- The "Скидки" chip needed no logic change: `getPubDishes` in `shared/utils/topDishes.js`
+  already filters to `hasDiscount(dish)` when `filter === deals` (not just a re-sort) —
+  picking that chip already shows only sale-priced dishes, sorted by biggest discount
+  first. This was true before today too.
+
+### 2. Discount price shown consistently
+
+`src/shared/utils/dish.js`'s `getDishPrices`/`hasDiscount` were already the intended
+single source of truth and already correct; most surfaces (`DishRow`, `TopDishCard`,
+`DishImagePopup`, `BasketItemRow`) already used them. Two gaps fixed:
+
+- `src/widgets/Dish/DishCard.jsx` (still live — it's what `DishList.jsx` renders for the
+  "list view" inside a pub's menu) had its own copy of the commission/discount math
+  instead of calling `getDishPrices`, with a real bug: `dish.price`/`dish.sale_price` are
+  strings from the API, and its local `addCommissionToPrice` did
+  `price + (price/100)*commission` — with a string `price` the `+` concatenates instead of
+  adding (`"45.50" + 2.28` → `"45.502.28"`), and nothing rounded the result through
+  `formatPrice`. Replaced with `getDishPrices(dish, pub)` + `formatPrice()`, kept the
+  card's own red strikethrough color. `increaseDish`/`openDishImagePopup` now pass
+  `prices.basketPrice`/`prices.commission` instead of the old local variables.
+- `src/widgets/Orders/CreateOrder/CreateOrder.jsx`'s checkout review list showed only the
+  paid line total, no old price. Added `getDishPrices(dish, pub)` per line and, when
+  `prices.oldPrice` is set, a small strikethrough `oldPrice * count` above the current line
+  total — same stacked-right layout `BasketItemRow.jsx` already uses.
+
+Left alone: `DishImagePopup.jsx` already computed and showed the strikethrough correctly;
+it just does the math locally because its redux popup state only carries `commission`, not
+the full `pub` object, and threading `pub` through there just for this would be pure churn.
+Noticed but out of scope: `DishImagePopup.jsx` hardcodes `"Lei"` instead of the pub's
+currency symbol.
+
+### 3. Every popup is now a centered dialog
+
+All 9 popups in the app (5 mounted globally in `App.js`, plus `PubInfoPopup`,
+`CategoriesSheet`, `AddressPickerSheet`, and `FiltersSheet` before it was deleted above)
+render through one shared component, so this was a single-file change:
+`src/widgets/Common/BottomSheet.jsx`.
+
+- `overlay`: `justifyContent: "flex-end"` → `justifyContent/alignItems: "center"`, plus
+  `padding: SCREEN_PADDING` so the dialog never touches the screen edge.
+- `sheet`: rounded on all four corners now (was top-only), `width: "100%"` capped at
+  `maxWidth: 440` and `maxHeight: "80%"` — capped instead of letting the box grow to
+  content, so a long list (all categories, saved addresses) scrolls inside the dialog via
+  the existing `scrollable` prop rather than stretching it off-screen.
+- Removed the drag `handle` (a bottom-sheet affordance with no meaning once centered — ✕
+  and the backdrop tap remain the two ways to dismiss) and the Android
+  `marginBottom: -64`/`paddingBottom: 64` overshoot hack from the section above (it only
+  existed to bleed a bottom-anchored sheet past the nav bar; irrelevant once the box floats
+  with margin on every side). Also dropped the `useSafeAreaInsets` bottom padding on
+  `body` for the same reason.
+- `animationType`: `"slide"` → `"fade"`.
+- Collapsed the sheet's `View` + the stop-propagation `Pressable` into one `Pressable`
+  carrying `styles.sheet` directly. This isn't just tidying: `width: "100%"` only resolves
+  against a parent with a real width, and the old wrapper `Pressable` had none (it
+  shrink-wrapped its child) — nesting it that way would have left the percentage with
+  nothing to resolve against once `overlay` stopped stretching its children.
+
+No changes needed in any of the 9 individual popup files - they only ever passed
+title/subtitle/children into `BottomSheet`.
+
+## Backend gaps (this section)
+
+None - everything above is client-side layout/logic; the discount field
+(`dish.sale_price`) and the deals filter already existed and needed no API change.
+
+## Known limits / follow-ups (this section)
+
+- Not run on a device or in the simulator this session — verified with
+  `npx expo export --platform ios` only (whole module graph resolves/compiles) plus
+  reading every touched file back. Worth a manual pass: the four home chips (especially
+  Заведения swapping to `PubsList` and back), a sale dish through feed → detail popup →
+  pub menu list → basket → checkout, and every popup's centered layout including the two
+  long lists (`CategoriesSheet`, `AddressPickerSheet`) actually scrolling inside the capped
+  box instead of overflowing it.
+- `maxWidth: 440` on the dialog was picked to look reasonable on both a phone and a tablet;
+  nobody has actually checked it on a tablet.
+- `CategoriesCarousel.jsx` (the carousel component, not `CategoryChip`) is dead code again;
+  flagged, not deleted, per this repo's usual call on code left over from a reverted
+  direction.

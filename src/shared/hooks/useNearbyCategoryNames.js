@@ -14,12 +14,12 @@ export const useNearbyCategoryNames = () => {
 
   const { data: nearCategoriesData } = useGetNearbyCategoriesQuery(
     { coords: { lat: location?.lat, lng: location?.lng } },
-    { skip: !location, pollingInterval: 20000, skipPollingIfUnfocused: true },
+    { skip: !location },
   );
 
   const { data: nearPubsData } = useGetNearbyPubsQuery(
     { coords: { lat: location?.lat, lng: location?.lng } },
-    { skip: !location, pollingInterval: 20000, skipPollingIfUnfocused: true },
+    { skip: !location },
   );
 
   return useMemo(() => {

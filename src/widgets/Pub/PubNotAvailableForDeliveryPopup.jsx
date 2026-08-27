@@ -28,6 +28,7 @@ const PubNotAvailableForDeliveryPopup = () => {
 
   return (
     <BottomSheet
+      id="pubNotAvailable"
       isOpened={popupState.isOpened}
       onClose={close}
       title={t("pub_not_available_for_delivery.title")}

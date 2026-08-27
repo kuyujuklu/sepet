@@ -20,6 +20,7 @@ const RemoveDishPopup = () => {
 
   return (
     <BottomSheet
+      id="removeDish"
       isOpened={popup.isOpened}
       onClose={close}
       title={t("basket_page.remove_dish.title")}

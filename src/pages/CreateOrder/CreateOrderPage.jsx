@@ -30,12 +30,12 @@ const CreateOrderPage = ({ route }) => {
 
   const { data: pubsData } = useGetNearbyPubsQuery(
     { coords: { lat: location?.lat, lng: location?.lng } },
-    { skip: !location, pollingInterval: 20000, skipPollingIfUnfocused: true },
+    { skip: !location },
   );
 
   const { data: pubData, isLoading: isPubLoading } = useGetPubInfoQuery(
     { pubID },
-    { pollingInterval: 20000, skip: !pubID, skipPollingIfUnfocused: true },
+    { skip: !pubID },
   );
 
   const pub = pubData?.pub;

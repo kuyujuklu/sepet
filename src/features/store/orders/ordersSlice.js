@@ -1,4 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { orderStatuses } from "../../../app/static-data/data";
 
 const initialState = {
   orders: [],
@@ -48,5 +49,14 @@ export const ordersSlice = createSlice({
 export const { setOrders, addOrder, updateOrder } = ordersSlice.actions;
 
 export const selectOrders = (state) => state.orders.orders;
+
+// Anything the client can still expect something to happen with - used by the
+// home screen to offer a way back into an order in progress
+export const selectActiveOrders = (state) =>
+  state.orders.orders.filter(
+    (order) =>
+      order?.status !== orderStatuses.completed &&
+      order?.status !== orderStatuses.canceled,
+  );
 
 export default ordersSlice.reducer;

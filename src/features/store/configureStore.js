@@ -12,6 +12,7 @@ import sectionReducer from "./sections/sectionSlice";
 import basketReducer from "./basket/basketSlice";
 import ordersReducer from "./orders/ordersSlice";
 import dishImagePopupReducer from "./dishes/dishesSlice";
+import notificationsHistoryReducer from "./notifications/notificationsHistorySlice";
 import { setupListeners } from "@reduxjs/toolkit/query";
 import { pubsApi } from "../../shared/api/pubs/pubsApi";
 import { categoriesApi } from "../../shared/api/categories/categoriesApi";
@@ -36,6 +37,7 @@ export const store = configureStore({
     section: sectionReducer,
     auth: authReducer,
     linking: linkingReducer,
+    notificationsHistory: notificationsHistoryReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware()

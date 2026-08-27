@@ -1,7 +1,7 @@
 import { memo } from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
-import BottomSheet from "../Common/BottomSheet";
 import { topDishesFilters } from "../../shared/utils/topDishes";
 
 // Not a feed filter but a view: it swaps the dish grid for the list of
@@ -11,149 +11,117 @@ export const PUBS_FILTER = "pubs";
 const dishFilters = [
   { value: topDishesFilters.top, labelKey: "home_page.top_dishes.filter_top" },
   { value: topDishesFilters.deals, labelKey: "home_page.top_dishes.filter_deals" },
-  { value: topDishesFilters.near, labelKey: "home_page.top_dishes.filter_near" },
 ];
 
-const pubsFilter = {
-  value: PUBS_FILTER,
-  labelKey: "home_page.top_dishes.filter_pubs",
-};
-
-export const getFilterLabelKey = (value) =>
-  [...dishFilters, pubsFilter].find((filter) => filter.value === value)
-    ?.labelKey ?? dishFilters[0].labelKey;
-
-const buttonStyles = StyleSheet.create({
-  button: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
+// Same pill language as the compact CategoryChip - white/bordered by default,
+// solid green when selected - so the two chip rows that occupy this spot
+// (categories, before; this, now) never feel like two different apps.
+const styles = StyleSheet.create({
+  chip: {
     height: 40,
+    justifyContent: "center",
     paddingHorizontal: 14,
     borderRadius: 20,
-    backgroundColor: "#059669",
-  },
-  // The categories share the row with it, so the button takes as little of
-  // that row as it can: one line, and no second line repeating the default
-  label: { fontSize: 13, fontWeight: "bold", color: "#fff" },
-  glyph: { fontSize: 13, color: "#fff" },
-});
-
-// The button that replaced the second carousel on the home screen. While the
-// feed is in its default order it just says "filters"; as soon as something
-// is applied it says what, because the filters themselves are now hidden
-// inside the sheet.
-export const FiltersButton = memo(({ selectedFilter, onPress, style }) => {
-  const { t } = useTranslation();
-
-  const isDefault = selectedFilter === dishFilters[0].value;
-
-  return (
-    <TouchableOpacity activeOpacity={0.85} onPress={onPress} style={style}>
-      <View style={buttonStyles.button}>
-        <Text style={buttonStyles.glyph}>☰</Text>
-
-        <Text numberOfLines={1} style={buttonStyles.label}>
-          {isDefault
-            ? t("home_page.top_dishes.filters_button")
-            : t(getFilterLabelKey(selectedFilter))}
-        </Text>
-      </View>
-    </TouchableOpacity>
-  );
-});
-
-const sheetStyles = StyleSheet.create({
-  group: { gap: 8 },
-  groupTitle: {
-    fontSize: 13,
-    color: "#6b7280",
-    marginBottom: 2,
-  },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    borderRadius: 18,
     borderWidth: 1,
     borderColor: "#e4e4e7",
     backgroundColor: "#fff",
   },
-  rowSelected: { borderColor: "#059669", backgroundColor: "#ecfdf5" },
-  rowLabel: { flex: 1, fontSize: 16, color: "#111" },
-  rowLabelSelected: { fontWeight: "bold", color: "#047857" },
-  check: { fontSize: 16, color: "#059669", fontWeight: "bold" },
-  divider: { height: 16 },
+  chipSelected: {
+    backgroundColor: "#059669",
+    borderColor: "#059669",
+  },
+  label: { fontSize: 13, color: "#3f3f46" },
+  labelSelected: { color: "#fff", fontWeight: "bold" },
+  row: { flexDirection: "row", alignItems: "center", gap: 8 },
+  searchButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "#e4e4e7",
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
+  },
 });
 
-// One sheet for both questions the row used to ask: how to sort the dishes,
-// and whether to look at places instead of dishes.
-export const FiltersSheet = ({
-  isOpened,
-  onClose,
+const Chip = ({ label, isSelected, onPress }) => (
+  <TouchableOpacity activeOpacity={0.85} onPress={onPress}>
+    <View style={[styles.chip, isSelected && styles.chipSelected]}>
+      <Text
+        numberOfLines={1}
+        style={[styles.label, isSelected && styles.labelSelected]}
+      >
+        {label}
+      </Text>
+    </View>
+  </TouchableOpacity>
+);
+
+// Хиты · Со скидкой scroll on the left; Все рестораны/цветочные/продуктовые
+// (section-dependent - the caller resolves the label, this component just
+// renders whatever string it is given) is a fixed element pinned to the
+// right, outside the scroll - it is not a sort of the same feed, it swaps
+// the dish grid for the list of places, so it should never be one swipe away
+// from scrolling out of sight.
+const FiltersCarouselComponent = ({
   selectedFilter,
-  selectFilter,
+  onSelect,
+  pubsLabel,
   showPubsFilter = true,
+  onSearchPress,
+  contentPadding = 0,
 }) => {
   const { t } = useTranslation();
 
-  const renderRow = (filter) => {
-    const isSelected = filter.value === selectedFilter;
-
-    return (
-      <TouchableOpacity
-        key={filter.value}
-        activeOpacity={0.85}
-        onPress={() => {
-          selectFilter(filter.value);
-          onClose?.();
+  return (
+    <View style={styles.row}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={{ flex: 1 }}
+        contentContainerStyle={{
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 8,
+          paddingHorizontal: contentPadding,
         }}
       >
-        <View style={[sheetStyles.row, isSelected && sheetStyles.rowSelected]}>
-          <Text
-            style={[
-              sheetStyles.rowLabel,
-              isSelected && sheetStyles.rowLabelSelected,
-            ]}
-          >
-            {t(filter.labelKey)}
-          </Text>
-          {isSelected && <Text style={sheetStyles.check}>✓</Text>}
-        </View>
-      </TouchableOpacity>
-    );
-  };
+        {dishFilters.map((filter) => (
+          <Chip
+            key={filter.value}
+            label={t(filter.labelKey)}
+            isSelected={filter.value === selectedFilter}
+            onPress={() => onSelect(filter.value)}
+          />
+        ))}
+      </ScrollView>
 
-  return (
-    <BottomSheet
-      isOpened={isOpened}
-      onClose={onClose}
-      title={t("home_page.top_dishes.filters_title")}
-      scrollable
-    >
-      <View style={sheetStyles.group}>
-        <Text style={sheetStyles.groupTitle}>
-          {t("home_page.top_dishes.filters_dishes_group")}
-        </Text>
-        {dishFilters.map(renderRow)}
-      </View>
-
-      {showPubsFilter && (
-        <>
-          <View style={sheetStyles.divider} />
-
-          <View style={sheetStyles.group}>
-            <Text style={sheetStyles.groupTitle}>
-              {t("home_page.top_dishes.filters_pubs_group")}
-            </Text>
-            {renderRow(pubsFilter)}
+      {/* Between the sort chips and "Все X" on purpose - a fixed, unmissable
+          icon rather than one more thing that can scroll out of sight */}
+      {!!onSearchPress && (
+        <TouchableOpacity
+          activeOpacity={0.85}
+          onPress={onSearchPress}
+          accessibilityLabel={t("home_page.top_dishes.search_accessibility_label")}
+        >
+          <View style={styles.searchButton}>
+            <Ionicons name="search" size={18} color="#3f3f46" />
           </View>
-        </>
+        </TouchableOpacity>
       )}
-    </BottomSheet>
+
+      {showPubsFilter && !!pubsLabel && (
+        <Chip
+          label={pubsLabel}
+          isSelected={selectedFilter === PUBS_FILTER}
+          onPress={() => onSelect(PUBS_FILTER)}
+        />
+      )}
+    </View>
   );
 };
 
-export default FiltersSheet;
+export const FiltersCarousel = memo(FiltersCarouselComponent);
+
+export default FiltersCarousel;

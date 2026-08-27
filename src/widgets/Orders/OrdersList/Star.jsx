@@ -1,10 +1,10 @@
 import { Image } from "expo-image";
-import { View } from "native-base";
+import { View } from "react-native";
 import { images } from "../../../app/images/images";
 
-const Star = ({empty}) => {
+const Star = ({ empty, size = 20 }) => {
   return (
-    <View style={{ width: 20, height: 20 }}>
+    <View style={{ width: size, height: size }}>
       <Image
         width={"100%"}
         height={"100%"}

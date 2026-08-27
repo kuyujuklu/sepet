@@ -24,6 +24,7 @@ import BasketPage from "./src/pages/Basket/BasketPage";
 import CreateOrderPage from "./src/pages/CreateOrder/CreateOrderPage";
 import OrdersPage from "./src/pages/Orders/OrdersPage";
 import ProfilePage from "./src/pages/Profile/ProfilePage";
+import NotificationsPage from "./src/pages/Notifications/NotificationsPage";
 import SelectGeolocationPage from "./src/pages/Geolocation/SelectGeolocationPage";
 import SectionPickerPage from "./src/pages/Sections/SectionPickerPage";
 import OrdersPreloader from "./src/features/store/orders/OrdersPreloader";
@@ -32,7 +33,11 @@ import { Screens } from "./src/app/navigation/screens";
 
 import "./src/i18n/i18n.config";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
+import { Platform } from "react-native";
+import * as Linking from "expo-linking";
+import * as NavigationBar from "expo-navigation-bar";
+import { resolveDeepLinkDestination } from "./src/shared/utils/deepLink";
 import { trackScreen } from "./src/shared/analytics/analytics";
 import { useTranslation } from "react-i18next";
 import NotificationHandler from "./src/features/store/notifications/NotificationHandler";
@@ -41,6 +46,8 @@ import DishImagePopup from "./src/widgets/Dish/DishImagePopup";
 import ChangePassword from "./src/pages/Auth/ChangePassword/ChangePassword";
 import OrderInfoPage from "./src/pages/Orders/OrderInfoPage";
 import { setSavedAddresses } from "./src/features/store/geolocation/geolocationSlice";
+import { setNotificationsHistory } from "./src/features/store/notifications/notificationsHistorySlice";
+import { readNotificationsHistory } from "./src/shared/utils/pushNotificationsHistory";
 import InternetChecker from "./src/widgets/InternetChecker";
 import NoInternetPage from "./src/pages/Internet/NoInternetPage";
 import DeleteClientPopup from "./src/widgets/Client/DeleteClientPopup";
@@ -93,6 +100,34 @@ const AppInner = () => {
   // "did the screen actually change" check reliable across batched renders
   const previousRouteName = useRef(null);
 
+  // useLinkingURL (unlike useURL) reads the launch URL through a synchronous
+  // native call, so it is already known on this very first render - in time
+  // to pick the Stack.Navigator's initialRouteName before it ever mounts.
+  // That is what keeps a cold start from a deep link (e.g. a pub link shared
+  // from the web) from flashing the section picker before redirecting: the
+  // picker is simply never mounted.
+  // initialRouteName/initialParams below are only ever read by
+  // Stack.Navigator at mount time, so this must stay frozen at the value
+  // useLinkingURL returned on the first render - recomputing it if a new
+  // link arrives later (deps: []) would just be discarded by react-navigation
+  // and would misleadingly suggest this reacts to warm-start links too.
+  const initialUrl = Linking.useLinkingURL();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const initialDestination = useMemo(() => resolveDeepLinkDestination(initialUrl), []);
+
+  // The app has no dark theme of its own - every screen is a light
+  // background, always. With `userInterfaceStyle: "automatic"`, Android's
+  // edge-to-edge nav bar buttons otherwise follow the *system* theme: on a
+  // phone set to dark mode they render light/white and vanish against this
+  // app's always-light screens (the status bar has the same fix already,
+  // forced to "dark" above - this is the equivalent for the nav bar, which
+  // has no such prop on <StatusBar>).
+  useEffect(() => {
+    if (Platform.OS === "android") {
+      NavigationBar.setButtonStyleAsync("dark").catch(() => {});
+    }
+  }, []);
+
   //i18n set language
   useEffect(() => {
     (async function() {
@@ -120,6 +155,12 @@ const AppInner = () => {
       }
     })();
   }, []);
+  //load accumulated push notifications history
+  useEffect(() => {
+    readNotificationsHistory().then((history) => {
+      dispatch(setNotificationsHistory(history));
+    });
+  }, []);
 
 
   return (
@@ -143,8 +184,10 @@ const AppInner = () => {
       <Stack.Navigator
         // The app opens with the section question, not with an address form:
         // the location is guessed in the background and the exact address is
-        // collected at checkout
-        initialRouteName={Screens.SectionPicker}
+        // collected at checkout. But a cold start from a deep link (a pub
+        // link shared from the web, an order link, ...) already knows where
+        // it's going, so it skips the question and opens straight there.
+        initialRouteName={initialDestination?.screen ?? Screens.SectionPicker}
         screenOptions={{ headerShown: false }}
       >
 
@@ -157,12 +200,29 @@ const AppInner = () => {
         <Stack.Screen name={Screens.Registration} component={Registration} />
         <Stack.Screen name={Screens.Authentication} component={Authentication} />
         <Stack.Screen name={Screens.ChangePassword} component={ChangePassword} />
-        <Stack.Screen name={Screens.PubInfo} component={PubInfoPage} />
+        <Stack.Screen
+          name={Screens.PubInfo}
+          component={PubInfoPage}
+          initialParams={
+            initialDestination?.screen === Screens.PubInfo
+              ? initialDestination.params
+              : undefined
+          }
+        />
         <Stack.Screen name={Screens.Basket} component={BasketPage} />
         <Stack.Screen name={Screens.CreateOrder} component={CreateOrderPage} />
         <Stack.Screen name={Screens.Orders} component={OrdersPage} />
-        <Stack.Screen name={Screens.OrderInfoPage} component={OrderInfoPage} />
+        <Stack.Screen
+          name={Screens.OrderInfoPage}
+          component={OrderInfoPage}
+          initialParams={
+            initialDestination?.screen === Screens.OrderInfoPage
+              ? initialDestination.params
+              : undefined
+          }
+        />
         <Stack.Screen name={Screens.Profile} component={ProfilePage} />
+        <Stack.Screen name={Screens.Notifications} component={NotificationsPage} />
         <Stack.Screen name={Screens.NoInternetPage} component={NoInternetPage} />
         <Stack.Screen name={Screens.ExpiredVersionPage} component={ExpiredVersionPage} />
       </Stack.Navigator>

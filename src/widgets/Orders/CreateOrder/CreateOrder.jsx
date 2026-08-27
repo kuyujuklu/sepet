@@ -13,7 +13,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigation } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import CreateOrderInputs from "./CreateOrderInputs/CreateOrderInputs";
-import AddressPickerSheet from "./AddressPickerSheet";
 import BasketSummary from "../../Basket/BasketSummary";
 import { validateOrder } from "../../../shared/validation/validators/order/order-validator";
 import { useCreateOrderMutation } from "../../../shared/api/ordersApi/ordersApi";
@@ -31,11 +30,13 @@ import { addOrder } from "../../../features/store/orders/ordersSlice";
 import { selectClient } from "../../../features/store/auth/authSlice";
 import {
   selectIsApproximateGeolocation,
+  selectSavedAddresses,
   setGeolocation,
 } from "../../../features/store/geolocation/geolocationSlice";
 import { appendSavedAddress } from "../../../shared/utils/savedAddresses";
-import { formatPrice } from "../../../shared/utils/dish";
+import { formatPrice, getDishPrices } from "../../../shared/utils/dish";
 import { getBasketItemPrice } from "../../../shared/utils/basket";
+import { useSafeBottomInset } from "../../../shared/hooks/useSafeBottomInset";
 import { SCREEN_PADDING } from "../../../constants/layout";
 import { getLocationLabel } from "../../../shared/utils/geolocation";
 import { images } from "../../../app/images/images";
@@ -79,6 +80,25 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   addressButtonText: { fontSize: 14, color: "#047857", fontWeight: "bold" },
+  saveToggle: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    marginTop: 12,
+    paddingHorizontal: 2,
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderRadius: 6,
+    borderWidth: 1.5,
+    borderColor: "#c4c4c8",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  checkboxChecked: { backgroundColor: "#059669", borderColor: "#059669" },
+  checkboxMark: { color: "#fff", fontSize: 13, fontWeight: "bold" },
+  saveToggleText: { flex: 1, fontSize: 13, color: "#3f3f46", lineHeight: 18 },
   // The floating label of an input travels above the field, so the block needs
   // headroom or the label lands on the card title
   inputs: { marginTop: 22 },
@@ -121,6 +141,11 @@ const styles = StyleSheet.create({
   lineName: { flex: 1, fontSize: 14, color: "#3f3f46" },
   lineCount: { fontSize: 13, color: "#6b7280" },
   linePrice: { fontSize: 14, fontWeight: "500", color: "#111" },
+  oldLinePrice: {
+    fontSize: 12,
+    color: "#9ca3af",
+    textDecorationLine: "line-through",
+  },
   time: {
     flexDirection: "row",
     alignItems: "center",
@@ -128,15 +153,24 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   timeText: { fontSize: 13, color: "#6b7280" },
-  bottomBar: {
+  // Two layers on purpose. The outer one reaches the true bottom edge and
+  // carries the safe-area clearance as plain padding - same background, no
+  // border, so it reads as ordinary bottom padding rather than part of the
+  // button's own backdrop (that reading is what made the button look like it
+  // was floating high inside an oversized box). The inner one is the actual
+  // visible card: a snug, fixed padding around the button and the border
+  // that frames it, unaffected by how tall the safe area happens to be.
+  bottomBarSafeArea: {
     position: "absolute",
     left: 0,
     right: 0,
     bottom: 0,
+    backgroundColor: "#f5f5f5",
+  },
+  bottomBar: {
     paddingHorizontal: SCREEN_PADDING,
     paddingTop: 12,
     paddingBottom: 12,
-    backgroundColor: "#f5f5f5",
     borderTopWidth: 1,
     borderTopColor: "#e8e8ea",
   },
@@ -180,6 +214,7 @@ const CreateOrder = ({
   const { t } = useTranslation();
   const navigator = useNavigation();
   const dispatch = useDispatch();
+  const bottomBarInset = useSafeBottomInset();
 
   const [town, setTown] = useState();
   const [fullAddress, setFullAddress] = useState();
@@ -187,10 +222,19 @@ const CreateOrder = ({
   const [secondPhoneNumber, setSecondPhoneNumber] = useState("");
   const [comments, setComments] = useState("");
   const [paymentType, setPaymentType] = useState(orderPaymentTypes.cash);
-  const [isAddressPickerOpened, setIsAddressPickerOpened] = useState(false);
+  // Only meaningful while the current address is not already a saved one
+  // (see isCurrentAddressSaved below) - defaults to the old, only behavior
+  // (always remember it) so nobody who never notices the toggle sees anything
+  // change.
+  const [shouldSaveAddress, setShouldSaveAddress] = useState(true);
 
   const client = useSelector(selectClient);
   const isApproximateLocation = useSelector(selectIsApproximateGeolocation);
+  const savedAddresses = useSelector(selectSavedAddresses) ?? [];
+
+  const isCurrentAddressSaved = savedAddresses.some(
+    (address) => address?.town === town && address?.fullAddress === fullAddress,
+  );
 
   useEffect(() => {
     if (!client) return;
@@ -315,8 +359,9 @@ const CreateOrder = ({
   useEffect(() => {
     if (!createOrderResponse || !createOrderResponse.ok) return;
 
-    // Checkout is where the real address is collected now, so this is where it
-    // gets remembered: the top bar and the next order both read it back.
+    // The top bar and the next order both read the current location back, so
+    // it always moves here regardless of the save toggle below - that toggle
+    // only decides whether this address also joins the *saved* list.
     dispatch(
       setGeolocation({
         lat: location?.lat,
@@ -325,12 +370,15 @@ const CreateOrder = ({
         fullAddress,
       }),
     );
-    appendSavedAddress(dispatch, {
-      town,
-      fullAddress,
-      lat: location?.lat,
-      lng: location?.lng,
-    });
+
+    if (shouldSaveAddress && !isCurrentAddressSaved) {
+      appendSavedAddress(dispatch, {
+        town,
+        fullAddress,
+        lat: location?.lat,
+        lng: location?.lng,
+      });
+    }
 
     dispatch(addOrder(createOrderResponse.order));
     dispatch(clearBasket());
@@ -393,11 +441,13 @@ const CreateOrder = ({
             </View>
           </View>
 
-          {/* One entry point: the sheet holds both the saved addresses and
-              the way to add a new one on the map */}
+          {/* Straight to the same "Сменить локацию" screen every other
+              address entry point in the app uses - it already has both the
+              saved-addresses list and "Добавить новый адрес" on the map, so
+              a second, checkout-only picker sheet was just a duplicate */}
           <TouchableOpacity
             activeOpacity={0.8}
-            onPress={() => setIsAddressPickerOpened(true)}
+            onPress={() => navigator.navigate("SelectGeolocationPage")}
           >
             <View style={styles.addressButton}>
               <Text style={styles.addressButtonText}>
@@ -406,15 +456,29 @@ const CreateOrder = ({
             </View>
           </TouchableOpacity>
 
-          <View style={styles.inputs} />
-          <CreateOrderInputs
-            section="address"
-            town={town}
-            setTown={setTown}
-            fullAddress={fullAddress}
-            setFullAddress={setFullAddress}
-            validatedOutside={triedToSubmit}
-          />
+          {/* Nothing to decide once the address already lives in the saved
+              list - re-saving it would just be a no-op */}
+          {!!town && !!fullAddress && !isCurrentAddressSaved && (
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => setShouldSaveAddress((was) => !was)}
+              style={styles.saveToggle}
+            >
+              <View
+                style={[
+                  styles.checkbox,
+                  shouldSaveAddress && styles.checkboxChecked,
+                ]}
+              >
+                {shouldSaveAddress && (
+                  <Text style={styles.checkboxMark}>✓</Text>
+                )}
+              </View>
+              <Text style={styles.saveToggleText}>
+                {t("create_order_page.address.save_toggle")}
+              </Text>
+            </TouchableOpacity>
+          )}
         </Card>
 
         {/* Contacts */}
@@ -472,17 +536,28 @@ const CreateOrder = ({
 
         {/* Order */}
         <Card title={t("create_order_page.order.title")} hint={pub?.name}>
-          {items.map(({ dish, item }) => (
-            <View key={dish.id} style={styles.line}>
-              <Text style={styles.lineName} numberOfLines={1}>
-                {dish?.name}
-              </Text>
-              <Text style={styles.lineCount}>× {item?.count}</Text>
-              <Text style={styles.linePrice}>
-                {formatPrice(getBasketItemPrice(item, pub))} {currency}
-              </Text>
-            </View>
-          ))}
+          {items.map(({ dish, item }) => {
+            const prices = getDishPrices(dish, pub);
+
+            return (
+              <View key={dish.id} style={styles.line}>
+                <Text style={styles.lineName} numberOfLines={1}>
+                  {dish?.name}
+                </Text>
+                <Text style={styles.lineCount}>× {item?.count}</Text>
+                <View style={{ alignItems: "flex-end" }}>
+                  <Text style={styles.linePrice}>
+                    {formatPrice(getBasketItemPrice(item, pub))} {currency}
+                  </Text>
+                  {!!prices.oldPrice && (
+                    <Text style={styles.oldLinePrice}>
+                      {formatPrice(prices.oldPrice * (+item?.count || 0))} {currency}
+                    </Text>
+                  )}
+                </View>
+              </View>
+            );
+          })}
 
           {isShippingTimeAvailable && (
             <View style={styles.time}>
@@ -504,37 +579,34 @@ const CreateOrder = ({
         </Card>
       </ScrollView>
 
-      <AddressPickerSheet
-        isOpened={isAddressPickerOpened}
-        onClose={() => setIsAddressPickerOpened(false)}
-      />
-
-      <View style={styles.bottomBar}>
-        <TouchableOpacity
-          activeOpacity={0.85}
-          onPress={sendData}
-          disabled={isCreateOrderLoading}
-        >
-          <View
-            style={[
-              styles.submit,
-              (!areInputsValid || isCreateOrderLoading) && styles.submitDisabled,
-            ]}
+      <View style={[styles.bottomBarSafeArea, { paddingBottom: bottomBarInset }]}>
+        <View style={styles.bottomBar}>
+          <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={sendData}
+            disabled={isCreateOrderLoading}
           >
-            {isCreateOrderLoading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <>
-                <Text style={styles.submitText}>
-                  {t("create_order_page.additional_data.create_order_button")}
-                </Text>
-                <Text style={styles.submitText}>
-                  {formatPrice(totalSum)} {currency}
-                </Text>
-              </>
-            )}
-          </View>
-        </TouchableOpacity>
+            <View
+              style={[
+                styles.submit,
+                (!areInputsValid || isCreateOrderLoading) && styles.submitDisabled,
+              ]}
+            >
+              {isCreateOrderLoading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <>
+                  <Text style={styles.submitText}>
+                    {t("create_order_page.additional_data.create_order_button")}
+                  </Text>
+                  <Text style={styles.submitText}>
+                    {formatPrice(totalSum)} {currency}
+                  </Text>
+                </>
+              )}
+            </View>
+          </TouchableOpacity>
+        </View>
       </View>
     </KeyboardAvoidingView>
   );
