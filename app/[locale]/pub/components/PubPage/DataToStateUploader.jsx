@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { setData, setNearbyPubs } from "../../store/pubInfoSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { setBasketPubID } from "../../store/basketSlice";
-import { selectLocation } from "../../store/locationSlice";
+import { selectLocation, selectGeoCoords } from "../../store/locationSlice";
 import { useGetPubWithShippingPricesQuery } from "../../api/rtk-query/pubs";
 import { getLatLngForLocation } from "../../../../utils/location";
 
@@ -12,8 +12,11 @@ const DataToStateUploader = ({ data, pubName }) => {
   const dispatch = useDispatch();
 
   const location = useSelector(selectLocation)
+  const geoCoords = useSelector(selectGeoCoords)
 
-  const locationLatLng = getLatLngForLocation(location)
+  // The client's real, browser-detected position wins over the picked
+  // city's fixed center point whenever we have it (see BasketPreloader.jsx).
+  const locationLatLng = geoCoords ?? getLatLngForLocation(location)
   const {
     data: pubDataWithLocation,
     isLoading: pubIsLoading,
@@ -24,7 +27,7 @@ const DataToStateUploader = ({ data, pubName }) => {
       lat: locationLatLng.lat,
       lng: locationLatLng.lng,
     },
-    { skip: !location || !pubName, pollingInterval: 20000, skipPollingIfUnfocused: true },
+    { skip: (!location && !geoCoords) || !pubName, pollingInterval: 20000, skipPollingIfUnfocused: true },
   );
 
   useEffect(() => {

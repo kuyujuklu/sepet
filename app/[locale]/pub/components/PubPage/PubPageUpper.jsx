@@ -1,13 +1,14 @@
 import { useContext, useEffect } from "react";
 import { ThemeContext } from "./ThemeContextProvider";
 import { useSelector, useDispatch } from "react-redux";
-import { selectLocation, openSelectLocationPopup } from "../../store/locationSlice";
+import { selectLocation, selectGeoCoords, openSelectLocationPopup } from "../../store/locationSlice";
 import { useTranslation } from "react-i18next";
-import { translateLocation } from "../../../../utils/location";
+import { getLocationDisplayLabel } from "../../../../utils/location";
 
 const PubPageUpper = ({ pub }) => {
   const themeContext = useContext(ThemeContext);
   const location = useSelector(selectLocation)
+  const geoCoords = useSelector(selectGeoCoords)
   const dispatch = useDispatch()
   const { i18n, t } = useTranslation()
 
@@ -27,7 +28,7 @@ const PubPageUpper = ({ pub }) => {
       className=""
       background={themeContext.bgColor}
     >
-      {location &&
+      {(location || geoCoords) &&
         <div
           onClick={handleLocationClick}
           style={{
@@ -45,7 +46,7 @@ const PubPageUpper = ({ pub }) => {
           }}>
           <span className="flex flex-col items-center ">
             <span>{t("client.pub_info.delivery_to")}:</span>
-            <span className="flex gap-2 items-center"> {translateLocation(location, i18n.language)}
+            <span className="flex gap-2 items-center"> {getLocationDisplayLabel(location, geoCoords, i18n.language)}
               {
                 themeContext.theme === "dark" ?
                   <img

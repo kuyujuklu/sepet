@@ -21,7 +21,7 @@ import {
   setLastOrder,
 } from "../../store/basketSlice";
 import { getPubWorkHours, countCommissionForPub } from "../../../../utils/pub";
-import { selectLocation } from "../../store/locationSlice";
+import { selectLocation, selectGeoCoords } from "../../store/locationSlice";
 import { addCommissionToPrice } from "../../../../utils/dish";
 import { deliveryTypes } from "../../../../static-data/data";
 import { getLatLngForLocation } from "../../../../utils/location";
@@ -29,6 +29,7 @@ import { getLatLngForLocation } from "../../../../utils/location";
 const CreateOrderPopup = () => {
   const { t } = useTranslation();
   const location = useSelector(selectLocation)
+  const geoCoords = useSelector(selectGeoCoords)
   const dispatch = useDispatch();
   const popupState = useSelector(selectCreateOrderPopupState);
   const basket = useSelector(selectDishes);
@@ -166,11 +167,14 @@ const CreateOrderPopup = () => {
       return;
     }
 
-    if (!location) {
+    if (!location && !geoCoords) {
       return;
     }
 
-    let { lat, lng } = getLatLngForLocation(location)
+    // The client's real, browser-detected position wins over the picked
+    // city's fixed center point whenever we have it - this is what actually
+    // goes out with the order.
+    let { lat, lng } = geoCoords ?? getLatLngForLocation(location)
     if (!lat || !lng) {
       return;
     }
@@ -211,6 +215,8 @@ const CreateOrderPopup = () => {
     comments,
     createOrder,
     fullAddress,
+    geoCoords,
+    location,
     orderType,
     paymentType,
     phone,

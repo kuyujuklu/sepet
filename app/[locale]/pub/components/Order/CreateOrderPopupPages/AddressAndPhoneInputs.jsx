@@ -4,14 +4,15 @@ import { validateFullAddress, validatePhone, validateTown } from "../validators"
 import { useTranslation } from "react-i18next"
 import { useEffect } from "react"
 import { useSelector, useDispatch } from "react-redux"
-import { selectLocation, openSelectLocationPopup } from "../../../store/locationSlice"
-import { translateLocation } from "../../../../../utils/location"
+import { selectLocation, selectGeoCoords, openSelectLocationPopup } from "../../../store/locationSlice"
+import { getLocationDisplayLabel } from "../../../../../utils/location"
 import { closeCreateOrderPopup } from "../../../store/orderSlice"
 
 const AddressAndPhoneInputs = ({ isDeliveryAvailable, town, setTown, fullAddress, setFullAddress, phone, setPhone, isValidatedOutside }) => {
   const { t, i18n } = useTranslation()
 
   const location = useSelector(selectLocation)
+  const geoCoords = useSelector(selectGeoCoords)
   const dispatch = useDispatch()
 
   useEffect(() => {
@@ -46,8 +47,8 @@ const AddressAndPhoneInputs = ({ isDeliveryAvailable, town, setTown, fullAddress
           }}
           onClick={handleOpenLocationPopup}
         >
-          {location ?
-            <span>{translateLocation(location, i18n.language)}</span>
+          {(location || geoCoords) ?
+            <span>{getLocationDisplayLabel(location, geoCoords, i18n.language)}</span>
             :
             <span>{t("client.popups.create_order.choose")}</span>
           }
