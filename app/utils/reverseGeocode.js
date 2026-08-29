@@ -1,4 +1,4 @@
-import { latlng_for_location, ru_translates } from "../static-data/data";
+import { latlng_for_location, ro_translates, ru_translates } from "../static-data/data";
 
 // Rough distance in km - good enough to answer "which of our towns is this
 // nearest to?" (mirrors the mobile app's shared/utils/cities.js distanceInKm)
@@ -12,7 +12,7 @@ const distanceInKm = (a, b) => {
 // Fallback when Nominatim is unreachable/slow: the nearest of our own 31
 // fixed town centers, same idea as mobile's getNearestCity - just town-level,
 // no street.
-const getNearestTownLabel = (coords, maxDistanceKm = 35) => {
+const getNearestTownLabel = (coords, lang, maxDistanceKm = 35) => {
   if (!coords?.lat || !coords?.lng) return null;
 
   let nearestId = null;
@@ -28,7 +28,8 @@ const getNearestTownLabel = (coords, maxDistanceKm = 35) => {
 
   if (nearestDistance > maxDistanceKm || !nearestId) return null;
 
-  return { town: ru_translates[nearestId] ?? nearestId, fullAddress: "" };
+  const translates = lang === "ro" ? ro_translates : ru_translates;
+  return { town: translates[nearestId] ?? nearestId, fullAddress: "" };
 };
 
 // Real reverse geocoding via OSM Nominatim (free, no API key). Its usage
@@ -49,33 +50,33 @@ const fetchWithTimeout = (url, { timeout = 6000, ...options } = {}) => {
 // {lat, lng} -> {town, fullAddress} (a street + house line, or "" when
 // Nominatim has none) or null when nothing usable came back at all - callers
 // should fall back to getNearestTownLabel/a manual address form in that case.
-export const reverseGeocode = async (coords) => {
+export const reverseGeocode = async (coords, lang = "ru") => {
   if (!coords?.lat || !coords?.lng) return null;
 
   try {
-    const url = `${NOMINATIM_URL}?format=jsonv2&lat=${coords.lat}&lon=${coords.lng}&accept-language=ru&zoom=18&addressdetails=1`;
+    const url = `${NOMINATIM_URL}?format=jsonv2&lat=${coords.lat}&lon=${coords.lng}&accept-language=${lang}&zoom=18&addressdetails=1`;
     const resp = await fetchWithTimeout(url, {
-      headers: { "Accept-Language": "ru" },
+      headers: { "Accept-Language": lang },
     });
 
     if (!resp.ok) throw new Error(`nominatim ${resp.status}`);
 
     const data = await resp.json();
     const address = data?.address;
-    if (!address) return getNearestTownLabel(coords);
+    if (!address) return getNearestTownLabel(coords, lang);
 
     const town =
       address.city ?? address.town ?? address.village ?? address.municipality;
     const street = address.road;
     const house = address.house_number;
 
-    if (!town) return getNearestTownLabel(coords);
+    if (!town) return getNearestTownLabel(coords, lang);
 
     const fullAddress = [street, house].filter(Boolean).join(" ");
 
     return { town, fullAddress };
   } catch (e) {
     console.log("reverseGeocode failed, falling back to nearest town: ", e);
-    return getNearestTownLabel(coords);
+    return getNearestTownLabel(coords, lang);
   }
 };

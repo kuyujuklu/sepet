@@ -4,10 +4,7 @@ import PubPage from "../components/PubPage/PubPage";
 import initTranslations from "@/app/i18n";
 import TransProvider from "../components/TransProvider";
 
-export async function generateMetadata(
-  { params, searchParams },
-  parent
-) {
+export async function generateMetadata({ params }) {
   const pubID = params.pubID;
   let pubData = await getPubInfo(pubID);
   if (!pubData) {
@@ -35,7 +32,7 @@ async function PubWithMenusLayout({ children, params }) {
     );
   }
 
-  const { t, resources } = await initTranslations(params.locale, ['translation']);
+  const { resources } = await initTranslations(params.locale, ['translation']);
 
 
   return (
@@ -44,8 +41,6 @@ async function PubWithMenusLayout({ children, params }) {
         pubName={params?.pubID}
         data={data}
         pub={data.pub}
-        downPanelData={data}
-        hasDownPanel={true}
         locale={params?.locale}
       >
         {children}

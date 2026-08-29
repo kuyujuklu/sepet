@@ -80,12 +80,12 @@ export const validateOrder = (order) => {
             errors.push(validateTableNumber(order.tableNumber));
     } else if (order.orderType === orderTypes.delivery) {
         if (validatePaymentType(order.paymentType))
-            errors.push(validatePaymentType(order.orderType));
+            errors.push(validatePaymentType(order.paymentType));
 
         if (validateTown(order.town)) errors.push(validateTown(order.town));
 
         if (validateFullAddress(order.fullAddress))
-            errors.push(validateOrderType(order.fullAddress));
+            errors.push(validateFullAddress(order.fullAddress));
 
         if (validatePhone(order.mainPhoneNumber))
             errors.push(validatePhone(order.mainPhoneNumber));

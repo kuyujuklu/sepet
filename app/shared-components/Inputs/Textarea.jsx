@@ -5,7 +5,7 @@ import inputStyle from "@/app/shared-components/sass/custom/inputs.module.scss"
 import errorStyle from "@/app/shared-components/sass/custom/errors.module.scss"
 import { useTranslation } from "react-i18next"
 
-const Textarea = ({value, setValue, style, className, validators}) => {
+const Textarea = ({value, setValue, style, className, validators, placeholder}) => {
   const {t} = useTranslation()
   const [error, setError] = useState("")
 
@@ -36,6 +36,7 @@ const Textarea = ({value, setValue, style, className, validators}) => {
           value={value}
           onChange={handleChange}
           style={style}
+          placeholder={placeholder}
           className={`${inputStyle.textarea} ${className}`}
       ></textarea>
       {

@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { isTimeInLocalStorageExpired } from "./store";
 import { setBasket, setLastOrder } from "./basketSlice";
-import { setLocation, setGeoCoords, requireLocationIfNotSet } from "./locationSlice";
+import { setGeoCoords, setManualAddress, requireLocationIfNotSet } from "./locationSlice";
 import { getBrowserGeolocation } from "../../../utils/browserGeolocation";
 
 const BasketPreloader = () => {
@@ -31,34 +31,36 @@ const BasketPreloader = () => {
       } catch (e) {
         lastOrder = {}
       }
-      let location
-      try {
-        location = JSON.parse(localStorage.getItem("location")) ?? null
-      } catch (e) {
-        location = null
-      }
       let geoCoords
       try {
         geoCoords = JSON.parse(localStorage.getItem("geoCoords")) ?? null
       } catch (e) {
         geoCoords = null
       }
+      // Same key the landing page's ChooseLocation.jsx writes when the
+      // client corrects a reverse-geocoded guess by hand.
+      let manualAddress
+      try {
+        manualAddress = JSON.parse(localStorage.getItem("manualAddress")) ?? null
+      } catch (e) {
+        manualAddress = null
+      }
 
       dispatch(setBasket(basket));
       dispatch(setLastOrder({ order: lastOrder }));
-      if (location) {
-        dispatch(setLocation(location));
-      }
       if (geoCoords) {
         dispatch(setGeoCoords(geoCoords));
+      }
+      if (manualAddress) {
+        dispatch(setManualAddress(manualAddress));
       }
 
       // Landing on a pub page directly (a shared link) skips Main.jsx
       // entirely, so nothing has asked the browser for a position yet -
       // try here too, same "only on a first-ever visit" rule. A real
       // position found this way means the client doesn't have to be
-      // interrupted with the "pick a city" popup at all.
-      if (!location && !geoCoords) {
+      // interrupted with the address popup at all.
+      if (!geoCoords) {
         getBrowserGeolocation().then((coords) => {
           if (!coords) {
             dispatch(requireLocationIfNotSet())

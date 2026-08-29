@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 // The flyer-inspired banner: real contact channels + a real QR code to the
 // app link (via api.qrserver.com - no key needed, matches the "onelink" URL
 // already used by the header's download button), sitting above the
@@ -146,7 +148,7 @@ const Hero = () => {
           }}
         >
           <div style={{ width: 50, height: 50, borderRadius: 14, background: "#e8f1fb", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-            <img src="/images/png/bird.png" width={28} height={28} alt="Sepet" />
+            <Image src="/images/png/bird.png" width={28} height={28} alt="Sepet" />
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 2, flex: 1, minWidth: 0 }}>
             <span style={{ fontSize: 14.5, fontWeight: 700, color: "#1c2733" }}>Приложение Sepet</span>

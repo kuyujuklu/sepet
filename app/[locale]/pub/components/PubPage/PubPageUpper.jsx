@@ -1,21 +1,14 @@
-import { useContext, useEffect } from "react";
+import { useContext } from "react";
+import Image from "next/image";
 import { ThemeContext } from "./ThemeContextProvider";
-import { useSelector, useDispatch } from "react-redux";
-import { selectLocation, selectGeoCoords, openSelectLocationPopup } from "../../store/locationSlice";
-import { useTranslation } from "react-i18next";
-import { getLocationDisplayLabel } from "../../../../utils/location";
+import { useRouter } from "next/navigation";
 
-const PubPageUpper = ({ pub }) => {
+// The "delivery to" pill used to duplicate what the home page and the
+// basket page already show - removed per direct feedback, back button is
+// the only thing this banner needs to surface.
+const PubPageUpper = ({ pub, backHref }) => {
   const themeContext = useContext(ThemeContext);
-  const location = useSelector(selectLocation)
-  const geoCoords = useSelector(selectGeoCoords)
-  const dispatch = useDispatch()
-  const { i18n, t } = useTranslation()
-
-
-  const handleLocationClick = () => {
-    dispatch(openSelectLocationPopup())
-  }
+  const router = useRouter()
 
   return (
     <div
@@ -25,121 +18,42 @@ const PubPageUpper = ({ pub }) => {
         position: "absolute",
         overflow: "hidden",
       }}
-      className=""
       background={themeContext.bgColor}
     >
-      {(location || geoCoords) &&
-        <div
-          onClick={handleLocationClick}
+      {backHref && (
+        <button
+          onClick={() => router.push(backHref)}
           style={{
-            cursor: "pointer",
             position: "absolute",
-            background: themeContext.bgColor,
-            color: themeContext.textColor,
-            maxWidth: "40%",
-            padding: "5px 10px",
-            borderRadius: 10,
             top: 10,
             left: 10,
+            zIndex: 20,
+            width: 38,
+            height: 38,
+            borderRadius: "50%",
+            background: "rgba(18,24,31,0.35)",
+            backdropFilter: "blur(2px)",
+            border: "none",
             display: "flex",
             alignItems: "center",
-          }}>
-          <span className="flex flex-col items-center ">
-            <span>{t("client.pub_info.delivery_to")}:</span>
-            <span className="flex gap-2 items-center"> {getLocationDisplayLabel(location, geoCoords, i18n.language)}
-              {
-                themeContext.theme === "dark" ?
-                  <img
-                    // onLoad={() => setImageIsLoaded(true)}
-                    src={`/images/svg/arrow-bottom-white.svg`}
-                    alt="pub-cover"
-                    style={{
-                      display: "block",
-                      width: "15px",
-                      height: "15px",
-                      objectFit: "cover",
-                    }}
-                  />
-                  :
-                  <img
-                    // onLoad={() => setImageIsLoaded(true)}
-                    src={`/images/svg/arrow-bottom-black.svg`}
-                    alt="pub-cover"
-                    style={{
-                      display: "block",
-                      width: "15px",
-                      height: "15px",
-                      objectFit: "cover",
-                    }}
-                  />
-              }
-
-            </span>
-          </span>
-        </div>
-      }
-      <a href={`https://onelink.to/ey3df3`}
-        style={{
-          cursor: "pointer",
-          position: "absolute",
-          background: themeContext.bgColor,
-          color: themeContext.textColor,
-          padding: "5px 10px",
-          borderRadius: 10,
-          maxWidth: "40%",
-          top: 10,
-          right: 10,
-          display: "flex",
-          alignItems: "center",
-          gap: 5
-        }}>
-        <span>{t("client.pub_info.open_in_app")}</span>
-        {
-          //themeContext.theme === "dark" ?
-          //  <img
-          //    // onLoad={() => setImageIsLoaded(true)}
-          //    src={`/images/svg/arrow-bottom-white.svg`}
-          //    alt="pub-cover"
-          //    style={{
-          //      display: "block",
-          //      width: "15px",
-          //      height: "15px",
-          //      objectFit: "cover",
-          //    }}
-          //  />
-          //  :
-          //  <img
-          //    // onLoad={() => setImageIsLoaded(true)}
-          //    src={`/images/svg/arrow-bottom-black.svg`}
-          //    alt="pub-cover"
-          //    style={{
-          //      display: "block",
-          //      width: "15px",
-          //      height: "15px",
-          //      objectFit: "cover",
-          //    }}
-          //  />
-        }
-      </a>
-      {
-        pub.bg_image_file_name && (
-          <img
-            // onLoad={() => setImageIsLoaded(true)}
-            src={`/api-static/images/pubs/bgs/${pub.bg_image_file_name}`}
-            alt="pub-cover"
-            style={{
-              display: "block",
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-            }}
-          />
-        )
-      }
-      {/* {
-                pub.bg_image_file_name && !imageIsLoaded && (<div className="w-full h-full flex pt-3 justify-center"><BlackSpinner /></div>)
-            } */}
-    </div >
+            justifyContent: "center",
+          }}
+        >
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
+        </button>
+      )}
+      {pub.bg_image_file_name ? (
+        <Image
+          src={`/api-static/images/pubs/bgs/${pub.bg_image_file_name}`}
+          alt={pub.name}
+          fill
+          sizes="(max-width: 600px) 100vw, 600px"
+          style={{ objectFit: "cover" }}
+        />
+      ) : (
+        <div style={{ width: "100%", height: "100%", background: "#123527" }} />
+      )}
+    </div>
   );
 };
 

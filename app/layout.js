@@ -50,7 +50,7 @@ function RootLayout({ children }) {
         <meta httpEquiv="Content-Type" content="text/html; charset=utf-8" />
         <meta httpEquiv="Content-Language" content="ro,ru" />
       </head>
-      <body className="bg-cyan-50 h-full">
+      <body className="bg-slate-50 h-full">
         {children}
         <Script
           id="jivo-head"

@@ -98,6 +98,8 @@ const basketSlice = createSlice({
 export const selectDish = (dishID) => (state) =>
     state.basketSlice.dishes[dishID];
 export const selectDishes = (state) => state.basketSlice.dishes;
+export const selectBasketCount = (state) =>
+    Object.values(state.basketSlice.dishes).reduce((acc, dish) => acc + (dish?.count ?? 0), 0);
 
 export const selectLastOrder = (state) => state.basketSlice.lastOrder
 

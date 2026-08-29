@@ -1,18 +1,13 @@
 "use client"
-import { useTranslation } from 'react-i18next';
-import { select_location_options_ru } from '../../static-data/data';
-import { translateLocation } from '../../utils/location';
-import { reverseGeocode } from '../../utils/reverseGeocode';
 import { useEffect, useRef, useState } from 'react';
+import LocationPickerFields from '@/app/shared-components/LocationPicker/LocationPickerFields';
 
-// A free-text correction on top of the auto-detected/picked location - e.g.
-// geolocation + reverse geocoding landed 200m off in a sparsely-mapped town,
-// and the client wants to type the real street/house themselves without
-// losing the city. Purely a display/label override for now: it does not
-// change the coordinates used for nearby-pub search or delivery pricing
-// (that would need forward geocoding, not built yet) - same split mobile's
-// checkout already uses (real coords for zone pricing, a separately-typed
-// address for what the courier reads).
+// The confirmed address label - always set together with a precise
+// coordinate through the map picker (LocationPickerFields), reverse-
+// geocoded then correctable by hand. Not set yet whenever geoCoords exists
+// only from silent background geolocation the client hasn't reviewed -
+// same key the basket side reads/writes, so a correction made on either
+// side is visible to the other.
 const readManualAddress = () => {
   try {
     return JSON.parse(localStorage.getItem("manualAddress")) ?? null
@@ -21,41 +16,14 @@ const readManualAddress = () => {
   }
 }
 
-const ChooseLocation = ({ location, geoCoords, isDetecting, setLocation }) => {
-  const { i18n } = useTranslation()
-
-  const [resolvedAddress, setResolvedAddress] = useState(null)
-  const [isResolvingAddress, setIsResolvingAddress] = useState(false)
+const ChooseLocation = ({ geoCoords, isDetecting, setMapPoint, mapDefaultCenter }) => {
   const [manualAddress, setManualAddress] = useState(null)
   const [isEditorOpen, setIsEditorOpen] = useState(false)
-  const [editTown, setEditTown] = useState("")
-  const [editStreet, setEditStreet] = useState("")
   const wrapRef = useRef(null)
 
   useEffect(() => {
     setManualAddress(readManualAddress())
   }, [])
-
-  useEffect(() => {
-    if (!geoCoords) {
-      setResolvedAddress(null)
-      return
-    }
-
-    let isActual = true
-    setIsResolvingAddress(true)
-
-    reverseGeocode(geoCoords).then((address) => {
-      if (!isActual) return
-      setResolvedAddress(address)
-      setIsResolvingAddress(false)
-    })
-
-    return () => {
-      isActual = false
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [geoCoords?.lat, geoCoords?.lng])
 
   // Close on an outside click
   useEffect(() => {
@@ -67,70 +35,51 @@ const ChooseLocation = ({ location, geoCoords, isDetecting, setLocation }) => {
     return () => document.removeEventListener("mousedown", onClick)
   }, [isEditorOpen])
 
-  const isUnknown = !isDetecting && !geoCoords && !location && !manualAddress
+  const isUnknown = !isDetecting && !geoCoords && !manualAddress
 
-  const hasStreet = !!resolvedAddress?.fullAddress
+  // A coordinate that exists only from silent background geolocation, never
+  // actually reviewed/confirmed through the picker - the delivery price
+  // shown for nearby pubs is only ever as accurate as that raw coordinate,
+  // so both stay labeled "примерно" until the client opens the picker (the
+  // map auto-resolves the same point on open, so opening it is itself
+  // basically the confirmation).
+  const isApproximate = !!geoCoords && !manualAddress?.town && !isDetecting
 
   const displayLabel = manualAddress?.town
     ? [manualAddress.town, manualAddress.street].filter(Boolean).join(", ")
     : isDetecting
       ? "Определяем адрес…"
-      : isUnknown
-        ? "Выберите город доставки"
-        : geoCoords
-          ? (isResolvingAddress
-            ? "Определяем адрес…"
-            : resolvedAddress?.town
-              ? (hasStreet ? [resolvedAddress.town, resolvedAddress.fullAddress].join(", ") : `Примерно: ${resolvedAddress.town}`)
-              : "Ваше местоположение")
-          : location
-            ? translateLocation(location, i18n.language)
-            : "Выберите город доставки"
+      : geoCoords
+        ? "Ваше местоположение"
+        : "Выберите адрес доставки"
 
   const captionLabel = manualAddress?.town
     ? "Доставляем на адрес"
-    : geoCoords && hasStreet
-      ? "Доставляем на адрес"
-      : geoCoords
-        ? "Ближайший город"
-        : isUnknown
-          ? "Адрес не указан"
-          : "Доставляем в город"
+    : geoCoords
+      ? "Уточните адрес"
+      : isUnknown
+        ? "Адрес не указан"
+        : "Укажите адрес"
 
-  const openEditor = () => {
-    // Prefill with whatever we already know, so correcting is a small edit,
-    // not typing an address from nothing
-    const seedTown = manualAddress?.town
-      ?? resolvedAddress?.town
-      ?? (location ? translateLocation(location, i18n.language) : "")
-    const seedStreet = manualAddress?.street ?? resolvedAddress?.fullAddress ?? ""
+  const openEditor = () => setIsEditorOpen(true)
 
-    setEditTown(seedTown)
-    setEditStreet(seedStreet)
-    setIsEditorOpen(true)
-  }
+  // Prefill values for the editor, so correcting is a small edit, not
+  // typing an address from nothing - recomputed every render, but only
+  // ever read once, at the moment LocationPickerFields mounts (it takes
+  // these as its initial state, not as controlled props).
+  const seedTown = manualAddress?.town ?? ""
+  const seedStreet = manualAddress?.street ?? ""
+  const seedCoords = geoCoords ?? null
 
-  const saveManualAddress = () => {
-    const next = { town: editTown.trim(), street: editStreet.trim() }
-    if (!next.town) return
-
+  const handleSaveAddress = ({ town, street, coords }) => {
+    const next = { town, street }
     try {
       localStorage.setItem("manualAddress", JSON.stringify(next))
     } catch (e) {
       console.log("err writing manualAddress to loc stor: ", e)
     }
-
     setManualAddress(next)
-    setIsEditorOpen(false)
-  }
-
-  const pickCityFromList = (cityId) => {
-    try {
-      localStorage.removeItem("manualAddress")
-    } catch (e) { /* noop */ }
-
-    setManualAddress(null)
-    setLocation(cityId)
+    setMapPoint(coords)
     setIsEditorOpen(false)
   }
 
@@ -183,6 +132,18 @@ const ChooseLocation = ({ location, geoCoords, isDetecting, setLocation }) => {
         <svg style={{ flexShrink: 0 }} width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#a7b2bd" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
       </button>
 
+      {isApproximate && (
+        <div style={{ fontSize: 11.5, color: "#94a3b0", marginTop: 6, paddingLeft: 2, lineHeight: 1.4 }}>
+          Адрес и цены доставки — примерные.{" "}
+          <button
+            onClick={openEditor}
+            style={{ color: "#1E6FBF", fontWeight: 600, textDecoration: "underline", background: "none", border: "none", padding: 0, font: "inherit", cursor: "pointer" }}
+          >
+            Уточнить точный адрес
+          </button>
+        </div>
+      )}
+
       {isEditorOpen && (
         <div
           style={{
@@ -195,66 +156,16 @@ const ChooseLocation = ({ location, geoCoords, isDetecting, setLocation }) => {
             borderRadius: 16,
             boxShadow: "0 20px 44px -16px rgba(28,39,51,0.3)",
             padding: 16,
-            display: "flex",
-            flexDirection: "column",
-            gap: 12,
           }}
         >
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            <span style={{ fontSize: 12.5, fontWeight: 600, color: "#526070" }}>Уточните адрес доставки</span>
-            <input
-              value={editTown}
-              onChange={(e) => setEditTown(e.target.value)}
-              placeholder="Город / населённый пункт"
-              style={{ border: "1px solid #e2e6ea", borderRadius: 10, padding: "10px 12px", fontSize: 14, color: "#1c2733" }}
-            />
-            <input
-              value={editStreet}
-              onChange={(e) => setEditStreet(e.target.value)}
-              placeholder="Улица, дом"
-              style={{ border: "1px solid #e2e6ea", borderRadius: 10, padding: "10px 12px", fontSize: 14, color: "#1c2733" }}
-            />
-            <button
-              onClick={saveManualAddress}
-              disabled={!editTown.trim()}
-              style={{
-                background: editTown.trim() ? "#2D7DD2" : "#cbd5e0",
-                color: "#fff",
-                border: "none",
-                borderRadius: 10,
-                padding: "10px 14px",
-                fontSize: 14,
-                fontWeight: 600,
-                cursor: editTown.trim() ? "pointer" : "default",
-              }}
-            >
-              Сохранить адрес
-            </button>
-          </div>
-
-          <div style={{ borderTop: "1px solid #f1f3f5", paddingTop: 10, display: "flex", flexDirection: "column", gap: 6 }}>
-            <span style={{ fontSize: 12, color: "#94a3b0" }}>Или выберите город из списка</span>
-            <div style={{ maxHeight: 160, overflowY: "auto", display: "flex", flexDirection: "column" }}>
-              {select_location_options_ru.map((opt, idx) => (
-                <button
-                  key={`${opt.value}-${idx}`}
-                  onClick={() => pickCityFromList(opt.value)}
-                  style={{
-                    textAlign: "left",
-                    padding: "8px 6px",
-                    fontSize: 13.5,
-                    color: "#1c2733",
-                    background: opt.value === location ? "#eaf2fb" : "transparent",
-                    border: "none",
-                    borderRadius: 8,
-                    cursor: "pointer",
-                  }}
-                >
-                  {opt.label}
-                </button>
-              ))}
-            </div>
-          </div>
+          <LocationPickerFields
+            key={String(isEditorOpen)}
+            initialTown={seedTown}
+            initialStreet={seedStreet}
+            initialCoords={seedCoords}
+            mapDefaultCenter={mapDefaultCenter}
+            onSave={handleSaveAddress}
+          />
         </div>
       )}
     </div>

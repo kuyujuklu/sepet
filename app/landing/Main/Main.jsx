@@ -1,8 +1,8 @@
 "use client"
 import { useState, useEffect } from "react";
-import { getLatLngForLocation } from "../../utils/location";
 import { getBrowserGeolocation } from "../../utils/browserGeolocation";
 import { sectionIds } from "../../utils/sections";
+import { locations, latlng_for_location } from "../../static-data/data";
 import Hero from "./Hero";
 import Bestsellers from "./Bestsellers";
 import PubList from "./PubList";
@@ -11,26 +11,21 @@ import SectionSwitcher from "./SectionSwitcher";
 
 
 const Main = () => {
-  const [location, setLocation] = useState()
-  // The client's real, browser-detected position - takes priority over a
-  // picked city's fixed center point (see getLatLngForLocation) whenever we
-  // have it, so "nearby" actually means nearby and not "somewhere in town".
+  // The client's real position - real device geolocation or a manually
+  // placed map pin, no way (or need) to tell which apart. The only thing
+  // that ever drives nearby-pub search/delivery pricing; picking a city
+  // from a list used to be a coordinate-less alternative to this, removed
+  // outright (every address now carries a precise coordinate, not just a
+  // display string).
   const [geoCoords, setGeoCoords] = useState()
   // True only while the very first, uncached geolocation attempt is in
   // flight - lets ChooseLocation show "Определяем адрес…" instead of
-  // silently guessing a city before we actually know anything.
+  // silently guessing before we actually know anything.
   const [isDetecting, setIsDetecting] = useState(true)
   const [activeSection, setActiveSection] = useState(sectionIds.food)
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-
-    let storedLocation
-    try {
-      storedLocation = JSON.parse(localStorage.getItem("location")) ?? null
-    } catch (e) {
-      storedLocation = null
-    }
 
     let storedGeoCoords
     try {
@@ -39,11 +34,6 @@ const Main = () => {
       storedGeoCoords = null
     }
 
-    if (storedLocation) {
-      setLocation(storedLocation)
-      setIsDetecting(false)
-      return
-    }
     if (storedGeoCoords) {
       setGeoCoords(storedGeoCoords)
       setIsDetecting(false)
@@ -69,45 +59,43 @@ const Main = () => {
     })
   }, []);
 
-  const setLocationAndWriteToLocalStorage = (location) => {
-    console.log("set location: ", location)
+  // A point picked on the map is a real, precise coordinate - exactly like
+  // real geolocation, just sourced by hand instead of a sensor - so it goes
+  // through this same state/localStorage slot.
+  const setMapPointAndWriteToLocalStorage = (coords) => {
     try {
-      localStorage.setItem("location", JSON.stringify(location))
-      // Picking a city by hand is an explicit override - it should win over
-      // whatever position was auto-detected earlier, not sit alongside it
-      localStorage.removeItem("geoCoords")
+      localStorage.setItem("geoCoords", JSON.stringify(coords))
     } catch (e) {
-      console.log("err writing to loc sotr: ", e)
+      console.log("err writing geoCoords to loc stor: ", e)
     }
 
-    setGeoCoords(undefined)
-    setLocation(location)
+    setGeoCoords(coords)
   }
 
-  // Real position when we have it, the picked city's center otherwise - null
-  // (not a fallback point) while neither is known yet, so PubList can show
-  // "укажите адрес" instead of quietly fetching pubs near nothing.
-  const locationLatLng = geoCoords ?? (location ? getLatLngForLocation(location) : null)
+  // null (not a fallback point) while nothing is known yet, so PubList can
+  // show "укажите адрес" instead of quietly fetching pubs near nothing.
+  const locationLatLng = geoCoords ?? null
 
   return (
     <div>
       <Hero />
-      <Bestsellers />
 
       <div style={{ maxWidth: 1180, margin: "0 auto", padding: "28px 32px 64px", display: "flex", flexDirection: "column", gap: 22 }}>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 14 }}>
           <div style={{ flex: "1 1 280px", minWidth: 260 }}>
             <ChooseLocation
-              location={location}
               geoCoords={geoCoords}
               isDetecting={isDetecting}
-              setLocation={setLocationAndWriteToLocalStorage}
+              setMapPoint={setMapPointAndWriteToLocalStorage}
+              mapDefaultCenter={locationLatLng ?? latlng_for_location[locations.Ceadir_Lunga]}
             />
           </div>
           <div style={{ flex: "0 0 auto" }}>
             <SectionSwitcher activeSection={activeSection} setActiveSection={setActiveSection} />
           </div>
         </div>
+
+        <Bestsellers locationLatLng={locationLatLng} activeSection={activeSection} />
 
         <PubList locationLatLng={locationLatLng} activeSection={activeSection} />
       </div>

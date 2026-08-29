@@ -1,25 +1,24 @@
 "use client"
 
 import { useEffect } from "react";
-import { setData, setNearbyPubs } from "../../store/pubInfoSlice";
+import { setData } from "../../store/pubInfoSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { setBasketPubID } from "../../store/basketSlice";
-import { selectLocation, selectGeoCoords } from "../../store/locationSlice";
+import { selectGeoCoords } from "../../store/locationSlice";
 import { useGetPubWithShippingPricesQuery } from "../../api/rtk-query/pubs";
-import { getLatLngForLocation } from "../../../../utils/location";
 
 const DataToStateUploader = ({ data, pubName }) => {
   const dispatch = useDispatch();
 
-  const location = useSelector(selectLocation)
   const geoCoords = useSelector(selectGeoCoords)
 
-  // The client's real, browser-detected position wins over the picked
-  // city's fixed center point whenever we have it (see BasketPreloader.jsx).
-  const locationLatLng = geoCoords ?? getLatLngForLocation(location)
+  // The client's real position - real device geolocation or a manually
+  // placed map pin (see BasketPreloader.jsx). `?? {}` keeps this a safe
+  // object to destructure below even while the query itself is skipped for
+  // not having one yet.
+  const locationLatLng = geoCoords ?? {}
   const {
     data: pubDataWithLocation,
-    isLoading: pubIsLoading,
     error: pubErrorWithLocation,
   } = useGetPubWithShippingPricesQuery(
     {
@@ -27,7 +26,7 @@ const DataToStateUploader = ({ data, pubName }) => {
       lat: locationLatLng.lat,
       lng: locationLatLng.lng,
     },
-    { skip: (!location && !geoCoords) || !pubName, pollingInterval: 20000, skipPollingIfUnfocused: true },
+    { skip: !geoCoords || !pubName, pollingInterval: 20000, skipPollingIfUnfocused: true },
   );
 
   useEffect(() => {
@@ -46,14 +45,6 @@ const DataToStateUploader = ({ data, pubName }) => {
 
   }, [pubDataWithLocation, dispatch])
 
-
-  useEffect(() => {
-    if (data?.pub?.id) {
-      setTimeout(() => {
-        window.location = `sepetmd://md?Path=PubInfo&PubID=${data.pub.id}`
-      }, 100)
-    }
-  }, [data])
 
   useEffect(() => {
     if (data) dispatch(setData(data));

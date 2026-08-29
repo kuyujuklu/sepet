@@ -1,5 +1,7 @@
 "use client"
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import Image from "next/image";
 
 // Reads the same localStorage the pub-page basket already writes to
 // (see [locale]/pub/store/middleware/basketMiddleware.js's `write`) - no
@@ -20,6 +22,7 @@ const readBasketSummary = () => {
 };
 
 const Header = () => {
+  const { i18n } = useTranslation();
   const [basket, setBasket] = useState({ count: 0, pubID: null });
 
   useEffect(() => {
@@ -45,7 +48,7 @@ const Header = () => {
         style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 24, padding: "16px 16px" }}
       >
         <a href="/" style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <img src="images/png/bird.png" width={32} height={32} alt="Sepet" />
+          <Image src="/images/png/bird.png" width={32} height={32} alt="Sepet" />
           <span style={{ display: "flex", flexDirection: "column", lineHeight: 1.1 }}>
             <span style={{ fontSize: 19, fontWeight: 800, color: "#1c2733", letterSpacing: "-0.01em" }}>
               sepet<span style={{ color: "#2D7DD2" }}>.md</span>
@@ -57,7 +60,7 @@ const Header = () => {
         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
           {basket.count > 0 && (
             <a
-              href={basket.pubID ? `/ru/pub/${basket.pubID}/basket` : "#"}
+              href={basket.pubID ? `/${i18n.language ?? "ru"}/pub/${basket.pubID}/basket` : "#"}
               style={{
                 display: "flex",
                 alignItems: "center",

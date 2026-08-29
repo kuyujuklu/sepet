@@ -1,5 +1,6 @@
 "use client"
 import Link from "next/link"
+import Image from "next/image"
 
 const linkStyle = { fontSize: 13.5, color: "rgba(255,255,255,0.8)" }
 const labelStyle = { fontSize: 12, fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase", color: "rgba(255,255,255,0.6)" }
@@ -12,7 +13,7 @@ const Footer = () => {
 
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <img src="/images/png/bird.png" width={28} height={28} alt="Sepet" />
+            <Image src="/images/png/bird.png" width={28} height={28} alt="Sepet" />
             <span style={{ fontSize: 17, fontWeight: 800, color: "#fff" }}>sepet.md</span>
           </div>
           <p style={{ fontSize: 13.5, lineHeight: 1.6, color: "rgba(255,255,255,0.62)", margin: 0, maxWidth: 260 }}>

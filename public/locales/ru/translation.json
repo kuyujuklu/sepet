@@ -43,9 +43,16 @@
                 "delivery": "Доставка на дом",
                 "in_place_order":"Заказ в ресторане"
             },
+            "empty": "Корзина пуста",
+            "empty_open_menu": "Открыть меню «{{pubName}}»",
+            "empty_other_pubs": "Выбрать другое заведение",
             "no_delivery_available": "В ваш населенный пункт нельзя заказать из данного заведения, выберите другое",
             "button_no_delivery_text": "Это заведение не доствляет в выбранный населенный пункт, выберите другое",
-            "create_order_button": "Заказать" 
+            "create_order_button": "Заказать",
+            "clear_confirm_title": "Очистить корзину?",
+            "clear_confirm_body": "Все добавленные блюда будут удалены.",
+            "clear_confirm_button": "Очистить",
+            "clear_confirm_cancel": "Отмена"
         },
         "popups": {
             "create_order": {
@@ -66,8 +73,21 @@
                 "table_number": "Номер столика",
                 "product_price" : "Сумма товаров",
                 "delivery_price" : "Цена доставки",
-                "final_price" : "Общая цена",
+                "final_price" : "Итого",
                 "comments": "Комментарии",
+                "comment_placeholder": "Например: домофон не работает, позвоните за 5 минут",
+                "delivery_address": "Адрес доставки",
+                "approximate_address": "Адрес определён примерно — уточните его",
+                "change_address": "Изменить адрес",
+                "payment_method": "Способ оплаты",
+                "submit_error_title": "Не удалось отправить заказ",
+                "submit_error_body": "Проверьте соединение с интернетом и попробуйте ещё раз. Данные заказа сохранены.",
+                "retry_button": "Повторить",
+                "success_headline": "Заказ оформлен!",
+                "success_body": "{{pubName}} уже готовит ваш заказ №{{orderID}}.",
+                "success_eta": "Курьер будет у вас примерно к {{time}}.",
+                "view_order_button": "Смотреть заказ",
+                "payment_on_delivery": "Оплата при получении",
 
                 "create_order_button": "Заказать"
 

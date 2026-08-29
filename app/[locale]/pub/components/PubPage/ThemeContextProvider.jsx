@@ -1,55 +1,25 @@
 "use client"
 
-import { createContext, useEffect, useState } from "react";
+import { createContext } from "react";
 
-export const ThemeContext = createContext({
+// Always the agreed Sepet palette now - restaurants used to be able to pick
+// their own brand color/dark-mode via `pub.color`/`pub.color_theme`, which
+// meant the redesign's blue/green system randomly got overridden (a red
+// brand color + forced dark theme on one pub was reported as "wrong
+// colors"). One consistent look across every pub page beats a per-pub
+// custom theme now that the whole site follows one design.
+const FIXED_THEME = {
   theme: "light",
-  textColor: "#000000",
-  bgColor: "#ecfeff",
-});
+  textColor: "#1c2733",
+  bgColor: "#ffffff",
+};
 
-export const PubColorContext = createContext("");
+export const ThemeContext = createContext(FIXED_THEME);
 
-const ThemeContextProvider = ({ data, children }) => {
-  const [pubColorValue, setPubColorValue] = useState("#ffffff");
-
-  const [theme, setTheme] = useState({
-    theme: "light",
-    textColor: "#000000",
-    bgColor: "#ffffff",
-  });
-
-  useEffect(() => {
-    if (data?.pub) {
-      if (data.pub.color_theme === "dark") {
-        setTheme({
-          theme: "dark",
-          textColor: "#eeefff",
-          bgColor: "rgb(17 24 39)",
-        });
-        setPubColorValue(data.pub.color ?? "#eeefff");
-        let htmlNode = document.querySelector("html");
-        if (htmlNode) htmlNode = "rgb(17 24 39)";
-      } else {
-        setTheme({
-          theme: "light",
-          textColor: "#000000",
-          bgColor: "#eeefff",
-        });
-        setPubColorValue(data.pub.color ?? "#000000");
-        let htmlNode = document.querySelector("html");
-        if (htmlNode) htmlNode = "#cccccc";
-      }
-    }
-  }, [data?.pub]);
-
+const ThemeContextProvider = ({ children }) => {
   return (
-    <ThemeContext.Provider value={theme}>
-      <PubColorContext.Provider
-        value={pubColorValue}
-      >
-        {children}
-      </PubColorContext.Provider>
+    <ThemeContext.Provider value={FIXED_THEME}>
+      {children}
     </ThemeContext.Provider>
   );
 };
