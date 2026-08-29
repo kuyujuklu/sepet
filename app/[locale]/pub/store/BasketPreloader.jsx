@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { isTimeInLocalStorageExpired } from "./store";
-import { setBasket, setLastOrder } from "./basketSlice";
+import { setBasket, setOrderHistory } from "./basketSlice";
 import { setGeoCoords, setManualAddress, requireLocationIfNotSet } from "./locationSlice";
 import { getBrowserGeolocation } from "../../../utils/browserGeolocation";
 
@@ -25,11 +25,11 @@ const BasketPreloader = () => {
       }
       console.log("basket: ", basket)
 
-      let lastOrder;
+      let orderHistory;
       try {
-        lastOrder = JSON.parse(localStorage.getItem("lastOrder")) || {};
+        orderHistory = JSON.parse(localStorage.getItem("orderHistory")) || [];
       } catch (e) {
-        lastOrder = {}
+        orderHistory = []
       }
       let geoCoords
       try {
@@ -47,7 +47,7 @@ const BasketPreloader = () => {
       }
 
       dispatch(setBasket(basket));
-      dispatch(setLastOrder({ order: lastOrder }));
+      dispatch(setOrderHistory(orderHistory));
       if (geoCoords) {
         dispatch(setGeoCoords(geoCoords));
       }

@@ -1,5 +1,6 @@
 "use client"
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { useTranslation } from "react-i18next";
 import { pubs_api } from "../api/pubsApi";
 import { pubMatchesSection } from "../../utils/sections";
@@ -127,11 +128,19 @@ const Bestsellers = ({ locationLatLng, activeSection }) => {
                   position: "relative",
                   height: 112,
                   borderRadius: 14,
-                  background: item.image_file_name
-                    ? `url(/api-static/images/dishes/${item.image_file_name}) center/cover`
-                    : "#123527",
+                  overflow: "hidden",
+                  background: "#123527",
                 }}
               >
+                {item.image_file_name && (
+                  <Image
+                    src={`/api-static/images/dishes/${item.image_file_name}`}
+                    alt={item.name}
+                    fill
+                    sizes="168px"
+                    style={{ objectFit: "cover" }}
+                  />
+                )}
                 <span
                   style={{
                     position: "absolute", right: 8, bottom: 8, width: 30, height: 30, borderRadius: "50%",

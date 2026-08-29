@@ -10,9 +10,9 @@ import Dish from "../PubPage/Dishes/Dish";
 import {
   clearBasket,
   selectDishes,
-  selectLastOrder,
+  selectOrderHistory,
   setBasketPubID,
-  setLastOrder,
+  addOrderToHistory,
 } from "../../store/basketSlice";
 import {
   selectGeoCoords,
@@ -27,7 +27,7 @@ import { currencies, orderPaymentTypes, orderTypes } from "@/app/static-data/dat
 import { validateOrder, validatePhone } from "./validators";
 import PhoneNumberInput from "@/app/shared-components/Inputs/PhoneNumberInput";
 import Textarea from "@/app/shared-components/Inputs/Textarea";
-import LastOrder from "./LastOrder";
+import OrderHistory from "./OrderHistory";
 
 const ACCENT = "#2D7DD2";
 const ACCENT_DARK = "#1E6FBF";
@@ -43,7 +43,7 @@ const BasketPage = ({ data }) => {
   const themeContext = useContext(ThemeContext);
 
   const basketDishes = useSelector(selectDishes);
-  const lastOrder = useSelector(selectLastOrder);
+  const orderHistory = useSelector(selectOrderHistory);
   const geoCoords = useSelector(selectGeoCoords);
   const manualAddress = useSelector(selectManualAddress);
 
@@ -117,7 +117,7 @@ const BasketPage = ({ data }) => {
       amount += deliveryPrice;
     }
 
-    dispatch(setLastOrder({
+    dispatch(addOrderToHistory({
       order: {
         id: createOrderResp.order.id,
         pub_id: createOrderResp.order.pub_id,
@@ -195,12 +195,18 @@ const BasketPage = ({ data }) => {
           </div>
         </div>
 
-        <div style={{ position: "fixed", left: 0, right: 0, bottom: 0, maxWidth: 600, margin: "0 auto", background: "#fff", borderTop: "1px solid #f1f3f5", padding: "14px 20px 16px" }}>
+        <div style={{ position: "fixed", left: 0, right: 0, bottom: 0, maxWidth: 600, margin: "0 auto", background: "#fff", borderTop: "1px solid #f1f3f5", padding: "14px 20px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
           <button
             onClick={() => router.push(`/${i18n.language}/pub/${pub.url_name}`)}
             style={{ width: "100%", background: ACCENT, color: "#fff", border: "none", padding: 14, borderRadius: 14, fontSize: 15, fontWeight: 700 }}
           >
-            {t("client.popups.create_order.view_order_button")}
+            {t("client.popups.create_order.order_more_button")}
+          </button>
+          <button
+            onClick={() => router.push("/")}
+            style={{ width: "100%", background: "transparent", color: ACCENT_DARK, border: `1.5px solid ${ACCENT}`, padding: 13, borderRadius: 12, fontSize: 14, fontWeight: 700 }}
+          >
+            {t("client.basket.empty_other_pubs")}
           </button>
         </div>
       </div>
@@ -237,9 +243,10 @@ const BasketPage = ({ data }) => {
         onCancel={() => setIsClearConfirmOpen(false)}
       />
 
-      {lastOrder && lastOrder.pub_id === pub.real_id && (
-        <LastOrder order={lastOrder} currencyID={pub.currency_id} />
-      )}
+      <OrderHistory
+        orders={orderHistory.filter((order) => order.pub_id === pub.real_id)}
+        currencyID={pub.currency_id}
+      />
 
       {showError && (
         <div style={{ padding: "12px 14px", borderRadius: 14, background: "#fef2f2", border: "1px solid #fecaca", display: "flex", alignItems: "flex-start", gap: 10 }}>

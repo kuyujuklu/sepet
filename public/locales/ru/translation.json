@@ -38,8 +38,8 @@
         },
         "basket": {
             "headline": "Корзина",
-            "last_order": {
-                "headline": "Последний заказ",
+            "order_history": {
+                "headline": "Ваши заказы",
                 "delivery": "Доставка на дом",
                 "in_place_order":"Заказ в ресторане"
             },
@@ -87,6 +87,7 @@
                 "success_body": "{{pubName}} уже готовит ваш заказ №{{orderID}}.",
                 "success_eta": "Курьер будет у вас примерно к {{time}}.",
                 "view_order_button": "Смотреть заказ",
+                "order_more_button": "Заказать ещё",
                 "payment_on_delivery": "Оплата при получении",
 
                 "create_order_button": "Заказать"

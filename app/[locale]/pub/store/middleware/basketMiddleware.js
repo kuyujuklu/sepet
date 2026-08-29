@@ -5,7 +5,7 @@ import {
     increaseDishAmount,
     setBasket,
     setBasketPubID,
-    setLastOrder,
+    addOrderToHistory,
 } from "../basketSlice";
 import { store } from "../store";
 
@@ -19,16 +19,10 @@ const write = (store) => {
     localStorage.setItem("lastBasketAction", new Date().getTime());
 };
 
-const writeLastOrder = (store) => {
-    if (!store?.getState().basketSlice?.lastOrder) return;
-    console.log(
-        "setting last order in local storage: ",
-        JSON.stringify(store.getState().basketSlice.lastOrder)
-    );
-    localStorage.setItem(
-        "lastOrder",
-        JSON.stringify(store.getState().basketSlice.lastOrder)
-    );
+const writeOrderHistory = (store) => {
+    const orderHistory = store?.getState().basketSlice?.orderHistory;
+    if (!orderHistory) return;
+    localStorage.setItem("orderHistory", JSON.stringify(orderHistory));
 };
 
 export const listenToIncreaseDishAmount = createListenerMiddleware();
@@ -56,10 +50,10 @@ listenToChangePubID.startListening({
     actionCreator: setBasketPubID,
     effect: () => write(store),
 });
-export const listenToSetLastOrder = createListenerMiddleware();
-listenToSetLastOrder.startListening({
-    actionCreator: setLastOrder,
-    effect: () => writeLastOrder(store),
+export const listenToAddOrderToHistory = createListenerMiddleware();
+listenToAddOrderToHistory.startListening({
+    actionCreator: addOrderToHistory,
+    effect: () => writeOrderHistory(store),
 });
 
 export const basketMiddleware = [
@@ -67,5 +61,5 @@ export const basketMiddleware = [
     listenToDecreaseDishAmout.middleware,
     listenToClearBasket.middleware,
     listenToChangePubID.middleware,
-    listenToSetLastOrder.middleware,
+    listenToAddOrderToHistory.middleware,
 ];

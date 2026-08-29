@@ -39,8 +39,8 @@
         },
         "basket": {
             "headline": "Coș",
-            "last_order": {
-                "headline": "Ultima comandă",
+            "order_history": {
+                "headline": "Comenzile dvs.",
                 "delivery": "Livrare la domiciliu",
                 "in_place_order":"Comandă la local"
             },
@@ -88,6 +88,7 @@
                 "success_body": "{{pubName}} pregătește deja comanda dvs. nr. {{orderID}}.",
                 "success_eta": "Curierul va ajunge la dvs. în jurul orei {{time}}.",
                 "view_order_button": "Vezi comanda",
+                "order_more_button": "Comandă din nou",
                 "payment_on_delivery": "Plată la livrare",
                 "create_order_button": "Comandă"
 

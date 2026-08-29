@@ -1,9 +1,15 @@
 import { createSlice } from "@reduxjs/toolkit";
 
+// A lightweight, local-only sense of "what did I order before" - not real
+// order history (that lives on the backend, behind an account this app
+// doesn't have yet), just a receipt trail kept in this browser so a client
+// isn't left with literally nothing after checkout.
+const MAX_ORDER_HISTORY = 5;
+
 const initialState = {
     pubID: null,
     dishes: {},
-    lastOrder: null,
+    orderHistory: [],
 };
 
 const basketSlice = createSlice({
@@ -82,11 +88,19 @@ const basketSlice = createSlice({
                 }
             }
         },
-        setLastOrder(state, action) {
+        // A freshly-placed order - newest first, de-duped by id (a redundant
+        // dispatch for the same order is a no-op reorder, not a duplicate
+        // entry), capped so this can't grow without bound in localStorage.
+        addOrderToHistory(state, action) {
             const order = action.payload.order
-            if(!order) return;
+            if (!order?.id) return;
 
-            state.lastOrder = order
+            state.orderHistory = [order, ...state.orderHistory.filter((o) => o.id !== order.id)].slice(0, MAX_ORDER_HISTORY)
+        },
+        // Full replace - the hydration path (BasketPreloader reading back
+        // whatever was already in localStorage), not an incremental change.
+        setOrderHistory(state, action) {
+            state.orderHistory = Array.isArray(action.payload) ? action.payload : []
         },
         setBasket(state, action) {
             state.dishes = action.payload
@@ -101,9 +115,9 @@ export const selectDishes = (state) => state.basketSlice.dishes;
 export const selectBasketCount = (state) =>
     Object.values(state.basketSlice.dishes).reduce((acc, dish) => acc + (dish?.count ?? 0), 0);
 
-export const selectLastOrder = (state) => state.basketSlice.lastOrder
+export const selectOrderHistory = (state) => state.basketSlice.orderHistory
 
-export const { increaseDishAmount, decreaseDishAmount, clearBasket, setBasketPubID, setLastOrder, setBasket} =
+export const { increaseDishAmount, decreaseDishAmount, clearBasket, setBasketPubID, addOrderToHistory, setOrderHistory, setBasket} =
     basketSlice.actions;
 
 export default basketSlice.reducer;

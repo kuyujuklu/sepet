@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { useTranslation } from "react-i18next";
 import { getPubWorkHours } from "../../utils/pub";
 import { convertMinsToTime } from "../../utils/time";
@@ -47,11 +48,18 @@ const PubCard = ({ pub }) => {
         style={{
           position: "relative",
           height: 132,
-          background: pub?.bg_image_file_name
-            ? `url(/api-static/images/pubs/bgs/${pub.bg_image_file_name}) center/cover`
-            : "#123527",
+          background: "#123527",
         }}
       >
+        {pub?.bg_image_file_name && (
+          <Image
+            src={`/api-static/images/pubs/bgs/${pub.bg_image_file_name}`}
+            alt={pub?.name ?? ""}
+            fill
+            sizes="(max-width: 640px) 100vw, 380px"
+            style={{ objectFit: "cover" }}
+          />
+        )}
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0) 40%, rgba(0,0,0,0.55) 100%)" }} />
 
         {!isOpen && (
