@@ -1,6 +1,8 @@
 "use client"
 import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import LocationPickerFields from '@/app/shared-components/LocationPicker/LocationPickerFields';
+import { reverseGeocode } from '@/app/utils/reverseGeocode';
 
 // The confirmed address label - always set together with a precise
 // coordinate through the map picker (LocationPickerFields), reverse-
@@ -17,13 +19,33 @@ const readManualAddress = () => {
 }
 
 const ChooseLocation = ({ geoCoords, isDetecting, setMapPoint, mapDefaultCenter }) => {
+  const { i18n } = useTranslation()
   const [manualAddress, setManualAddress] = useState(null)
+  const [autoAddress, setAutoAddress] = useState(null)
   const [isEditorOpen, setIsEditorOpen] = useState(false)
   const wrapRef = useRef(null)
 
   useEffect(() => {
     setManualAddress(readManualAddress())
   }, [])
+
+  // As soon as there's a raw coordinate but nothing the client has actually
+  // confirmed, silently resolve what it points to - so the collapsed bar
+  // can show the real address delivery pricing is based on ("мы определили
+  // ваш адрес: ...") instead of a vague "Ваше местоположение" the client
+  // would have to open the picker just to decode.
+  useEffect(() => {
+    if (!geoCoords || manualAddress?.town) {
+      setAutoAddress(null)
+      return
+    }
+
+    let isActual = true
+    reverseGeocode(geoCoords, i18n.language).then((result) => {
+      if (isActual) setAutoAddress(result)
+    })
+    return () => { isActual = false }
+  }, [geoCoords, manualAddress, i18n.language])
 
   // Close on an outside click
   useEffect(() => {
@@ -49,14 +71,18 @@ const ChooseLocation = ({ geoCoords, isDetecting, setMapPoint, mapDefaultCenter 
     ? [manualAddress.town, manualAddress.street].filter(Boolean).join(", ")
     : isDetecting
       ? "Определяем адрес…"
-      : geoCoords
-        ? "Ваше местоположение"
-        : "Выберите адрес доставки"
+      : autoAddress?.town
+        ? [autoAddress.town, autoAddress.fullAddress].filter(Boolean).join(", ")
+        : geoCoords
+          ? "Ваше местоположение"
+          : "Выберите адрес доставки"
 
   const captionLabel = manualAddress?.town
     ? "Доставляем на адрес"
     : geoCoords
-      ? "Уточните адрес"
+      ? autoAddress?.town
+        ? "Мы определили ваш адрес"
+        : "Уточните адрес"
       : isUnknown
         ? "Адрес не указан"
         : "Укажите адрес"
@@ -84,7 +110,7 @@ const ChooseLocation = ({ geoCoords, isDetecting, setMapPoint, mapDefaultCenter 
   }
 
   return (
-    <div ref={wrapRef} style={{ position: "relative", zIndex: 200 }}>
+    <div ref={wrapRef} style={{ position: "relative", zIndex: 50 }}>
       <button
         onClick={openEditor}
         style={{
@@ -134,7 +160,7 @@ const ChooseLocation = ({ geoCoords, isDetecting, setMapPoint, mapDefaultCenter 
 
       {isApproximate && (
         <div style={{ fontSize: 11.5, color: "#94a3b0", marginTop: 6, paddingLeft: 2, lineHeight: 1.4 }}>
-          Адрес и цены доставки — примерные.{" "}
+          Цена доставки указана до указанного адреса.{" "}
           <button
             onClick={openEditor}
             style={{ color: "#1E6FBF", fontWeight: 600, textDecoration: "underline", background: "none", border: "none", padding: 0, font: "inherit", cursor: "pointer" }}

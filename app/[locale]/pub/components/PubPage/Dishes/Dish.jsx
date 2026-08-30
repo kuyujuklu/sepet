@@ -1,9 +1,10 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { useTranslation } from "react-i18next";
 import { ThemeContext } from "../ThemeContextProvider";
 import DishPhotoLightbox from "./DishPhotoLightbox";
 import ConfirmPopup from "@/app/shared-components/Popup/ConfirmPopup";
+import Toast from "@/app/shared-components/Popup/Toast";
 import { currencies } from "@/app/static-data/data";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -12,7 +13,10 @@ import {
   selectDish,
 } from "@/app/[locale]/pub/store/basketSlice";
 import { addCommissionToPrice } from "../../../../../utils/dish";
-import { countCommissionForPub } from "../../../../../utils/pub";
+import { countCommissionForPub, getPubWorkHours } from "../../../../../utils/pub";
+
+const CLOSED_TOAST_MESSAGE = "Сейчас закрыто, но вы можете собрать корзину — оформим, как только заведение откроется.";
+const CLOSED_TOAST_DURATION = 3500;
 
 const ACCENT = "#2D7DD2";
 const SECONDARY = "#123527";
@@ -22,6 +26,8 @@ const Dish = ({ pub, dish, currencyID }) => {
   const dispatch = useDispatch();
   const [isPhotoOpen, setIsPhotoOpen] = useState(false);
   const [isRemoveConfirmOpen, setIsRemoveConfirmOpen] = useState(false);
+  const [isClosedToastVisible, setIsClosedToastVisible] = useState(false);
+  const closedToastTimerRef = useRef(null);
 
   const dishAmountFromState = useSelector(selectDish(dish?.id));
   const dishAmount = dishAmountFromState?.count ?? 0;
@@ -32,8 +38,23 @@ const Dish = ({ pub, dish, currencyID }) => {
   // orderable, which is how every dish behaved before the field existed.
   const isAvailable = dish?.available !== false;
 
+  useEffect(() => () => clearTimeout(closedToastTimerRef.current), []);
+
+  // Adding while closed is allowed on purpose (no barrier to building a
+  // cart for whenever the pub reopens - checkout itself is what actually
+  // gates on isDeliveryAvailable) - this just makes sure the client knows
+  // why, instead of finding out at checkout. Re-triggering resets the
+  // timer rather than stacking, so rapid clicks don't spam toasts.
+  const notifyClosed = () => {
+    setIsClosedToastVisible(true);
+    clearTimeout(closedToastTimerRef.current);
+    closedToastTimerRef.current = setTimeout(() => setIsClosedToastVisible(false), CLOSED_TOAST_DURATION);
+  };
+
   const handleIncreaseClick = () => {
     if (!dish.id || !isAvailable) return;
+
+    if (!getPubWorkHours(pub).isDeliveryAvailable) notifyClosed();
 
     dispatch(increaseDishAmount({ dishID: dish.id }));
   };
@@ -213,6 +234,8 @@ const Dish = ({ pub, dish, currencyID }) => {
         onConfirm={confirmRemove}
         onCancel={() => setIsRemoveConfirmOpen(false)}
       />
+
+      <Toast message={CLOSED_TOAST_MESSAGE} visible={isClosedToastVisible} />
     </div>
   );
 };

@@ -65,6 +65,11 @@ const BasketPage = ({ data }) => {
   const [phone, setPhone] = useState("");
   const [paymentType, setPaymentType] = useState(orderPaymentTypes.cash);
   const [comments, setComments] = useState("");
+  // No backend field for this yet - folded into the free-text comment at
+  // submit time (see buildOrder) so the pub sees it the same way it sees
+  // any other note. Purely a wish, not an enforced schedule: nothing here
+  // holds the order back or sends it automatically at that time.
+  const [deliverByTime, setDeliverByTime] = useState("");
 
   // ---- pricing ----
   const commission = countCommissionForPub(pub);
@@ -136,7 +141,10 @@ const BasketPage = ({ data }) => {
 
   const buildOrder = () => ({
     town: manualAddress?.town ?? "",
-    comments,
+    comments: [
+      deliverByTime.trim() ? `Доставить к: ${deliverByTime.trim()}` : null,
+      comments.trim() || null,
+    ].filter(Boolean).join("\n"),
     fullAddress: manualAddress?.street ?? "",
     tableNumber: 1,
     mainPhoneNumber: phone,
@@ -432,6 +440,23 @@ const BasketPage = ({ data }) => {
                     </div>
                   );
                 })}
+              </div>
+
+              {/* Deliver by time - a wish passed along as a note, not an
+                  enforced schedule; see buildOrder for how it's folded into
+                  the comment sent to the pub. */}
+              <div style={cardStyle}>
+                <span style={labelStyle}>Желаемое время доставки</span>
+                <input
+                  type="text"
+                  value={deliverByTime}
+                  onChange={(e) => setDeliverByTime(e.target.value)}
+                  placeholder="Например: 18:30 или после 19:00"
+                  style={{ fontSize: 13.5, border: "1.5px solid #e7ebef", borderRadius: 12, padding: "10px 12px", width: "100%" }}
+                />
+                <span style={{ fontSize: 11, color: "#94a3b0", lineHeight: 1.4 }}>
+                  Необязательно. Заведение постарается учесть, но точное время не гарантировано.
+                </span>
               </div>
 
               {/* Comment */}
