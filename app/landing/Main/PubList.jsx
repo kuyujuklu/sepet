@@ -46,7 +46,7 @@ const PubList = ({ locationLatLng, activeSection }) => {
   const visiblePubs = useMemo(() => {
     if (!pubs) return []
 
-    let result = pubs.filter((pub) => pubMatchesSection([], activeSection, pub.id))
+    let result = pubs.filter((pub) => pubMatchesSection(pub, activeSection))
 
     if (activeFilter === filterIds.open) {
       result = result.filter((pub) => getPubWorkHours(pub).isDeliveryAvailable)

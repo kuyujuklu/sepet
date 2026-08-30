@@ -1,5 +1,6 @@
 import { useContext, useState } from "react";
 import Image from "next/image";
+import { useTranslation } from "react-i18next";
 import { ThemeContext } from "../ThemeContextProvider";
 import DishPhotoLightbox from "./DishPhotoLightbox";
 import ConfirmPopup from "@/app/shared-components/Popup/ConfirmPopup";
@@ -17,6 +18,7 @@ const ACCENT = "#2D7DD2";
 const SECONDARY = "#123527";
 
 const Dish = ({ pub, dish, currencyID }) => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const [isPhotoOpen, setIsPhotoOpen] = useState(false);
   const [isRemoveConfirmOpen, setIsRemoveConfirmOpen] = useState(false);
@@ -25,8 +27,13 @@ const Dish = ({ pub, dish, currencyID }) => {
   const dishAmount = dishAmountFromState?.count ?? 0;
   const themeContext = useContext(ThemeContext);
 
+  // The stop list. `available` is only ever false when the pub actually took
+  // the dish off it - a dish from an endpoint that doesn't send the field is
+  // orderable, which is how every dish behaved before the field existed.
+  const isAvailable = dish?.available !== false;
+
   const handleIncreaseClick = () => {
-    if (!dish.id) return;
+    if (!dish.id || !isAvailable) return;
 
     dispatch(increaseDishAmount({ dishID: dish.id }));
   };
@@ -60,7 +67,7 @@ const Dish = ({ pub, dish, currencyID }) => {
   const commission = countCommissionForPub(pub)
 
   return (
-    <div style={{ display: "flex", gap: 12 }}>
+    <div style={{ display: "flex", gap: 12, opacity: isAvailable ? 1 : 0.55 }}>
       <button
         onClick={() => dish.image_file_name && setIsPhotoOpen(true)}
         aria-label={dish.image_file_name ? `${dish.name} - увеличить фото` : undefined}
@@ -79,12 +86,33 @@ const Dish = ({ pub, dish, currencyID }) => {
       >
         {dish.image_file_name && (
           <Image
-            src={`/api-static/images/dishes/${dish.image_file_name}`}
+            // The thumbnail is generated on upload and is empty when the
+            // original was already small enough (or could not be decoded).
+            src={`/api-static/images/dishes/${dish.image_thumb_file_name || dish.image_file_name}`}
             alt={dish.name}
             fill
             sizes="92px"
             style={{ objectFit: "cover" }}
           />
+        )}
+        {!isAvailable && (
+          <span
+            style={{
+              position: "absolute",
+              inset: 0,
+              background: "rgba(20,26,33,0.55)",
+              color: "#fff",
+              fontSize: 10.5,
+              fontWeight: 700,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              textAlign: "center",
+              padding: 6,
+            }}
+          >
+            {t("client.dish.out_of_stock")}
+          </span>
         )}
       </button>
 
@@ -142,12 +170,15 @@ const Dish = ({ pub, dish, currencyID }) => {
             )}
             <button
               onClick={handleIncreaseClick}
+              disabled={!isAvailable}
+              aria-label={isAvailable ? undefined : t("client.dish.out_of_stock")}
               style={{
                 width: 24,
                 height: 24,
                 borderRadius: "50%",
                 border: "none",
-                background: ACCENT,
+                background: isAvailable ? ACCENT : "#c7cdd3",
+                cursor: isAvailable ? "pointer" : "not-allowed",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -167,6 +198,7 @@ const Dish = ({ pub, dish, currencyID }) => {
           smallestPrice={smallestPrice}
           commission={commission}
           dishAmount={dishAmount}
+          isAvailable={isAvailable}
           onIncrease={handleIncreaseClick}
           onDecrease={handleDecreaseClick}
           onClose={() => setIsPhotoOpen(false)}

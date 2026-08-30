@@ -9,9 +9,11 @@ const distanceInKm = (a, b) => {
   return Math.sqrt(latKm * latKm + lngKm * lngKm);
 };
 
-// Fallback when Nominatim is unreachable/slow: the nearest of our own 31
+// Fallback when the geocoder is unreachable/slow: the nearest of our own 31
 // fixed town centers, same idea as mobile's getNearestCity - just town-level,
-// no street.
+// no street. Kept local rather than moved to the backend's `geo/cities`,
+// which is a coarse 8-city national list and would resolve a village to a
+// city 30 km away.
 const getNearestTownLabel = (coords, lang, maxDistanceKm = 35) => {
   if (!coords?.lat || !coords?.lng) return null;
 
@@ -32,11 +34,14 @@ const getNearestTownLabel = (coords, lang, maxDistanceKm = 35) => {
   return { town: translates[nearestId] ?? nearestId, fullAddress: "" };
 };
 
-// Real reverse geocoding via OSM Nominatim (free, no API key). Its usage
-// policy caps at ~1 request/sec and discourages heavy production traffic
-// without self-hosting - fine for now, worth revisiting (e.g. Google
-// Geocoding API) if this site's traffic grows.
-const NOMINATIM_URL = "https://nominatim.openstreetmap.org/reverse";
+// Reverse geocoding through our own backend (`/api/client/geo/reverse`),
+// which calls Google Maps with a server-side key. This used to call OSM
+// Nominatim straight from the browser, whose usage policy caps at ~1
+// request/sec and asks that production traffic self-host - and which
+// answered with a different, less precise address than the one the app and
+// the couriers see, since the backend has always geocoded through Google.
+// One geocoder now, one answer.
+const GEO_REVERSE_URL = "/api/client/geo/reverse";
 
 const fetchWithTimeout = (url, { timeout = 6000, ...options } = {}) => {
   const controller = new AbortController();
@@ -47,34 +52,26 @@ const fetchWithTimeout = (url, { timeout = 6000, ...options } = {}) => {
   );
 };
 
-// {lat, lng} -> {town, fullAddress} (a street + house line, or "" when
-// Nominatim has none) or null when nothing usable came back at all - callers
-// should fall back to getNearestTownLabel/a manual address form in that case.
+// {lat, lng} -> {town, fullAddress} (a street + house line, or "" when the
+// geocoder has none) or null when nothing usable came back at all - callers
+// should fall back to a manual address form in that case.
 export const reverseGeocode = async (coords, lang = "ru") => {
   if (!coords?.lat || !coords?.lng) return null;
 
   try {
-    const url = `${NOMINATIM_URL}?format=jsonv2&lat=${coords.lat}&lon=${coords.lng}&accept-language=${lang}&zoom=18&addressdetails=1`;
-    const resp = await fetchWithTimeout(url, {
-      headers: { "Accept-Language": lang },
-    });
+    const resp = await fetchWithTimeout(
+      `${GEO_REVERSE_URL}?lat=${coords.lat}&lng=${coords.lng}`,
+    );
 
-    if (!resp.ok) throw new Error(`nominatim ${resp.status}`);
+    if (!resp.ok) throw new Error(`geo/reverse ${resp.status}`);
 
     const data = await resp.json();
-    const address = data?.address;
-    if (!address) return getNearestTownLabel(coords, lang);
+    if (!data?.ok || !data?.town) return getNearestTownLabel(coords, lang);
 
-    const town =
-      address.city ?? address.town ?? address.village ?? address.municipality;
-    const street = address.road;
-    const house = address.house_number;
-
-    if (!town) return getNearestTownLabel(coords, lang);
-
-    const fullAddress = [street, house].filter(Boolean).join(" ");
-
-    return { town, fullAddress };
+    // `street` is the street + house line; `address` is the whole formatted
+    // address, which repeats the town - the street line is what the checkout
+    // shows next to a separate town field.
+    return { town: data.town, fullAddress: data.street ?? "" };
   } catch (e) {
     console.log("reverseGeocode failed, falling back to nearest town: ", e);
     return getNearestTownLabel(coords, lang);

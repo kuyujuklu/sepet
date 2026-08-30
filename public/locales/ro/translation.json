@@ -37,6 +37,10 @@
             "delivery_to": "Livrare către",
             "open_in_app": "Deschide în aplicație"
         },
+        "dish": {
+            "out_of_stock": "Nu este disponibil",
+            "out_of_stock_short": "Nu"
+        },
         "basket": {
             "headline": "Coș",
             "order_history": {
@@ -53,7 +57,9 @@
             "clear_confirm_title": "Golești coșul?",
             "clear_confirm_body": "Toate produsele adăugate vor fi eliminate.",
             "clear_confirm_button": "Golește",
-            "clear_confirm_cancel": "Anulează"
+            "clear_confirm_cancel": "Anulează",
+            "below_min_order_price": "Suma minimă a comenzii este {{min}} {{currency}}. Mai adăugați {{amount}} {{currency}}.",
+            "unavailable_dishes": "Momentan nu pot fi comandate: {{dishes}}. Ștergeți-le din coș pentru a plasa comanda."
         },
         "popups": {
             "create_order": {
@@ -90,6 +96,8 @@
                 "view_order_button": "Vezi comanda",
                 "order_more_button": "Comandă din nou",
                 "payment_on_delivery": "Plată la livrare",
+                "delivery_free": "Gratuit",
+                "free_delivery_hint": "Până la livrarea gratuită au mai rămas {{amount}} {{currency}}",
                 "create_order_button": "Comandă"
 
             },

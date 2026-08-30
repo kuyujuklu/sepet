@@ -17,6 +17,7 @@ const DishPhotoLightbox = ({
   smallestPrice,
   commission,
   dishAmount,
+  isAvailable = true,
   onIncrease,
   onDecrease,
   onClose,
@@ -71,7 +72,8 @@ const DishPhotoLightbox = ({
             )}
             <button
               onClick={onIncrease}
-              style={{ width: 30, height: 30, borderRadius: "50%", border: "none", background: ACCENT, display: "flex", alignItems: "center", justifyContent: "center" }}
+              disabled={!isAvailable}
+              style={{ width: 30, height: 30, borderRadius: "50%", border: "none", background: isAvailable ? ACCENT : "#c7cdd3", cursor: isAvailable ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center" }}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round"><path d="M12 5v14M5 12h14" /></svg>
             </button>

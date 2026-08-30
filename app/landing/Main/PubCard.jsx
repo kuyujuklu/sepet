@@ -3,7 +3,7 @@ import Image from "next/image";
 import { useTranslation } from "react-i18next";
 import { getPubWorkHours } from "../../utils/pub";
 import { convertMinsToTime } from "../../utils/time";
-import { getPubSectionOverride, sectionIds } from "../../utils/sections";
+import { getPubSection, sectionIds } from "../../utils/sections";
 
 const sectionLabels = {
   [sectionIds.food]: "Еда",
@@ -27,7 +27,7 @@ const PubCard = ({ pub }) => {
 
   const hasRating = !isNaN(+pub?.rating) && +pub?.rating > 0;
   const hasFreeDelivery = !isNaN(+pub?.shipping_free_delivery_price) && +pub?.shipping_free_delivery_price > 0;
-  const sectionLabel = sectionLabels[getPubSectionOverride(pub?.id) ?? sectionIds.food];
+  const sectionLabel = sectionLabels[getPubSection(pub)];
   const distanceKm = typeof pub?.distance === "number" ? (pub.distance / 1000).toFixed(1) : null;
 
   return (

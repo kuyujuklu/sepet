@@ -35,15 +35,20 @@ export const getPubWorkHours = (pub) => {
   };
 }
 
+// Accepts either shape the API returns these fields in: nested under
+// `shipping` on a full pub, flat on the pub summary the aggregated feed
+// embeds next to every dish.
 export const countCommissionForPub = (pub) => {
+  const shipping = pub?.shipping ?? pub;
+
   const shouldAddCommission =
-    pub?.shipping?.delivery_type === deliveryTypes.deliveryService &&
-    pub?.shipping?.add_commission_to_dish_prices;
+    shipping?.delivery_type === deliveryTypes.deliveryService &&
+    shipping?.add_commission_to_dish_prices;
 
   const commission = shouldAddCommission
-    ? pub?.shipping?.commission_for_dish_prices
+    ? shipping?.commission_for_dish_prices
     : 0;
 
 
-  return commission
+  return commission ?? 0
 }

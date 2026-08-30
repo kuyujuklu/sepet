@@ -47,3 +47,15 @@ export const convertMinsToTime = (minutes) => {
 
   return `${hours}:${formattedMinutes}`;
 }
+
+// Just the clock part of an API timestamp, for the delivery window the server
+// puts on an order (estimated_delivery_time_from/to). Same UTC handling as
+// ConvertQrMenuApiTimeToLocal - the API sends UTC without a zone marker.
+export const ConvertQrMenuApiTimeToLocalClock = (time) => {
+  if (!time) return null;
+
+  const date = GetUtcDateFromApiTime(time);
+  if (isNaN(date.getTime())) return null;
+
+  return `${date.getHours()}:${String(date.getMinutes()).padStart(2, "0")}`;
+};

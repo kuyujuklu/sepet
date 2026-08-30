@@ -20,9 +20,9 @@ import {
   openSelectLocationPopup,
 } from "../../store/locationSlice";
 import { useCreateOrderMutation } from "../../api/rtk-query/orders";
-import { computeBasketSubtotal, addCommissionToPrice } from "../../../../utils/dish";
+import { priceBasket, isBelowMinimumError } from "../../../../utils/pricing";
 import { countCommissionForPub, getPubWorkHours } from "../../../../utils/pub";
-import { convertMinsToTime } from "../../../../utils/time";
+import { ConvertQrMenuApiTimeToLocalClock } from "../../../../utils/time";
 import { currencies, orderPaymentTypes, orderTypes } from "@/app/static-data/data";
 import { validateOrder, validatePhone } from "./validators";
 import PhoneNumberInput from "@/app/shared-components/Inputs/PhoneNumberInput";
@@ -72,20 +72,14 @@ const BasketPage = ({ data }) => {
   const isDeliveryAvailable = pubWorkHours.isDeliveryAvailable;
   const currency = currencies.find((c) => c.id === pub?.currency_id)?.symbol ?? "Lei";
 
-  const productPrice = useMemo(
-    () => computeBasketSubtotal(basketDishes, pubDishes, commission),
-    [basketDishes, pubDishes, commission]
+  // Free delivery and the pub's minimum are the server's rules; priceBasket
+  // mirrors them so the checkout never promises a total the server would
+  // disagree with. Only `isDeliveryAvailable` gates ordering by the clock -
+  // a delivery price is a property of the address, not of the hour.
+  const pricing = useMemo(
+    () => priceBasket({ pub, basketDishes, pubDishes, commission }),
+    [pub, basketDishes, pubDishes, commission]
   );
-  // Zone-based delivery pricing is resolved server-side from lat/lng and
-  // doesn't depend on whether the pub happens to be open right now - those
-  // are two independent things (a price for this address vs. accepting
-  // orders at this hour). Only `isDeliveryAvailable` (below) should gate
-  // ordering; showing "—" for price whenever the pub is merely closed hid a
-  // real, already-known price. `null`/`undefined` (genuinely unresolved,
-  // e.g. address outside every zone) is the only case with no real price.
-  const hasDeliveryPrice = pub?.shipping_price !== null && pub?.shipping_price !== undefined;
-  const deliveryPrice = hasDeliveryPrice ? +pub.shipping_price : 0;
-  const totalPrice = productPrice + (hasDeliveryPrice ? deliveryPrice : 0);
 
   const basketItems = useMemo(() => {
     if (!pubDishes) return [];
@@ -94,48 +88,48 @@ const BasketPage = ({ data }) => {
       .filter((item) => item.dish && item.count > 0);
   }, [basketDishes, pubDishes]);
 
+  // The stop list. A dish taken off it while the basket sat open is still in
+  // the basket, and nothing server-side refuses it on submit, so ordering is
+  // blocked here until it is removed.
+  const unavailableItems = useMemo(
+    () => basketItems.filter((item) => item.dish?.available === false),
+    [basketItems]
+  );
+
   // ---- submit ----
-  const [createOrder, { data: createOrderResp, isLoading, isError, isSuccess }] = useCreateOrderMutation();
+  const [createOrder, { data: createOrderResp, error: createOrderError, isLoading, isError, isSuccess }] = useCreateOrderMutation();
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
   const [successInfo, setSuccessInfo] = useState(null);
   const [isClearConfirmOpen, setIsClearConfirmOpen] = useState(false);
 
   useEffect(() => {
-    if (!createOrderResp?.order || !pubDishes) return;
+    if (!createOrderResp?.order) return;
 
-    const dishPrices = {};
-    pubDishes.forEach((item) => {
-      dishPrices[item.id] = item.sale_price && item.sale_price < item.price ? item.sale_price : item.price;
-    });
+    const order = createOrderResp.order;
 
-    let amount = createOrderResp.order.dishes.reduce(
-      (acc, dish) => acc + (dishPrices[dish.dish_id] ?? 0) * dish.count,
-      0
-    );
-    amount = addCommissionToPrice(amount, commission);
-    if (createOrderResp.order.order_type === orderTypes.delivery && deliveryPrice) {
-      amount += deliveryPrice;
-    }
+    // The order comes back priced by the server (items_price / delivery_price
+    // / total_price), so the receipt states what was actually charged rather
+    // than a second, independently computed guess at it. Older orders and any
+    // response without the totals fall back to the basket's own arithmetic.
+    const amount = order.total_price || pricing.totalPrice;
 
     dispatch(addOrderToHistory({
       order: {
-        id: createOrderResp.order.id,
-        pub_id: createOrderResp.order.pub_id,
-        order_type: createOrderResp.order.order_type,
-        created_time: createOrderResp.order.created_time,
+        id: order.id,
+        pub_id: order.pub_id,
+        order_type: order.order_type,
+        created_time: order.created_time,
         amount,
       },
     }));
 
-    const etaMinutesFromNow = pub?.shipping?.shipping_time_to;
-    let etaLabel = null;
-    if (etaMinutesFromNow != null) {
-      const now = new Date();
-      const etaTotalMinutes = (now.getHours() * 60 + now.getMinutes() + etaMinutesFromNow) % (24 * 60);
-      etaLabel = convertMinsToTime(etaTotalMinutes);
-    }
+    // The delivery window is the pub's "ready at" estimate plus the window it
+    // advertises, worked out server-side - previously this added
+    // shipping_time_to to the clock in the browser, which ignored how long
+    // the pub actually needs to prepare the order.
+    const etaLabel = ConvertQrMenuApiTimeToLocalClock(order.estimated_delivery_time_to);
 
-    setSuccessInfo({ orderID: createOrderResp.order.id, total: Math.round(amount), etaLabel });
+    setSuccessInfo({ orderID: order.id, total: Math.round(amount), etaLabel });
     dispatch(clearBasket());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [createOrderResp]);
@@ -153,8 +147,13 @@ const BasketPage = ({ data }) => {
     ...(geoCoords ?? {}),
   });
 
+  // Everything that makes an order impossible right now, in one place: the
+  // pub's hours, its minimum, and the stop list.
+  const canSubmit =
+    isDeliveryAvailable && !pricing.isBelowMinimum && unavailableItems.length === 0;
+
   const handleSubmit = () => {
-    if (!geoCoords) return;
+    if (!geoCoords || !canSubmit) return;
 
     const order = buildOrder();
     const validationErrors = validateOrder(order);
@@ -167,6 +166,9 @@ const BasketPage = ({ data }) => {
 
   const showSuccess = isSuccess && !!successInfo;
   const showError = isError && !showSuccess;
+  // A minimum raised while the basket sat open still lands as a 400 here, and
+  // "check your internet connection" would be the wrong thing to say about it.
+  const showBelowMinimumError = showError && isBelowMinimumError(createOrderError);
 
   if (!pub) return null;
 
@@ -253,7 +255,15 @@ const BasketPage = ({ data }) => {
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#c2444c" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 1 }}><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
           <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
             <span style={{ fontSize: 13.5, fontWeight: 700, color: "#a3242c" }}>{t("client.popups.create_order.submit_error_title")}</span>
-            <span style={{ fontSize: 12.5, color: "#b3474d", lineHeight: 1.4 }}>{t("client.popups.create_order.submit_error_body")}</span>
+            <span style={{ fontSize: 12.5, color: "#b3474d", lineHeight: 1.4 }}>
+              {showBelowMinimumError
+                ? t("client.basket.below_min_order_price", {
+                    min: Math.round(pricing.minOrderPrice),
+                    amount: Math.ceil(pricing.missingForMinimum),
+                    currency,
+                  })
+                : t("client.popups.create_order.submit_error_body")}
+            </span>
           </div>
         </div>
       )}
@@ -295,17 +305,54 @@ const BasketPage = ({ data }) => {
           <div style={{ background: "#f7f9fa", borderRadius: 16, padding: 14, display: "flex", flexDirection: "column", gap: 8 }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 13.5 }}>
               <span style={{ color: "#78838d" }}>{t("client.popups.create_order.product_price")}</span>
-              <span style={{ color: "#1c2733", fontWeight: 500 }}>{Math.round(productPrice)}&nbsp;{currency}</span>
+              <span style={{ color: "#1c2733", fontWeight: 500 }}>{Math.round(pricing.itemsPrice)}&nbsp;{currency}</span>
             </div>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 13.5 }}>
               <span style={{ color: "#78838d" }}>{t("client.popups.create_order.delivery_price")}</span>
-              <span style={{ color: "#1c2733", fontWeight: 500 }}>{hasDeliveryPrice ? `${Math.round(deliveryPrice)} ${currency}` : "—"}</span>
+              {pricing.isDeliveryFree ? (
+                <span style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
+                  <span style={{ color: "#94a3b0", textDecoration: "line-through" }}>
+                    {Math.round(pricing.zoneDeliveryPrice)}&nbsp;{currency}
+                  </span>
+                  <span style={{ color: "#1E7F4F", fontWeight: 700 }}>{t("client.popups.create_order.delivery_free")}</span>
+                </span>
+              ) : (
+                <span style={{ color: "#1c2733", fontWeight: 500 }}>{pricing.hasDeliveryPrice ? `${Math.round(pricing.deliveryPrice)} ${currency}` : "—"}</span>
+              )}
             </div>
+            {pricing.missingForFreeDelivery > 0 && (
+              <span style={{ fontSize: 11.5, color: "#78838d" }}>
+                {t("client.popups.create_order.free_delivery_hint", {
+                  amount: Math.ceil(pricing.missingForFreeDelivery),
+                  currency,
+                })}
+              </span>
+            )}
             <div style={{ borderTop: "1px solid #e7ebef", marginTop: 2, paddingTop: 8, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <span style={{ fontSize: 14.5, fontWeight: 700, color: "#1c2733" }}>{t("client.popups.create_order.final_price")}</span>
-              <span style={{ fontSize: 18, fontWeight: 800, color: "#1c2733" }}>{Math.round(totalPrice)}&nbsp;{currency}</span>
+              <span style={{ fontSize: 18, fontWeight: 800, color: "#1c2733" }}>{Math.round(pricing.totalPrice)}&nbsp;{currency}</span>
             </div>
           </div>
+
+          {/* The pub refuses a delivery order under its minimum (HTTP 400),
+              so the shortfall is named here rather than at submit. */}
+          {pricing.isBelowMinimum && isDeliveryAvailable && (
+            <div style={{ padding: "12px 14px", borderRadius: 14, background: "#fff7ed", border: "1px solid #fed7aa", color: "#9a3412", fontSize: 13.5 }}>
+              {t("client.basket.below_min_order_price", {
+                min: Math.round(pricing.minOrderPrice),
+                amount: Math.ceil(pricing.missingForMinimum),
+                currency,
+              })}
+            </div>
+          )}
+
+          {unavailableItems.length > 0 && (
+            <div style={{ padding: "12px 14px", borderRadius: 14, background: "#fef2f2", border: "1px solid #fecaca", color: "#a3242c", fontSize: 13.5 }}>
+              {t("client.basket.unavailable_dishes", {
+                dishes: unavailableItems.map((item) => item.dish.name).join(", "),
+              })}
+            </div>
+          )}
 
           {!isDeliveryAvailable && (
             <div style={{ padding: "12px 14px", borderRadius: 14, background: "#fff7ed", border: "1px solid #fed7aa", color: "#9a3412", fontSize: 13.5 }}>
@@ -406,10 +453,10 @@ const BasketPage = ({ data }) => {
         <div style={{ position: "fixed", left: 0, right: 0, bottom: 0, maxWidth: 600, margin: "0 auto", background: "#fff", borderTop: "1px solid #f1f3f5", padding: "14px 20px 16px" }}>
           <button
             onClick={handleSubmit}
-            disabled={isLoading || !isDeliveryAvailable}
+            disabled={isLoading || !canSubmit}
             style={{
               width: "100%",
-              background: isLoading || !isDeliveryAvailable ? "#c7cdd3" : ACCENT,
+              background: isLoading || !canSubmit ? "#c7cdd3" : ACCENT,
               color: "#fff",
               border: "none",
               padding: 14,
@@ -422,7 +469,7 @@ const BasketPage = ({ data }) => {
             }}
           >
             <span>{showError ? t("client.popups.create_order.retry_button") : t("client.basket.create_order_button")}</span>
-            <span>{Math.round(totalPrice)}&nbsp;{currency}</span>
+            <span>{Math.round(pricing.totalPrice)}&nbsp;{currency}</span>
           </button>
         </div>
       )}

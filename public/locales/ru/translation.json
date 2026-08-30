@@ -36,6 +36,10 @@
             "min_phone_length_is_8": "Минимум 8 цифр"
 
         },
+        "dish": {
+            "out_of_stock": "Нет в наличии",
+            "out_of_stock_short": "Нет"
+        },
         "basket": {
             "headline": "Корзина",
             "order_history": {
@@ -52,7 +56,9 @@
             "clear_confirm_title": "Очистить корзину?",
             "clear_confirm_body": "Все добавленные блюда будут удалены.",
             "clear_confirm_button": "Очистить",
-            "clear_confirm_cancel": "Отмена"
+            "clear_confirm_cancel": "Отмена",
+            "below_min_order_price": "Минимальная сумма заказа — {{min}} {{currency}}. Добавьте ещё на {{amount}} {{currency}}.",
+            "unavailable_dishes": "Сейчас нельзя заказать: {{dishes}}. Удалите из корзины, чтобы оформить заказ."
         },
         "popups": {
             "create_order": {
@@ -89,6 +95,8 @@
                 "view_order_button": "Смотреть заказ",
                 "order_more_button": "Заказать ещё",
                 "payment_on_delivery": "Оплата при получении",
+                "delivery_free": "Бесплатно",
+                "free_delivery_hint": "До бесплатной доставки осталось {{amount}} {{currency}}",
 
                 "create_order_button": "Заказать"
 
