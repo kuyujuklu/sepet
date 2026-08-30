@@ -15,7 +15,9 @@ import CheckboxWithLabel from "@/components/Inputs/CheckboxWithLabel";
 import { useTranslation } from "react-i18next";
 import { fixedCacheKeys } from "@/api/fixedCacheKeys";
 import SelectWithLabel from "@/components/Inputs/SelectWithLabel";
-import { categoryTypes } from "../../../static-data/data";
+import {
+  categoryTypes,
+} from "../../../static-data/data";
 import Select from "../../../components/Inputs/Select";
 
 const CreateCategoryPopup = () => {

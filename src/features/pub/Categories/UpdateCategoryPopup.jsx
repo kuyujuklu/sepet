@@ -14,7 +14,9 @@ import { HexColorPicker } from "react-colorful";
 import CheckboxWithLabel from "@/components/Inputs/CheckboxWithLabel";
 import { useTranslation } from "react-i18next";
 import { fixedCacheKeys } from "@/api/fixedCacheKeys";
-import { categoryTypes } from "@/static-data/data";
+import {
+    categoryTypes,
+} from "@/static-data/data";
 import SelectWithLabel from "@/components/Inputs/SelectWithLabel";
 import Select from "../../../components/Inputs/Select";
 
@@ -122,6 +124,7 @@ const UpdateCategoryPopup = () => {
                     />
                     
           
+
                     {selectedCategoryTypes && (
             <div className="flex gap-5 items-center">
               {/* Label */}

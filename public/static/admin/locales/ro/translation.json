@@ -211,7 +211,7 @@
                 },
                 "order_position": {
                     "pieces_shortcut": "buc",
-                    "add_dish_button":"Adăugați o poziție"
+                    "add_dish_button": "Adăugați o poziție"
                 },
                 "order_courier_info": {
                     "set_status_to_preparing_for_couriers": "Atribuiți starea comenzii în curs de pregătire, astfel încât curierii să o poată vedea",
@@ -226,7 +226,7 @@
                 "payment_type": "Metoda de plată",
                 "total_price_of_products": "Pretul produselor",
                 "price_of_shipping": "Pret de livrare",
-                "final_price" : "Prețul final",
+                "final_price": "Prețul final",
                 "comments": "Comentarii"
             },
             "shipping": {
@@ -260,6 +260,9 @@
                         "select_and_delete_area": "Selectați și ștergeți zona",
                         "save_all": "Salvați toate"
                     }
+                },
+                "shipping_min_order_prices": {
+                    "headline": "Suma minimă a comenzii"
                 }
             }
         },
@@ -285,7 +288,27 @@
                 "kebab": "Kebab",
                 "salad": "Salate",
                 "snacks": "Gustări",
-                "meat": "Mâncăruri din carne"
+                "meat": "Mâncăruri din carne",
+                "groceries": "Produse alimentare"
+            },
+            "service_types": {
+                "food": "Mâncare",
+                "flowers": "Flori",
+                "groceries": "Produse alimentare"
+            },
+            "promo": {
+                "title": "Reduceri și populare",
+                "subtitle": "Toate produsele cu reducere sau marcate ca populare",
+                "virtual_badge": "Doar în panou",
+                "discounts_count": "Reduceri: {{count}}",
+                "hits_count": "Populare: {{count}}",
+                "explainer": "Aceasta nu este o categorie reală — nu există pe server și clienții nu o văd. Aici sunt adunate produsele din toate meniurile unității; modificările se salvează în categoria în care se află de fapt produsul.",
+                "empty": "Nu a fost găsit nimic",
+                "filters": {
+                    "all": "Toate",
+                    "discounts": "Cu reducere",
+                    "hits": "Populare"
+                }
             }
         },
         "dishes": {
@@ -302,7 +325,9 @@
                 "drink": "Băutură",
                 "sushi": "Sushi",
                 "other": "Altele"
-            }
+            },
+            "is_hit_badge": "Top",
+            "not_available_badge": "Stoc epuizat"
         },
         "popups": {
             "upgrade_tariff_popup": {
@@ -328,7 +353,6 @@
                 "has_in_place_order": "Comanda in interiorul restaurantului",
                 "yes": "Da",
                 "no": "Nu",
-                
                 "theme": {
                     "title": "Tema",
                     "light": "Luminoasă",
@@ -337,7 +361,8 @@
                 "address": "Adresă",
                 "telegram_username": "Username în telegram",
                 "additional_info": "Informații suplimentare",
-                "save_button": "Salvează"
+                "save_button": "Salvează",
+                "service_type": "Tipul de serviciu"
             },
             "delete_pub_popup": {
                 "headline": "Șterge locație",
@@ -396,7 +421,9 @@
                 "sale_price": "Preț cu reducere (dacă nu există reducere, lăsați câmpul necompletat)",
                 "visible": "Vizibilitate",
                 "category": "Categorie",
-                "create_button": "Adaugă"
+                "create_button": "Adaugă",
+                "is_hit": "Cel mai vândut",
+                "available": "În stoc"
             },
             "update_dish_popup": {
                 "headline": "Editează fel de mâncare",
@@ -408,7 +435,9 @@
                 "price": "Preț",
                 "visible": "Vizibilitate",
                 "category": "Categorie",
-                "save_button": "Salvează"
+                "save_button": "Salvează",
+                "is_hit": "Cel mai vândut",
+                "available": "În stoc"
             },
             "delete_dish_popup": {
                 "headline": "Șterge fel de mâncare",
@@ -441,14 +470,14 @@
         "courier_order": {
             "reserve_order": "Ia ordine",
             "set_order_to_completed": "Livrat",
-                "flowers": "Цветы",
+            "flowers": "Цветы",
             "set_order_to_canceled": "Anulează comanda",
             "order": "Ordin",
             "where": "Unde",
             "client_name": "Numele clientului",
             "client_main_phone": "Numărul de telefon principal al clientului",
             "client_second_phone": "Număr de telefon suplimentar al clientului",
-            "comments":"Comentarii",
+            "comments": "Comentarii",
             "positions": "Poziții",
             "products_price": "Pretul produselor",
             "delivery_price": "Pret de livrare",

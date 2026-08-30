@@ -106,11 +106,36 @@ export const categoryTypes = {
     value: "meat",
     text: "admin.categories.category_types.meat",
   },
+  Groceries: {
+
+    value: "groceries",
+    text: "admin.categories.category_types.groceries",
+  },
   Other: {
     value: "other",
     text: "admin.categories.category_types.other"
   },
 };
+
+// The three kinds of service a pub can provide. The client app splits its
+// first screen into exactly these sections, and a pub belongs to exactly one -
+// it is set once in the pub settings popup, not per category.
+export const serviceTypes = {
+  Food: {
+    value: "food",
+    text: "admin.categories.service_types.food",
+  },
+  Flowers: {
+    value: "flowers",
+    text: "admin.categories.service_types.flowers",
+  },
+  Groceries: {
+    value: "groceries",
+    text: "admin.categories.service_types.groceries",
+  },
+};
+
+export const defaultServiceType = serviceTypes.Food.value;
 
 export const orderPaymentTypes = {
   cardOffline: "card_offline",

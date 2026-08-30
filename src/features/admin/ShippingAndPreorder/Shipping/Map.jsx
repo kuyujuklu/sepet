@@ -1,8 +1,6 @@
 import BlackSpinner from "@/components/loaders/BlackSpinner";
 import { Button } from "@mui/material";
 import {
-    DrawingManager,
-    DrawingManagerF,
     GoogleMap,
     Marker,
     Polygon,
@@ -17,8 +15,6 @@ import { googleMapSelectIsLoaded } from "../../../GoogleMapsLoader/googleMapsSli
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import uniqolor from "uniqolor";
-
-let lastShape = {vertices: [], shape_id: "", color: ""}
 
 function reverseArr(input) {
     var ret = [];
@@ -38,6 +34,20 @@ const colors = [
     "#00FFFF",
     "#00FF7F",
 ]
+
+const buttonSx = (bgcolor, hoverBgcolor) => ({
+    color: "white",
+    bgcolor,
+    fontSize: ".7rem",
+    fontWeight: "medium",
+    padding: ".7rem 1rem",
+    borderRadius: "10px",
+    width: "fit-content%",
+    margin: "15px 0 0  0",
+    ":hover": {
+        bgcolor: hoverBgcolor,
+    },
+});
 
 const getNotUsedColor = (shapes) => {
     if(!shapes) return colors[0]
@@ -187,57 +197,78 @@ const Map = ({ pub }) => {
         editable: true,
     };
 
-    const [drawingManagerOptions, setDrawingManagerOptions] = useState({
-        polygonOptions: polygonOptions,
-        drawingControl: true,
+    //
+    // Drawing a new area
+    // (the "drawing" library / DrawingManager was removed from the
+    // Maps JavaScript API in v3.65, so the polygon is drawn by hand)
+    //
+    const [isDrawing, setIsDrawing] = useState(false);
+    const [draftVertices, setDraftVertices] = useState([]);
+    const [draftColor, setDraftColor] = useState(colors[0]);
 
-        drawingControlOptions: {
-            position: window.google?.maps?.ControlPosition?.TOP_CENTER,
-            drawingModes: [window.google?.maps?.drawing?.OverlayType?.POLYGON],
-        },
-    });
+    const startDrawing = () => {
+        setIsDeletingPolygon(false);
+        setDraftColor(getNotUsedColor(shapes));
+        setDraftVertices([]);
+        setIsDrawing(true);
+    };
 
-    const onOverlayComplete = useCallback((event) => {
-        const shapeID = uuid()
-        let newShape = {
-            vertices: event.overlay
-                .getPath()
-                .getArray()
-                .map((a) => ({ lat: a.lat(), lng: a.lng() })),
-            shape_id: shapeID,
-            color: getNotUsedColor(shapes, shapeID)
-        }
-        event.overlay?.setMap(null);
+    const cancelDrawing = useCallback(() => {
+        setDraftVertices([]);
+        setIsDrawing(false);
+    }, []);
 
-        if (newShape.vertices.length < 3) return;
-
-        if(shapes.length === 0) {
-            lastShape = newShape
+    const finishDrawing = useCallback(() => {
+        if (draftVertices.length >= 3) {
+            const newShape = {
+                vertices: draftVertices,
+                shape_id: uuid(),
+                color: draftColor,
+            };
             setShapes((prev) => [...prev, newShape]);
+        }
+
+        setDraftVertices([]);
+        setIsDrawing(false);
+    }, [draftVertices, draftColor]);
+
+    // Once the draft has 3 vertices it encloses an area, and anything drawn on
+    // top of the map (the draft polygon itself, the vertex markers, an existing
+    // area) can receive the click instead of the map. So every overlay that can
+    // sit under the cursor while drawing forwards its click here rather than
+    // relying on the map to see it.
+    const addVertex = useCallback((e) => {
+        setDraftVertices((prev) => [
+            ...prev,
+            { lat: e.latLng.lat(), lng: e.latLng.lng() },
+        ]);
+    }, []);
+
+    const onMapClick = (e) => {
+        if (!isDrawing) {
+            setIsDeletingPolygon(false);
             return;
         }
 
-        //check if shape already exists
-        let areShapesEqual = false;
-        if(lastShape.vertices.length === newShape.vertices.length) {
-            areShapesEqual = true;
+        addVertex(e);
+    };
 
-            for(let i = 0; i < newShape.vertices.length; i++) {
-                if(lastShape.vertices[i].lat !== newShape.vertices[i].lat || lastShape.vertices[i].lng !== newShape.vertices[i].lng) {
-                    areShapesEqual = false;
-                    break;
-                }
-            }
-        }
+    const onShapeClick = (e) => {
+        if (isDrawing) addVertex(e);
+    };
 
-        if(areShapesEqual) {
-            return;
-        }
+    // Enter finishes the area, Escape discards it
+    useEffect(() => {
+        if (!isDrawing) return;
 
-        //add Shape
-        lastShape = newShape
-        setShapes((prev) => [...prev, newShape]);
-    }, [shapes]);
+        const onKeyDown = (e) => {
+            if (e.key === "Enter") finishDrawing();
+            if (e.key === "Escape") cancelDrawing();
+        };
+
+        window.addEventListener("keydown", onKeyDown);
+        return () => window.removeEventListener("keydown", onKeyDown);
+    }, [isDrawing, finishDrawing, cancelDrawing]);
 
     const [setShipping] = useSetShippingMutation();
 
@@ -303,13 +334,13 @@ const Map = ({ pub }) => {
                     <GoogleMap
                         zoom={markerPosition ? 10 : 7}
                         center={center}
-                        onClick={() => {
-                            setIsDeletingPolygon(false);
-                        }}
+                        onClick={onMapClick}
                         options={{
                             mapTypeControl: false,
                             streetViewControl: false,
                             gestureHandling: "greedy",
+                            disableDoubleClickZoom: isDrawing,
+                            draggableCursor: isDrawing ? "crosshair" : undefined,
                             mapTypeControlOptions: {
                                 mapTypeIds: [
                                     window.google?.maps.MapTypeId.ROADMAP,
@@ -329,47 +360,114 @@ const Map = ({ pub }) => {
                                 path={shape.vertices}
                                 options={{
                                     ...polygonOptions,
+                                    editable: !isDrawing,
+                                    clickable: !isDrawing,
                                     fillColor: shape.color || "#fff",
                                     strokeColor: shape.color || "#fff",
                                     strokeOpacity: 1,
                                     zIndex: 100 - index,
                                 }}
+                                onClick={onShapeClick}
                                 onMouseUp={(e) => onMouseUp(e, shape.shape_id)}
                                 onMouseDown={(e) => polygonOnMouseDown(e, shape.shape_id)}
 
                             />
                         ))}
 
-                        {/* DRAWING MANAGER */}
-                        <DrawingManagerF
-                            onOverlayComplete={onOverlayComplete}
-                            options={drawingManagerOptions}
-                        />
+                        {/* AREA BEING DRAWN */}
+                        {isDrawing && draftVertices.length > 0 && (
+                            <>
+                                <PolygonF
+                                    path={draftVertices}
+                                    onClick={addVertex}
+                                    options={{
+                                        ...polygonOptions,
+                                        editable: false,
+                                        clickable: false,
+                                        fillColor: draftColor,
+                                        strokeColor: draftColor,
+                                        strokeOpacity: 1,
+                                        zIndex: 200,
+                                    }}
+                                />
+                                {draftVertices.map((vertex, index) => (
+                                    <Marker
+                                        key={index}
+                                        position={vertex}
+                                        onClick={
+                                            index === 0
+                                                ? finishDrawing
+                                                : addVertex
+                                        }
+                                        icon={{
+                                            path: window.google.maps.SymbolPath
+                                                .CIRCLE,
+                                            scale: 5,
+                                            fillColor: "#ffffff",
+                                            fillOpacity: 1,
+                                            strokeColor: draftColor,
+                                            strokeWeight: 2,
+                                        }}
+                                    />
+                                ))}
+                            </>
+                        )}
                     </GoogleMap>
                 )}
             </div>
 
+            {/* Drawing hint */}
+            {isDrawing && (
+                <p
+                    className="text-center text-xs text-gray-500 m-auto mt-2"
+                    style={{ maxWidth: "800px" }}
+                >
+                    {t("admin.admin_panel.shipping.shipping_map.drawing_hint")}
+                </p>
+            )}
+
             {/* Buttons */}
-            <div className="flex  gap-3 m-auto" style={{ maxWidth: "800px" }}>
+            <div className="flex flex-wrap gap-3 m-auto" style={{ maxWidth: "800px" }}>
+                {isDrawing ? (
+                    <>
+                        <Button
+                            variant="contained"
+                            disabled={draftVertices.length < 3}
+                            sx={buttonSx("#16a34a", "#15803d")}
+                            onClick={finishDrawing}
+                        >
+                            {t(
+                                "admin.admin_panel.shipping.shipping_map.buttons.finish_area"
+                            )}
+                        </Button>
+                        <Button
+                            variant="contained"
+                            sx={buttonSx("#6b7280", "#4b5563")}
+                            onClick={cancelDrawing}
+                        >
+                            {t(
+                                "admin.admin_panel.shipping.shipping_map.buttons.cancel_drawing"
+                            )}
+                        </Button>
+                    </>
+                ) : (
+                    <Button
+                        variant="contained"
+                        sx={buttonSx("#3b82f6", "#2563eb")}
+                        onClick={startDrawing}
+                    >
+                        {t(
+                            "admin.admin_panel.shipping.shipping_map.buttons.draw_area"
+                        )}
+                    </Button>
+                )}
                 <Button
                     variant="contained"
-                    sx={{
-                        color: "white",
-                        bgcolor: isDeletingPolygon
-                            ? "#7f1d1d"
-                            : "rgb(239 68 68)",
-                        fontSize: ".7rem",
-                        fontWeight: "medium",
-                        padding: ".7rem 1rem",
-                        borderRadius: "10px",
-                        width: "fit-content%",
-                        margin: "15px 0 0  0",
-                        ":hover": {
-                            bgcolor: isDeletingPolygon
-                                ? "#7f1d1d"
-                                : "rgb(239 68 68)",
-                        },
-                    }}
+                    disabled={isDrawing}
+                    sx={buttonSx(
+                        isDeletingPolygon ? "#7f1d1d" : "rgb(239 68 68)",
+                        isDeletingPolygon ? "#7f1d1d" : "rgb(239 68 68)"
+                    )}
                     onClick={() => {
                         setIsDeletingPolygon(!isDeletingPolygon);
                     }}
@@ -378,22 +476,10 @@ const Map = ({ pub }) => {
                         "admin.admin_panel.shipping.shipping_map.buttons.select_and_delete_area"
                     )}
                 </Button>
-                {shapesChanged && (
+                {shapesChanged && !isDrawing && (
                     <Button
                         variant="contained"
-                        sx={{
-                            color: "white",
-                            bgcolor: "#3b82f6",
-                            fontSize: ".7rem",
-                            fontWeight: "medium",
-                            padding: ".7rem 1rem",
-                            borderRadius: "10px",
-                            width: "fit-content%",
-                            margin: "15px 0 0  0",
-                            ":hover": {
-                                bgcolor: "#2563eb",
-                            },
-                        }}
+                        sx={buttonSx("#3b82f6", "#2563eb")}
                         onClick={saveShapes}
                     >
                         {t("admin.admin_panel.shipping.shipping_map.buttons.save_all")}

@@ -8,6 +8,7 @@ import { useContext, useEffect, useMemo } from "react";
 import AddCategoryButton from "./AddCategoryButton";
 import { ThemeContext } from "../PubPage";
 import Category from "./Category";
+import PromoCategory from "./PromoCategory";
 import {
     errorKeys,
     setReceivingError,
@@ -47,6 +48,11 @@ const Categories = () => {
         >
             {menuID && <AddCategoryButton />}
             <div className="mt-5 flex flex-col gap-4">
+                {/* Frontend-only, pinned above every real category and not part
+                    of `sortedCategories` - it has no `place` to sort by
+                    because it does not exist on the server */}
+                <PromoCategory />
+
                 {sortedCategories.map((category) => (
                     <Category key={category.id} category={category} />
                 ))}

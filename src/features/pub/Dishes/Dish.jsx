@@ -13,7 +13,7 @@ import { requireAuthentication } from "../../auth/authSlice";
 import { useTranslation } from "react-i18next";
 import { fixedCacheKeys } from "@/api/fixedCacheKeys";
 
-const Dish = ({ dish, menuID, categoryID }) => {
+const Dish = ({ dish, menuID, categoryID, showMoveTools = true }) => {
     const { t } = useTranslation();
     const dispatch = useDispatch();
     const companyID = useSelector(selectCompanyID);
@@ -135,6 +135,24 @@ const Dish = ({ dish, menuID, categoryID }) => {
                     )}
                 </div>
 
+                {/* Badges: what is set in the dish settings, visible without
+                    opening them */}
+                <div
+                    style={{ zIndex: 20 }}
+                    className="absolute top-2 left-2 flex flex-col gap-1 items-start"
+                >
+                    {dish.is_hit && (
+                        <span className="rounded-full bg-amber-400 text-black text-xs font-medium py-1 px-2">
+                            {t("admin.dishes.is_hit_badge")}
+                        </span>
+                    )}
+                    {dish.available === false && (
+                        <span className="rounded-full bg-red-600 text-white text-xs font-medium py-1 px-2">
+                            {t("admin.dishes.not_available_badge")}
+                        </span>
+                    )}
+                </div>
+
                 {/* tools */}
                 <div
                     style={{ zIndex: 20, color: "#ffffff" }}
@@ -144,6 +162,7 @@ const Dish = ({ dish, menuID, categoryID }) => {
                         menuID={menuID}
                         categoryID={categoryID}
                         dish={dish}
+                        showMoveTools={showMoveTools}
                     />
                 </div>
             </div>

@@ -9,6 +9,7 @@ const initialState = {
         shipping_work_end: null,
         shipping_prices: null,
         shipping_free_delivery_prices: null,
+        shipping_min_order_prices: null,
         shapes: []
     },
     addCourierPopup: {

@@ -11,7 +11,7 @@ import { useUpdatePubMutation } from "../../api/pub/pub";
 import SelectWithLabel from "../../components/Inputs/SelectWithLabel";
 import { HexColorPicker } from "react-colorful";
 import Textarea from "../../components/Inputs/Textarea";
-import { currencies } from "../../static-data/data";
+import { currencies, defaultServiceType, serviceTypes } from "../../static-data/data";
 import { useTranslation } from "react-i18next";
 import { fixedCacheKeys } from "../../api/fixedCacheKeys";
 
@@ -37,6 +37,10 @@ const UpdatePubPopup = () => {
     const [hasInPlaceOrder, setHasInPlaceOrder] = useState(false);
     const [additionalInfo, setAdditionalInfo] = useState("");
     const [currencyID, setCurrencyID] = useState(1);
+    // What the establishment sells. It used to be set per category, which made
+    // a pub's section a guess assembled from its category tags; it is one
+    // choice about the place itself now.
+    const [serviceType, setServiceType] = useState(defaultServiceType);
 
     const [colorPickerOpened, setColorPickerOpened] = useState(true);
 
@@ -50,6 +54,13 @@ const UpdatePubPopup = () => {
         setCurrencyID(popupState?.initialPub?.currency_id ?? 1);
         setTelegramUsername(popupState?.initialPub?.telegram_username ?? "")
         setHasInPlaceOrder(popupState?.initialPub?.has_in_place_order ?? "")
+        // `section` is the pub's single service type; `service_types` is the
+        // same value as a list, and older responses may carry only that one
+        setServiceType(
+            popupState?.initialPub?.section ??
+                popupState?.initialPub?.service_types?.[0] ??
+                defaultServiceType
+        );
     }, [popupState.initialPub]);
 
     useEffect(() => {
@@ -69,7 +80,8 @@ const UpdatePubPopup = () => {
             currencyID: +currencyID,
             languageID: 1,
             telegramUsername,
-            hasInPlaceOrder
+            hasInPlaceOrder,
+            serviceType,
         };
 
         let validationErrors = ValidatePub(pub);
@@ -136,6 +148,24 @@ const UpdatePubPopup = () => {
                         }))}
                     />
 
+
+                    {/* Which of the app's three sections this pub appears in.
+                        One choice per establishment - a pub serves one kind of
+                        service */}
+                    <SelectWithLabel
+                        wrapperClass="flex items-center gap-4"
+                        label={t("admin.popups.update_pub_popup.service_type")}
+                        labelClassName={
+                            "text-sm sm:text-base text-gray-500 font-medium"
+                        }
+                        selectClassName={"text-xs sm:text-sm"}
+                        value={serviceType}
+                        setValue={setServiceType}
+                        values={Object.keys(serviceTypes).map((key) => ({
+                            value: serviceTypes[key].value,
+                            text: t(serviceTypes[key].text),
+                        }))}
+                    />
 
                     <SelectWithLabel
                         wrapperClass="flex items-center gap-4"

@@ -13,6 +13,7 @@ import { useSetAddCommissionToDishPricesMutation } from "../../../../api/pub/pub
 import { fixedCacheKeys } from "../../../../api/fixedCacheKeys";
 import BlackSpinner from "../../../../components/loaders/BlackSpinner";
 import FreeDeliveryPriceInput from "./FreeDeliveryPriceInput";
+import MinOrderPriceInput from "./MinOrderPriceInput";
 
 const Inputs = ({ pub }) => {
   const { t } = useTranslation();
@@ -175,6 +176,17 @@ const Inputs = ({ pub }) => {
                   acc[shape.shape_id] = shape.color;
                   return acc;
                 }, {})}
+              />
+            </div>
+            <div className="mt-2">
+              <div className="font-medium text-lg mb-4">
+                {t("admin.admin_panel.shipping.shipping_min_order_prices.headline")}
+              </div>
+              <MinOrderPriceInput
+                companyID={pub?.company_id}
+                pubID={pub?.id}
+                minOrderPrices={shipping?.shipping_min_order_prices}
+                shapes={shipping?.shapes}
               />
             </div>
           </>

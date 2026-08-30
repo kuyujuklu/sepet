@@ -18,6 +18,8 @@ export const dish = createApi({
                     place: data.place,
                     visible: data.visible,
                     text_color: data.textColor,
+                    is_hit: data.isHit,
+                    available: data.available,
                 },
                 headers: {
                     "Content-Type": "application/json",
@@ -37,6 +39,8 @@ export const dish = createApi({
                     place: data.place,
                     visible: data.visible,
                     text_color: data.textColor,
+                    is_hit: data.isHit,
+                    available: data.available,
                 },
                 headers: {
                     "Content-Type": "application/json",
@@ -54,6 +58,27 @@ export const dish = createApi({
         getDishes: builder.query({
             query: ({ companyID, pubID, menuID, categoryID }) => ({
                 url: `/api/company/${companyID}/pubs/${pubID}/menus/${menuID}/categories/${categoryID}/dishes`,
+                method: "GET",
+            }),
+            providesTags: ["Dish"],
+        }),
+        // The whole pub in one response - every menu, category and dish,
+        // hidden ones included (this route applies no `visible` filter).
+        //
+        // It is the client-facing endpoint, but it is the only one that
+        // returns the pub's entire menu tree in a single request, which is
+        // what the frontend-only "discounts & hits" category needs: that
+        // category spans every menu of the pub, so assembling it from
+        // getDishes would be one request per category.
+        //
+        // It lives here rather than next to getFullPubInfo in api/pub/pub.js
+        // on purpose. Tags do not cross createApi instances, and only in this
+        // api does `providesTags: ["Dish"]` make every dish create / update /
+        // delete refresh it - which is exactly what happens when a discount is
+        // edited from that category.
+        getPubMenuTree: builder.query({
+            query: ({ pubUrlName }) => ({
+                url: `/api/client/pub/${pubUrlName}/`,
                 method: "GET",
             }),
             providesTags: ["Dish"],
@@ -98,6 +123,7 @@ export const {
     useDeleteDishMutation,
     useGetDishQuery,
     useGetDishesQuery,
+    useGetPubMenuTreeQuery,
     useUploadDishImageMutation,
     useMoveDishLeftMutation,
     useMoveDishRightMutation,

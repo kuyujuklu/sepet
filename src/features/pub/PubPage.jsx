@@ -10,6 +10,8 @@ import { setPubID } from "./pubSlice";
 import { setCompanyID } from "../company/companySlice";
 import Categories from "./Categories/Categories";
 import Dishes from "./Dishes/Dishes";
+import PromoDishes from "./Dishes/PromoDishes";
+import { PROMO_CATEGORY_ID } from "./Categories/promoCategory";
 import { errorKeys, setReceivingError } from "../errorHandlers/errorHandlerSlice";
 import { useTranslation } from "react-i18next";
 
@@ -136,6 +138,13 @@ const PubPage = () => {
                                 <Route
                                     path="/menu/:menuID/category/:categoryID"
                                     element={<Dishes />}
+                                />
+                                {/* The frontend-only category. No menu or
+                                    category id in the path because there is no
+                                    row behind it - it spans the whole pub */}
+                                <Route
+                                    path={`/${PROMO_CATEGORY_ID}`}
+                                    element={<PromoDishes />}
                                 />
                             </Routes>
                         </div>

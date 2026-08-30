@@ -8,7 +8,11 @@ import { useMoveDishLeftMutation, useMoveDishRightMutation } from "@/api/dish/di
 import { ThemeContext } from "../PubPage";
 import { fixedCacheKeys } from "@/api/fixedCacheKeys";
 
-const DishTools = ({menuID, categoryID, dish}) => {
+// `showMoveTools` is off in the frontend-only "discounts & hits" category:
+// the arrows move a dish within its *real* category, and that category is not
+// what is on screen there - the list is ordered by discount size across the
+// whole pub, so pressing them would reorder something invisible.
+const DishTools = ({menuID, categoryID, dish, showMoveTools = true}) => {
     const dispatch = useDispatch()
     
     const companyID = useSelector(selectCompanyID);
@@ -67,6 +71,7 @@ const DishTools = ({menuID, categoryID, dish}) => {
                 width={20}
                 height={20}
             />
+            {showMoveTools && (
             <img
                 onClick={handleMoveTopClick}
                 className="cursor-pointer"
@@ -79,6 +84,8 @@ const DishTools = ({menuID, categoryID, dish}) => {
                 width={20}
                 height={20}
             />
+            )}
+            {showMoveTools && (
             <img
                 onClick={handleMoveDownClick}
                 className="cursor-pointer"
@@ -91,6 +98,7 @@ const DishTools = ({menuID, categoryID, dish}) => {
                 width={20}
                 height={20}
             />
+            )}
         </div>
     );
 }

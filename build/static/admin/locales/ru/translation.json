@@ -22,7 +22,7 @@
             "courier_not_found": "Курьер не найден",
             "courier_id_is_invalid": "ID курьера не верное"
         },
-        "field_must_be_number": "Поле должно быть числом" 
+        "field_must_be_number": "Поле должно быть числом"
     },
     "client": {
         "pub_info": {
@@ -212,7 +212,7 @@
                 },
                 "order_position": {
                     "pieces_shortcut": "шт",
-                    "add_dish_button":"Добавить блюдо"
+                    "add_dish_button": "Добавить блюдо"
                 },
                 "order_courier_info": {
                     "set_status_to_preparing_for_couriers": "Назначьте заказу статус готовится чтобы курьеры видели его",
@@ -227,7 +227,7 @@
                 "payment_type": "Способ оплаты",
                 "total_price_of_products": "Сумма товаров",
                 "price_of_shipping": "Цена доставки",
-                "final_price" : "Итого",
+                "final_price": "Итого",
                 "comments": "Комментарии"
             },
             "shipping": {
@@ -264,11 +264,14 @@
                         "select_and_delete_area": "Выбрать и удалить область",
                         "save_all": "Сохранить все"
                     }
+                },
+                "shipping_min_order_prices": {
+                    "headline": "Минимальная сумма заказа"
                 }
             }
         },
         "pub": {},
-        "categories": { 
+        "categories": {
             "add_category_button": "Добавить категорию",
             "category_types": {
                 "sales": "Акции",
@@ -289,7 +292,27 @@
                 "kebab": "Кебаб",
                 "salad": "Салаты",
                 "snacks": "Закуски",
-                "meat": "Мясные блюда"
+                "meat": "Мясные блюда",
+                "groceries": "Продукты"
+            },
+            "service_types": {
+                "food": "Еда",
+                "flowers": "Цветы",
+                "groceries": "Продукты"
+            },
+            "promo": {
+                "title": "Скидки и хиты",
+                "subtitle": "Все товары со скидкой или отмеченные как хит",
+                "virtual_badge": "Только в панели",
+                "discounts_count": "Скидок: {{count}}",
+                "hits_count": "Хитов: {{count}}",
+                "explainer": "Это не настоящая категория — её нет на сервере и клиенты её не видят. Здесь собраны товары из всех меню заведения; изменения сохраняются в ту категорию, где товар лежит на самом деле.",
+                "empty": "Ничего не найдено",
+                "filters": {
+                    "all": "Все",
+                    "discounts": "Со скидкой",
+                    "hits": "Хиты"
+                }
             }
         },
         "dishes": {
@@ -306,7 +329,9 @@
                 "drink": "Напиток",
                 "sushi": "Суши",
                 "other": "Другое"
-            }
+            },
+            "is_hit_badge": "Хит",
+            "not_available_badge": "Нет в наличии"
         },
         "popups": {
             "upgrade_tariff_popup": {
@@ -340,7 +365,8 @@
                 "address": "Адрес",
                 "telegram_username": "Username в телеграме",
                 "additional_info": "Дополнительная информация",
-                "save_button": "Сохранить"
+                "save_button": "Сохранить",
+                "service_type": "Тип сервиса"
             },
             "delete_pub_popup": {
                 "headline": "Удалить заведение",
@@ -399,7 +425,9 @@
                 "sale_price": "Цена с учетом скидки(если скидки нет оставьте поле пустым)",
                 "visible": "Видимость",
                 "category": "Категория",
-                "create_button": "Добавить"
+                "create_button": "Добавить",
+                "is_hit": "Хит продаж",
+                "available": "В наличии"
             },
             "update_dish_popup": {
                 "headline": "Редактировать блюдо",
@@ -411,7 +439,9 @@
                 "price": "Цена",
                 "visible": "Видимость",
                 "category": "Категория",
-                "save_button": "Сохранить"
+                "save_button": "Сохранить",
+                "is_hit": "Хит продаж",
+                "available": "В наличии"
             },
             "delete_dish_popup": {
                 "headline": "Удалить блюдо",
@@ -453,7 +483,7 @@
             "client_name": "Имя клиента",
             "client_main_phone": "Основной телефон клиента",
             "client_second_phone": "Доп. телефон клиента",
-            "comments":"Комментарии",
+            "comments": "Комментарии",
             "positions": "Позиции",
             "products_price": "Цена продуктов",
             "delivery_price": "Цена доставки",

@@ -34,6 +34,7 @@ export const pub = createApi({
           currency_id: data.currencyID,
           telegram_username: data.telegramUsername,
           has_in_place_order: data.hasInPlaceOrder,
+          service_type: data.serviceType,
         },
         headers: {
           "Content-Type": "application/json",
@@ -192,6 +193,19 @@ export const pub = createApi({
       }),
       invalidatesTags: ["Pub"],
     }),
+    setShippingMinOrderPrices: builder.mutation({
+      query: ({ companyID, pubID, prices }) => ({
+        url: `/api/company/${companyID}/pubs/${pubID}/shipping-min-order-prices`,
+        method: "POST",
+        body: {
+          "prices": prices,
+        },
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }),
+      invalidatesTags: ["Pub"],
+    }),
     setShippingFreeDeliveryPrices: builder.mutation({
       query: ({ companyID, pubID, prices }) => ({
         url: `/api/company/${companyID}/pubs/${pubID}/shipping-free-delivery-prices`,
@@ -277,5 +291,6 @@ export const {
   useAddCourierMutation,
   useUpdateDeliveryTypeMutation,
   useSetAddCommissionToDishPricesMutation,
-  useSetShippingFreeDeliveryPricesMutation
+  useSetShippingFreeDeliveryPricesMutation,
+  useSetShippingMinOrderPricesMutation
 } = pub;

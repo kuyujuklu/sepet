@@ -32,6 +32,8 @@ const CreateDishPopup = () => {
     const [ingredients, setingredients] = useState("");
     const [textColor, setTextColor] = useState("#ffffff");
     const [visible, setVisible] = useState(true);
+    const [isHit, setIsHit] = useState(false);
+    const [available, setAvailable] = useState(true);
 
     const [colorPickerOpened, setColorPickerOpened] = useState(true);
 
@@ -48,6 +50,8 @@ const CreateDishPopup = () => {
             salePrice: +salePrice,
             ingredients,
             visible,
+            isHit,
+            available,
             textColor,
             place: popupState.place ?? 1,
         };
@@ -155,6 +159,28 @@ const CreateDishPopup = () => {
                         value={visible}
                         setValue={setVisible}
                         label={t("admin.popups.create_dish_popup.visible")}
+                        labelClass={
+                            "mr-2 text-xs sm:text-base text-gray-500 font-medium"
+                        }
+                        inputStyle={{ padding: 0 }}
+                        inputClass={"border-gray-500"}
+                    />
+                    {/* Bestseller: the app shows a "хит" badge on these */}
+                    <CheckboxWithLabel
+                        value={isHit}
+                        setValue={setIsHit}
+                        label={t("admin.popups.create_dish_popup.is_hit")}
+                        labelClass={
+                            "mr-2 text-xs sm:text-base text-gray-500 font-medium"
+                        }
+                        inputStyle={{ padding: 0 }}
+                        inputClass={"border-gray-500"}
+                    />
+                    {/* Stop list: stays on the menu but cannot be ordered */}
+                    <CheckboxWithLabel
+                        value={available}
+                        setValue={setAvailable}
+                        label={t("admin.popups.create_dish_popup.available")}
                         labelClass={
                             "mr-2 text-xs sm:text-base text-gray-500 font-medium"
                         }

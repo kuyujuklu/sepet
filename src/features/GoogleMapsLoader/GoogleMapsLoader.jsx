@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { googleMapsApiSetIsLoaded, googleMapsApiSetLoadError } from "./googleMapsSlice";
 
-const libraries = ["places", "drawing"];
+const libraries = ["places"];
 
 const GoogleMapsLoader = () => {
 
