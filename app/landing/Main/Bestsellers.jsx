@@ -3,47 +3,20 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { useTranslation } from "react-i18next";
 import { pubs_api } from "../api/pubsApi";
-import { countCommissionForPub } from "../../utils/pub";
+import { countCommissionForPub, getPubWorkHours } from "../../utils/pub";
 import { addCommissionToPrice } from "../../utils/dish";
 import { currencies } from "../../static-data/data";
 import ConfirmPopup from "../../shared-components/Popup/ConfirmPopup";
 import Toast from "../../shared-components/Popup/Toast";
 import DishPhotoLightbox from "../../[locale]/pub/components/PubPage/Dishes/DishPhotoLightbox";
+import { readLocalBasket, writeLocalBasket } from "../../utils/localBasket";
+import { trackEcommerceEvent } from "../../utils/analytics";
 
 const CLOSED_TOAST_MESSAGE = "Сейчас закрыто, но вы можете собрать корзину — оформим, как только заведение откроется.";
 const CLOSED_TOAST_DURATION = 3500;
 
 const MAX_DISHES = 8;
 const ACCENT = "#2D7DD2";
-
-const BASKET_KEY = "basket";
-const LAST_ACTION_KEY = "lastBasketAction";
-const BASKET_EXPIRY_MS = 1000 * 60 * 60 * 24;
-
-// This row renders on the landing page, outside /pub/[pubID] - the only
-// place StoreProvider (redux) is mounted (see PubPage.jsx) - so it can't
-// dispatch into basketSlice directly. It reads/writes the exact same
-// localStorage shape basketMiddleware.js and BasketPreloader.jsx already
-// use instead: whatever gets added here is picked up the moment a client
-// actually opens a pub page. Mirrors store.js's isTimeInLocalStorageExpired.
-const readLocalBasket = () => {
-  try {
-    const lastAction = parseInt(localStorage.getItem(LAST_ACTION_KEY));
-    if (!lastAction || lastAction + BASKET_EXPIRY_MS < Date.now()) return {};
-    return JSON.parse(localStorage.getItem(BASKET_KEY)) || {};
-  } catch (e) {
-    return {};
-  }
-};
-
-const writeLocalBasket = (basket) => {
-  try {
-    localStorage.setItem(BASKET_KEY, JSON.stringify(basket));
-    localStorage.setItem(LAST_ACTION_KEY, Date.now().toString());
-  } catch (e) {
-    console.log("err writing basket to loc stor: ", e);
-  }
-};
 
 // The row of dishes a client can order straight from the home page.
 //
@@ -57,6 +30,14 @@ const writeLocalBasket = (basket) => {
 const Bestsellers = ({ locationLatLng, activeSection }) => {
   const { i18n } = useTranslation()
   const [dishes, setDishes] = useState(null)
+  // {[pub.url_name]: pub.shipping} - the aggregated feed only sends a
+  // precomputed is_open, which has been wrong often enough (a full-day-off
+  // schedule entry isn't handled right server-side) to not be trusted as
+  // the only source. The pub page and basket compute this themselves from
+  // the real weekly schedule instead; this fetches that same schedule for
+  // whatever pubs are in the row so the row can do the same live
+  // computation rather than defer to the feed's own verdict.
+  const [pubSchedules, setPubSchedules] = useState({})
   const [localCounts, setLocalCounts] = useState({})
   const [pendingAdd, setPendingAdd] = useState(null)
   const [pendingRemove, setPendingRemove] = useState(null)
@@ -102,6 +83,37 @@ const Bestsellers = ({ locationLatLng, activeSection }) => {
     return () => { isActual = false }
   }, [locationLatLng, activeSection])
 
+  // Independent of the dishes fetch above (doesn't need to redo this on a
+  // section switch) - PubList already makes this exact call for the same
+  // location to build its own grid, so this duplicates one request rather
+  // than adding per-pub ones.
+  useEffect(() => {
+    setPubSchedules({})
+    if (!locationLatLng?.lat || !locationLatLng?.lng) return
+
+    let isActual = true
+    ;(async function () {
+      const resp = await pubs_api.getAvailablePubsForLocation({ lat: locationLatLng.lat, lng: locationLatLng.lng })
+      if (!isActual || !resp.ok || !resp.pubs) return
+
+      const schedules = {}
+      resp.pubs.forEach((pub) => { schedules[pub.url_name] = pub.shipping })
+      setPubSchedules(schedules)
+    })()
+
+    return () => { isActual = false }
+  }, [locationLatLng])
+
+  // Falls back to the feed's own is_open only until the real schedule for
+  // this pub has loaded (or if it never resolves it - e.g. outside every
+  // zone) - so the row doesn't flash every tile as closed for the brief
+  // window before the schedule fetch above resolves.
+  const isPubOpen = (pub) => {
+    const schedule = pubSchedules[pub.url_name]
+    if (!schedule) return pub.is_open !== false
+    return getPubWorkHours({ shipping: schedule }).isDeliveryAvailable
+  }
+
   // Keeps only the entries already belonging to this dish's pub, then adds
   // one - the same "switching pubID clears the rest" rule basketSlice's
   // reducers enforce, replicated here since this row can't dispatch into
@@ -116,12 +128,21 @@ const Bestsellers = ({ locationLatLng, activeSection }) => {
     next[dish.id] = { pubID: dish.pub.url_name, count: (next[dish.id]?.count ?? 0) + 1 }
     writeLocalBasket(next)
     setLocalCounts(next)
+
+    const commission = countCommissionForPub(dish.pub)
+    const hasSale = !!dish.sale_price && dish.sale_price < dish.price
+    const price = addCommissionToPrice(hasSale ? dish.sale_price : dish.price, commission)
+    trackEcommerceEvent("add_to_cart", {
+      currency: currencies.find((c) => c.id === dish.pub?.currency_id)?.name ?? "MDL",
+      value: price,
+      items: [{ item_id: String(dish.id), item_name: dish.name, price, quantity: 1 }],
+    })
   }
 
   const handleIncreaseClick = (dish) => {
     if (dish.available === false) return
 
-    if (dish.pub?.is_open === false) notifyClosed()
+    if (dish.pub && !isPubOpen(dish.pub)) notifyClosed()
 
     const basket = readLocalBasket()
     const hasOtherPubItems = Object.values(basket).some(
@@ -182,7 +203,7 @@ const Bestsellers = ({ locationLatLng, activeSection }) => {
         <div style={{ display: "flex", gap: 14, overflowX: "auto", paddingBottom: 4 }}>
           {dishes.map((dish) => {
             const pub = dish.pub ?? {}
-            const isOpen = pub.is_open !== false
+            const isOpen = isPubOpen(pub)
             const isAvailable = dish.available !== false
             const commission = countCommissionForPub(pub)
             const hasSale = !!dish.sale_price && dish.sale_price < dish.price

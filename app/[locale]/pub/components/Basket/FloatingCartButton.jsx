@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
-import { selectBasketCount, selectDishes } from "../../store/basketSlice";
+import { selectDishes } from "../../store/basketSlice";
 import { selectData } from "../../store/pubInfoSlice";
 import { currencies } from "@/app/static-data/data";
 import { computeBasketSubtotal } from "../../../../utils/dish";
@@ -15,9 +15,21 @@ import { countCommissionForPub } from "../../../../utils/pub";
 // per direct client feedback on the home-page cart icon.
 const FloatingCartButton = ({ pubID }) => {
   const { i18n } = useTranslation();
-  const count = useSelector(selectBasketCount);
   const basketDishes = useSelector(selectDishes);
   const data = useSelector(selectData);
+
+  // The cart is shared across the whole site now (the home page's "Хиты"
+  // row writes into the same storage basketSlice reads) and browsing no
+  // longer clears a mismatched cart on its own (see basketSlice's
+  // setBasketPubID) - so what's in `basketDishes` here can easily belong to
+  // a pub the client isn't currently looking at. Counting/pricing only the
+  // entries that actually match this pub avoids both a bogus "0 Lei" (this
+  // pub's own dish list can't price another pub's dish id) and a button
+  // that would link to this pub's basket page only to show it empty.
+  const count = Object.values(basketDishes).reduce(
+    (sum, d) => sum + (d?.pubID === pubID && d.count > 0 ? d.count : 0),
+    0
+  );
 
   if (!count) return null;
 

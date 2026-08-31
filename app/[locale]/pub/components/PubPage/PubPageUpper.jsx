@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import Image from "next/image";
 import { ThemeContext } from "./ThemeContextProvider";
 import { useRouter } from "next/navigation";
@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 const PubPageUpper = ({ pub, backHref }) => {
   const themeContext = useContext(ThemeContext);
   const router = useRouter()
+  const [isImageLoaded, setIsImageLoaded] = useState(false);
 
   return (
     <div
@@ -48,7 +49,8 @@ const PubPageUpper = ({ pub, backHref }) => {
           alt={pub.name}
           fill
           sizes="(max-width: 600px) 100vw, 600px"
-          style={{ objectFit: "cover" }}
+          style={{ objectFit: "cover", opacity: isImageLoaded ? 1 : 0, transition: "opacity 320ms ease" }}
+          onLoad={() => setIsImageLoaded(true)}
         />
       ) : (
         <div style={{ width: "100%", height: "100%", background: "#123527" }} />

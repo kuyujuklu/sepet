@@ -8,12 +8,15 @@ import Toast from "@/app/shared-components/Popup/Toast";
 import { currencies } from "@/app/static-data/data";
 import { useDispatch, useSelector } from "react-redux";
 import {
+  clearBasket,
   decreaseDishAmount,
   increaseDishAmount,
   selectDish,
+  selectDishes,
 } from "@/app/[locale]/pub/store/basketSlice";
 import { addCommissionToPrice } from "../../../../../utils/dish";
 import { countCommissionForPub, getPubWorkHours } from "../../../../../utils/pub";
+import { trackEcommerceEvent } from "../../../../../utils/analytics";
 
 const CLOSED_TOAST_MESSAGE = "Сейчас закрыто, но вы можете собрать корзину — оформим, как только заведение откроется.";
 const CLOSED_TOAST_DURATION = 3500;
@@ -21,16 +24,19 @@ const CLOSED_TOAST_DURATION = 3500;
 const ACCENT = "#2D7DD2";
 const SECONDARY = "#123527";
 
-const Dish = ({ pub, dish, currencyID }) => {
+const Dish = ({ pub, dish, currencyID, isHit }) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const [isPhotoOpen, setIsPhotoOpen] = useState(false);
   const [isRemoveConfirmOpen, setIsRemoveConfirmOpen] = useState(false);
+  const [isCrossPubConfirmOpen, setIsCrossPubConfirmOpen] = useState(false);
   const [isClosedToastVisible, setIsClosedToastVisible] = useState(false);
+  const [isImageLoaded, setIsImageLoaded] = useState(false);
   const closedToastTimerRef = useRef(null);
 
   const dishAmountFromState = useSelector(selectDish(dish?.id));
   const dishAmount = dishAmountFromState?.count ?? 0;
+  const basketDishes = useSelector(selectDishes);
   const themeContext = useContext(ThemeContext);
 
   // The stop list. `available` is only ever false when the pub actually took
@@ -51,12 +57,45 @@ const Dish = ({ pub, dish, currencyID }) => {
     closedToastTimerRef.current = setTimeout(() => setIsClosedToastVisible(false), CLOSED_TOAST_DURATION);
   };
 
+  // One cart, wherever the dish was tapped from - the home page's "Хиты
+  // продаж" already asked before clearing a cart from a different pub;
+  // this is the same question, same wording, for every other way to add a
+  // dish. basketSlice no longer clears mismatched dishes on its own (see
+  // its setBasketPubID) - browsing a pub is never destructive by itself,
+  // only actually confirming an add across pubs is.
+  const commitAdd = () => {
+    if (!getPubWorkHours(pub).isDeliveryAvailable) notifyClosed();
+    dispatch(increaseDishAmount({ dishID: dish.id }));
+    trackEcommerceEvent("add_to_cart", {
+      currency: currencies.find((c) => c.id === currencyID)?.name ?? "MDL",
+      value: addCommissionToPrice(smallestPrice, commission),
+      items: [{
+        item_id: String(dish.id),
+        item_name: dish.name,
+        price: addCommissionToPrice(smallestPrice, commission),
+        quantity: 1,
+      }],
+    });
+  };
+
   const handleIncreaseClick = () => {
     if (!dish.id || !isAvailable) return;
 
-    if (!getPubWorkHours(pub).isDeliveryAvailable) notifyClosed();
+    const hasOtherPubItems = Object.values(basketDishes).some(
+      (d) => d?.count > 0 && d.pubID !== pub?.id
+    );
+    if (hasOtherPubItems) {
+      setIsCrossPubConfirmOpen(true);
+      return;
+    }
 
-    dispatch(increaseDishAmount({ dishID: dish.id }));
+    commitAdd();
+  };
+
+  const confirmCrossPubAdd = () => {
+    dispatch(clearBasket());
+    commitAdd();
+    setIsCrossPubConfirmOpen(false);
   };
 
   // Going from 1 to 0 removes the dish from the basket entirely - worth a
@@ -113,8 +152,14 @@ const Dish = ({ pub, dish, currencyID }) => {
             alt={dish.name}
             fill
             sizes="92px"
-            style={{ objectFit: "cover" }}
+            style={{ objectFit: "cover", opacity: isImageLoaded ? 1 : 0, transition: "opacity 320ms ease" }}
+            onLoad={() => setIsImageLoaded(true)}
           />
+        )}
+        {isHit && (
+          <span style={{ position: "absolute", top: 4, left: 4, background: "#2D7DD2", color: "#fff", fontSize: 9.5, fontWeight: 700, padding: "2.5px 6px", borderRadius: 999 }}>
+            ХИТ
+          </span>
         )}
         {!isAvailable && (
           <span
@@ -233,6 +278,16 @@ const Dish = ({ pub, dish, currencyID }) => {
         cancelLabel="Отмена"
         onConfirm={confirmRemove}
         onCancel={() => setIsRemoveConfirmOpen(false)}
+      />
+
+      <ConfirmPopup
+        opened={isCrossPubConfirmOpen}
+        title={`Добавить «${dish.name}»?`}
+        message="В корзине уже есть блюда из другого заведения — добавление этого очистит корзину и начнёт новый заказ."
+        confirmLabel="Добавить"
+        cancelLabel="Отмена"
+        onConfirm={confirmCrossPubAdd}
+        onCancel={() => setIsCrossPubConfirmOpen(false)}
       />
 
       <Toast message={CLOSED_TOAST_MESSAGE} visible={isClosedToastVisible} />

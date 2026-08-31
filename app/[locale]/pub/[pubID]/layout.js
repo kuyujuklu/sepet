@@ -14,9 +14,23 @@ export async function generateMetadata({ params }) {
     }
   }
 
+  const title = params.locale === "ru" ? `${pubData.pub.name} меню` : `Meniu ${pubData.pub.name}`;
+  const description = params.locale === "ru"
+    ? `${pubData.pub.name} ресторан. Заказть еду в молдове. Онлайн меню`
+    : `Restaurant ${pubData.pub.name}. Comandă mâncare în Moldova. Meniu online`;
+
+  // The pub's own cover photo, so a shared pub link (the main way these
+  // spread - WhatsApp, Instagram) unfurls with that place's actual food
+  // instead of the generic site banner every other page falls back to.
+  const images = pubData.pub.bg_image_file_name
+    ? [{ url: `/api-static/images/pubs/bgs/${pubData.pub.bg_image_file_name}`, alt: pubData.pub.name }]
+    : undefined;
+
   return {
-    title: params.locale === "ru" ? `${pubData.pub.name} меню` : `${pubData.pub.name} меню`,
-    description: params.locale === "ru" ? `${pubData.pub.name} ресторан. Заказть еду в молдове. Онлайн меню` : `Restaurant ${pubData.pub.name}. Comandă mâncare în Moldova. Meniu online`
+    title,
+    description,
+    openGraph: { title, description, images, type: "website" },
+    twitter: { card: "summary_large_image", title, description, images },
   }
 }
 

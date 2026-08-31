@@ -1,3 +1,4 @@
+import { useState } from "react";
 import Image from "next/image";
 import Popup from "@/app/shared-components/Popup/Popup";
 import { addCommissionToPrice } from "../../../../../utils/dish";
@@ -22,6 +23,8 @@ const DishPhotoLightbox = ({
   onDecrease,
   onClose,
 }) => {
+  const [isImageLoaded, setIsImageLoaded] = useState(false);
+
   return (
     <Popup opened closeCallback={onClose} contentStyle={{ padding: 0, overflow: "hidden" }}>
       <div style={{ position: "relative", width: "100%", aspectRatio: "1 / 1", background: SECONDARY }}>
@@ -30,7 +33,8 @@ const DishPhotoLightbox = ({
           alt={dish.name}
           fill
           sizes="(max-width: 500px) 95vw, 500px"
-          style={{ objectFit: "cover" }}
+          style={{ objectFit: "cover", opacity: isImageLoaded ? 1 : 0, transition: "opacity 320ms ease" }}
+          onLoad={() => setIsImageLoaded(true)}
         />
       </div>
 

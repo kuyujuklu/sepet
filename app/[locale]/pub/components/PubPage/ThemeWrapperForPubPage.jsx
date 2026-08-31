@@ -40,6 +40,11 @@ const ThemeWrapperForPubPage = ({ data, children }) => {
                     background: theme.bgColor,
                     minHeight: "100vh",
                     position: "relative",
+                    // Establishes a block formatting context, which is what
+                    // actually stops the content div's marginTop below from
+                    // collapsing into this element's own top margin (a plain
+                    // position:relative does not) - see that div's comment.
+                    overflow: "hidden",
                 }}
                 className={"relative rounded-3xl"}
             >
@@ -49,11 +54,20 @@ const ThemeWrapperForPubPage = ({ data, children }) => {
                         fontFamily: "Rubik, sans",
                         display: "block",
                         position: "relative",
-                        top: "160px",
+                        // Margin, not padding: padding only shifts this
+                        // div's own CONTENT, not the div's box itself - the
+                        // box (and its background) still started at y:0,
+                        // painting straight over PubPageUpper's image since
+                        // this div comes later in paint order. Margin moves
+                        // the box itself, uncovering the image above it -
+                        // the column's new overflow:hidden (above) is what
+                        // keeps that margin from collapsing into the column
+                        // itself the way it did before overflow was added.
+                        marginTop: "160px",
                         padding: "20px",
+                        paddingBottom: "60px",
                         zIndex: 10,
                         background: theme.bgColor,
-                        paddingBottom: "60px",
                     }}
                     className="rounded-2xl p-5"
                 >

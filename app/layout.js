@@ -3,9 +3,30 @@ import Script from "next/script";
 
 // const inter = Inter({ subsets: ['latin'] })
 
+const TITLE = "Sepet - Все на расстоянии клика";
+const DESCRIPTION = "Сервис доставки еды, цветов и продуктов по Югу Молдовы. Более 35 заведений уже работают с нами.";
+
 export const metadata = {
-  title: "Sepet - Все на расстоянии клика",
-  description: "Сервис доставки еды, цветов и продуктов по Югу Молдовы. Более 35 заведений уже работают с нами.",
+  // Lets every relative URL in metadata (og:image from opengraph-image.js,
+  // per-pub images below) resolve to a real, publicly-fetchable address -
+  // link-preview bots (WhatsApp/Instagram/Facebook) fetch server-side and
+  // silently give up on a relative or unresolvable one.
+  metadataBase: new URL("https://sepet.md"),
+  title: TITLE,
+  description: DESCRIPTION,
+  openGraph: {
+    title: TITLE,
+    description: DESCRIPTION,
+    url: "https://sepet.md",
+    siteName: "Sepet",
+    locale: "ru_MD",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: TITLE,
+    description: DESCRIPTION,
+  },
 };
 
 function RootLayout({ children }) {
@@ -29,6 +50,23 @@ function RootLayout({ children }) {
             style={{ display: 'none', visibility: 'hidden' }}
           ></iframe>
         </noscript>
+
+        {/* Yandex.Metrika counter - ecommerce:"dataLayer" below reads the
+            same add_to_cart/begin_checkout/purchase events already pushed
+            for GTM (see utils/analytics.js), so it picks up real order
+            values with no separate wiring. */}
+        <script type="text/javascript" dangerouslySetInnerHTML={{
+          __html: `(function(m,e,t,r,i,k,a){
+              m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+              m[i].l=1*new Date();
+              for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+              k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
+          })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=108776463', 'ym');
+
+          ym(108776463, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", referrer: document.referrer, url: location.href, accurateTrackBounce:true, trackLinks:true});` }}>
+        </script>
+        <noscript><div><img src="https://mc.yandex.ru/watch/108776463" style={{ position: 'absolute', left: '-9999px' }} alt="" /></div></noscript>
+
         <link
           rel="apple-touch-icon"
           sizes="192x192"

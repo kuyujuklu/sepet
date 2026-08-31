@@ -8,6 +8,7 @@ import Bestsellers from "./Bestsellers";
 import PubList from "./PubList";
 import ChooseLocation from "./ChooseLocation";
 import SectionSwitcher from "./SectionSwitcher";
+import HomeFloatingCartButton from "./HomeFloatingCartButton";
 
 
 const Main = () => {
@@ -99,6 +100,8 @@ const Main = () => {
 
         <PubList locationLatLng={locationLatLng} activeSection={activeSection} />
       </div>
+
+      <HomeFloatingCartButton />
     </div>
   );
 };

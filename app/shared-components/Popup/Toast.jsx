@@ -10,7 +10,13 @@ const Toast = ({ message, visible }) => {
       style={{
         position: "fixed",
         left: "50%",
-        bottom: 24,
+        // Raised clear of the Jivo chat bubble, which sits fixed at the
+        // bottom of the screen too. bottom:24 overlapped it outright;
+        // bottom:90 was still too close on an actual phone (mobile browser
+        // chrome eats into the viewport, and Jivo's own mobile bubble sits
+        // higher/bigger than its desktop one) - this needs real headroom,
+        // not a guess nudged up a little at a time.
+        bottom: 150,
         transform: `translateX(-50%) translateY(${visible ? "0px" : "10px"})`,
         maxWidth: "92vw",
         width: 380,

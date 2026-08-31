@@ -4,6 +4,12 @@ import { ThemeContext } from "../ThemeContextProvider";
 import DishesList from "../Dishes/DishesList";
 
 const ACCENT = "#2D7DD2";
+const HITS_SECTION_ID = "hits-and-sales";
+const MAX_HITS = 5;
+const SCROLL_OFFSET = 60;
+const SCROLL_DURATION = 450;
+
+const easeInOutCubic = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 
 // Replaces the old category-tile grid (each tile a full route navigation to
 // its own dishes screen) and, before that, a since-scrapped accordion
@@ -24,7 +30,8 @@ const MenuSections = ({ menus, categories, dishes, pub }) => {
   const themeContext = useContext(ThemeContext);
   const sectionRefs = useRef({});
   const pillRefs = useRef({});
-  const [activeCategoryID, setActiveCategoryID] = useState(null);
+  const pillRowRef = useRef(null);
+  const [activeSectionID, setActiveSectionID] = useState(null);
 
   const shownCategories = useMemo(() => {
     if (!categories) return [];
@@ -42,19 +49,81 @@ const MenuSections = ({ menus, categories, dishes, pub }) => {
       });
   }, [categories, menus]);
 
-  // `data` (and so `categories`/`menus`) gets a fresh object/array reference
-  // from redux on every re-fetch - a ref keeps the scroll handler below
-  // reading the current list without needing to tear down and re-attach the
-  // listener every time that happens (see next effect).
-  const shownCategoriesRef = useRef(shownCategories);
-  shownCategoriesRef.current = shownCategories;
+  // A pub-specific version of the home page's "Хиты продаж". "Hit" here
+  // means actually ordered a lot (orders_count), not the is_hit flag - that
+  // flag is set by hand elsewhere and isn't necessarily true popularity.
+  // "Discount" means an active one is really on the dish (a real sale_price
+  // under price, the strikethrough the client sees), not a hunch. Ranked by
+  // orders_count so real bestsellers lead; a real discount qualifies a dish
+  // for the section even at zero orders, so a new promo isn't buried under
+  // unrelated bestsellers.
+  const featuredDishes = useMemo(() => {
+    if (!dishes) return [];
+
+    const hasRealDiscount = (dish) => !!dish.sale_price && dish.sale_price > 0 && dish.sale_price < dish.price;
+    const isRealHit = (dish) => (dish.orders_count ?? 0) > 0;
+
+    return dishes
+      .filter((dish) => dish.visible && dish.available !== false)
+      .filter((dish) => isRealHit(dish) || hasRealDiscount(dish))
+      .slice()
+      .sort((a, b) => (b.orders_count ?? 0) - (a.orders_count ?? 0))
+      .slice(0, MAX_HITS);
+  }, [dishes]);
+
+  const hitsDishIDs = useMemo(() => featuredDishes.map((dish) => dish.id), [featuredDishes]);
+
+  // The "ХИТ" badge shown wherever a dish appears - only the ones that
+  // actually earned their spot by real orders, not the ones that only made
+  // the featured section via a discount (that already shows for itself, as
+  // the struck-through price - it doesn't need "ХИТ" on top of it too).
+  const hitBadgeDishIDs = useMemo(
+    () => new Set(featuredDishes.filter((dish) => (dish.orders_count ?? 0) > 0).map((dish) => dish.id)),
+    [featuredDishes]
+  );
+
+  // The pill row and the section list both iterate this - a synthetic
+  // first entry for the hits section (when there's anything to put in it),
+  // followed by every real category. `dishIDs` on the hits entry is what
+  // tells the render loop below to pass DishesList a pre-picked list
+  // instead of a categoryID to filter by.
+  const sections = useMemo(() => {
+    const real = shownCategories.map((category) => ({ id: category.id, name: category.name, categoryID: category.id, dishIDs: null }));
+    if (hitsDishIDs.length === 0) return real;
+    return [{ id: HITS_SECTION_ID, name: "Хиты и скидки", categoryID: null, dishIDs: hitsDishIDs }, ...real];
+  }, [shownCategories, hitsDishIDs]);
+
+  // `data` (and so `categories`/`menus`/`dishes`) gets a fresh object/array
+  // reference from redux on every re-fetch - a ref keeps the scroll handler
+  // below reading the current list without needing to tear down and
+  // re-attach the listener every time that happens (see next effect).
+  const sectionsRef = useRef(sections);
+  sectionsRef.current = sections;
+
+  // A programmatic scroll (from clicking a pill) fires the same window
+  // scroll events an organic scroll does. Without this flag, the scroll
+  // listener below was fighting the click: it kept recomputing "current
+  // section" against the feed's mid-animation, transiently-wrong geometry,
+  // flipping the active pill back and forth (the reported "дёргается") and,
+  // since the active pill auto-centers itself in the row (further down),
+  // shifting the row under the client's finger right as they tried to tap
+  // a different pill - reading as a tap that missed or needed a second try.
+  //
+  // Driven by hand with rAF/window.scrollTo rather than
+  // scrollIntoView({behavior:"smooth"}) - iOS Safari reportedly stalls that
+  // animation mid-flight and sometimes ignores it on tap entirely, and
+  // either way there's no reliable "it's done" callback from it, which is
+  // exactly what this flag needs to clear at the right time instead of
+  // guessing with a timeout.
+  const isProgrammaticScrollRef = useRef(false);
+  const scrollTokenRef = useRef(0);
 
   useEffect(() => {
-    if (shownCategories.length === 0) return;
-    setActiveCategoryID((current) =>
-      shownCategories.some((c) => c.id === current) ? current : shownCategories[0].id
+    if (sections.length === 0) return;
+    setActiveSectionID((current) =>
+      sections.some((s) => s.id === current) ? current : sections[0].id
     );
-  }, [shownCategories]);
+  }, [sections]);
 
   // Highlights whichever section is currently scrolled to the top of the
   // viewport, so the pill nav tracks scrolling the same way it does in
@@ -65,57 +134,101 @@ const MenuSections = ({ menus, categories, dishes, pub }) => {
   // long scroll can skip straight past a section without ever reporting it
   // and the active pill gets stuck on a stale category.
   //
-  // Keyed on the category COUNT rather than the `shownCategories` array
-  // itself: that array gets a new reference on every redux data refresh
-  // (polling, re-fetches) even when the actual categories haven't changed,
-  // which was tearing this listener down and re-attaching it constantly -
-  // during that churn, scroll events could be missed entirely and the
-  // active pill would get stuck.
+  // Keyed on the section COUNT rather than the `sections` array itself:
+  // that array gets a new reference on every redux data refresh (polling,
+  // re-fetches) even when the actual categories haven't changed, which was
+  // tearing this listener down and re-attaching it constantly - during that
+  // churn, scroll events could be missed entirely and the active pill would
+  // get stuck.
   useEffect(() => {
-    if (shownCategoriesRef.current.length === 0) return;
+    if (sectionsRef.current.length === 0) return;
 
     const THRESHOLD = 100;
 
-    // A handful of categories (rarely more than a couple dozen) and one
-    // cheap getBoundingClientRect() each - running this straight on every
-    // scroll event is fine, no rAF-throttling needed.
+    // A handful of sections (rarely more than a couple dozen) and one cheap
+    // getBoundingClientRect() each - running this straight on every scroll
+    // event is fine, no rAF-throttling needed.
     const updateActive = () => {
-      const cats = shownCategoriesRef.current;
-      if (cats.length === 0) return;
+      if (isProgrammaticScrollRef.current) return;
 
-      let current = cats[0].id;
-      for (const category of cats) {
-        const el = sectionRefs.current[category.id];
+      const list = sectionsRef.current;
+      if (list.length === 0) return;
+
+      let current = list[0].id;
+      for (const section of list) {
+        const el = sectionRefs.current[section.id];
         if (el && el.getBoundingClientRect().top <= THRESHOLD) {
-          current = category.id;
+          current = section.id;
         }
       }
-      setActiveCategoryID(current);
+      setActiveSectionID(current);
     };
 
     updateActive();
     window.addEventListener("scroll", updateActive, { passive: true });
     return () => window.removeEventListener("scroll", updateActive);
-  }, [shownCategories.length]);
+  }, [sections.length]);
 
   // The pill row scrolls horizontally too - without this, scrolling the
-  // dish feed could make a later category active while its pill sits
+  // dish feed could make a later section active while its pill sits
   // off-screen to the right, with no visible indication of what's active.
+  //
+  // A plain scrollLeft write, not scrollIntoView - on iOS Safari,
+  // scrollIntoView (even "instant") firing on every organic-scroll-driven
+  // category change reportedly stalls the page's own vertical touch-scroll
+  // gesture right as it fires, which is the "magnetizes, then the category
+  // switches" feeling. Assigning scrollLeft directly is a plain property
+  // write, not a scroll gesture of its own, so there's nothing for Safari
+  // to arbitrate against the finger still on the glass.
   useEffect(() => {
-    if (activeCategoryID == null) return;
-    pillRefs.current[activeCategoryID]?.scrollIntoView({ behavior: "instant", inline: "center", block: "nearest" });
-  }, [activeCategoryID]);
+    if (activeSectionID == null) return;
+    const pillEl = pillRefs.current[activeSectionID];
+    const containerEl = pillRowRef.current;
+    if (!pillEl || !containerEl) return;
 
-  const scrollToCategory = (categoryID) => {
-    setActiveCategoryID(categoryID);
-    sectionRefs.current[categoryID]?.scrollIntoView({ behavior: "smooth", block: "start" });
+    const targetScrollLeft = pillEl.offsetLeft - (containerEl.clientWidth - pillEl.offsetWidth) / 2;
+    containerEl.scrollLeft = Math.max(0, targetScrollLeft);
+  }, [activeSectionID]);
+
+  const scrollToSection = (sectionID) => {
+    setActiveSectionID(sectionID);
+
+    const el = sectionRefs.current[sectionID];
+    if (!el) return;
+
+    // A newer click invalidates any animation already in flight - its own
+    // step() checks this same token and just stops scheduling itself once
+    // it no longer matches, so the two never fight over window.scrollTo.
+    const token = ++scrollTokenRef.current;
+    isProgrammaticScrollRef.current = true;
+
+    const startY = window.scrollY;
+    const targetY = Math.max(0, el.getBoundingClientRect().top + startY - SCROLL_OFFSET);
+    const distance = targetY - startY;
+    const startTime = performance.now();
+
+    const step = (now) => {
+      if (scrollTokenRef.current !== token) return;
+
+      const progress = Math.min((now - startTime) / SCROLL_DURATION, 1);
+      window.scrollTo(0, startY + distance * easeInOutCubic(progress));
+
+      if (progress < 1) {
+        requestAnimationFrame(step);
+      } else {
+        isProgrammaticScrollRef.current = false;
+      }
+    };
+
+    requestAnimationFrame(step);
   };
 
-  if (shownCategories.length === 0) return null;
+  if (sections.length === 0) return null;
 
   return (
     <div>
       <div
+        ref={pillRowRef}
         style={{
           position: "sticky",
           top: 0,
@@ -126,15 +239,21 @@ const MenuSections = ({ menus, categories, dishes, pub }) => {
           gap: 8,
           overflowX: "auto",
           borderBottom: "1px solid #f1f3f5",
+          // iOS Safari has a known stutter where a sticky element's own
+          // repaint briefly stalls the page's momentum scroll right as it
+          // sticks - promoting it to its own compositor layer is the usual
+          // workaround.
+          transform: "translateZ(0)",
+          WebkitTransform: "translateZ(0)",
         }}
       >
-        {shownCategories.map((category) => {
-          const active = category.id === activeCategoryID;
+        {sections.map((section) => {
+          const active = section.id === activeSectionID;
           return (
             <button
-              key={category.id}
-              ref={(el) => (pillRefs.current[category.id] = el)}
-              onClick={() => scrollToCategory(category.id)}
+              key={section.id}
+              ref={(el) => (pillRefs.current[section.id] = el)}
+              onClick={() => scrollToSection(section.id)}
               style={{
                 flexShrink: 0,
                 whiteSpace: "nowrap",
@@ -147,18 +266,18 @@ const MenuSections = ({ menus, categories, dishes, pub }) => {
                 color: active ? "#fff" : "#526070",
               }}
             >
-              {category.name}
+              {section.id === HITS_SECTION_ID ? `★ ${section.name}` : section.name}
             </button>
           );
         })}
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 22, paddingTop: 16 }}>
-        {shownCategories.map((category, index) => (
+        {sections.map((section, index) => (
           <div
-            key={category.id}
-            ref={(el) => (sectionRefs.current[category.id] = el)}
-            data-category-id={category.id}
+            key={section.id}
+            ref={(el) => (sectionRefs.current[section.id] = el)}
+            data-section-id={section.id}
             style={{
               display: "flex",
               flexDirection: "column",
@@ -169,9 +288,9 @@ const MenuSections = ({ menus, categories, dishes, pub }) => {
             }}
           >
             <h2 style={{ fontSize: 17, fontWeight: 700, color: themeContext.textColor, margin: 0 }}>
-              {category.name}
+              {section.name}
             </h2>
-            <DishesList pub={pub} dishes={dishes} categoryID={category.id} currencyID={pub?.currency_id} />
+            <DishesList pub={pub} dishes={dishes} categoryID={section.categoryID} dishIDs={section.dishIDs} hitBadgeDishIDs={hitBadgeDishIDs} currencyID={pub?.currency_id} />
           </div>
         ))}
       </div>

@@ -1,11 +1,12 @@
 "use client";
 
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { useRouter } from "next/navigation";
 import { ThemeContext } from "../PubPage/ThemeContextProvider";
 import ConfirmPopup from "@/app/shared-components/Popup/ConfirmPopup";
+import Toast from "@/app/shared-components/Popup/Toast";
 import Dish from "../PubPage/Dishes/Dish";
 import {
   clearBasket,
@@ -21,8 +22,9 @@ import {
 } from "../../store/locationSlice";
 import { useCreateOrderMutation } from "../../api/rtk-query/orders";
 import { priceBasket, isBelowMinimumError } from "../../../../utils/pricing";
-import { countCommissionForPub, getPubWorkHours } from "../../../../utils/pub";
-import { ConvertQrMenuApiTimeToLocalClock } from "../../../../utils/time";
+import { countCommissionForPub, getPubWorkHours, getNextOpenWindow } from "../../../../utils/pub";
+import { trackEcommerceEvent, buildEcommerceItems } from "../../../../utils/analytics";
+import { ConvertQrMenuApiTimeToLocalClock, convertMinsToTime } from "../../../../utils/time";
 import { currencies, orderPaymentTypes, orderTypes } from "@/app/static-data/data";
 import { validateOrder, validatePhone } from "./validators";
 import PhoneNumberInput from "@/app/shared-components/Inputs/PhoneNumberInput";
@@ -76,6 +78,39 @@ const BasketPage = ({ data }) => {
   const pubWorkHours = getPubWorkHours(pub);
   const isDeliveryAvailable = pubWorkHours.isDeliveryAvailable;
   const currency = currencies.find((c) => c.id === pub?.currency_id)?.symbol ?? "Lei";
+  const currencyCode = currencies.find((c) => c.id === pub?.currency_id)?.name ?? "MDL";
+
+  // Closed no longer hides checkout - it's a pre-order at that point (see
+  // canSubmit below), just flagged clearly: a toast on arrival plus a
+  // standing banner, both replacing the old block-everything message.
+  const [isClosedToastVisible, setIsClosedToastVisible] = useState(false);
+  const closedToastTimerRef = useRef(null);
+  useEffect(() => () => clearTimeout(closedToastTimerRef.current), []);
+  useEffect(() => {
+    if (!pub || isDeliveryAvailable) return;
+    setIsClosedToastVisible(true);
+    closedToastTimerRef.current = setTimeout(() => setIsClosedToastVisible(false), 4000);
+    // Only meant to fire once, right as this pub's closed state is first
+    // known - not every time some unrelated dependency of isDeliveryAvailable
+    // would recompute it.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pub]);
+
+  const nextOpenWindow = useMemo(() => getNextOpenWindow(pub), [pub]);
+  const nextOpenLabel = nextOpenWindow
+    ? t(
+        nextOpenWindow.daysFromNow === 0
+          ? "client.basket.next_open_today"
+          : nextOpenWindow.daysFromNow === 1
+            ? "client.basket.next_open_tomorrow"
+            : "client.basket.next_open_in_days",
+        {
+          days: nextOpenWindow.daysFromNow,
+          start: convertMinsToTime(nextOpenWindow.start),
+          end: convertMinsToTime(nextOpenWindow.end),
+        }
+      )
+    : null;
 
   // Free delivery and the pub's minimum are the server's rules; priceBasket
   // mirrors them so the checkout never promises a total the server would
@@ -101,6 +136,20 @@ const BasketPage = ({ data }) => {
     [basketItems]
   );
 
+  // Once per visit to this basket - not on every re-render as items/quantity
+  // change, which the ref guards against the same way the closed-toast
+  // effect above already does.
+  const hasFiredBeginCheckoutRef = useRef(false);
+  useEffect(() => {
+    if (hasFiredBeginCheckoutRef.current || basketItems.length === 0) return;
+    hasFiredBeginCheckoutRef.current = true;
+    trackEcommerceEvent("begin_checkout", {
+      currency: currencyCode,
+      value: pricing.itemsPrice,
+      items: buildEcommerceItems(basketItems, commission),
+    });
+  }, [basketItems, pricing.itemsPrice, commission, currencyCode]);
+
   // ---- submit ----
   const [createOrder, { data: createOrderResp, error: createOrderError, isLoading, isError, isSuccess }] = useCreateOrderMutation();
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
@@ -117,6 +166,13 @@ const BasketPage = ({ data }) => {
     // than a second, independently computed guess at it. Older orders and any
     // response without the totals fall back to the basket's own arithmetic.
     const amount = order.total_price || pricing.totalPrice;
+
+    trackEcommerceEvent("purchase", {
+      transaction_id: String(order.id),
+      currency: currencyCode,
+      value: amount,
+      items: buildEcommerceItems(basketItems, commission),
+    });
 
     dispatch(addOrderToHistory({
       order: {
@@ -155,17 +211,19 @@ const BasketPage = ({ data }) => {
     ...(geoCoords ?? {}),
   });
 
-  // Everything that makes an order impossible right now, in one place: the
-  // pub's hours, its minimum, and the stop list.
-  const canSubmit =
-    isDeliveryAvailable && !pricing.isBelowMinimum && unavailableItems.length === 0;
+  // Everything that makes an order impossible right now, in one place: its
+  // minimum and the stop list. The pub's hours no longer gate this - closed
+  // is a pre-order at that point (the banner above says so, and the client's
+  // own "deliver by time" note is exactly for this), not a hard stop.
+  const canSubmit = !pricing.isBelowMinimum && unavailableItems.length === 0;
 
   const handleSubmit = () => {
     if (!geoCoords || !canSubmit) return;
 
     const order = buildOrder();
     const validationErrors = validateOrder(order);
-    if (validationErrors && validationErrors.length > 0) {
+    const missingDeliverByTime = !isDeliveryAvailable && !deliverByTime.trim();
+    if ((validationErrors && validationErrors.length > 0) || missingDeliverByTime) {
       setHasAttemptedSubmit(true);
       return;
     }
@@ -309,6 +367,21 @@ const BasketPage = ({ data }) => {
             ))}
           </div>
 
+          {/* Always here, not tucked inside the below-minimum banner - the
+              obvious next move right where the client is already looking
+              at what they've got, not just when something's wrong. */}
+          <button
+            onClick={() => router.push(`/${i18n.language}/pub/${pub.url_name}`)}
+            style={{
+              width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+              background: ACCENT_SOFT, color: ACCENT_DARK, border: `1.5px solid ${ACCENT}`,
+              padding: 14, borderRadius: 14, fontSize: 14.5, fontWeight: 700,
+            }}
+          >
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={ACCENT_DARK} strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14" /></svg>
+            {t("client.basket.empty_open_menu", { pubName: pub.name })}
+          </button>
+
           {/* Summary - also always visible */}
           <div style={{ background: "#f7f9fa", borderRadius: 16, padding: 14, display: "flex", flexDirection: "column", gap: 8 }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 13.5 }}>
@@ -344,7 +417,7 @@ const BasketPage = ({ data }) => {
 
           {/* The pub refuses a delivery order under its minimum (HTTP 400),
               so the shortfall is named here rather than at submit. */}
-          {pricing.isBelowMinimum && isDeliveryAvailable && (
+          {pricing.isBelowMinimum && (
             <div style={{ padding: "12px 14px", borderRadius: 14, background: "#fff7ed", border: "1px solid #fed7aa", color: "#9a3412", fontSize: 13.5 }}>
               {t("client.basket.below_min_order_price", {
                 min: Math.round(pricing.minOrderPrice),
@@ -363,13 +436,39 @@ const BasketPage = ({ data }) => {
           )}
 
           {!isDeliveryAvailable && (
-            <div style={{ padding: "12px 14px", borderRadius: 14, background: "#fff7ed", border: "1px solid #fed7aa", color: "#9a3412", fontSize: 13.5 }}>
-              {t("client.basket.no_delivery_available")}
+            <div style={{ padding: "12px 14px", borderRadius: 14, background: "#fff7ed", border: "1px solid #fed7aa", color: "#9a3412", fontSize: 13.5, display: "flex", flexDirection: "column", gap: 3 }}>
+              <span style={{ fontWeight: 700 }}>{t("client.basket.pub_closed_preorder")}</span>
+              {nextOpenLabel && <span>{nextOpenLabel}</span>}
             </div>
           )}
 
-          {isDeliveryAvailable && (
-            <>
+          {/* Deliver by time - only makes sense as a pre-order note while
+              closed; an open pub takes orders for right now, no need to
+              ask. Required here: with no delivery window of its own to
+              anchor to, a closed-pub order with no requested time is just
+              a note asking the pub to guess. Still just a wish passed
+              along as text, not an enforced schedule - see buildOrder for
+              how it's folded into the comment sent to the pub. */}
+          {!isDeliveryAvailable && (
+            <div style={cardStyle}>
+              <span style={labelStyle}>Предзаказ ко времени</span>
+              <input
+                type="text"
+                value={deliverByTime}
+                onChange={(e) => setDeliverByTime(e.target.value)}
+                placeholder="Например: 18:30 или после 19:00"
+                style={{ fontSize: 13.5, border: `1.5px solid ${hasAttemptedSubmit && !deliverByTime.trim() ? "#c2444c" : "#e7ebef"}`, borderRadius: 12, padding: "10px 12px", width: "100%" }}
+              />
+              <span style={{ fontSize: 11, color: "#94a3b0", lineHeight: 1.4 }}>
+                Обязательное поле. Заведение постарается учесть, но точное время не гарантировано.
+              </span>
+              {hasAttemptedSubmit && !deliverByTime.trim() && (
+                <span style={{ fontSize: 11.5, color: "#c2444c" }}>Укажите желаемое время предзаказа</span>
+              )}
+            </div>
+          )}
+
+          <>
               {/* Address */}
               <div style={cardStyle}>
                 <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
@@ -442,23 +541,6 @@ const BasketPage = ({ data }) => {
                 })}
               </div>
 
-              {/* Deliver by time - a wish passed along as a note, not an
-                  enforced schedule; see buildOrder for how it's folded into
-                  the comment sent to the pub. */}
-              <div style={cardStyle}>
-                <span style={labelStyle}>Желаемое время доставки</span>
-                <input
-                  type="text"
-                  value={deliverByTime}
-                  onChange={(e) => setDeliverByTime(e.target.value)}
-                  placeholder="Например: 18:30 или после 19:00"
-                  style={{ fontSize: 13.5, border: "1.5px solid #e7ebef", borderRadius: 12, padding: "10px 12px", width: "100%" }}
-                />
-                <span style={{ fontSize: 11, color: "#94a3b0", lineHeight: 1.4 }}>
-                  Необязательно. Заведение постарается учесть, но точное время не гарантировано.
-                </span>
-              </div>
-
               {/* Comment */}
               <div style={cardStyle}>
                 <span style={labelStyle}>{t("client.popups.create_order.comments")}</span>
@@ -470,9 +552,10 @@ const BasketPage = ({ data }) => {
                 />
               </div>
             </>
-          )}
         </>
       )}
+
+      <Toast message={t("client.basket.pub_closed_preorder")} visible={isClosedToastVisible} />
 
       {basketItems.length > 0 && (
         <div style={{ position: "fixed", left: 0, right: 0, bottom: 0, maxWidth: 600, margin: "0 auto", background: "#fff", borderTop: "1px solid #f1f3f5", padding: "14px 20px 16px" }}>

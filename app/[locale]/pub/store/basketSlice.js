@@ -30,18 +30,6 @@ const basketSlice = createSlice({
             } else {
                 state.dishes[action.payload.dishID].count++;
             }
-
-            //clear state from null or 0 values
-            let keys = Object.keys(state.dishes);
-            for (let key of keys) {
-                if (
-                    !state.dishes[key] ||
-                    !state.dishes[key].count ||
-                    state.dishes[key].pubID !== state.pubID
-                ) {
-                    delete state.dishes[key];
-                }
-            }
         },
         decreaseDishAmount(state, action) {
             if (!action.payload?.dishID) return;
@@ -58,14 +46,11 @@ const basketSlice = createSlice({
                 state.dishes[action.payload.dishID].count--;
             }
 
-            //clear state from null or 0 values
+            // clear state from null or 0 values - decreasing to nothing is
+            // the one case that always needs a sweep, regardless of pubID.
             let keys = Object.keys(state.dishes);
             for (let key of keys) {
-                if (
-                    !state.dishes[key] ||
-                    !state.dishes[key].count ||
-                    state.dishes[key].pubID !== state.pubID
-                ) {
+                if (!state.dishes[key] || !state.dishes[key].count) {
                     delete state.dishes[key];
                 }
             }
@@ -73,20 +58,14 @@ const basketSlice = createSlice({
         clearBasket(state) {
             state.dishes = {};
         },
+        // Just tracks which pub is currently being viewed - does NOT clear
+        // dishes from a different pub on its own (it used to; see
+        // Dish.jsx's handleIncreaseClick for where that decision now
+        // belongs). Simply looking at another pub's menu, or its basket
+        // page directly, should never silently discard a cart mid-browse -
+        // only actually adding something new should ever ask about it.
         setBasketPubID(state, action) {
             state.pubID = action.payload;
-
-            //clear state from null or 0 values
-            let keys = Object.keys(state.dishes);
-            for (let key of keys) {
-                if (
-                    !state.dishes[key] ||
-                    !state.dishes[key].count ||
-                    state.dishes[key].pubID !== state.pubID
-                ) {
-                    delete state.dishes[key];
-                }
-            }
         },
         // A freshly-placed order - newest first, de-duped by id (a redundant
         // dispatch for the same order is a no-op reorder, not a duplicate
@@ -114,6 +93,7 @@ export const selectDish = (dishID) => (state) =>
 export const selectDishes = (state) => state.basketSlice.dishes;
 export const selectBasketCount = (state) =>
     Object.values(state.basketSlice.dishes).reduce((acc, dish) => acc + (dish?.count ?? 0), 0);
+export const selectBasketPubID = (state) => state.basketSlice.pubID;
 
 export const selectOrderHistory = (state) => state.basketSlice.orderHistory
 
