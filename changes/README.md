@@ -6,6 +6,11 @@ the work without re-reading the whole codebase.
 
 Newest first.
 
+- [2026-09-01 — Bump targetSdk/compileSdk to 36 (Android 16)](2026-09-01-target-sdk-36.md)
+  — Google Play requires new updates to target API 36 since 2026-08-31 (deadline
+  already passed); `expo-build-properties` android block 35 → 36. Native/OS-level
+  risk areas (16 KB page size, edge-to-edge, predictive back) not independently
+  verified on-device, only that the build itself succeeds.
 - [2026-08-31 — Wire the analytics event catalogue to Firebase Analytics](2026-08-31-firebase-analytics-sink.md)
   — `setAnalyticsSink()` was never called (catalogue/middleware were already fine,
   see the 2026-08-27 note below); added `firebaseAnalyticsSink.js` wiring
