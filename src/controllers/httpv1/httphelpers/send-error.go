@@ -19,6 +19,7 @@ import (
 	"github.com/alexkalak/qrmenu/src/errors/puberrors"
 	"github.com/alexkalak/qrmenu/src/errors/roleerrors"
 	"github.com/alexkalak/qrmenu/src/errors/servererrors"
+	"github.com/alexkalak/qrmenu/src/errors/shippingcopypreseterrors"
 	"github.com/alexkalak/qrmenu/src/errors/tarifferrors"
 	"github.com/gofiber/fiber/v2"
 )
@@ -159,6 +160,13 @@ var errors = map[error]int{
 	couriererrors.ErrCourierHaveNoImage:            fiber.StatusNoContent,
 	couriererrors.ErrCourierCannotReserveThisOrder: fiber.StatusForbidden,
 	couriererrors.ErrNotCouriersOrder:              fiber.StatusForbidden,
+
+	// shippingcopypreseterrors
+	shippingcopypreseterrors.ErrShippingCopyPresetNotFound:       fiber.StatusNotFound,
+	shippingcopypreseterrors.ErrUnableToGetShippingCopyPreset:    fiber.StatusInternalServerError,
+	shippingcopypreseterrors.ErrUnableToCreateShippingCopyPreset: fiber.StatusInternalServerError,
+	shippingcopypreseterrors.ErrUnableToUpdateShippingCopyPreset: fiber.StatusInternalServerError,
+	shippingcopypreseterrors.ErrUnableToDeleteShippingCopyPreset: fiber.StatusInternalServerError,
 }
 
 func SendError(ctx *fiber.Ctx, err error, statusCode int) error {

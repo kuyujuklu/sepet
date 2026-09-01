@@ -53,6 +53,7 @@ func InitializeDatabase() *gorm.DB {
 		&models.NotificationSubscription{},
 		&models.Courier{},
 		&models.PhoneValidationSession{},
+		&models.ShippingCopyPreset{},
 	)
 	return db
 }

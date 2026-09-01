@@ -197,6 +197,21 @@ func (c *ordersController) UpdateOrderDishes(ctx *fiber.Ctx) error {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
 
+	// Apply any explicit per-line price overrides on top of the menu-derived
+	// prices FillDishPrices just computed - keyed by dish ID since dishes
+	// and inputDishes are index-aligned only by construction, not guaranteed.
+	priceOverrides := make(map[int]float64, len(input.Dishes))
+	for _, inputDish := range input.Dishes {
+		if inputDish.Price != nil {
+			priceOverrides[inputDish.DishID] = *inputDish.Price
+		}
+	}
+	for i := range dishes {
+		if override, ok := priceOverrides[dishes[i].DishID]; ok {
+			dishes[i].DishPrice = override
+		}
+	}
+
 	err = c.OrderService.UpdateOrderDishes(orderID, dishes)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)

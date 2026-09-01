@@ -8,18 +8,20 @@ import (
 	"github.com/alexkalak/qrmenu/src/services/notificationservice"
 	"github.com/alexkalak/qrmenu/src/services/orderservice"
 	"github.com/alexkalak/qrmenu/src/services/pubservice"
+	"github.com/alexkalak/qrmenu/src/services/shippingcopypresetservice"
 	"github.com/alexkalak/qrmenu/src/services/telegramservice"
 	"github.com/gofiber/fiber/v2"
 )
 
 type adminController struct {
-	PubService          pubservice.PubService
-	CompanyService      companyservice.CompanyService
-	CourierService      courierservice.CourierService
-	OrderService        orderservice.OrderService
-	ClientService       clientservice.ClientService
-	NotificationService notificationservice.NotificationService
-	TelegramService     telegramservice.TelegramService
+	PubService                pubservice.PubService
+	CompanyService            companyservice.CompanyService
+	CourierService            courierservice.CourierService
+	OrderService              orderservice.OrderService
+	ClientService             clientservice.ClientService
+	NotificationService       notificationservice.NotificationService
+	TelegramService           telegramservice.TelegramService
+	ShippingCopyPresetService shippingcopypresetservice.ShippingCopyPresetService
 }
 
 func New() *adminController {
@@ -36,7 +38,8 @@ func New() *adminController {
 		ClientService:       clientservice.New(),
 		NotificationService: notificationservice.New(),
 
-		TelegramService: tservice,
+		TelegramService:           tservice,
+		ShippingCopyPresetService: shippingcopypresetservice.New(),
 	}
 }
 
@@ -58,4 +61,10 @@ func (c *adminController) Router(router fiber.Router) {
 	router.Post("/add-to-courier-balance/:courierID<int>", c.AddToCourierBalance)
 	router.Post("/create-telegram-super-user", c.CreateTelegramSuperUser)
 	router.Post("/set-pubs-for-super-user", c.SetPubsForSuperUser)
+
+	router.Get("/shipping-copy-presets", c.GetAllShippingCopyPresets)
+	router.Post("/shipping-copy-presets", c.CreateShippingCopyPreset)
+	router.Put("/shipping-copy-presets/:presetID<int>", c.UpdateShippingCopyPreset)
+	router.Post("/shipping-copy-presets/:presetID<int>/mark-applied", c.MarkShippingCopyPresetApplied)
+	router.Delete("/shipping-copy-presets/:presetID<int>", c.DeleteShippingCopyPreset)
 }

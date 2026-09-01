@@ -229,6 +229,11 @@ func (o *OrderOutputWithoutPub) FillFromModel(order models.Order) error {
 type OrderDishInput struct {
 	DishID int `json:"dish_id"`
 	Count  int `json:"count"`
+	// Optional per-line-item override, for correcting a position's price on
+	// an already-placed order (e.g. the menu price was wrong when the order
+	// came in) without touching the pub's actual menu price. Nil means "use
+	// the pub's current menu/sale price", same as before this field existed.
+	Price *float64 `json:"price"`
 }
 
 type OrderDishOutput struct {

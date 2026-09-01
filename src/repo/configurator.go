@@ -8,6 +8,7 @@ import (
 	"github.com/alexkalak/qrmenu/src/repo/dishesrepo"
 	"github.com/alexkalak/qrmenu/src/repo/menurepo"
 	"github.com/alexkalak/qrmenu/src/repo/pubsrepo"
+	"github.com/alexkalak/qrmenu/src/repo/shippingcopypresetrepo"
 )
 
 func Configure() error {
@@ -36,6 +37,10 @@ func Configure() error {
 	}
 
 	if err := courierrepo.Configure(); err != nil {
+		return err
+	}
+
+	if err := shippingcopypresetrepo.Configure(); err != nil {
 		return err
 	}
 
