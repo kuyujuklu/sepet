@@ -169,3 +169,43 @@ None - still client-side only.
   (`generated/jni` is the Android native build path). If iOS ever gets a real build
   attempt, re-verify against `25.1.0` too since the original sink note already flagged
   iOS as unverified.
+
+## 2026-09-01 (later): iOS build - CocoaPods modular headers
+
+First real iOS build attempt (`eas build --platform ios --profile production`, id
+`d08cf924`) failed at `INSTALL_PODS`:
+
+```
+[!] The following Swift pods cannot yet be integrated as static libraries:
+
+The Swift pod `FirebaseCoreInternal` depends upon `GoogleUtilities`, which does not
+define modules. To opt into those targets generating module maps ... you may set
+`use_modular_headers!` globally in your Podfile, or specify `:modular_headers => true`
+for particular dependencies.
+```
+
+This project builds Firebase's Swift pods (`FirebaseCoreInternal`) without
+`use_frameworks!` (plain static libraries, CocoaPods' default here), and
+`GoogleUtilities` doesn't ship a module map, so Swift can't import it. This is a
+well-known Firebase+CocoaPods+static-libs issue, not specific to
+`react-native-firebase` or the `25.1.0` pin.
+
+`expo-build-properties` has no blanket `use_modular_headers!` switch, only per-pod
+`ios.extraPods[].modular_headers`. Added entries for the pods actually in this
+project's resolved pod list that are implicated by the error chain: `GoogleUtilities`,
+`Firebase`, `FirebaseCore`, `FirebaseCoreInternal` - not the longer lists some
+Firebase-Storage/Auth/Messaging guides use, since this app only pulls in Core +
+Analytics natively.
+
+**Known limits / follow-ups (this section):**
+- Not yet confirmed sufficient - if CocoaPods still finds another un-modular pod in
+  the chain (`GoogleAppMeasurement`, `PromisesObjC`, `FirebaseInstallations` are the
+  next-most-likely candidates), add it to the same `extraPods` array and retry. iOS
+  pod-install fails fast (under a minute), cheap to iterate.
+- Switching to `ios.useFrameworks: 'static'` (static *frameworks*, not static
+  libraries) was considered instead - it's the more commonly recommended fix for new
+  Firebase integrations - but per current research this doesn't reliably avoid the
+  same "does not define modules" class of error either (GoogleUtilities still lacks a
+  module map regardless of libs-vs-frameworks), and it's a much bigger blast-radius
+  change (affects every pod's link mode, not just Firebase's), so the targeted
+  `modular_headers` list was tried first.
