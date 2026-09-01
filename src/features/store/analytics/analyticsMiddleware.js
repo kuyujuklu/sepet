@@ -1,5 +1,23 @@
-import { events, track } from "../../../shared/analytics/analytics";
+import {
+  events,
+  setAnalyticsEnabled,
+  setAnalyticsIdentity,
+  track,
+} from "../../../shared/analytics/analytics";
 import { getBasketCount } from "../../../shared/utils/basket";
+
+// The consent kill switch.
+//
+// A client who has never been asked has `consent_policy_version: ""` and
+// `analytics_consent: false` - indistinguishable from a refusal by the flag
+// alone, so the *version* is what says the question was actually answered.
+// Undecided keeps tracking on (which is how the app behaved before the record
+// existed, and the events carry no PII); an explicit "no" turns it off.
+const isTrackingAllowed = (client) => {
+  const hasAnswered = !!client?.consentPolicyVersion;
+
+  return hasAnswered ? !!client.analyticsConsent : true;
+};
 
 // One seam for the events that come from redux actions. increaseDish is
 // dispatched from the home feed, the dish list and the dish popup, so
@@ -18,6 +36,20 @@ export const analyticsMiddleware = (store) => (next) => (action) => {
   const result = next(action);
 
   switch (action?.type) {
+    // The client record arrived (login, refresh, "continue as guest"): key
+    // every following event on client.id instead of stitching funnels by
+    // phone number, and honour a recorded refusal.
+    case "auth/setClient": {
+      setAnalyticsIdentity(action.payload?.id ?? null);
+      setAnalyticsEnabled(isTrackingAllowed(action.payload));
+      break;
+    }
+
+    case "auth/setAnalyticsConsent": {
+      setAnalyticsEnabled(!!action.payload?.accepted);
+      break;
+    }
+
     case "basket/increaseDish":
       track(events.dishAdded, {
         dish_id: action.payload?.id,

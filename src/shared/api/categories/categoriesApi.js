@@ -6,14 +6,22 @@ export const categoriesApi = createApi({
     baseQuery: authenticationBasedQuery,
     tagTypes: ["Categories", "NearbyCategories"],
     endpoints: (builder) => ({
+        // `section` filters server-side on the service type of the *pub* the
+        // category belongs to - a category has no section of its own, its
+        // establishment does.
         getNearbyCategories: builder.query({
-            query: ({coords}) => ({
-                url: `/api/client/get-available-categories?lat=${coords?.lat}&lng=${coords?.lng}`,
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            }),
+            query: ({coords, section}) => {
+                const params = [`lat=${coords?.lat}`, `lng=${coords?.lng}`];
+                if (section) params.push(`section=${encodeURIComponent(section)}`);
+
+                return {
+                    url: `/api/client/get-available-categories?${params.join("&")}`,
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                };
+            },
         }),
     }),
 });

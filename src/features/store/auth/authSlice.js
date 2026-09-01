@@ -6,9 +6,16 @@ export const authSlice = createSlice({
     isAuthRequiredAtApplicationStart: false,
     isRequiringAuthentication: false,
     client: {
+      // The stable analytics id, straight off the client record - not the
+      // phone number
+      id: null,
       phone: "",
       name: "",
       isGuest: false,
+      // The consent record: whether tracking was accepted and for which
+      // version of the privacy policy
+      analyticsConsent: false,
+      consentPolicyVersion: "",
     },
     refetchClient: false,
     deleteClientPopup: {
@@ -21,6 +28,12 @@ export const authSlice = createSlice({
     },
     setClient(state, action) {
       state.client = action.payload;
+    },
+    // Mirrors what POST /api/client/analytics-consent was told, so the
+    // profile toggle repaints without waiting for a refetch
+    setAnalyticsConsent(state, action) {
+      state.client.analyticsConsent = !!action.payload?.accepted;
+      state.client.consentPolicyVersion = action.payload?.policyVersion ?? "";
     },
     setRefetchClient(state, action) {
       state.refetchClient = action.payload;
@@ -37,6 +50,7 @@ export const authSlice = createSlice({
 export const {
   setIsRequiringAuthentication,
   setClient,
+  setAnalyticsConsent,
   setRefetchClient,
   openDeleteClientPopup,
   closeDeleteClientPopup,

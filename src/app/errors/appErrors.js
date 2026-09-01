@@ -22,6 +22,9 @@ export const appErrors = {
   too_many_sessions: "errors.too_many_sessions",
   invalid_session_validation_number: "errors.invalid_session_validation_number",
 
+  //orders
+  orderBelowMinimum: "errors.order_below_minimum",
+
   //file uploading
   fileIsTooLarge: "errors.file_is_too_large",
   invalidFileExtension: "errors.invalid_file_extension",

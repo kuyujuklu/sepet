@@ -91,3 +91,17 @@ export const GetShippingTimeString = (shippingHours) => {
 
   return shippingTimeString;
 };
+
+// Just the clock time of an api timestamp - what a timeline row needs next to
+// its status ("Готовится · 14:32"); the date is already at the top of the
+// screen, repeating it on every step is noise.
+export const ConvertApiTimeToLocalHoursMinutes = (time) => {
+  const date = GetTimeFromApiTimeString(time);
+
+  if (isNaN(date.getTime())) return "";
+
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
+
+  return `${hours}:${minutes < 10 ? "0" : ""}${minutes}`;
+};

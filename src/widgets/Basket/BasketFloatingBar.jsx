@@ -7,11 +7,7 @@ import {
   selectBasket,
   selectBasketPubID,
 } from "../../features/store/basket/basketSlice";
-import {
-  useGetNearbyPubsQuery,
-  useGetPubInfoQuery,
-} from "../../shared/api/pubs/pubsApi";
-import { selectGeolocation } from "../../features/store/geolocation/geolocationSlice";
+import { usePubInfo } from "../../shared/hooks/usePubInfo";
 import { formatPrice, getCurrencySymbol } from "../../shared/utils/dish";
 import {
   getAmountLeftForFreeDelivery,
@@ -30,35 +26,31 @@ const BasketFloatingBar = () => {
 
   const basket = useSelector(selectBasket);
   const pubID = useSelector(selectBasketPubID);
-  const location = useSelector(selectGeolocation);
 
-  const { data: pubData } = useGetPubInfoQuery({ pubID }, { skip: !pubID });
-
-  // Same nearby-pubs lookup Home/PubInfo already made for this pub id - RTK
-  // Query dedupes it against their subscription, so this costs nothing extra
-  // once that screen's own query has resolved.
-  const { data: nearPubsData } = useGetNearbyPubsQuery(
-    { coords: { lat: location?.lat, lng: location?.lng } },
-    { skip: !location || !pubID },
-  );
+  // Same cache entry the basket and pub screens subscribe to, and it already
+  // carries the free-delivery threshold - there is no second nearby-pubs
+  // lookup to merge with any more.
+  const { data: pubData } = usePubInfo({ pubID });
 
   const count = getBasketCount(basket);
 
   if (count === 0) return null;
 
-  // Exactly the same math as the basket and the checkout screens
-  const itemsPrice = getBasketItemsPrice(basket, pubData?.pub);
-
-  const nearbyPub = nearPubsData?.pubs?.find((item) => item.id === pubID) ?? null;
-  const leftForFreeDelivery = getAmountLeftForFreeDelivery(nearbyPub, itemsPrice);
+  // The local sum on purpose: this bar sits over the feed and updates on every
+  // tap of a stepper - a preview round-trip per tap would lag behind the
+  // number the client just changed. The basket screen shows the authoritative
+  // total one tap later.
+  const pub = pubData?.pub;
+  const itemsPrice = getBasketItemsPrice(basket, pub);
+  const leftForFreeDelivery = getAmountLeftForFreeDelivery(pub, itemsPrice);
 
   return (
     <>
       <FreeDeliveryHint
         leftAmount={leftForFreeDelivery}
         itemsPrice={itemsPrice}
-        freeDeliveryFrom={+nearbyPub?.shipping_free_delivery_price || 0}
-        currency={getCurrencySymbol(pubData?.pub?.currency_id)}
+        freeDeliveryFrom={+pub?.shipping_free_delivery_price || 0}
+        currency={getCurrencySymbol(pub?.currency_id)}
         style={{ marginBottom: 8 }}
       />
 
@@ -110,8 +102,7 @@ const BasketFloatingBar = () => {
           </View>
 
           <Text color="#fff" fontSize={16} fontWeight="bold">
-            {formatPrice(itemsPrice)}{" "}
-            {getCurrencySymbol(pubData?.pub?.currency_id)}
+            {formatPrice(itemsPrice)} {getCurrencySymbol(pub?.currency_id)}
           </Text>
         </View>
       </TouchableOpacity>

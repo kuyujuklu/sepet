@@ -8,14 +8,7 @@ import CreateOrder from "../../widgets/Orders/CreateOrder/CreateOrder";
 import { RowsSkeleton } from "../../widgets/Skeletons/Skeleton";
 import { selectBasket } from "../../features/store/basket/basketSlice";
 import { selectGeolocation } from "../../features/store/geolocation/geolocationSlice";
-import {
-  useGetNearbyPubsQuery,
-  useGetPubInfoQuery,
-} from "../../shared/api/pubs/pubsApi";
-import {
-  getBasketItemsPrice,
-  getDeliveryPrice,
-} from "../../shared/utils/basket";
+import { usePubInfo } from "../../shared/hooks/usePubInfo";
 import { getCurrencySymbol } from "../../shared/utils/dish";
 
 const CreateOrderPage = ({ route }) => {
@@ -28,23 +21,12 @@ const CreateOrderPage = ({ route }) => {
   const basket = useSelector(selectBasket);
   const location = useSelector(selectGeolocation);
 
-  const { data: pubsData } = useGetNearbyPubsQuery(
-    { coords: { lat: location?.lat, lng: location?.lng } },
-    { skip: !location },
-  );
-
-  const { data: pubData, isLoading: isPubLoading } = useGetPubInfoQuery(
-    { pubID },
-    { skip: !pubID },
-  );
+  // Coordinates go with the request, so the shipping prices and the minimum
+  // ride on the pub itself - the nearby-pubs response is no longer needed here
+  const { data: pubData, isLoading: isPubLoading } = usePubInfo({ pubID });
 
   const pub = pubData?.pub;
   const currency = getCurrencySymbol(pub?.currency_id);
-
-  const nearbyPub = useMemo(
-    () => pubsData?.pubs?.find((item) => item.id === pubID) ?? null,
-    [pubsData, pubID],
-  );
 
   const items = useMemo(() => {
     if (!pubData?.dishes) return [];
@@ -53,10 +35,6 @@ const CreateOrderPage = ({ route }) => {
       .filter((dish) => +basket?.[dish.id]?.count > 0)
       .map((dish) => ({ dish, item: basket[dish.id] }));
   }, [pubData, basket]);
-
-  // One source of truth for the money - the basket screen shows the same numbers
-  const itemsPrice = getBasketItemsPrice(basket, pub);
-  const deliveryPrice = getDeliveryPrice(nearbyPub, itemsPrice);
 
   return (
     <Wrapper>
@@ -82,8 +60,6 @@ const CreateOrderPage = ({ route }) => {
             currency={currency}
             shippingTimeFrom={shippingTimeFrom}
             shippingTimeTo={shippingTimeTo}
-            itemsPrice={itemsPrice}
-            deliveryPrice={deliveryPrice}
           />
         </View>
       )}

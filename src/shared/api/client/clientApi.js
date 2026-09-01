@@ -16,6 +16,8 @@ export const clientApi = createApi({
       }),
       keepUnusedDataFor: 0.0001,
     }),
+    // Carries `has_active_order` next to the client: the badge on the profile
+    // button is the only signal left that an order is on its way.
     getClient: builder.query({
       query: () => ({
         url: `/api/client`,
@@ -24,7 +26,24 @@ export const clientApi = createApi({
           "Content-Type": "application/json",
         },
       }),
+      providesTags: ["Client"],
       keepUnusedDataFor: 0.0001,
+    }),
+    // The consent record: `accepted` plus the version of the policy that was
+    // actually shown, so a re-consent can be asked for when the text changes.
+    setAnalyticsConsent: builder.mutation({
+      query: ({ accepted, policyVersion }) => ({
+        url: `/api/client/analytics-consent`,
+        method: "POST",
+        body: {
+          accepted: !!accepted,
+          policy_version: policyVersion ?? "",
+        },
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }),
+      invalidatesTags: ["Client"],
     }),
     deleteAccount: builder.mutation({
       query: () => ({
@@ -40,4 +59,10 @@ export const clientApi = createApi({
   }),
 });
 
-export const { useGetClientQuery, useLazyGetClientQuery, useDeleteAccountMutation, useGetAppVersionInfoQuery } = clientApi;
+export const {
+  useGetClientQuery,
+  useLazyGetClientQuery,
+  useDeleteAccountMutation,
+  useGetAppVersionInfoQuery,
+  useSetAnalyticsConsentMutation,
+} = clientApi;

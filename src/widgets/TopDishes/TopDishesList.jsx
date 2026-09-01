@@ -16,11 +16,7 @@ import FiltersSheet from "./FiltersSheet";
 import SortButton from "./SortButton";
 import SortSheet from "./SortSheet";
 import DishSearchInput from "./DishSearchInput";
-import {
-  useTopDishes,
-  MAX_PUBS_TO_LOAD,
-  MAX_PUBS_FOR_SEARCH,
-} from "./useTopDishes";
+import { useTopDishes } from "./useTopDishes";
 import { topDishesFilters } from "../../shared/utils/topDishes";
 import PubsList, { defaultPubsSort } from "../Pub/PubsList";
 import {
@@ -31,9 +27,6 @@ import { useDebouncedValue } from "../../shared/hooks/useDebouncedValue";
 import { events, track } from "../../shared/analytics/analytics";
 import { DishGridSkeleton } from "../Skeletons/Skeleton";
 import { SCREEN_PADDING, CARD_GAP } from "../../constants/layout";
-
-// The first cards of the default feed are marked as best sellers
-const HITS_COUNT = 2;
 
 // A search over up to 30 pubs' worth of menus is not free to rebuild on every
 // keystroke - both guards exist for the same reason (a client mid-word typing
@@ -99,16 +92,19 @@ const TopDishesList = ({
     : !isPubsView &&
       (feedCategory !== selectedCategory || deferredFilter !== filter);
 
-  const { dishes, isLoading, isRefreshing, refetch } = useTopDishes({
+  const {
+    dishes,
+    isLoading,
+    isRefreshing,
+    isLoadingMore,
+    hasMore,
+    loadMore,
+    refetch,
+  } = useTopDishes({
     filter: feedFilter,
-    limit: 40,
     sectionId,
     categorySlug: feedCategory,
     searchQuery: isSearchActive && isSearchQueryReady ? debouncedSearchQuery : "",
-    // Search looks across every nearby pub, not just the 8 already loaded
-    // for the curated feed - only while it's actually open, so this never
-    // costs anything until the client taps the icon
-    maxPubs: isSearchActive ? MAX_PUBS_FOR_SEARCH : MAX_PUBS_TO_LOAD,
     // Establishments view still has no dishes to show - unless search is
     // open, in which case it needs dishes to search over regardless
     skip: isPubsView && !isSearchActive,
@@ -301,8 +297,8 @@ const TopDishesList = ({
   }
 
   if (isLoading) {
-    // The menus of up to 8 pubs are loaded in parallel; a skeleton grid keeps
-    // the screen recognisable while that happens
+    // One request now, but it still ranks every dish of every nearby pub; a
+    // skeleton grid keeps the screen recognisable while that happens
     return (
       <View pt="2">
         {listHeader}
@@ -395,18 +391,16 @@ const TopDishesList = ({
         style={{ opacity: isUpdating ? 0.5 : 1 }}
         // style, not a native-base prop: height={12} would be token 12 = 48px
         ItemSeparatorComponent={() => <View style={{ height: CARD_GAP }} />}
-        renderItem={({ item, index }) => (
-          <TopDishCard
-            item={item}
-            width={cardWidth}
-            isHit={
-              !isSearchActive &&
-              feedFilter === topDishesFilters.top &&
-              !feedCategory &&
-              index < HITS_COUNT
-            }
-          />
-        )}
+        onEndReachedThreshold={0.6}
+        onEndReached={hasMore ? loadMore : undefined}
+        ListFooterComponent={
+          isLoadingMore ? (
+            <View py="6" alignItems="center">
+              <Spinner color="emerald.600" />
+            </View>
+          ) : null
+        }
+        renderItem={({ item }) => <TopDishCard item={item} width={cardWidth} />}
       />
 
       {sheets}

@@ -2,10 +2,8 @@ import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useTranslation } from "react-i18next";
 import BottomSheet from "../Common/BottomSheet";
 import CategoryChip from "../FoodCategories/CategoriesCarousel/CategoryChip";
-import {
-  getCategoryImage,
-  sortCategoryNames,
-} from "../../shared/utils/foodCategories";
+import { getCategoryImage } from "../../shared/utils/foodCategories";
+import { useCategoryTypes } from "../../shared/hooks/useCategoryTypes";
 import { events, track } from "../../shared/analytics/analytics";
 
 const styles = StyleSheet.create({
@@ -53,8 +51,9 @@ const FiltersSheet = ({
   screen,
 }) => {
   const { t } = useTranslation();
+  const { getName, sortSlugs } = useCategoryTypes();
 
-  const categorySlugs = ["", ...sortCategoryNames(possibleCategoryNames)];
+  const categorySlugs = ["", ...sortSlugs(possibleCategoryNames)];
 
   const handleSelectCategory = (slug) => {
     const nextSlug = slug && slug === selectedCategory ? "" : slug;
@@ -89,7 +88,7 @@ const FiltersSheet = ({
         {categorySlugs.map((slug) => (
           <CategoryChip
             key={slug || "all"}
-            slug={slug}
+            label={slug ? getName(slug) : t("categories.all")}
             image={getCategoryImage(slug)}
             isSelected={slug === selectedCategory}
             onPress={() => handleSelectCategory(slug)}

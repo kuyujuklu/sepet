@@ -50,9 +50,14 @@ const AuthWatcher = () => {
     setaccesstoken(resp.accesstoken);
     dispatch(
       setClient({
+        // `id` is what analytics keys on now; `analytics_consent` is the
+        // recorded answer plus the policy version it was given for
+        id: resp.client?.id ?? null,
         phone: resp.client?.phone,
         name: resp.client?.name,
         isGuest: false,
+        analyticsConsent: !!resp.client?.analytics_consent,
+        consentPolicyVersion: resp.client?.consent_policy_version ?? "",
       }),
     );
     dispatch(setRefetchClient(false));

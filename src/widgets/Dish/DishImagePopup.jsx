@@ -14,7 +14,11 @@ import {
   selectDishImagePopup,
 } from "../../features/store/dishes/dishesSlice";
 import { openPubNotAvailableForDeliveryPopup } from "../../features/store/pubs/pubsSlice";
-import { addCommissionToPrice, formatPrice } from "../../shared/utils/dish";
+import {
+  addCommissionToPrice,
+  formatPrice,
+  isDishAvailable,
+} from "../../shared/utils/dish";
 import { images } from "../../app/images/images";
 
 const styles = StyleSheet.create({
@@ -44,6 +48,7 @@ const styles = StyleSheet.create({
     marginBottom: 3,
   },
   inBasket: { marginTop: 12, fontSize: 13, color: "#059669", fontWeight: "bold" },
+  soldOut: { marginTop: 12, fontSize: 13, color: "#b45309", fontWeight: "bold" },
 });
 
 const DishImagePopup = () => {
@@ -60,11 +65,19 @@ const DishImagePopup = () => {
   const isOnSale = !!dish?.sale_price && +dish.sale_price < +dish.price;
   const priceToPay = isOnSale ? +dish.sale_price : +dish?.price;
 
+  // The opener may know the dish is on the stop list (the feed does); when it
+  // does not, the dish object itself still carries `available`
+  const isAvailable =
+    popupState?.isDishAvailable !== false && isDishAvailable(dish);
+
   const canOrder =
+    isAvailable &&
     popupState?.isPubOpen !== false &&
     popupState?.isAvailableForDelivery !== false;
 
   const handleIncreaseDish = () => {
+    if (!isAvailable) return;
+
     if (!canOrder) {
       dispatch(openPubNotAvailableForDeliveryPopup());
       return;
@@ -128,6 +141,10 @@ const DishImagePopup = () => {
           onDecrease={() => dispatch(decreaseDish({ id: popupState?.dishID }))}
         />
       </View>
+
+      {!isAvailable && (
+        <Text style={styles.soldOut}>{t("dish_popup.sold_out")}</Text>
+      )}
 
       {dishCount > 0 && (
         <Text style={styles.inBasket}>

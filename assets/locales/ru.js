@@ -2,6 +2,7 @@ export default {
   errors: {
     something_went_wrong: "Что-то пошло не так",
     unknown_error: "Неизвестная ошибка",
+    order_below_minimum: "Сумма заказа меньше минимальной для этого заведения",
     unauthorized: "Неавторизован",
     client_with_the_same_phone_already_exists:
       "Пользователь с таким номером телефона уже существует",
@@ -161,16 +162,6 @@ export default {
       all_pubs_label: "Все продуктовые",
     },
   },
-  cities: {
-    chisinau: "Кишинёв",
-    balti: "Бельцы",
-    comrat: "Комрат",
-    cahul: "Кагул",
-    orhei: "Орхей",
-    ungheni: "Унгены",
-    ceadir_lunga: "Чадыр-Лунга",
-    tiraspol: "Тирасполь",
-  },
   city_picker: {
     headline: "В каком городе вы находитесь?",
     subheadline:
@@ -193,6 +184,10 @@ export default {
     additional_settings: "Дополнительные настройки",
     notifications: "Уведомления",
     support: "Поддержка",
+    privacy: "Приватность",
+    analytics_consent: "Аналитика",
+    analytics_consent_hint: "Помогает нам улучшать приложение",
+    privacy_policy: "Политика конфиденциальности",
   },
   notifications_page: {
     title: "Уведомления",
@@ -230,6 +225,7 @@ export default {
       search_accessibility_label: "Поиск",
       hit_badge: "Хит",
       closed: "Закрыто",
+      sold_out: "Нет в наличии",
       no_dishes: "Пока нет блюд, доступных для заказа",
       no_deals: "Сейчас нет блюд со скидкой",
       go_to_basket: "В корзину",
@@ -253,6 +249,10 @@ export default {
     by_categories: "По категориям",
   },
   basket_page: {
+    unavailable_dishes:
+      "Некоторых позиций сейчас нет в наличии — удалите их, чтобы оформить заказ",
+    min_order_left:
+      "Минимальная сумма заказа — {{min}}. Добавьте ещё на {{amount}}",
     subtotal: "Подытог",
     delivery: "Доставка",
     delivery_free: "Бесплатно",
@@ -290,6 +290,7 @@ export default {
     ok_button: "Ok",
   },
   dish_popup: {
+    sold_out: "Этой позиции сейчас нет в наличии",
     in_basket: "В корзине: {{value}}",
     back: "Назад",
   },
@@ -384,24 +385,9 @@ export default {
     no_internet_text: "Проверьте подключение и попробуйте ещё раз",
   },
   categories: {
-    sales: "скидки",
-    asian: "азиатск.",
-    flowers: "цветы",
-    fast_food: "фаст-фуд",
-    breakfast: "завтраки",
-    grill: "грилль",
-    dessert: "дессерты",
-    pasta: "паста",
-    pancakes: "блины",
-    soup: "супы",
-    alcohol: "алкоголь",
-    east_food: "восточная кухня",
-    flour: "мучные",
-    home_food: "домашняя еда",
-    kebab: "кебаб",
-    salad: "салаты",
-    snacks: "закуски",
-    meat: "мясо",
+    // The per-slug names used to live here; they come from
+    // GET /api/client/category-types now (see shared/hooks/useCategoryTypes).
+    // What is left is the chips that are not a category type.
     all: "Всё",
     all_publishments: "Все заведения",
     show_all: "Ещё",

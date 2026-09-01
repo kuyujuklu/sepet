@@ -11,10 +11,8 @@ import BasketSummary from "../../widgets/Basket/BasketSummary";
 import BasketCreateOrderButton from "../../widgets/Basket/BasketCreateOrderButton";
 import BasketGoToRegistrationButton from "../../widgets/Basket/BasketGoToRegistrationButton";
 import { RowsSkeleton } from "../../widgets/Skeletons/Skeleton";
-import {
-  useGetNearbyPubsQuery,
-  useGetPubInfoQuery,
-} from "../../shared/api/pubs/pubsApi";
+import { usePubInfo } from "../../shared/hooks/usePubInfo";
+import { useOrderPreview } from "../../shared/hooks/useOrderPreview";
 import {
   openClearBasketPopup,
   selectBasket,
@@ -23,12 +21,12 @@ import {
 import { selectGeolocation } from "../../features/store/geolocation/geolocationSlice";
 import { selectClient } from "../../features/store/auth/authSlice";
 import {
-  getAmountLeftForFreeDelivery,
   getBasketCount,
   getBasketItemsPrice,
   getDeliveryPrice,
+  getMinOrderPrice,
 } from "../../shared/utils/basket";
-import { getCurrencySymbol } from "../../shared/utils/dish";
+import { formatPrice, getCurrencySymbol } from "../../shared/utils/dish";
 import { images } from "../../app/images/images";
 import { useSafeBottomInset } from "../../shared/hooks/useSafeBottomInset";
 import { SCREEN_PADDING } from "../../constants/layout";
@@ -120,27 +118,15 @@ const BasketPage = () => {
   const location = useSelector(selectGeolocation);
   const client = useSelector(selectClient);
 
-  const { data: pubData, isLoading: isPubLoading } = useGetPubInfoQuery(
-    { pubID },
-    { skip: !pubID },
-  );
-
-  const { data: pubsData } = useGetNearbyPubsQuery(
-    { coords: { lat: location?.lat, lng: location?.lng } },
-    { skip: !location },
-  );
+  // Asked for with the current coordinates, so the response already carries
+  // shipping_price / shipping_free_delivery_price / shipping_min_order_price
+  // and there is nothing left to merge from the nearby-pubs list
+  const { data: pubData, isLoading: isPubLoading } = usePubInfo({ pubID });
 
   const pub = pubData?.pub;
   const currency = getCurrencySymbol(pub?.currency_id);
 
-  // The delivery price and the free-delivery threshold only exist on the
-  // nearby-pubs entry; its absence also means "does not deliver here"
-  const nearbyPub = useMemo(
-    () => pubsData?.pubs?.find((item) => item.id === pubID) ?? null,
-    [pubsData, pubID],
-  );
-
-  const isAvailableForDelivery = !pubsData?.pubs || !!nearbyPub;
+  const isAvailableForDelivery = pub?.isAvailableForDelivery !== false;
   const isPubOpen = pub?.isOpen !== false;
 
   const items = useMemo(() => {
@@ -151,10 +137,42 @@ const BasketPage = () => {
       .map((dish) => ({ dish, item: basket[dish.id] }));
   }, [pubData, basket]);
 
-  const itemsPrice = getBasketItemsPrice(basket, pub);
   const count = getBasketCount(basket);
-  const deliveryPrice = getDeliveryPrice(nearbyPub, itemsPrice);
-  const leftForFreeDelivery = getAmountLeftForFreeDelivery(nearbyPub, itemsPrice);
+
+  // The server prices the basket; the local sum is what the screen shows
+  // while that is in flight and when it failed (offline)
+  const { preview, unavailableDishIDs, canBeOrdered } = useOrderPreview({
+    pubID,
+    basket,
+    coords: location,
+    enabled: count > 0 && !!pubID,
+  });
+
+  const localItemsPrice = getBasketItemsPrice(basket, pub);
+  const itemsPrice = preview ? +preview.items_price : localItemsPrice;
+  const deliveryPrice = preview
+    ? +preview.delivery_price
+    : getDeliveryPrice(pub, itemsPrice);
+
+  const freeDeliveryFrom = preview
+    ? +preview.free_delivery_price || 0
+    : +pub?.shipping_free_delivery_price || 0;
+  const leftForFreeDelivery =
+    freeDeliveryFrom > 0 && itemsPrice < freeDeliveryFrom
+      ? freeDeliveryFrom - itemsPrice
+      : null;
+
+  // "Минимальный заказ 150 lei" - a hard rule since the server started
+  // refusing anything under it with a 400
+  const minOrderPrice = preview
+    ? +preview.min_order_price || 0
+    : getMinOrderPrice(pub);
+  const leftForMinOrder =
+    minOrderPrice > 0 && itemsPrice < minOrderPrice
+      ? minOrderPrice - itemsPrice
+      : null;
+
+  const hasUnavailableDishes = unavailableDishIDs.length > 0;
 
   const isEmpty = count === 0;
   // The dishes are only known once pub-info arrives, so an empty list while
@@ -222,12 +240,31 @@ const BasketPage = () => {
         </View>
       )}
 
+      {hasUnavailableDishes && (
+        <View style={styles.warning}>
+          <Text style={styles.warningText}>
+            {t("basket_page.unavailable_dishes")}
+          </Text>
+        </View>
+      )}
+
+      {leftForMinOrder > 0 && (
+        <View style={styles.warning}>
+          <Text style={styles.warningText}>
+            {t("basket_page.min_order_left", {
+              amount: `${formatPrice(leftForMinOrder)} ${currency}`,
+              min: `${formatPrice(minOrderPrice)} ${currency}`,
+            })}
+          </Text>
+        </View>
+      )}
+
       <BasketSummary
         itemsPrice={itemsPrice}
         deliveryPrice={deliveryPrice}
         currency={currency}
         leftForFreeDelivery={leftForFreeDelivery}
-        freeDeliveryFrom={+nearbyPub?.shipping_free_delivery_price || 0}
+        freeDeliveryFrom={freeDeliveryFrom}
       />
     </View>
   );
@@ -304,6 +341,10 @@ const BasketPage = () => {
                 currency={currency}
                 isAvailableForDelivery={isAvailableForDelivery}
                 isPubOpen={isPubOpen}
+                canBeOrdered={canBeOrdered}
+                hasUnavailableDishes={hasUnavailableDishes}
+                leftForMinOrder={leftForMinOrder}
+                minOrderPrice={minOrderPrice}
               />
             )}
           </View>

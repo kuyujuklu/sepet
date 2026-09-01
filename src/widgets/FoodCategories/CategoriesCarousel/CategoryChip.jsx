@@ -1,8 +1,6 @@
 import { Image } from "expo-image";
 import { memo } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { useTranslation } from "react-i18next";
-import { getCategoryCaptionKey } from "../../../shared/utils/foodCategories";
 
 export const CHIP_WIDTH = 72;
 export const CHIP_SEPARATOR = 8;
@@ -81,12 +79,14 @@ const styles = StyleSheet.create({
 // Round icon with a caption under it. The caption is the whole point: the
 // icons alone are not readable for a first-time user.
 //
+// `label` is passed in rather than translated here: the names live in the
+// server's category-type dictionary now (useCategoryTypes), not in the
+// `categories.*` locale block.
+//
 // `compact` turns it into a one-line pill - that is what the half-width strip
 // on the home screen uses; the full-size version now lives in the popup that
 // shows every category at once.
-const CategoryChip = ({ slug, image, isSelected, compact = false, onPress }) => {
-  const { t } = useTranslation();
-
+const CategoryChip = ({ label, image, isSelected, compact = false, onPress }) => {
   if (compact) {
     return (
       <TouchableOpacity activeOpacity={0.8} onPress={onPress}>
@@ -104,7 +104,7 @@ const CategoryChip = ({ slug, image, isSelected, compact = false, onPress }) => 
               isSelected && styles.compactCaptionSelected,
             ]}
           >
-            {t(getCategoryCaptionKey(slug))}
+            {label}
           </Text>
         </View>
       </TouchableOpacity>
@@ -128,7 +128,7 @@ const CategoryChip = ({ slug, image, isSelected, compact = false, onPress }) => 
           numberOfLines={2}
           style={[styles.caption, isSelected && styles.captionSelected]}
         >
-          {t(getCategoryCaptionKey(slug))}
+          {label}
         </Text>
       </View>
     </TouchableOpacity>

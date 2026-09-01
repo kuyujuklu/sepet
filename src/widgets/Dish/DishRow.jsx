@@ -2,9 +2,14 @@ import { Image } from "expo-image";
 import { memo } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
-import { ENV } from "../../constants/env/env";
+import { useTranslation } from "react-i18next";
 import { images } from "../../app/images/images";
-import { formatPrice, getDishPrices } from "../../shared/utils/dish";
+import {
+  formatPrice,
+  getDishImagePath,
+  getDishPrices,
+  isDishAvailable,
+} from "../../shared/utils/dish";
 import {
   decreaseDish,
   increaseDish,
@@ -23,6 +28,10 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 12,
   },
+  // Greyed out rather than hidden: a client looking for a dish they ordered
+  // last week should see that it exists and is out today, not that it is gone
+  rowSoldOut: { opacity: 0.55 },
+  soldOut: { fontSize: 12, color: "#b45309", fontWeight: "bold", marginTop: 2 },
   thumb: {
     width: 76,
     height: 76,
@@ -55,6 +64,7 @@ const styles = StyleSheet.create({
 // Compact dish row used by the "whole menu on one screen" view. The grid card
 // (TopDishCard) is for the feed; a long menu reads much better as rows.
 const DishRow = ({ dish, pub, pubID, isPubOpen, isAvailableForDelivery }) => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
 
   const dishInBasket = useSelector(selectDishFromBasket(dish?.id));
@@ -62,16 +72,17 @@ const DishRow = ({ dish, pub, pubID, isPubOpen, isAvailableForDelivery }) => {
 
   const prices = getDishPrices(dish, pub);
 
-  const imagePath = dish?.image_file_name
-    ? ENV.API_HTTP_URL +
-      ENV.API_STATIC_PATH +
-      "/images/dishes/" +
-      dish.image_file_name
-    : null;
+  // A 76px thumbnail; the full-size photo is only worth downloading for the
+  // popup that shows it at 220px
+  const imagePath = getDishImagePath(dish);
 
-  const canOrder = isPubOpen !== false && isAvailableForDelivery !== false;
+  const isAvailable = isDishAvailable(dish);
+  const canOrder =
+    isAvailable && isPubOpen !== false && isAvailableForDelivery !== false;
 
   const increase = () => {
+    if (!isAvailable) return;
+
     if (!canOrder) {
       dispatch(openPubNotAvailableForDeliveryPopup());
       return;
@@ -87,19 +98,20 @@ const DishRow = ({ dish, pub, pubID, isPubOpen, isAvailableForDelivery }) => {
 
     dispatch(
       openDishImagePopup({
-        imagePath,
+        imagePath: getDishImagePath(dish, { full: true }) ?? imagePath,
         dish,
         dishID: dish?.id,
         pubID,
         commission: prices.commission,
         isAvailableForDelivery,
         isPubOpen,
+        isDishAvailable: isAvailable,
       }),
     );
   };
 
   return (
-    <View style={styles.row}>
+    <View style={[styles.row, !isAvailable && styles.rowSoldOut]}>
       <TouchableOpacity activeOpacity={0.85} onPress={openDetails}>
         <View style={styles.thumb}>
           {imagePath ? (
@@ -128,6 +140,11 @@ const DishRow = ({ dish, pub, pubID, isPubOpen, isAvailableForDelivery }) => {
           <Text style={styles.name} numberOfLines={2}>
             {dish?.name}
           </Text>
+          {!isAvailable && (
+            <Text style={styles.soldOut}>
+              {t("home_page.top_dishes.sold_out")}
+            </Text>
+          )}
           {!!dish?.ingredients && (
             <Text style={styles.ingredients} numberOfLines={2}>
               {dish.ingredients}

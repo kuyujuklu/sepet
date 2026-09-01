@@ -2,6 +2,7 @@ export default {
   errors: {
     something_went_wrong: "Ceva nu a mers bine",
     unknown_error: "Eroare necunoscută",
+    order_below_minimum: "Suma comenzii este sub minimul acestei unități",
     unauthorized: "Neautorizat",
     client_with_the_same_phone_already_exists:
       "Clientul cu același număr de telefon există deja",
@@ -136,16 +137,6 @@ export default {
       all_pubs_label: "Toate magazinele",
     },
   },
-  cities: {
-    chisinau: "Chișinău",
-    balti: "Bălți",
-    comrat: "Comrat",
-    cahul: "Cahul",
-    orhei: "Orhei",
-    ungheni: "Ungheni",
-    ceadir_lunga: "Ceadîr-Lunga",
-    tiraspol: "Tiraspol",
-  },
   city_picker: {
     headline: "În ce oraș vă aflați?",
     subheadline:
@@ -168,6 +159,10 @@ export default {
     additional_settings: "Setări suplimentare",
     notifications: "Notificări",
     support: "Suport",
+    privacy: "Confidențialitate",
+    analytics_consent: "Analiză",
+    analytics_consent_hint: "Ne ajută să îmbunătățim aplicația",
+    privacy_policy: "Politica de confidențialitate",
   },
   notifications_page: {
     title: "Notificări",
@@ -202,6 +197,7 @@ export default {
       search_accessibility_label: "Căutare",
       hit_badge: "Top",
       closed: "Închis",
+      sold_out: "Indisponibil",
       no_dishes: "Deocamdată nu sunt preparate disponibile",
       no_deals: "Acum nu sunt preparate cu reducere",
       go_to_basket: "Spre coș",
@@ -225,6 +221,10 @@ export default {
     by_categories: "Pe categorii",
   },
   basket_page: {
+    unavailable_dishes:
+      "Unele poziții nu sunt disponibile acum — eliminați-le pentru a comanda",
+    min_order_left:
+      "Comanda minimă este {{min}}. Mai adăugați {{amount}}",
     subtotal: "Subtotal",
     delivery: "Livrare",
     delivery_free: "Gratuit",
@@ -263,6 +263,7 @@ export default {
     ok_button: "ok",
   },
   dish_popup: {
+    sold_out: "Această poziție nu este disponibilă acum",
     in_basket: "În coș: {{value}}",
     back: "Înapoi",
   },
@@ -344,24 +345,6 @@ export default {
     no_internet_text: "Verificați conexiunea și încercați din nou",
   },
   categories: {
-    sales: "promoții",
-    asian: "asiatice",
-    flowers: "flori",
-    fast_food: "fast-food",
-    breakfast: "mic dejun",
-    grill: "grătar",
-    dessert: "deserturi",
-    pasta: "paste",
-    pancakes: "clătite",
-    soup: "supe",
-    alcohol: "alcool",
-    east_food: "bucătăria orientală",
-    flour: "mâncăruri de făină",
-    home_food: "mânc facuta acasa",
-    kebab: "kebab",
-    salad: "salate",
-    snacks: "gustări",
-    meat: "mâncăruri din carne",
     all: "Toate",
     all_publishments: "Toate unitățile",
     show_all: "Mai multe",

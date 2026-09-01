@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
-import { useGetPubInfoQuery } from '../../../shared/api/pubs/pubsApi';
 import pkg from "../../../../app.json"
 const parsedCurrentVersion = parseInt(pkg.expo.version?.split(".")?.join('')) || 0
 import { selectIsVersionExpired, setVersion } from './versionSlice';

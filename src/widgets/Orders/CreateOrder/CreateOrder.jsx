@@ -34,8 +34,14 @@ import {
   setGeolocation,
 } from "../../../features/store/geolocation/geolocationSlice";
 import { appendSavedAddress } from "../../../shared/utils/savedAddresses";
-import { formatPrice, getDishPrices } from "../../../shared/utils/dish";
-import { getBasketItemPrice } from "../../../shared/utils/basket";
+import { formatPrice, getDishPrices, isDishAvailable } from "../../../shared/utils/dish";
+import {
+  getBasketItemPrice,
+  getBasketItemsPrice,
+  getDeliveryPrice,
+} from "../../../shared/utils/basket";
+import { useGeocodedAddress } from "../../../shared/hooks/useGeocodedAddress";
+import { useOrderPreview } from "../../../shared/hooks/useOrderPreview";
 import { useSafeBottomInset } from "../../../shared/hooks/useSafeBottomInset";
 import { SCREEN_PADDING } from "../../../constants/layout";
 import { getLocationLabel } from "../../../shared/utils/geolocation";
@@ -139,6 +145,13 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   lineName: { flex: 1, fontSize: 14, color: "#3f3f46" },
+  lineUnavailable: { opacity: 0.5 },
+  blocker: {
+    fontSize: 13,
+    color: "#9a3412",
+    lineHeight: 18,
+    marginTop: 12,
+  },
   lineCount: { fontSize: 13, color: "#6b7280" },
   linePrice: { fontSize: 14, fontWeight: "500", color: "#111" },
   oldLinePrice: {
@@ -206,8 +219,6 @@ const CreateOrder = ({
   location,
   shippingTimeFrom,
   shippingTimeTo,
-  itemsPrice,
-  deliveryPrice,
   currency,
   basket,
 }) => {
@@ -253,7 +264,50 @@ const CreateOrder = ({
     setFullAddress(location.fullAddress);
   }, [location?.fullAddress]);
 
-  const totalSum = (itemsPrice ?? 0) + (deliveryPrice ?? 0);
+  // Where the order is actually going. With an approximate location the
+  // client has an address typed but only city-level coordinates, and the
+  // delivery price is calculated from the point - so the address is geocoded
+  // back into one before anything is priced or sent.
+  const { coords: deliveryCoords, isGeocoding } = useGeocodedAddress({
+    town,
+    fullAddress,
+    location,
+    enabled: isApproximateLocation,
+  });
+
+  // The server prices the basket the same way it will price the order
+  const {
+    preview,
+    isLoading: isPreviewLoading,
+    unavailableDishIDs,
+    canBeOrdered,
+  } = useOrderPreview({
+    pubID,
+    basket,
+    coords: deliveryCoords,
+    paymentType,
+    town,
+    fullAddress,
+    enabled: !!pubID && !isGeocoding,
+  });
+
+  // The local sum is only what fills the screen until the preview lands (and
+  // when it cannot - offline); the preview always wins once it is there.
+  const localItemsPrice = getBasketItemsPrice(basket, pub);
+  const itemsPrice = preview ? +preview.items_price : localItemsPrice;
+  const deliveryPrice = preview
+    ? +preview.delivery_price
+    : getDeliveryPrice(pub, itemsPrice);
+  const totalSum = preview
+    ? +preview.total_price
+    : (itemsPrice ?? 0) + (deliveryPrice ?? 0);
+
+  const minOrderPrice = preview ? +preview.min_order_price || 0 : 0;
+  const leftForMinOrder =
+    minOrderPrice > 0 && itemsPrice < minOrderPrice
+      ? minOrderPrice - itemsPrice
+      : null;
+
   const isShippingTimeAvailable = !!(shippingTimeFrom && shippingTimeTo);
 
   const [triedToSubmit, setTriedToSubmit] = useState(false);
@@ -321,8 +375,25 @@ const CreateOrder = ({
       return;
     }
 
+    if (!canBeOrdered) {
+      dispatch(
+        pushAlert({
+          status: alertStatuses.error,
+          delay: 3000,
+          title:
+            unavailableDishIDs.length > 0
+              ? t("basket_page.unavailable_dishes")
+              : t("basket_page.min_order_left", {
+                  amount: `${formatPrice(leftForMinOrder ?? 0)} ${currency}`,
+                  min: `${formatPrice(minOrderPrice)} ${currency}`,
+                }),
+        }),
+      );
+      return;
+    }
+
     // Used to only warn and then POST lat: undefined
-    if (!location?.lat || !location?.lng) {
+    if (!deliveryCoords?.lat || !deliveryCoords?.lng) {
       dispatch(
         pushAlert({
           status: alertStatuses.error,
@@ -343,8 +414,10 @@ const CreateOrder = ({
       order: {
         deliveryPrice: +deliveryPrice,
         town,
-        lat: location.lat,
-        lng: location.lng,
+        // The geocoded point of the typed address, not the city centre the
+        // feed was browsed with
+        lat: deliveryCoords.lat,
+        lng: deliveryCoords.lng,
         fullAddress,
         mainPhoneNumber: phoneNumber,
         secondPhoneNumber,
@@ -364,8 +437,8 @@ const CreateOrder = ({
     // only decides whether this address also joins the *saved* list.
     dispatch(
       setGeolocation({
-        lat: location?.lat,
-        lng: location?.lng,
+        lat: deliveryCoords?.lat ?? location?.lat,
+        lng: deliveryCoords?.lng ?? location?.lng,
         town,
         fullAddress,
       }),
@@ -375,12 +448,15 @@ const CreateOrder = ({
       appendSavedAddress(dispatch, {
         town,
         fullAddress,
-        lat: location?.lat,
-        lng: location?.lng,
+        lat: deliveryCoords?.lat ?? location?.lat,
+        lng: deliveryCoords?.lng ?? location?.lng,
       });
     }
 
-    dispatch(addOrder(createOrderResponse.order));
+    // The reducer reads action.payload.order - passing the order bare used to
+    // make this a silent no-op, and the screen we navigate to next reads the
+    // order out of exactly this slice
+    dispatch(addOrder({ order: createOrderResponse.order }));
     dispatch(clearBasket());
     navigator.navigate("OrderInfoPage", {
       orderID: createOrderResponse.order.id,
@@ -538,11 +614,21 @@ const CreateOrder = ({
         <Card title={t("create_order_page.order.title")} hint={pub?.name}>
           {items.map(({ dish, item }) => {
             const prices = getDishPrices(dish, pub);
+            // The server said it will not take this line - either it is on
+            // the stop list or it disappeared from the menu meanwhile
+            const isUnavailable =
+              unavailableDishIDs.includes(+dish.id) || !isDishAvailable(dish);
 
             return (
-              <View key={dish.id} style={styles.line}>
+              <View
+                key={dish.id}
+                style={[styles.line, isUnavailable && styles.lineUnavailable]}
+              >
                 <Text style={styles.lineName} numberOfLines={1}>
                   {dish?.name}
+                  {isUnavailable
+                    ? ` — ${t("home_page.top_dishes.sold_out")}`
+                    : ""}
                 </Text>
                 <Text style={styles.lineCount}>× {item?.count}</Text>
                 <View style={{ alignItems: "flex-end" }}>
@@ -568,6 +654,15 @@ const CreateOrder = ({
             </View>
           )}
 
+          {leftForMinOrder > 0 && (
+            <Text style={styles.blocker}>
+              {t("basket_page.min_order_left", {
+                amount: `${formatPrice(leftForMinOrder)} ${currency}`,
+                min: `${formatPrice(minOrderPrice)} ${currency}`,
+              })}
+            </Text>
+          )}
+
           <BasketSummary
             plain
             itemsPrice={itemsPrice ?? 0}
@@ -589,10 +684,11 @@ const CreateOrder = ({
             <View
               style={[
                 styles.submit,
-                (!areInputsValid || isCreateOrderLoading) && styles.submitDisabled,
+                (!areInputsValid || isCreateOrderLoading || !canBeOrdered) &&
+                  styles.submitDisabled,
               ]}
             >
-              {isCreateOrderLoading ? (
+              {isCreateOrderLoading || isPreviewLoading || isGeocoding ? (
                 <ActivityIndicator color="#fff" />
               ) : (
                 <>

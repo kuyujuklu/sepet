@@ -4,9 +4,13 @@ import { memo, useState } from "react";
 import { TouchableOpacity } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
-import { ENV } from "../../constants/env/env";
 import { images } from "../../app/images/images";
-import { formatPrice, getDishPrices } from "../../shared/utils/dish";
+import {
+  formatPrice,
+  getDishImagePath,
+  getDishPrices,
+  isDishAvailable,
+} from "../../shared/utils/dish";
 import {
   decreaseDish,
   increaseDish,
@@ -25,18 +29,7 @@ const cardShadow = {
   elevation: 3,
 };
 
-const getDishImagePath = (dish) => {
-  if (!dish?.image_file_name) return null;
-
-  return (
-    ENV.API_HTTP_URL +
-    ENV.API_STATIC_PATH +
-    "/images/dishes/" +
-    dish.image_file_name
-  );
-};
-
-const TopDishCard = ({ item, width, isHit }) => {
+const TopDishCard = ({ item, width }) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
@@ -47,14 +40,21 @@ const TopDishCard = ({ item, width, isHit }) => {
   const dishCount = +dishInBasket?.count || 0;
 
   const prices = getDishPrices(dish, pub);
+  // The 130px grid used to download the full-size photo of every card
   const imagePath = getDishImagePath(dish);
   const isPubOpen = pub?.isOpen !== false;
+  // The badge is a field now, not "one of the first two cards of the feed"
+  const isHit = !!dish?.is_hit;
+  const isAvailable = isDishAvailable(dish);
+  const canOrder = isPubOpen && isAvailable;
 
   const [imageLoaded, setImageLoaded] = useState(!imagePath);
 
   const distanceInKm = +pub?.distance / 1000;
 
   const handleIncreaseDish = () => {
+    if (!isAvailable) return;
+
     if (!isPubOpen) {
       dispatch(openPubNotAvailableForDeliveryPopup());
       return;
@@ -74,7 +74,8 @@ const TopDishCard = ({ item, width, isHit }) => {
 
     dispatch(
       openDishImagePopup({
-        imagePath,
+        // The popup shows the photo full-bleed, so it wants the original
+        imagePath: getDishImagePath(dish, { full: true }) ?? imagePath,
         dish,
         dishID: dish?.id,
         pubID: pub?.id,
@@ -82,6 +83,7 @@ const TopDishCard = ({ item, width, isHit }) => {
         // The feed is built from the pubs that deliver to the client
         isAvailableForDelivery: true,
         isPubOpen,
+        isDishAvailable: isAvailable,
       }),
     );
   };
@@ -159,8 +161,9 @@ const TopDishCard = ({ item, width, isHit }) => {
               </View>
             )}
 
-            {/* Closed pub */}
-            {!isPubOpen && (
+            {/* Sold out beats closed: the pub may well be open, the dish
+                just is not there today (the stop list) */}
+            {(!isAvailable || !isPubOpen) && (
               <View
                 position="absolute"
                 w="full"
@@ -170,7 +173,11 @@ const TopDishCard = ({ item, width, isHit }) => {
                 justifyContent="center"
               >
                 <Text color="#fff" fontSize={14} fontWeight="medium">
-                  {t("home_page.top_dishes.closed")}
+                  {t(
+                    !isAvailable
+                      ? "home_page.top_dishes.sold_out"
+                      : "home_page.top_dishes.closed",
+                  )}
                 </Text>
               </View>
             )}
@@ -179,7 +186,7 @@ const TopDishCard = ({ item, width, isHit }) => {
             <View position="absolute" bottom={2} right={2}>
               <QuantityStepper
                 count={dishCount}
-                canOrder={isPubOpen}
+                canOrder={canOrder}
                 onIncrease={handleIncreaseDish}
                 onDecrease={() => dispatch(decreaseDish({ id: dish?.id }))}
               />

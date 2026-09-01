@@ -1,6 +1,6 @@
 import { Text, View } from "native-base";
 import { Image } from "expo-image";
-import { Linking, ScrollView, TouchableOpacity } from "react-native";
+import { ActivityIndicator, Linking, ScrollView, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
@@ -13,13 +13,25 @@ import { images } from "../../app/images/images";
 import {
   openDeleteClientPopup,
   selectClient,
+  setAnalyticsConsent,
 } from "../../features/store/auth/authSlice";
 import { selectUnreadNotificationsCount } from "../../features/store/notifications/notificationsHistorySlice";
 import { clearAuthenticationData } from "../../shared/api/auth/authBasedQuery";
+import { useGetAppSettingsQuery } from "../../shared/api/dictionaries/dictionariesApi";
+import { useSetAnalyticsConsentMutation } from "../../shared/api/client/clientApi";
 import { events, track } from "../../shared/analytics/analytics";
 
-const SUPPORT_PHONE = "+373 605 49 995";
-const SUPPORT_TELEGRAM = "http://t.me/AlternativeGE";
+// Only used until GET /api/client/app-settings answers - changing a support
+// number used to need a store release, which is exactly what these were.
+const FALLBACK_SUPPORT_PHONE = "+373 605 49 995";
+const FALLBACK_SUPPORT_TELEGRAM = "http://t.me/AlternativeGE";
+
+// "@AlternativeGE" out of "http://t.me/AlternativeGE"
+const telegramHandle = (url) => {
+  const handle = String(url ?? "").split("/").filter(Boolean).pop();
+
+  return handle ? `@${handle}` : "";
+};
 
 // `iconNode` is for the rare row with no matching image in assets/images - a
 // vector glyph instead, sized to line up with the raster icons around it
@@ -81,6 +93,42 @@ const ProfilePage = () => {
 
   const client = useSelector(selectClient);
   const unreadNotificationsCount = useSelector(selectUnreadNotificationsCount);
+
+  const { data: appSettings } = useGetAppSettingsQuery();
+  const [saveAnalyticsConsent, { isLoading: isSavingConsent }] =
+    useSetAnalyticsConsentMutation();
+
+  const supportPhone = appSettings?.support_phone || FALLBACK_SUPPORT_PHONE;
+  const supportTelegram =
+    appSettings?.support_telegram || FALLBACK_SUPPORT_TELEGRAM;
+  const privacyPolicyUrl = appSettings?.privacy_policy_url;
+  const policyVersion = appSettings?.policy_version ?? "";
+
+  const analyticsAccepted = !!client?.analyticsConsent;
+
+  // The record travels with the version of the policy that was on screen, so
+  // a later rewrite can ask again instead of inheriting an answer given to a
+  // different text
+  const toggleAnalyticsConsent = async () => {
+    if (isSavingConsent || client?.isGuest) return;
+
+    const accepted = !analyticsAccepted;
+
+    // Optimistic: the switch is the client's own answer, and the request
+    // failing must not leave the UI arguing with them
+    dispatch(setAnalyticsConsent({ accepted, policyVersion }));
+
+    await saveAnalyticsConsent({ accepted, policyVersion })
+      .unwrap()
+      .catch(() => {
+        dispatch(
+          setAnalyticsConsent({
+            accepted: analyticsAccepted,
+            policyVersion: client?.consentPolicyVersion ?? "",
+          }),
+        );
+      });
+  };
 
   const logout = () => {
     clearAuthenticationData();
@@ -145,15 +193,69 @@ const ProfilePage = () => {
 
         <ProfileRow
           icon={images.TechSupport}
-          label={SUPPORT_PHONE}
-          onPress={() => contactSupport("phone", `tel:${SUPPORT_PHONE}`)}
+          label={supportPhone}
+          onPress={() => contactSupport("phone", `tel:${supportPhone}`)}
         />
 
         <ProfileRow
           icon={images.Telegram}
-          label="@AlternativeGE"
-          onPress={() => contactSupport("telegram", SUPPORT_TELEGRAM)}
+          label={telegramHandle(supportTelegram)}
+          onPress={() => contactSupport("telegram", supportTelegram)}
         />
+
+        {/* Privacy */}
+        <Text px="1" pt="2" fontSize={14} color="coolGray.500">
+          {t("profile.privacy")}
+        </Text>
+
+        {!client?.isGuest && (
+          <TouchableOpacity activeOpacity={0.7} onPress={toggleAnalyticsConsent}>
+            <View
+              flexDir="row"
+              alignItems="center"
+              gap={3}
+              px="4"
+              py="3.5"
+              backgroundColor="#fff"
+              borderRadius="2xl"
+            >
+              <View flex={1}>
+                <Text fontSize={16} color="#111">
+                  {t("profile.analytics_consent")}
+                </Text>
+                <Text fontSize={13} color="coolGray.500">
+                  {t("profile.analytics_consent_hint")}
+                </Text>
+              </View>
+
+              {isSavingConsent ? (
+                <ActivityIndicator size="small" color="#059669" />
+              ) : (
+                <View
+                  w={12}
+                  h={7}
+                  borderRadius="full"
+                  px="0.5"
+                  justifyContent="center"
+                  alignItems={analyticsAccepted ? "flex-end" : "flex-start"}
+                  backgroundColor={analyticsAccepted ? "emerald.600" : "coolGray.300"}
+                >
+                  <View w={6} h={6} borderRadius="full" backgroundColor="#fff" />
+                </View>
+              )}
+            </View>
+          </TouchableOpacity>
+        )}
+
+        {!!privacyPolicyUrl && (
+          <ProfileRow
+            iconNode={
+              <Ionicons name="document-text-outline" size={22} color="#111" />
+            }
+            label={t("profile.privacy_policy")}
+            onPress={() => Linking.openURL(privacyPolicyUrl)}
+          />
+        )}
 
         {/* Account actions */}
         <TouchableOpacity activeOpacity={0.8} onPress={logout}>

@@ -1,5 +1,5 @@
 import { Spinner, Text, View } from "native-base";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { TouchableOpacity } from "react-native";
 import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
@@ -17,7 +17,6 @@ import {
   selectHasGeolocationPerm,
 } from "../../features/store/geolocation/geolocationSlice";
 import { selectSection } from "../../features/store/sections/sectionSlice";
-import { filterCategoryNamesBySection } from "../../shared/utils/sections";
 import { selectBasket } from "../../features/store/basket/basketSlice";
 import { getBasketCount } from "../../shared/utils/basket";
 import { useSafeBottomInset } from "../../shared/hooks/useSafeBottomInset";
@@ -43,15 +42,13 @@ const Home = () => {
     setSelectedCategory("");
   }, [section]);
 
-  const { possibleCategoryNames } = useNearbyCategoryNames();
-
-  const sectionCategoryNames = useMemo(
-    () => filterCategoryNamesBySection(possibleCategoryNames, section),
-    [possibleCategoryNames, section],
-  );
+  // Section-scoped server-side: `?section=` on get-available-categories
+  // returns only the categories of this section, so there is no client-side
+  // include/exclude rule left to run over the slugs
+  const { possibleCategoryNames } = useNearbyCategoryNames(section);
 
   const { data: nearPubsData } = useGetNearbyPubsQuery(
-    { coords: { lat: location?.lat, lng: location?.lng } },
+    { coords: { lat: location?.lat, lng: location?.lng }, section },
     { skip: !location },
   );
 
@@ -96,7 +93,7 @@ const Home = () => {
         <View flex={1}>
           <TopDishesList
             sectionId={section}
-            possibleCategoryNames={sectionCategoryNames}
+            possibleCategoryNames={possibleCategoryNames}
             selectedCategory={selectedCategory}
             onSelectCategory={setSelectedCategory}
           />

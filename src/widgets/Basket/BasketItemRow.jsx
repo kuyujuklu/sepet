@@ -3,9 +3,13 @@ import { memo } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { useDispatch } from "react-redux";
 import { useTranslation } from "react-i18next";
-import { ENV } from "../../constants/env/env";
 import { images } from "../../app/images/images";
-import { formatPrice, getDishPrices } from "../../shared/utils/dish";
+import {
+  formatPrice,
+  getDishImagePath,
+  getDishPrices,
+  isDishAvailable,
+} from "../../shared/utils/dish";
 import { getBasketItemPrice } from "../../shared/utils/basket";
 import {
   decreaseDish,
@@ -22,6 +26,8 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 12,
   },
+  rowSoldOut: { opacity: 0.55 },
+  soldOut: { fontSize: 12, color: "#b45309", fontWeight: "bold", marginTop: 2 },
   thumb: {
     width: 74,
     height: 74,
@@ -60,12 +66,13 @@ const BasketItemRow = ({ dish, item, pub, pubID }) => {
   const prices = getDishPrices(dish, pub);
   const linePrice = getBasketItemPrice(item, pub);
 
-  const imagePath = dish?.image_file_name
-    ? ENV.API_HTTP_URL +
-      ENV.API_STATIC_PATH +
-      "/images/dishes/" +
-      dish.image_file_name
-    : null;
+  const imagePath = getDishImagePath(dish);
+
+  // The stop list. The line stays in the basket - the client decides whether
+  // to drop it - but it is greyed out and cannot be increased, and the
+  // checkout button knows about it through orders/preview's
+  // `unavailable_dish_ids`.
+  const isAvailable = isDishAvailable(dish);
 
   const decrease = () => {
     if (count <= 1) {
@@ -76,13 +83,14 @@ const BasketItemRow = ({ dish, item, pub, pubID }) => {
     dispatch(decreaseDish({ id: dish?.id }));
   };
 
-  const increase = () =>
-    dispatch(
-      increaseDish({ id: dish?.id, pubID, price: prices.basketPrice }),
-    );
+  const increase = () => {
+    if (!isAvailable) return;
+
+    dispatch(increaseDish({ id: dish?.id, pubID, price: prices.basketPrice }));
+  };
 
   return (
-    <View style={styles.row}>
+    <View style={[styles.row, !isAvailable && styles.rowSoldOut]}>
       <View style={styles.thumb}>
         {imagePath ? (
           <Image
@@ -108,16 +116,23 @@ const BasketItemRow = ({ dish, item, pub, pubID }) => {
           <Text style={styles.name} numberOfLines={2}>
             {dish?.name}
           </Text>
-          <Text style={styles.unitPrice}>
-            {formatPrice(prices.price)} {prices.currency} ·{" "}
-            {t("basket_page.per_item")}
-          </Text>
+          {isAvailable ? (
+            <Text style={styles.unitPrice}>
+              {formatPrice(prices.price)} {prices.currency} ·{" "}
+              {t("basket_page.per_item")}
+            </Text>
+          ) : (
+            <Text style={styles.soldOut}>
+              {t("home_page.top_dishes.sold_out")}
+            </Text>
+          )}
         </View>
 
         <View style={styles.bottom}>
           <QuantityStepper
             tone="light"
             count={count}
+            canOrder={isAvailable}
             onIncrease={increase}
             onDecrease={decrease}
           />
