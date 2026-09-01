@@ -3,7 +3,7 @@
     "newArchEnabled": true,
     "name": "Sepet",
     "slug": "camelapp",
-    "version": "1.2.50",
+    "version": "1.2.51",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
     "scheme": "sepetmd",
