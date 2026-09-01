@@ -76,10 +76,16 @@ None - client dependency/tooling upgrade only.
   needed `NODE_OPTIONS=--max-old-space-size=8192` locally - the default Node heap
   wasn't enough for the bigger SDK 54 module graph and OOM'd mid-bundle; iOS also
   hit one transient `hermesc.exe` crash that didn't reproduce on retry, worth knowing
-  about if a build flakes rather than assuming it's a real regression). **Not yet
-  verified: a real native build on either platform** - EAS builds for both are the
-  next step, and this is a much bigger dependency jump than yesterday's targeted
-  fixes, so treat both as genuinely unverified until they finish.
+  about if a build flakes rather than assuming it's a real regression).
+- **iOS: confirmed.** `eas build --profile production --platform ios` (id
+  `10477b33`, `sdkVersion` 54.0.0, `appBuildVersion` 10) finished clean on the
+  Xcode-26 default image - no repeat of the modular-headers issue, no other native
+  errors. Downloaded the `.ipa` and re-ran the same verification as before:
+  `FIRAnalytics`/`RNFBAnalytics` in the binary, `logEvent`/`logScreenView` in
+  `main.jsbundle`. `native-base`/`@gluestack-ui/*` built fine natively too - the
+  biggest suspected risk in this upgrade didn't materialize on iOS.
+- **Android: in progress** - production build kicked off right after iOS, not
+  finished as of writing this line.
 - **`native-base`/`@gluestack-ui/*` are the biggest risk in this upgrade and weren't
   specifically vetted beyond "expo-doctor and the JS bundle didn't complain."**
   native-base is community-known as unmaintained in favor of gluestack-ui proper (this
