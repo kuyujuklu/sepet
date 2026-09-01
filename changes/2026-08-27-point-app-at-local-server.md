@@ -67,3 +67,15 @@ None — this change is entirely client-side configuration. `backend/.env` alrea
   pointed at `http://` would have its requests blocked silently.
 - The backend was not running on :9999 while this was set up, so the app has not actually
   been seen talking to it — only the resolved URLs were verified.
+
+## 2026-09-01: this shipped in a preview build, exactly as warned above
+
+`EXPO_PUBLIC_IS_DEV=1` was still on when this got merged into an EAS `preview` Android
+build (see `2026-08-31-firebase-analytics-sink.md`'s 2026-09-01 section). Confirmed the
+predicted failure mode exactly: no `hostUri` in a standalone build →
+`Constants.expoConfig?.hostUri` and `expoGoConfig?.debuggerHost` are both empty →
+`dev.js` falls back to `localhost:9999`, i.e. the phone's own loopback, which has no
+backend on it - so the venue list (and everything else) silently fails to load.
+Blanked `.env` back to `EXPO_PUBLIC_IS_DEV=` and rebuilt. The "move it to a gitignored
+`.env.local`" idea from the Known limits above would have prevented this - still not
+done.
