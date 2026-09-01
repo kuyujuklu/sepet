@@ -30,7 +30,7 @@
       "buildNumber": "7"
     },
     "android": {
-      "versionCode": 70,
+      "versionCode": 71,
       "edgeToEdgeEnabled": true,
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
