@@ -198,10 +198,12 @@ Firebase-Storage/Auth/Messaging guides use, since this app only pulls in Core +
 Analytics natively.
 
 **Known limits / follow-ups (this section):**
-- Not yet confirmed sufficient - if CocoaPods still finds another un-modular pod in
-  the chain (`GoogleAppMeasurement`, `PromisesObjC`, `FirebaseInstallations` are the
-  next-most-likely candidates), add it to the same `extraPods` array and retry. iOS
-  pod-install fails fast (under a minute), cheap to iterate.
+- **Confirmed sufficient** - the four-pod list was enough, no further un-modular pods
+  surfaced. `eas build --profile production --platform ios` (id `ae9cf8ea`,
+  `appBuildVersion` 9) finished clean. Downloaded the resulting `.ipa` and verified
+  directly: the main binary has `FIRAnalytics`/`RNFBAnalytics` symbols, and
+  `main.jsbundle` has `logEvent`/`logScreenView` - same verification approach as the
+  Android checks above, not just trusting build status.
 - Switching to `ios.useFrameworks: 'static'` (static *frameworks*, not static
   libraries) was considered instead - it's the more commonly recommended fix for new
   Firebase integrations - but per current research this doesn't reliably avoid the

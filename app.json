@@ -27,7 +27,7 @@
       "associatedDomains": [
         "applinks:sepet.md"
       ],
-      "buildNumber": "8"
+      "buildNumber": "9"
     },
     "android": {
       "versionCode": 71,
@@ -127,10 +127,22 @@
           "ios": {
             "deploymentTarget": "15.1",
             "extraPods": [
-              { "name": "GoogleUtilities", "modular_headers": true },
-              { "name": "Firebase", "modular_headers": true },
-              { "name": "FirebaseCore", "modular_headers": true },
-              { "name": "FirebaseCoreInternal", "modular_headers": true }
+              {
+                "name": "GoogleUtilities",
+                "modular_headers": true
+              },
+              {
+                "name": "Firebase",
+                "modular_headers": true
+              },
+              {
+                "name": "FirebaseCore",
+                "modular_headers": true
+              },
+              {
+                "name": "FirebaseCoreInternal",
+                "modular_headers": true
+              }
             ]
           }
         }
