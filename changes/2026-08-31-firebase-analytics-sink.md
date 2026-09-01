@@ -197,6 +197,12 @@ project's resolved pod list that are implicated by the error chain: `GoogleUtili
 Firebase-Storage/Auth/Messaging guides use, since this app only pulls in Core +
 Analytics natively.
 
+Also: `eas submit --platform ios --non-interactive` failed with "Set ascAppId in the
+submit profile" - non-interactive submit needs the App Store Connect numeric app id
+up front (interactive mode can look it up by prompting). Added
+`submit.production.ios.ascAppId: "6736594340"` to `eas.json` (from Firebase
+console's "Sepet ios App" entry, which lists the same App Store ID).
+
 **Known limits / follow-ups (this section):**
 - **Confirmed sufficient** - the four-pod list was enough, no further un-modular pods
   surfaced. `eas build --profile production --platform ios` (id `ae9cf8ea`,
