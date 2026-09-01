@@ -39,6 +39,7 @@ import * as Linking from "expo-linking";
 import * as NavigationBar from "expo-navigation-bar";
 import { resolveDeepLinkDestination } from "./src/shared/utils/deepLink";
 import { trackScreen } from "./src/shared/analytics/analytics";
+import { initFirebaseAnalyticsSink } from "./src/shared/analytics/firebaseAnalyticsSink";
 import { useTranslation } from "react-i18next";
 import NotificationHandler from "./src/features/store/notifications/NotificationHandler";
 import { StatusBar } from "expo-status-bar";
@@ -65,6 +66,8 @@ if (!__DEV__) {
   console.log = () => {};
   console.debug = () => {};
 }
+
+initFirebaseAnalyticsSink();
 
 export default function App() {
   return (

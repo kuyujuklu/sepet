@@ -30,7 +30,7 @@
       "buildNumber": "7"
     },
     "android": {
-      "versionCode": 64,
+      "versionCode": 68,
       "edgeToEdgeEnabled": true,
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
@@ -70,6 +70,22 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
+      [
+        "@react-native-firebase/app",
+        {
+          "ios": {
+            "disableSPM": true
+          }
+        }
+      ],
+      [
+        "@react-native-firebase/analytics",
+        {
+          "ios": {
+            "withoutAdIdSupport": true
+          }
+        }
+      ],
       [
         "expo-localization"
       ],

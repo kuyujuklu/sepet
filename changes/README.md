@@ -6,6 +6,13 @@ the work without re-reading the whole codebase.
 
 Newest first.
 
+- [2026-08-31 — Wire the analytics event catalogue to Firebase Analytics](2026-08-31-firebase-analytics-sink.md)
+  — `setAnalyticsSink()` was never called (catalogue/middleware were already fine,
+  see the 2026-08-27 note below); added `firebaseAnalyticsSink.js` wiring
+  `track()`/`trackScreen()` to `@react-native-firebase/analytics` (modular API -
+  namespaced API is gone in this SDK version), plus the two Expo config plugin
+  entries (`disableSPM`, `withoutAdIdSupport`) a working native build needs. Not
+  build-verified — no native build tooling available here, only `expo export`.
 - [2026-08-27 — Analytics: fix dead basket_cleared, a double-fire, inconsistent payloads](2026-08-27-analytics-cleanup.md)
   — `basket_cleared` now actually fires (was declared, never wired); `address_selected`
   was firing twice for 2 of its 3 flows (widget + middleware both reacting to the
