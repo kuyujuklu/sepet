@@ -1,0 +1,50 @@
+{
+  "expo": {
+    "name": "Sepet Courier",
+    "slug": "sepet-courier",
+    "version": "1.0.0",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "scheme": "sepetcourier",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.sepet.courier",
+      "buildNumber": "1"
+    },
+    "android": {
+      "versionCode": 1,
+      "package": "com.camelapp.courier",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#000000",
+          "defaultChannel": "default"
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "4157c782-3e7e-415c-8e42-da015bba9d15"
+      }
+    },
+    "owner": "alex_kalak"
+  }
+}
