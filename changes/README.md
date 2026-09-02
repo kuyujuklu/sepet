@@ -6,11 +6,18 @@ the work without re-reading the whole codebase.
 
 Newest first.
 
+- [2026-09-02 — Pub open/closed status was going stale](2026-09-02-refresh-pub-open-status.md)
+  — `isOpen` only ever recomputes on an actual fetch, and background polling had been
+  removed entirely (see the 08-27 note); added `refetchOnMountOrArgChange: 60` + a
+  careful 3-minute `pollingInterval` to Home/establishments-list/PubInfo, with the
+  pull-to-refresh spinner explicitly decoupled from raw `isFetching` so polling stays
+  silent. Not verified on-device yet.
 - [2026-09-02 — Closed pub no longer blocks adding to basket, toast instead](2026-09-02-closed-pub-toast-instead-of-block.md)
   — split "pub is closed" from "outside delivery zone": the latter still blocks via
-  the existing popup, the former now shows a `native-base` toast and lets
-  `increaseDish` go through, across all 4 add-to-basket call sites. Not verified
-  on-device yet.
+  the existing popup, the former now shows an alert and lets `increaseDish` go
+  through, across all 4 add-to-basket call sites. Verified on-device after fixing a
+  native-base `useToast` crash (RN 0.81 removed `BackHandler.removeEventListener`) -
+  see that note's later section.
 - [2026-09-02 — Upgrade Expo SDK 53 → 54 (RN 0.79 → 0.81)](2026-09-02-expo-sdk-54-upgrade.md)
   — App Store Connect rejected uploads built on anything older than Xcode 26/iOS 26
   SDK; SDK 54 defaults to that. Also unpinned `@react-native-firebase` back to latest

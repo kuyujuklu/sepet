@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { FlatList, RefreshControl, StyleSheet, Text, View } from "react-native";
 import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
@@ -63,7 +63,10 @@ const PubsList = ({
     // type set in the pub's own settings - the client no longer has to guess
     // a pub's section from the tags of its categories
     { coords: { lat: location?.lat, lng: location?.lng }, section: sectionId },
-    { skip: !location },
+    // isOpen is only recomputed on an actual fetch, and this list sinks
+    // closed pubs to the bottom - without this, one that opens mid-session
+    // neither shows as open nor moves back up until a manual refresh.
+    { skip: !location, refetchOnMountOrArgChange: 60, pollingInterval: 180000 },
   );
 
   const {
@@ -73,13 +76,30 @@ const PubsList = ({
     refetch: refetchCategories,
   } = useGetNearbyCategoriesQuery(
     { coords: { lat: location?.lat, lng: location?.lng }, section: sectionId },
-    { skip: !location || !categorySlug },
+    {
+      skip: !location || !categorySlug,
+      refetchOnMountOrArgChange: 60,
+      pollingInterval: 180000,
+    },
   );
 
+  // The pull spinner below is only meant for an explicit pull - without this
+  // flag it would also flash on every silent background poll, since that
+  // sets the same isFetching the RefreshControl reads.
+  const [isPullRefreshing, setIsPullRefreshing] = useState(false);
+
   const refetch = useCallback(() => {
+    setIsPullRefreshing(true);
     refetchPubs();
     if (categorySlug) refetchCategories();
   }, [refetchPubs, refetchCategories, categorySlug]);
+
+  useEffect(() => {
+    if (!isPullRefreshing) return;
+    if (!pubsAreFetching && !(categorySlug && categoriesAreFetching)) {
+      setIsPullRefreshing(false);
+    }
+  }, [isPullRefreshing, pubsAreFetching, categoriesAreFetching, categorySlug]);
 
   // pub id -> its visible categories. Only the "filter by category" chip
   // needs this now; the section a pub belongs to comes off the pub itself.
@@ -151,7 +171,7 @@ const PubsList = ({
       ListHeaderComponent={ListHeaderComponent}
       refreshControl={
         <RefreshControl
-          refreshing={pubsAreFetching || (!!categorySlug && categoriesAreFetching)}
+          refreshing={isPullRefreshing}
           onRefresh={refetch}
           tintColor="#059669"
           colors={["#059669"]}

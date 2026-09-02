@@ -125,7 +125,15 @@ const PubInfoPage = () => {
   // Coordinates go with the request now, so this one response answers
   // "does it deliver here", "how far is it" and what delivery costs - the
   // screen used to have to hold the nearby-pubs list next to it and merge
-  const { data: pubData } = usePubInfo({ pubID, pubName });
+  // No raw polling here on purpose - a background timer re-fetching the
+  // whole menu while someone is actively scrolling it is exactly the
+  // disruption changes/2026-08-27-remove-background-polling.md removed.
+  // refetchOnMountOrArgChange still catches "isOpen went stale while the
+  // client was elsewhere" the moment they land back on this pub.
+  const { data: pubData } = usePubInfo(
+    { pubID, pubName },
+    { refetchOnMountOrArgChange: 60 },
+  );
 
   const isAvailableForDelivery = pubData?.pub?.isAvailableForDelivery !== false;
 

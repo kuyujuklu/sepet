@@ -49,7 +49,10 @@ const Home = () => {
 
   const { data: nearPubsData } = useGetNearbyPubsQuery(
     { coords: { lat: location?.lat, lng: location?.lng }, section },
-    { skip: !location },
+    // isOpen is only recomputed on an actual fetch, so this has to keep
+    // asking every so often or a pub that opens mid-session stays "closed"
+    // (see useTopDishes.js for the same reasoning on the feed itself)
+    { skip: !location, refetchOnMountOrArgChange: 60, pollingInterval: 180000 },
   );
 
   const hasNoPubs = nearPubsData && nearPubsData?.pubs?.length === 0;

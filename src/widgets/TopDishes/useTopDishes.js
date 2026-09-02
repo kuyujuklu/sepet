@@ -62,7 +62,16 @@ export const useTopDishes = ({
       limit,
       offset,
     },
-    { skip: skip || isSearching || !location },
+    {
+      skip: skip || isSearching || !location,
+      // A pub's isOpen flag is only ever recomputed on an actual fetch (see
+      // getPubWorkHours in pubsApi's transformResponse) - without this, a pub
+      // that opens mid-session stays "closed" on screen until the client
+      // leaves and comes back. Refetch if what's cached is stale on mount,
+      // and keep it fresh every few minutes while the feed is open.
+      refetchOnMountOrArgChange: 60,
+      pollingInterval: 180000,
+    },
   );
 
   // Still needed while searching (which pubs to load menus from) and by the
@@ -74,7 +83,7 @@ export const useTopDishes = ({
     refetch: refetchPubs,
   } = useGetNearbyPubsQuery(
     { coords: { lat: location?.lat, lng: location?.lng }, section: sectionId },
-    { skip: !location },
+    { skip: !location, refetchOnMountOrArgChange: 60, pollingInterval: 180000 },
   );
 
   const searchPubs = useMemo(() => {
@@ -161,8 +170,11 @@ export const useTopDishes = ({
   // Pull-to-refresh: re-ask for the first page of the feed and, while search
   // is open, force past the per-pub menu cache too, so a stale
   // discount/price does not survive a refresh
+  const [isPullRefreshing, setIsPullRefreshing] = useState(false);
+
   const refetch = useCallback(() => {
     forceRefetchRef.current = true;
+    setIsPullRefreshing(true);
     refetchPubs();
 
     // Dropping back to the first page is itself a fetch (offset is part of
@@ -172,6 +184,20 @@ export const useTopDishes = ({
 
     setRefreshIndex((index) => index + 1);
   }, [refetchPubs, refetchFeed, offset]);
+
+  // The pull spinner should only ever show for an explicit pull, never for
+  // the silent background poll above (that one also flips isFetching) - so
+  // it's tracked separately and just cleared once whatever the pull kicked
+  // off has settled, instead of reading isFetching directly.
+  useEffect(() => {
+    if (!isPullRefreshing) return;
+
+    const stillFetching = isSearching
+      ? pubsAreFetching || menusAreLoading
+      : feedIsFetching || pubsAreFetching;
+
+    if (!stillFetching) setIsPullRefreshing(false);
+  }, [isPullRefreshing, isSearching, pubsAreFetching, feedIsFetching, menusAreLoading]);
 
   // The feed arrives as flat dish objects with a `pub` on each; the cards
   // expect the { key, dish, pub } shape the client used to build itself
@@ -217,13 +243,13 @@ export const useTopDishes = ({
     isLoading: isSearching
       ? pubsAreLoading || (menusAreLoading && dishes.length === 0)
       : feedIsLoading || (feedIsFetching && dishes.length === 0),
-    // Distinct from isLoading: true for a pull-to-refresh too, even once the
-    // feed already has cards on screen and the skeleton is long gone. A
-    // "load more" is deliberately not a refresh - the spinner belongs at the
-    // bottom of the list, not over the whole thing.
-    isRefreshing: isSearching
-      ? pubsAreFetching || menusAreLoading
-      : feedIsFetching && offset === 0,
+    // Distinct from isLoading: true for a pull-to-refresh, even once the
+    // feed already has cards on screen and the skeleton is long gone. Tied to
+    // the explicit pull only (see isPullRefreshing above) rather than raw
+    // isFetching, so the silent background poll never pops this spinner open
+    // on its own - a "load more" is deliberately not a refresh either, that
+    // spinner belongs at the bottom of the list, not over the whole thing.
+    isRefreshing: isPullRefreshing,
     isLoadingMore: !isSearching && feedIsFetching && offset > 0,
   };
 };
