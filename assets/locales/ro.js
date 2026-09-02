@@ -370,8 +370,9 @@ export default {
   },
   pub_not_available_for_delivery: {
     title: "Comanda nu poate fi plasată",
-    pub_is_not_open: "Acest local este închis în prezent sau vă aflați în afara zonei de livrare a acestui local.",
+    pub_is_not_open: "Vă aflați în afara zonei de livrare a acestui local.",
     choose_another_pub: "Selectați o altă instituție",
-    change_geolocation: "Schimbați locația"
+    change_geolocation: "Schimbați locația",
+    closed_toast: "Localul este momentan închis, dar puteți completa coșul sau plasa o precomandă în timpul programului de lucru"
   }
 };

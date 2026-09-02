@@ -408,8 +408,9 @@ export default {
   },
   pub_not_available_for_delivery: {
     title: "Sipariş verilämeer",
-    pub_is_not_open: "Bu restoran kapalı, yada siz bu restorandan uzaktaysınız",
+    pub_is_not_open: "Siz bu restorandan uzaktaysınız",
     choose_another_pub: "Başka restoranı ayırın",
-    change_geolocation: "Diiştirin lokaţiyayı"
+    change_geolocation: "Diiştirin lokaţiyayı",
+    closed_toast: "Restoran häzir kapalı, ama siz sepetinizi toplayabilirsiniz ya da işçi vakıtında sipariş verebilirsiniz"
   }
 };

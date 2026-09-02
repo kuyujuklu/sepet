@@ -1,5 +1,6 @@
 import { Image } from "expo-image";
 import { StyleSheet, Text, View } from "react-native";
+import { useToast } from "native-base";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import BottomSheet from "../Common/BottomSheet";
@@ -54,6 +55,7 @@ const styles = StyleSheet.create({
 const DishImagePopup = () => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
+  const toast = useToast();
 
   const popupState = useSelector(selectDishImagePopup);
   const dish = popupState?.dish;
@@ -70,17 +72,26 @@ const DishImagePopup = () => {
   const isAvailable =
     popupState?.isDishAvailable !== false && isDishAvailable(dish);
 
+  // Closed-for-now no longer disables the button - only the stop list and
+  // being outside the delivery zone are real blocks
   const canOrder =
-    isAvailable &&
-    popupState?.isPubOpen !== false &&
-    popupState?.isAvailableForDelivery !== false;
+    isAvailable && popupState?.isAvailableForDelivery !== false;
 
   const handleIncreaseDish = () => {
     if (!isAvailable) return;
 
-    if (!canOrder) {
+    // Outside the delivery zone is a real block - changing hours won't fix it
+    if (popupState?.isAvailableForDelivery === false) {
       dispatch(openPubNotAvailableForDeliveryPopup());
       return;
+    }
+
+    // Just closed for now: let the basket be built anyway, only nudge with a toast
+    if (popupState?.isPubOpen === false) {
+      toast.show({
+        title: t("pub_not_available_for_delivery.closed_toast"),
+        placement: "top",
+      });
     }
 
     dispatch(

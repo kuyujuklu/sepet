@@ -1,7 +1,8 @@
-import { Pressable, Spinner, Text, View } from "native-base";
+import { Pressable, Spinner, Text, useToast, View } from "native-base";
 import { AnonymousProBold } from "../../constants/styles-constants";
 import { TouchableOpacity } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
+import { useTranslation } from "react-i18next";
 import { Image } from "expo-image";
 import {
   decreaseDish,
@@ -21,6 +22,8 @@ import { openPubNotAvailableForDeliveryPopup } from "../../features/store/pubs/p
 
 const DishCard = ({ dish, pubID, pub, isPubOpen, isAvailableForDelivery }) => {
   const dispatch = useDispatch();
+  const { t } = useTranslation();
+  const toast = useToast();
   const imagePath = getDishImagePath(dish, { full: true });
 
   const dishInBasket = useSelector(selectDishFromBasket(dish?.id));
@@ -44,10 +47,19 @@ const DishCard = ({ dish, pubID, pub, isPubOpen, isAvailableForDelivery }) => {
     // not there today
     if (!isAvailable) return;
 
-    if (!isPubOpen || !isAvailableForDelivery) {
+    // Outside the delivery zone is a real block - changing hours won't fix it
+    if (!isAvailableForDelivery) {
       dispatch(openPubNotAvailableForDeliveryPopup())
       return;
     };
+
+    // Just closed for now: let the basket be built anyway, only nudge with a toast
+    if (!isPubOpen) {
+      toast.show({
+        title: t("pub_not_available_for_delivery.closed_toast"),
+        placement: "top",
+      });
+    }
 
     dispatch(
       increaseDish({

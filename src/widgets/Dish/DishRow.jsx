@@ -1,6 +1,7 @@
 import { Image } from "expo-image";
 import { memo } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useToast } from "native-base";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { images } from "../../app/images/images";
@@ -66,6 +67,7 @@ const styles = StyleSheet.create({
 const DishRow = ({ dish, pub, pubID, isPubOpen, isAvailableForDelivery }) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
+  const toast = useToast();
 
   const dishInBasket = useSelector(selectDishFromBasket(dish?.id));
   const count = +dishInBasket?.count || 0;
@@ -77,15 +79,25 @@ const DishRow = ({ dish, pub, pubID, isPubOpen, isAvailableForDelivery }) => {
   const imagePath = getDishImagePath(dish);
 
   const isAvailable = isDishAvailable(dish);
-  const canOrder =
-    isAvailable && isPubOpen !== false && isAvailableForDelivery !== false;
+  // Closed-for-now no longer disables the button - only the stop list and
+  // being outside the delivery zone are real blocks
+  const canOrder = isAvailable && isAvailableForDelivery !== false;
 
   const increase = () => {
     if (!isAvailable) return;
 
-    if (!canOrder) {
+    // Outside the delivery zone is a real block - changing hours won't fix it
+    if (isAvailableForDelivery === false) {
       dispatch(openPubNotAvailableForDeliveryPopup());
       return;
+    }
+
+    // Just closed for now: let the basket be built anyway, only nudge with a toast
+    if (isPubOpen === false) {
+      toast.show({
+        title: t("pub_not_available_for_delivery.closed_toast"),
+        placement: "top",
+      });
     }
 
     dispatch(

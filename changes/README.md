@@ -6,6 +6,11 @@ the work without re-reading the whole codebase.
 
 Newest first.
 
+- [2026-09-02 — Closed pub no longer blocks adding to basket, toast instead](2026-09-02-closed-pub-toast-instead-of-block.md)
+  — split "pub is closed" from "outside delivery zone": the latter still blocks via
+  the existing popup, the former now shows a `native-base` toast and lets
+  `increaseDish` go through, across all 4 add-to-basket call sites. Not verified
+  on-device yet.
 - [2026-09-02 — Upgrade Expo SDK 53 → 54 (RN 0.79 → 0.81)](2026-09-02-expo-sdk-54-upgrade.md)
   — App Store Connect rejected uploads built on anything older than Xcode 26/iOS 26
   SDK; SDK 54 defaults to that. Also unpinned `@react-native-firebase` back to latest

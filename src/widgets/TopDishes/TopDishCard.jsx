@@ -1,4 +1,4 @@
-import { Text, View } from "native-base";
+import { Text, useToast, View } from "native-base";
 import { Image } from "expo-image";
 import { memo, useState } from "react";
 import { TouchableOpacity } from "react-native";
@@ -17,7 +17,6 @@ import {
   selectDishFromBasket,
 } from "../../features/store/basket/basketSlice";
 import { openDishImagePopup } from "../../features/store/dishes/dishesSlice";
-import { openPubNotAvailableForDeliveryPopup } from "../../features/store/pubs/pubsSlice";
 import { events, track } from "../../shared/analytics/analytics";
 import QuantityStepper from "../Common/QuantityStepper";
 
@@ -32,6 +31,7 @@ const cardShadow = {
 const TopDishCard = ({ item, width }) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
+  const toast = useToast();
 
   const dish = item?.dish;
   const pub = item?.pub;
@@ -46,7 +46,9 @@ const TopDishCard = ({ item, width }) => {
   // The badge is a field now, not "one of the first two cards of the feed"
   const isHit = !!dish?.is_hit;
   const isAvailable = isDishAvailable(dish);
-  const canOrder = isPubOpen && isAvailable;
+  // Closed-for-now no longer disables the button - the feed is already
+  // filtered to deliverable pubs, so the stop list is the only real block
+  const canOrder = isAvailable;
 
   const [imageLoaded, setImageLoaded] = useState(!imagePath);
 
@@ -55,9 +57,12 @@ const TopDishCard = ({ item, width }) => {
   const handleIncreaseDish = () => {
     if (!isAvailable) return;
 
+    // Just closed for now: let the basket be built anyway, only nudge with a toast
     if (!isPubOpen) {
-      dispatch(openPubNotAvailableForDeliveryPopup());
-      return;
+      toast.show({
+        title: t("pub_not_available_for_delivery.closed_toast"),
+        placement: "top",
+      });
     }
 
     dispatch(
