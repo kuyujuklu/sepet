@@ -199,16 +199,45 @@ export const useTopDishes = ({
     if (!stillFetching) setIsPullRefreshing(false);
   }, [isPullRefreshing, isSearching, pubsAreFetching, feedIsFetching, menusAreLoading]);
 
+  // get-available-top-dishes answers with the server's own is_open on each
+  // dish's pub summary, while get-available-pubs (pubsData, fetched above)
+  // computes it client-side via getPubWorkHours - the same algorithm the
+  // establishments view and the pub page use. Both are meant to agree, but
+  // now that each refetches on its own schedule they can disagree right
+  // around a pub's open/close boundary: the feed showing one answer and the
+  // establishments view showing another for the same pub. Deferring to
+  // pubsData here (already fetched below for search/hasPubs, no extra
+  // request) makes the feed and the establishments view read off the exact
+  // same computation instead of two that merely try to match.
+  const pubsById = useMemo(() => {
+    const map = {};
+    (pubsData?.pubs ?? []).forEach((pub) => {
+      map[pub.id] = pub;
+    });
+    return map;
+  }, [pubsData]);
+
   // The feed arrives as flat dish objects with a `pub` on each; the cards
   // expect the { key, dish, pub } shape the client used to build itself
   const feedDishes = useMemo(
     () =>
-      (feedData?.dishes ?? []).map((dish) => ({
-        key: `${dish.pub?.id}-${dish.id}`,
-        dish,
-        pub: dish.pub,
-      })),
-    [feedData],
+      (feedData?.dishes ?? []).map((dish) => {
+        const nearbyPub = dish.pub ? pubsById[dish.pub.id] : null;
+        const pub = nearbyPub
+          ? {
+              ...dish.pub,
+              isOpen: nearbyPub.isOpen,
+              isAvailableForDelivery: nearbyPub.isAvailableForDelivery,
+            }
+          : dish.pub;
+
+        return {
+          key: `${dish.pub?.id}-${dish.id}`,
+          dish,
+          pub,
+        };
+      }),
+    [feedData, pubsById],
   );
 
   const searchResults = useMemo(

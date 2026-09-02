@@ -99,3 +99,39 @@ computation (`getPubWorkHours`) already existed and is untouched.
   complexity unless it turns out to be noticeable in practice.
 - 3 minutes was picked as the low end of the "3-4 minutes" the user asked for, safely
   clear of the 20s that caused the original problem. Not tuned further.
+
+## 2026-09-02 (later): feed and establishments view disagreed on isOpen for the same pub
+
+Reported immediately after the above: the "Все заведения" tab showed a pub as open,
+"Хиты"/"Скидки" showed the same pub as closed. Root cause wasn't (only) timing - it's
+two genuinely different computations that happen to usually agree:
+
+- `getTopDishes` (Хиты/Скидки feed): trusts `is_open` computed server-side, shipped
+  flat on each dish's `pub` summary.
+- `getNearbyPubs` (Все заведения) and `getPubInfo`: compute it client-side via
+  `getPubWorkHours` (`src/shared/utils/pub.js`), whose own top comment says it exists
+  specifically to "mirror" the server's algorithm so the two never contradict.
+
+They're designed to agree, but each now refetches on its own schedule (this file's
+first section), so right around a pub's actual open/close boundary one can have
+refreshed and the other not yet - which is exactly what surfaced immediately after
+adding independent polling to both.
+
+**Fix:** rather than trying to keep two separate computations in sync, made the feed
+defer to the establishments-view computation instead of trusting its own. In
+`useTopDishes.js`, `useGetNearbyPubsQuery` (`pubsData`) was already being fetched
+alongside the feed (for search and the `hasPubs` check) - `feedDishes` now looks up
+each dish's pub in `pubsData` by id and overrides `isOpen`/`isAvailableForDelivery`
+from there when found, instead of using the feed's own `dish.pub.is_open`. No new
+request: `PubsList.jsx` calls `useGetNearbyPubsQuery` with the same
+`{coords, section}` args, so RTK Query already shares one cache entry across both
+tabs - after this change they're also reading the *same field* off it, not two
+independently-computed ones that merely try to match.
+
+**Known limits:** `getPubInfo` (the single-pub page) still computes independently via
+its own `getPubWorkHours` call - not unified with the other two here, since that
+would mean threading `pubsData` into a differently-shaped, separately-fetched query
+(by pub id, not by nearby-list) for a screen the earlier fix already deliberately
+keeps on a slower, mount-only refresh cadence. If the pub-info page is ever seen
+disagreeing with the other two, this is the next place to apply the same idea. Not
+verified on-device - same caveat as the rest of this file.
