@@ -103,3 +103,23 @@ None - client dependency/tooling upgrade only.
 - The Android `compileSdkVersion`/`targetSdkVersion: 36` override in
   `expo-build-properties` could now be removed since it matches SDK 54's default, but
   left as explicit documentation instead - no functional difference either way.
+
+## 2026-09-02 (later): added expo-dev-client, first ad-hoc iOS dev build
+
+User wanted real-time on-device testing instead of a full EAS build per change. Ran
+`eas build --profile development --platform ios` from their own terminal (not this
+session's shell); the CLI itself added `expo-dev-client@~6.0.21` to `package.json`
+(pulls in `expo-dev-launcher`, `expo-json-utils`, `expo-updates-interface`) when it
+detected the project didn't have it yet, and bumped `expo.ios.buildNumber` 10 → 11 via
+the usual `autoIncrement`. No manual code changes - just committing what EAS CLI
+already wrote to disk.
+
+This also required registering the user's iPhone for ad-hoc distribution
+(`eas device:create --apple-team-id 9V7FZFPUK7` - interactive, needs the device to
+open a registration link itself, so it was run in the user's own terminal too, not
+from an agent session). Provisioning profile `5GQ53DA4W9` now has that device
+(UDID `00008101-001161202221001E`) attached and active until 2027-08-31.
+
+Once installed, this dev-client build lets `npm start` + connecting from the phone
+give real JS hot-reload without rebuilding - only native/config changes need a new
+dev-client build going forward.

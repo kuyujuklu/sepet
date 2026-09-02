@@ -9,8 +9,10 @@ Newest first.
 - [2026-09-02 — Upgrade Expo SDK 53 → 54 (RN 0.79 → 0.81)](2026-09-02-expo-sdk-54-upgrade.md)
   — App Store Connect rejected uploads built on anything older than Xcode 26/iOS 26
   SDK; SDK 54 defaults to that. Also unpinned `@react-native-firebase` back to latest
-  (26.x's TurboModule build needs RN 0.81+, which this now provides). `expo-doctor`
-  and JS bundle export both clean; **native builds not yet verified**.
+  (26.x's TurboModule build needs RN 0.81+, which this now provides). Both platforms
+  confirmed with real EAS builds (Android + iOS), iOS submitted to TestFlight. Later
+  same day: added `expo-dev-client`, registered the user's iPhone for ad-hoc
+  distribution, first development-profile iOS build.
 - [2026-09-01 — Bump targetSdk/compileSdk to 36 (Android 16)](2026-09-01-target-sdk-36.md)
   — Google Play requires new updates to target API 36 since 2026-08-31 (deadline
   already passed); `expo-build-properties` android block 35 → 36. Native/OS-level
