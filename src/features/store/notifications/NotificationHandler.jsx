@@ -8,6 +8,26 @@ import { useDispatch, useSelector } from 'react-redux';
 import { selectClient } from '../auth/authSlice';
 import { useTranslation } from 'react-i18next';
 import { appendNotificationToHistory } from '../../../shared/utils/pushNotificationsHistory';
+import { events, track } from '../../../shared/analytics/analytics';
+
+// Firebase's own "Messaging" report never sees these: it only auto-instruments
+// notifications its native SDK receives directly, and this app gets pushes
+// through expo-notifications (Expo's relay), which bypasses that entirely -
+// Sends shows up there, Received/Impressions/Open never will, regardless of
+// how many clients are on a build with this wired in. Tracking receive/open
+// as regular events instead routes them through the sink this app already
+// has (Firebase Analytics via firebaseAnalyticsSink.js), where they'll
+// actually show up.
+const trackPushReceived = (notification) =>
+  track(events.pushReceived, {
+    type: notification?.request?.content?.data?.type ?? null,
+  });
+
+const trackPushOpened = (notification, source) =>
+  track(events.pushOpened, {
+    type: notification?.request?.content?.data?.type ?? null,
+    source,
+  });
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -81,6 +101,7 @@ export default function NotificationHandler() {
       const response = await Notifications.getLastNotificationResponseAsync();
       if (response) {
         appendNotificationToHistory(dispatch, response.notification);
+        trackPushOpened(response.notification, "cold_start");
 
         // You can navigate or handle data here
       }
@@ -97,14 +118,19 @@ export default function NotificationHandler() {
     notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
       setNotification(notification);
       appendNotificationToHistory(dispatch, notification);
+      trackPushReceived(notification);
     });
 
     // Tapping a notification while the app is running (foreground or
     // background) fires this instead of/in addition to the listener above -
     // appendNotificationToHistory dedupes on the notification's own id, so
-    // recording here too never double-counts one push.
+    // recording here too never double-counts one push. pushOpened has no
+    // such dedup and isn't meant to: cold_start and "warm" are mutually
+    // exclusive (a given launch is one or the other), never both for the
+    // same tap.
     responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
       appendNotificationToHistory(dispatch, response.notification);
+      trackPushOpened(response.notification, "warm");
     });
 
     return () => {

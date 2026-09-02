@@ -32,4 +32,7 @@ export const events = {
   profileOpened: "profile_opened",
   languageChanged: "language_changed",
   supportContacted: "support_contacted",
+
+  pushReceived: "push_received",
+  pushOpened: "push_opened",
 };

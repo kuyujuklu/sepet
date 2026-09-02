@@ -6,6 +6,13 @@ the work without re-reading the whole codebase.
 
 Newest first.
 
+- [2026-09-03 — Track push receive/open as regular analytics events](2026-09-03-push-receive-open-tracking.md)
+  — Firebase Console's "Messaging" report will never show Received/Impressions/Open
+  for this app (structural: pushes go through Expo's relay, not Firebase's own
+  Messaging SDK, which is the only thing that report auto-instruments). Added
+  `push_received`/`push_opened` as regular `track()` calls in
+  `NotificationHandler.jsx` instead, which do reach real Firebase Analytics. Not
+  build-verified.
 - [2026-09-02 — Pub open/closed status was going stale](2026-09-02-refresh-pub-open-status.md)
   — `isOpen` only ever recomputes on an actual fetch, and background polling had been
   removed entirely (see the 08-27 note); added `refetchOnMountOrArgChange: 60` + a
