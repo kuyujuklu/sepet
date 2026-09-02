@@ -23,16 +23,16 @@ turned away entirely.
   `isAvailableForDelivery` were OR'd together into one block. Split apart: only
   `isAvailableForDelivery === false` still dispatches
   `openPubNotAvailableForDeliveryPopup()` and returns early; `isPubOpen === false` now
-  shows a `native-base` `useToast()` toast (`title` from the new
-  `pub_not_available_for_delivery.closed_toast` key, `placement: "top"`) and falls
-  through to `dispatch(increaseDish(...))` same as the open-pub path. Each file's
-  `canOrder` (feeds `QuantityStepper`'s visual enabled/disabled color - it doesn't
-  actually gate `onPress`, see that component's source) dropped the `isPubOpen` check
-  too, so the button no longer looks disabled for a state that no longer blocks it.
+  dispatches `pushAlert(...)` (see "2026-09-02 (later)" below for why this isn't
+  native-base's `useToast`) and falls through to `dispatch(increaseDish(...))` same as
+  the open-pub path. Each file's `canOrder` (feeds `QuantityStepper`'s visual
+  enabled/disabled color - it doesn't actually gate `onPress`, see that component's
+  source) dropped the `isPubOpen` check too, so the button no longer looks disabled for
+  a state that no longer blocks it.
 - `src/widgets/TopDishes/TopDishCard.jsx` - same idea, but this card's feed is
   pre-filtered to deliverable pubs (`isAvailableForDelivery: true` is hardcoded when it
   opens the dish popup), so there was never a delivery-zone branch here - just replaced
-  the popup dispatch with the same toast, removed the now-unused
+  the popup dispatch with the same alert, removed the now-unused
   `openPubNotAvailableForDeliveryPopup` import, and `canOrder` is just `isAvailable`
   now.
 - `assets/locales/ru.js` / `ro.js` / `gz.js` (`pub_not_available_for_delivery` key):
@@ -48,12 +48,12 @@ turned away entirely.
 
 ## How it works
 
-No new component, no new redux state - `useToast()` is native-base's existing toast
-API (`NativeBaseProvider` is already mounted in `App.js`, so it works everywhere
-without extra wiring); this is the first place in the app that actually calls it. Each
-of the four call sites already received `isPubOpen`/`isAvailableForDelivery` as props
-from whichever screen renders it - no change to how that data flows in, only to what
-happens once a dish card interprets it as "closed" specifically.
+No new component, no new redux state - `pushAlert()` is this app's existing toast/alert
+system (`alertSlice` + `<AlertWrapper />`, mounted once in `App.js`, already used by
+e.g. `useRepeatOrder.js`). Each of the four call sites already received
+`isPubOpen`/`isAvailableForDelivery` as props from whichever screen renders it - no
+change to how that data flows in, only to what happens once a dish card interprets it
+as "closed" specifically.
 
 ## Backend gaps
 
@@ -69,10 +69,43 @@ availability) that were already being passed in.
   untouched, so if checkout has its own independent closed-pub gate somewhere it was
   not touched or audited here (not found in a search, but worth a real end-to-end
   check: add a dish from a closed pub, then walk all the way to checkout, on a device).
-- Not verified on-device yet - only `expo export --platform android` (the module graph
-  compiles) was checked, not the actual toast rendering/timing/placement or that
-  `increaseDish` behaves correctly when fired this way. The user now has an iOS
-  dev-client set up (see `2026-09-02-expo-sdk-54-upgrade.md`'s dev-client section) -
-  this is exactly the kind of change that workflow is for.
 - ro/gz `closed_toast` translations are unreviewed machine-quality approximations,
   same standing caveat as the rest of this repo's non-Russian copy.
+
+## 2026-09-02 (later): native-base's useToast crashes on RN 0.81 - switched to pushAlert
+
+First on-device test (the user's new iOS dev-client, see
+`2026-09-02-expo-sdk-54-upgrade.md`) caught exactly the kind of thing static checks
+can't: tapping "+" on a closed pub's dish crashed with a white screen. The red-box
+error:
+
+```
+Render Error
+_reactNative.BackHandler.removeEventListener is not a function (it is undefined)
+  at useEffect$argument_0 (native-base/.../useKeyboardDismissable.ts)
+```
+
+React Native removed `BackHandler.removeEventListener` (the old non-subscription API)
+somewhere around the RN 0.81 line; native-base@3.4.28 (already flagged as this repo's
+biggest upgrade risk - see the SDK 54 note) still calls it inside
+`hooks/useKeyboardDismissable.ts`, which backs native-base's `Overlay` primitive -
+and `Toast`'s `CustomToast` wraps every toast in an `<Overlay>`. So `useToast()` was
+never going to work post-upgrade; this had nothing to do with the closed-pub logic
+itself, only with which UI primitive rendered the message.
+
+Checked how far this reaches: `useKeyboardDismissable` is only pulled in by
+native-base's `Overlay`, `Popover`, and `Tooltip` (`grep` inside
+`node_modules/native-base/src`). This app doesn't import `Popover` or `Tooltip`
+anywhere (checked every `from "native-base"` import in `src/`) and, after this change,
+no longer imports `useToast`/`Overlay` either - so this specific breakage has no other
+live call sites left. If native-base is ever reached for again, this is the landmine to
+remember: anything built on its `Overlay` primitive is broken until either native-base
+is patched or RN's old `BackHandler` API comes back (it won't).
+
+**Fix:** swapped every `toast.show({...})` for `dispatch(pushAlert({ status:
+alertStatuses.info, delay: 4000, title: t(...) }))` - this app's own pre-existing
+alert system (`MyAlert.jsx` uses native-base's `Alert`/`HStack`/`IconButton`, not
+`Overlay`, so it doesn't touch the broken hook). Removed the now-unused `useToast`
+imports from all four files. Re-ran `expo export --platform android` clean; the
+crash itself was only catchable on a real device, so trust the user's next on-device
+retest over this note for whether it's actually fixed.

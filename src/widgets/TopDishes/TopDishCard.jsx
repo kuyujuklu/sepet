@@ -1,4 +1,4 @@
-import { Text, useToast, View } from "native-base";
+import { Text, View } from "native-base";
 import { Image } from "expo-image";
 import { memo, useState } from "react";
 import { TouchableOpacity } from "react-native";
@@ -17,6 +17,7 @@ import {
   selectDishFromBasket,
 } from "../../features/store/basket/basketSlice";
 import { openDishImagePopup } from "../../features/store/dishes/dishesSlice";
+import { alertStatuses, pushAlert } from "../../features/store/alerts/alertSlice";
 import { events, track } from "../../shared/analytics/analytics";
 import QuantityStepper from "../Common/QuantityStepper";
 
@@ -31,7 +32,6 @@ const cardShadow = {
 const TopDishCard = ({ item, width }) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
-  const toast = useToast();
 
   const dish = item?.dish;
   const pub = item?.pub;
@@ -59,10 +59,13 @@ const TopDishCard = ({ item, width }) => {
 
     // Just closed for now: let the basket be built anyway, only nudge with a toast
     if (!isPubOpen) {
-      toast.show({
-        title: t("pub_not_available_for_delivery.closed_toast"),
-        placement: "top",
-      });
+      dispatch(
+        pushAlert({
+          status: alertStatuses.info,
+          delay: 4000,
+          title: t("pub_not_available_for_delivery.closed_toast"),
+        }),
+      );
     }
 
     dispatch(

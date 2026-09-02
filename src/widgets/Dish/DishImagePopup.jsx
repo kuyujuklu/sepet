@@ -1,6 +1,5 @@
 import { Image } from "expo-image";
 import { StyleSheet, Text, View } from "react-native";
-import { useToast } from "native-base";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import BottomSheet from "../Common/BottomSheet";
@@ -15,6 +14,7 @@ import {
   selectDishImagePopup,
 } from "../../features/store/dishes/dishesSlice";
 import { openPubNotAvailableForDeliveryPopup } from "../../features/store/pubs/pubsSlice";
+import { alertStatuses, pushAlert } from "../../features/store/alerts/alertSlice";
 import {
   addCommissionToPrice,
   formatPrice,
@@ -55,7 +55,6 @@ const styles = StyleSheet.create({
 const DishImagePopup = () => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
-  const toast = useToast();
 
   const popupState = useSelector(selectDishImagePopup);
   const dish = popupState?.dish;
@@ -88,10 +87,13 @@ const DishImagePopup = () => {
 
     // Just closed for now: let the basket be built anyway, only nudge with a toast
     if (popupState?.isPubOpen === false) {
-      toast.show({
-        title: t("pub_not_available_for_delivery.closed_toast"),
-        placement: "top",
-      });
+      dispatch(
+        pushAlert({
+          status: alertStatuses.info,
+          delay: 4000,
+          title: t("pub_not_available_for_delivery.closed_toast"),
+        }),
+      );
     }
 
     dispatch(

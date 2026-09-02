@@ -1,4 +1,4 @@
-import { Pressable, Spinner, Text, useToast, View } from "native-base";
+import { Pressable, Spinner, Text, View } from "native-base";
 import { AnonymousProBold } from "../../constants/styles-constants";
 import { TouchableOpacity } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
@@ -19,11 +19,11 @@ import {
 } from "../../shared/utils/dish";
 import { openDishImagePopup } from "../../features/store/dishes/dishesSlice";
 import { openPubNotAvailableForDeliveryPopup } from "../../features/store/pubs/pubsSlice";
+import { alertStatuses, pushAlert } from "../../features/store/alerts/alertSlice";
 
 const DishCard = ({ dish, pubID, pub, isPubOpen, isAvailableForDelivery }) => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
-  const toast = useToast();
   const imagePath = getDishImagePath(dish, { full: true });
 
   const dishInBasket = useSelector(selectDishFromBasket(dish?.id));
@@ -55,10 +55,13 @@ const DishCard = ({ dish, pubID, pub, isPubOpen, isAvailableForDelivery }) => {
 
     // Just closed for now: let the basket be built anyway, only nudge with a toast
     if (!isPubOpen) {
-      toast.show({
-        title: t("pub_not_available_for_delivery.closed_toast"),
-        placement: "top",
-      });
+      dispatch(
+        pushAlert({
+          status: alertStatuses.info,
+          delay: 4000,
+          title: t("pub_not_available_for_delivery.closed_toast"),
+        }),
+      );
     }
 
     dispatch(
