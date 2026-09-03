@@ -19,6 +19,7 @@ import { categoriesApi } from "../../shared/api/categories/categoriesApi";
 import { ordersApi } from "../../shared/api/ordersApi/ordersApi";
 import { dictionariesApi } from "../../shared/api/dictionaries/dictionariesApi";
 import { geoApi } from "../../shared/api/geo/geoApi";
+import { notificationsApi } from "../../shared/api/notifications-api/notificationsApi";
 import { analyticsMiddleware } from "./analytics/analyticsMiddleware";
 
 export const store = configureStore({
@@ -30,6 +31,7 @@ export const store = configureStore({
     [ordersApi.reducerPath]: ordersApi.reducer,
     [dictionariesApi.reducerPath]: dictionariesApi.reducer,
     [geoApi.reducerPath]: geoApi.reducer,
+    [notificationsApi.reducerPath]: notificationsApi.reducer,
     version: versionReducer,
     orders: ordersReducer,
     pub: pubReducer,
@@ -52,6 +54,7 @@ export const store = configureStore({
       .concat(ordersApi.middleware)
       .concat(dictionariesApi.middleware)
       .concat(geoApi.middleware)
+      .concat(notificationsApi.middleware)
       .concat(analyticsMiddleware),
 });
 
