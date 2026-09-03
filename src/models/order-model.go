@@ -86,9 +86,10 @@ func CheckOrderStatusCorrectness(status string) error {
 }
 
 type OrderDish struct {
-	DishID    int     `json:"dish_id"`
-	Count     int     `json:"count"`
-	DishPrice float64 `json:"dish_price"`
+	DishID            int     `json:"dish_id"`
+	Count             int     `json:"count"`
+	DishPrice         float64 `json:"dish_price"`
+	ModifierOptionIDs []int   `json:"modifier_option_ids,omitempty"`
 }
 
 type Order struct {
@@ -113,6 +114,7 @@ type Order struct {
 	DeliveryPrice                     float64
 	Lat                               float64
 	Lng                               float64
+	ShapeID                           string    // the delivery zone this order matched at creation, "" if none (e.g. in-place orders)
 	ApproximatePreparationTime        time.Time // in minutes
 
 	OrderCourierInfo   OrderCourierInfo

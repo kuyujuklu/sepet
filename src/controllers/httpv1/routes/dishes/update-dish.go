@@ -78,6 +78,15 @@ func (c *dishesController) UpdateDish(ctx *fiber.Ctx) error {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
 
+	if err := c.ModifierGroupRepo.SetDishModifierGroups(dishID, input.ModifierGroupIDs); err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	dish, err = c.DishService.GetDishById(dishID)
+	if err != nil {
+		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+
 	output := entities.DishOutput{}
 	output.FillFromModel(dish)
 

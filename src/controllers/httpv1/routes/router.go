@@ -9,6 +9,7 @@ import (
 	"github.com/alexkalak/qrmenu/src/controllers/httpv1/routes/courier"
 	"github.com/alexkalak/qrmenu/src/controllers/httpv1/routes/dishes"
 	"github.com/alexkalak/qrmenu/src/controllers/httpv1/routes/menus"
+	"github.com/alexkalak/qrmenu/src/controllers/httpv1/routes/modifiers"
 	"github.com/alexkalak/qrmenu/src/controllers/httpv1/routes/orders"
 	"github.com/alexkalak/qrmenu/src/controllers/httpv1/routes/pubs"
 	"github.com/gofiber/fiber/v2"
@@ -29,6 +30,7 @@ func Router(router fiber.Router) {
 	adminRouter := admin.New()
 	ordersRouter := orders.New()
 	courierRouter := courier.New()
+	modifiersRouter := modifiers.New()
 
 	//Without authorization
 	router.Route("/auth", authRouter.UnauthorizedRouter)
@@ -50,6 +52,7 @@ func Router(router fiber.Router) {
 	router.Route("/company/:companyID<int>/pubs/:pubID<int>/menus/:menuID<int>/categories/:categoryID<int>/dishes", dishesRouter.AuthorizedRouter)
 	router.Route("/client/", clientRouter.AuthorizedRouter)
 	router.Route("/courier", courierRouter.AuthorizedRouter)
+	router.Route("/company/:companyID<int>/pubs/:pubID<int>/modifier-groups", modifiersRouter.AuthorizedRouter)
 
 	//Admin authorization
 	router.Route("/admin", adminRouter.Router)

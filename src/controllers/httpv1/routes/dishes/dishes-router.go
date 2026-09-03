@@ -2,20 +2,23 @@ package dishes
 
 import (
 	"github.com/alexkalak/qrmenu/src/controllers/httpv1/middleware"
+	"github.com/alexkalak/qrmenu/src/repo/modifiergrouprepo"
 	"github.com/alexkalak/qrmenu/src/services/categoryservice"
 	"github.com/alexkalak/qrmenu/src/services/dishesservice"
 	"github.com/gofiber/fiber/v2"
 )
 
 type dishesController struct {
-	DishService     dishesservice.DishesService
-	CategoryService categoryservice.CategoryService
+	DishService       dishesservice.DishesService
+	CategoryService   categoryservice.CategoryService
+	ModifierGroupRepo modifiergrouprepo.ModifierGroupRepo
 }
 
 func New() *dishesController {
 	return &dishesController{
-		CategoryService: categoryservice.New(),
-		DishService:     dishesservice.New(),
+		CategoryService:   categoryservice.New(),
+		DishService:       dishesservice.New(),
+		ModifierGroupRepo: modifiergrouprepo.New(),
 	}
 }
 
@@ -33,4 +36,5 @@ func (c *dishesController) AuthorizedRouter(router fiber.Router) {
 	router.Patch("/:dishID<int>/image", c.UploadDishImage)
 	router.Post("/:dishID<int>/move-left", c.MoveDishLeft)
 	router.Post("/:dishID<int>/move-right", c.MoveDishRight)
+	router.Patch("/bulk-price", c.BulkUpdateDishPrices)
 }

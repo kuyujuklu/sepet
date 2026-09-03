@@ -44,7 +44,7 @@ type PubService interface {
 
 	SetLatLng(pubID int, lat float64, lng float64) error
 
-	GetDeliveryPriceForLatLng(pub models.Pub, lat float64, lng float64) (float64, float64, error)
+	GetDeliveryPriceForLatLng(pub models.Pub, lat float64, lng float64) (float64, float64, string, error)
 	GetAvailableShape(shapes []models.Shape, lat float64, lng float64) (models.Shape, bool)
 	SetShippingAvailable(pubID int, available bool) error
 	EnableShippingAndSetShapes(pubID int, shapes []models.Shape) error
@@ -452,47 +452,59 @@ func (s *pubsService) GetShippingPricesForPubAvailableForPoint(pub models.Pub, p
 	return true, price, freeDeliveryPrice, nil
 }
 
-func (s *pubsService) GetDeliveryPriceForLatLng(pub models.Pub, lat float64, lng float64) (float64, float64, error) {
+// Third return value is the matched zone's shape_id ("" if the point isn't
+// in any zone) - callers that need to remember which zone an order landed
+// in (for the per-zone average prep time) use this instead of re-deriving
+// it themselves.
+func (s *pubsService) GetDeliveryPriceForLatLng(pub models.Pub, lat float64, lng float64) (float64, float64, string, error) {
 	if !pub.Shipping.Available {
-		return 0, 0, puberrors.ErrPubShippingIsInvalid
+		return 0, 0, "", puberrors.ErrPubShippingIsInvalid
 	}
 
 	shapes, err := pub.Shipping.GetShapes()
 	if err != nil {
 		fmt.Println("error getting shapes While getting pubs with shipping available for point: ", err)
-		return 0, 0, err
+		return 0, 0, "", err
 	}
 
 	pubShippingPrices, err := pub.Shipping.GetPrices()
 	if err != nil {
-		return 0, 0, err
+		return 0, 0, "", err
 	}
 
 	pubShippingFreeDeliveryPrices, err := pub.Shipping.GetFreeDeliveryPrices()
 	if err != nil {
-		return 0, 0, err
+		return 0, 0, "", err
 	}
 
 	nearestShape, isAvailable := s.GetAvailableShape(shapes, lat, lng)
 
+	// A point outside every configured zone (or a pub with no zones at
+	// all) used to fall through with price left at its zero-value default,
+	// silently creating a free-delivery order instead of rejecting one the
+	// pub never actually priced. Treat it the same as the shipping-disabled
+	// case above: a real error, not a $0 delivery.
+	if !isAvailable {
+		return 0, 0, "", puberrors.ErrLocationNotInDeliveryZone
+	}
+
+	shapeID := nearestShape.ShapeID
 	var price float64 = 0
 	var freeDeliveryPrice float64 = 0
 
-	if isAvailable {
-		for shapeID, shapePrice := range pubShippingPrices {
-			if shapeID == nearestShape.ShapeID {
-				price = shapePrice
-			}
-		}
-
-		for shapeID, shapeFreeDeliveryPrice := range pubShippingFreeDeliveryPrices {
-			if shapeID == nearestShape.ShapeID {
-				freeDeliveryPrice = shapeFreeDeliveryPrice
-			}
+	for id, shapePrice := range pubShippingPrices {
+		if id == nearestShape.ShapeID {
+			price = shapePrice
 		}
 	}
 
-	return price, freeDeliveryPrice, nil
+	for id, shapeFreeDeliveryPrice := range pubShippingFreeDeliveryPrices {
+		if id == nearestShape.ShapeID {
+			freeDeliveryPrice = shapeFreeDeliveryPrice
+		}
+	}
+
+	return price, freeDeliveryPrice, shapeID, nil
 }
 
 func (s *pubsService) GetAvailableShape(shapes []models.Shape, lat float64, lng float64) (models.Shape, bool) {

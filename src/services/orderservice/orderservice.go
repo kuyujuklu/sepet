@@ -11,7 +11,9 @@ import (
 	"github.com/alexkalak/qrmenu/src/helpers/wshelpers"
 	"github.com/alexkalak/qrmenu/src/models"
 	"github.com/alexkalak/qrmenu/src/repo/clientrepo"
+	"github.com/alexkalak/qrmenu/src/repo/modifiergrouprepo"
 	"github.com/alexkalak/qrmenu/src/repo/orderrepo"
+	"github.com/alexkalak/qrmenu/src/repo/orderstatuseventrepo"
 	"github.com/alexkalak/qrmenu/src/repo/pubsrepo"
 	"github.com/alexkalak/qrmenu/src/repo/rolerepo"
 	"github.com/alexkalak/qrmenu/src/services/notificationservice"
@@ -36,6 +38,12 @@ type OrderService interface {
 	UpdateOrderCourierInfo(orderID int, courierInfo models.OrderCourierInfo) (models.OrderCourierInfo, error)
 	UpdateOrderPrepared(orderID int, prepared bool) error
 	UpdateOrderApproximatePreparationTime(orderID int, approximatePreparationTime time.Time) error
+
+	GetOrderStatusEvents(orderID int) ([]models.OrderStatusEvent, error)
+	// Average minutes from "preparing" to "at_courier" over recent orders,
+	// zone-scoped first - basedOn is "zone" when that had enough samples,
+	// "pub" when it fell back to the pub-wide average instead.
+	GetEstimatedPreparingMinutes(pubID int, shapeID string) (minutes float64, sampleCount int, basedOn string, err error)
 
 	AddToOrderCourierInfoCourierDebit(orderID int, amount float64) (models.OrderCourierInfo, error)
 	IsCommissionNeededForOrderArgsIDs(orderID int, pubID int) (bool, error)
@@ -66,6 +74,8 @@ type orderService struct {
 	RoleRepo                        rolerepo.RoleRepo
 	TelegramService                 telegramservice.TelegramService
 	NotificationService             notificationservice.NotificationService
+	OrderStatusEventRepo            orderstatuseventrepo.OrderStatusEventRepo
+	ModifierGroupRepo               modifiergrouprepo.ModifierGroupRepo
 	SubsribedOnOrdersUpdateCallback []func(newOrder models.Order, prevOrder models.Order, isNew bool)
 }
 
@@ -77,10 +87,12 @@ func New() OrderService {
 			DistanceService:     osrmservice.New(),
 			PubsRepo:            pubsrepo.New(),
 			PubService:          pubservice.New(),
-			OrderRepo:           orderrepo.New(),
-			ClientRepo:          clientrepo.New(),
-			RoleRepo:            rolerepo.New(),
-			NotificationService: notificationservice.New(),
+			OrderRepo:            orderrepo.New(),
+			ClientRepo:           clientrepo.New(),
+			RoleRepo:             rolerepo.New(),
+			NotificationService:  notificationservice.New(),
+			OrderStatusEventRepo: orderstatuseventrepo.New(),
+			ModifierGroupRepo:    modifiergrouprepo.New(),
 			WebSocketPubConnections: wshelpers.ConnectionsForID{
 				Connections: map[int]wshelpers.ConnectionsSet{},
 			},
@@ -191,6 +203,10 @@ func (s *orderService) FillDishPrices(pubID int, inputDishes []models.OrderDish,
 		return nil, err
 	}
 
+	now := time.Now().UTC()
+	nowMinutes := now.Hour()*60 + now.Minute()
+
+	dishesByID := make(map[int]models.Dish)
 	dishPricesMap := make(map[int]float64)
 	for _, dish := range dishesFromDatabase {
 		smallestPrice := dish.Price
@@ -202,19 +218,70 @@ func (s *orderService) FillDishPrices(pubID int, inputDishes []models.OrderDish,
 			smallestPrice += overprice
 		}
 
+		dishesByID[int(dish.ID)] = dish
 		dishPricesMap[int(dish.ID)] = smallestPrice
 	}
 
 	outputDishes := make([]models.OrderDish, len(inputDishes))
 	for i, dishInput := range inputDishes {
+		dish, ok := dishesByID[dishInput.DishID]
+		if !ok || !dish.IsAvailableNow(nowMinutes) {
+			return nil, ordererrors.ErrDishNotAvailable
+		}
+
+		price := dishPricesMap[dishInput.DishID]
+
+		if len(dishInput.ModifierOptionIDs) > 0 {
+			modifierTotal, err := s.resolveModifierTotal(dishInput.DishID, dishInput.ModifierOptionIDs)
+			if err != nil {
+				return nil, err
+			}
+			price += modifierTotal
+		}
+
 		outputDishes[i] = models.OrderDish{
-			DishID:    dishInput.DishID,
-			Count:     dishInput.Count,
-			DishPrice: dishPricesMap[dishInput.DishID],
+			DishID:            dishInput.DishID,
+			Count:             dishInput.Count,
+			DishPrice:         price,
+			ModifierOptionIDs: dishInput.ModifierOptionIDs,
 		}
 	}
 
 	return outputDishes, nil
+}
+
+// resolveModifierTotal sums the price deltas of the given modifier option
+// IDs, server-resolved (never trusting a client-sent price) - and rejects
+// any option that isn't actually assigned to this dish via one of its
+// modifier groups, so a client can't apply a cheaper/unrelated dish's
+// modifier to inflate or deflate this line's price.
+func (s *orderService) resolveModifierTotal(dishID int, optionIDs []int) (float64, error) {
+	options, err := s.ModifierGroupRepo.GetOptionsByIDs(optionIDs)
+	if err != nil {
+		return 0, err
+	}
+	if len(options) != len(optionIDs) {
+		return 0, ordererrors.ErrInvalidModifierOption
+	}
+
+	allowedGroupIDs, err := s.ModifierGroupRepo.GetGroupIDsForDish(dishID)
+	if err != nil {
+		return 0, err
+	}
+	allowedGroupIDsSet := make(map[uint]bool, len(allowedGroupIDs))
+	for _, id := range allowedGroupIDs {
+		allowedGroupIDsSet[id] = true
+	}
+
+	total := 0.0
+	for _, option := range options {
+		if !allowedGroupIDsSet[option.ModifierGroupID] {
+			return 0, ordererrors.ErrInvalidModifierOption
+		}
+		total += option.PriceDelta
+	}
+
+	return total, nil
 }
 
 func (s *orderService) CreateOrder(order models.Order) (models.Order, error) {
@@ -248,11 +315,12 @@ func (s *orderService) CreateOrder(order models.Order) (models.Order, error) {
 	}
 	fmt.Println("dishes total price: ", dishesTotalPrice)
 
-	realDeliveryPrice, freeDeliveryPrice, err := s.GetRealDeliveryPricesForOrder(order, pub)
+	realDeliveryPrice, freeDeliveryPrice, shapeID, err := s.GetRealDeliveryPricesForOrder(order, pub)
 	if err != nil {
 		return models.Order{}, err
 	}
 	order.DeliveryPrice = realDeliveryPrice
+	order.ShapeID = shapeID
 
 	fmt.Println("real Price: ", realDeliveryPrice)
 	fmt.Println("free delivery Price: ", freeDeliveryPrice)
@@ -283,6 +351,17 @@ func (s *orderService) CreateOrder(order models.Order) (models.Order, error) {
 		return models.Order{}, err
 	}
 
+	err = s.OrderStatusEventRepo.CreateEventWithinTransaction(tx, models.OrderStatusEvent{
+		OrderID: order.ID,
+		PubID:   uint(order.PubID),
+		ShapeID: order.ShapeID,
+		Status:  order.Status,
+	})
+	if err != nil {
+		fmt.Println("logging initial order status event error")
+		return models.Order{}, err
+	}
+
 	// sending for admin panel
 	err = s.SendSingleOrderMessageForPubConnections(order.PubID, order, CREATE_EVENT_TYPE)
 	if err != nil {
@@ -304,7 +383,7 @@ func (s *orderService) CreateOrder(order models.Order) (models.Order, error) {
 	return order, nil
 }
 
-func (s *orderService) GetRealDeliveryPricesForOrder(order models.Order, pub models.Pub) (float64, float64, error) {
+func (s *orderService) GetRealDeliveryPricesForOrder(order models.Order, pub models.Pub) (float64, float64, string, error) {
 	return s.PubService.GetDeliveryPriceForLatLng(pub, order.Lat, order.Lng)
 }
 
@@ -368,6 +447,17 @@ func (s *orderService) UpdateOrderStatus(orderID int, status string) error {
 
 	order, err := s.OrderRepo.GetOrderByIDWithinTransaction(tx, orderID)
 	if err != nil {
+		return err
+	}
+
+	err = s.OrderStatusEventRepo.CreateEventWithinTransaction(tx, models.OrderStatusEvent{
+		OrderID: order.ID,
+		PubID:   uint(order.PubID),
+		ShapeID: order.ShapeID,
+		Status:  order.Status,
+	})
+	if err != nil {
+		fmt.Println("logging order status event error")
 		return err
 	}
 
@@ -577,6 +667,38 @@ func (s *orderService) UpdateOrderApproximatePreparationTime(orderID int, approx
 	tx.Commit()
 
 	return nil
+}
+
+func (s *orderService) GetOrderStatusEvents(orderID int) ([]models.OrderStatusEvent, error) {
+	return s.OrderStatusEventRepo.GetEventsForOrder(orderID)
+}
+
+// MIN_SAMPLES_FOR_ZONE_AVERAGE is deliberately small - a zone's first few
+// orders would otherwise fall back to the pub-wide average for a long time,
+// which defeats the point of having a per-zone number at all. Once a zone
+// has this many completed preparing->at_courier pairs, its own average is
+// trusted over the pub-wide one.
+const MIN_SAMPLES_FOR_ZONE_AVERAGE = 5
+const RECENT_ORDERS_SAMPLE_LIMIT = 20
+
+func (s *orderService) GetEstimatedPreparingMinutes(pubID int, shapeID string) (float64, int, string, error) {
+	if shapeID != "" {
+		zoneResult, err := s.OrderStatusEventRepo.GetAveragePreparingToCourierMinutes(pubID, shapeID, RECENT_ORDERS_SAMPLE_LIMIT)
+		if err != nil {
+			return 0, 0, "", err
+		}
+
+		if zoneResult.SampleCount >= MIN_SAMPLES_FOR_ZONE_AVERAGE {
+			return zoneResult.AvgMinutes, zoneResult.SampleCount, "zone", nil
+		}
+	}
+
+	pubResult, err := s.OrderStatusEventRepo.GetAveragePreparingToCourierMinutes(pubID, "", RECENT_ORDERS_SAMPLE_LIMIT)
+	if err != nil {
+		return 0, 0, "", err
+	}
+
+	return pubResult.AvgMinutes, pubResult.SampleCount, "pub", nil
 }
 
 func (s *orderService) UpdateOrderDishes(orderID int, orderDishes []models.OrderDish) error {

@@ -127,7 +127,7 @@ func (r *categoryRepo) GetCompanyID(categoryID int) (int, error) {
 
 func (r *categoryRepo) GetAllDishesForCategory(categoryID int) ([]models.Dish, error) {
 	var dishes []models.Dish
-	res := r.Database.Find(&dishes, "category_id = ?", categoryID)
+	res := r.Database.Preload("ModifierGroups.Options").Find(&dishes, "category_id = ?", categoryID)
 
 	if res.Error != nil {
 		return nil, disheserrors.ErrUnableToGetDish

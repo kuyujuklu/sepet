@@ -29,6 +29,8 @@ func (c *ordersController) UnauthorizedRouter(router fiber.Router) {
 func (c *ordersController) AuthorizedRouter(router fiber.Router) {
 	router.Use(middleware.StrictAuthMW)
 	router.Get("/", c.GetAllOrdersForPub)
+	router.Get("/estimated-preparing-minutes", c.GetEstimatedPreparingMinutes)
+	router.Get("/:orderID<int>/status-events", c.GetOrderStatusEvents)
 	router.Put("/:orderID<int>/update-status", c.UpdateOrderStatus)
 	router.Put("/:orderID<int>/update-delivery-price", c.UpdateOrderDeliveryPrice)
 	router.Put("/:orderID<int>/update-dishes", c.UpdateOrderDishes)

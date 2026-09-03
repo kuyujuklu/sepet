@@ -11,26 +11,26 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-type createDishOutput struct {
-	Ok   bool                `json:"ok" example:"true"`
-	Dish entities.DishOutput `json:"dish"`
+type bulkUpdateDishPricesOutput struct {
+	Ok     bool                  `json:"ok" example:"true"`
+	Dishes []entities.DishOutput `json:"dishes"`
 }
 
-// @Summary      Create dish
-// @Description  Creates dish
+// @Summary      Bulk update dish prices
+// @Description  applies a percent change to every dish's price in a category, in one action
 // @Tags         dish
 // @Param companyID path int true "company id"
 // @Param pubID path int true "pub id"
 // @Param menuID path int true "menu id"
 // @Param categoryID path int true "category id"
-// @Param input body entities.DishInput true "menu params"
+// @Param input body entities.BulkPriceInput true "percent change"
 // @Accept       json
 // @Produce      json
-// @Success      201  {object}  createDishOutput
-// @Router       /company/{companyID}/pubs/{pubID}/menus/{menuID}/categories/{categoryID}/dishes/ [POST]
+// @Success      200  {object}  bulkUpdateDishPricesOutput
+// @Router       /company/{companyID}/pubs/{pubID}/menus/{menuID}/categories/{categoryID}/dishes/bulk-price [PATCH]
 // @Security ApiKeyAuth
 // @Param AccessToken header string  true "accesstoken"
-func (c *dishesController) CreateDish(ctx *fiber.Ctx) error {
+func (c *dishesController) BulkUpdateDishPrices(ctx *fiber.Ctx) error {
 	userID, userSignificance, userRole, err := h.GetUserIDSignificanceAndRoleFromLocals(ctx)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
@@ -46,13 +46,12 @@ func (c *dishesController) CreateDish(ctx *fiber.Ctx) error {
 		return h.SendError(ctx, httperrors.ErrBadID, h.AUTOMATIC_STATUS_CODE)
 	}
 
-	//Checking access for action with category for company
 	err = h.CheckCompanyAccess(userID, companyID, userSignificance, userRole, models.CATEGORY_COMPANY_ENTITY, categoryID)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
 
-	input, validationErrors, err := input.ParseRequestBody[entities.DishInput](ctx)
+	bulkInput, validationErrors, err := input.ParseRequestBody[entities.BulkPriceInput](ctx)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
@@ -60,28 +59,17 @@ func (c *dishesController) CreateDish(ctx *fiber.Ctx) error {
 		return h.SendValidationErrors(ctx, validationErrors)
 	}
 
-	inputDish := input.ConvertToModel(categoryID)
-	dish, err := c.DishService.CreateDish(categoryID, inputDish)
+	dishes, err := c.DishService.BulkUpdateDishPrices(categoryID, bulkInput.Percent)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
 
-	if err := c.ModifierGroupRepo.SetDishModifierGroups(int(dish.ID), input.ModifierGroupIDs); err != nil {
-		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	output := make([]entities.DishOutput, 0, len(dishes))
+	for _, dish := range dishes {
+		dishOutput := entities.DishOutput{}
+		dishOutput.FillFromModel(dish)
+		output = append(output, dishOutput)
 	}
 
-	dish, err = c.DishService.GetDishById(int(dish.ID))
-	if err != nil {
-		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
-	}
-
-	output := entities.DishOutput{}
-	output.FillFromModel(dish)
-
-	return h.SendSuccess(
-		ctx,
-		fiber.Map{
-			"dish": output,
-		},
-		fiber.StatusCreated)
+	return h.SendSuccess(ctx, fiber.Map{"dishes": output}, fiber.StatusOK)
 }

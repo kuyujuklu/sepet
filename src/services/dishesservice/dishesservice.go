@@ -20,6 +20,7 @@ type DishesService interface {
 	GetImageFileName(id int) (string, error)
 	MoveDishLeft(dishID int) (int, error)
 	MoveDishRight(dishID int) (int, error)
+	BulkUpdateDishPrices(categoryID int, percent float64) ([]models.Dish, error)
 }
 
 type dishesService struct {
@@ -118,6 +119,15 @@ func (s *dishesService) MoveDishLeft(dishID int) (int, error) {
 	}
 
 	return s.DishesRepo.SetDishPlace(int(dish.CategoryID), dishID, dish.Place-1)
+}
+
+func (s *dishesService) BulkUpdateDishPrices(categoryID int, percent float64) ([]models.Dish, error) {
+	_, err := s.CategoryService.GetCategoryById(categoryID)
+	if err != nil {
+		return nil, err
+	}
+
+	return s.DishesRepo.BulkUpdateDishPrices(categoryID, percent)
 }
 
 func (s *dishesService) MoveDishRight(dishID int) (int, error) {

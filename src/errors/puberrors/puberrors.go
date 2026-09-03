@@ -24,6 +24,8 @@ var ErrUnableToCreateQrCode = errors.New("unable to create QR code")
 
 var ErrPubShippingIsInvalid = errors.New("pub shipping is invalid")
 
+var ErrLocationNotInDeliveryZone = errors.New("location is not inside any delivery zone")
+
 var ErrPubPreorderIsInvalid = errors.New("pub preorder is invalid")
 
 var ErrUnableToAddCourier = errors.New("unable to add courier")

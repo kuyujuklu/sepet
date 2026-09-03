@@ -3,6 +3,7 @@ package dishesrepo
 import (
 	"errors"
 	"io"
+	"math"
 	"mime/multipart"
 	"os"
 	"strings"
@@ -40,6 +41,12 @@ type DishesRepo interface {
 	GetImageFileName(dishID int) (string, error)
 	GetDishMaxPlace(categoryID int) (int, error)
 	SetDishPlace(categoryID int, dishID int, place int) (int, error)
+	// BulkUpdateDishPrices applies a percent change (e.g. 10 for +10%, -15
+	// for -15%) to every dish's Price within a category, in one
+	// transaction. SalePrice is left untouched - it's a deliberate
+	// promotional override, not something that should drift with a
+	// category-wide bump.
+	BulkUpdateDishPrices(categoryID int, percent float64) ([]models.Dish, error)
 }
 
 type dishesRepo struct {
@@ -66,7 +73,7 @@ func (r *dishesRepo) GetAllDishes() ([]models.Dish, error) {
 
 func (r *dishesRepo) GetDishById(id int) (models.Dish, error) {
 	var dish models.Dish
-	result := r.Database.First(&dish, "id = ?", id)
+	result := r.Database.Preload("ModifierGroups.Options").First(&dish, "id = ?", id)
 	if result.Error != nil {
 		return models.Dish{}, disheserrors.ErrDishNotFound
 	}
@@ -246,4 +253,29 @@ func (r *dishesRepo) SetDishPlace(categoryID int, dishID int, place int) (int, e
 	}
 
 	return place, nil
+}
+
+func (r *dishesRepo) BulkUpdateDishPrices(categoryID int, percent float64) ([]models.Dish, error) {
+	var dishes []models.Dish
+
+	err := r.Database.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Where("category_id = ?", categoryID).Find(&dishes).Error; err != nil {
+			return err
+		}
+
+		for i := range dishes {
+			newPrice := math.Round(dishes[i].Price*(1+percent/100)*100) / 100
+			if err := tx.Model(&dishes[i]).Update("price", newPrice).Error; err != nil {
+				return err
+			}
+			dishes[i].Price = newPrice
+		}
+
+		return nil
+	})
+	if err != nil {
+		return nil, disheserrors.ErrUnableToUpdateDish
+	}
+
+	return dishes, nil
 }

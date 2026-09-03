@@ -101,6 +101,7 @@ type OrderOutput struct {
 	TotalDishesPriceWithoutCommission float64                `json:"total_dishes_price_without_commission"`
 	Prepared                          bool                   `json:"prepared"`
 	ApproximatePreparationTime        string                 `json:"approximate_preparation_time"`
+	ShapeID                           string                 `json:"shape_id"`
 }
 
 func (o *OrderOutput) FillFromModel(order models.Order) error {
@@ -143,9 +144,10 @@ func (o *OrderOutput) FillFromModel(order models.Order) error {
 	o.TotalDishesPriceWithoutCommission = order.TotalDishesPriceWithoutCommission
 	o.Prepared = order.Prepared
 	o.ApproximatePreparationTime = helpers.ConvertToStandardApiTime(order.ApproximatePreparationTime)
+	o.ShapeID = order.ShapeID
 
 	for _, orderDish := range orderDishes {
-		o.Dishes = append(o.Dishes, OrderDishOutput{Count: orderDish.Count, DishID: orderDish.DishID, DishPrice: orderDish.DishPrice})
+		o.Dishes = append(o.Dishes, OrderDishOutput{Count: orderDish.Count, DishID: orderDish.DishID, DishPrice: orderDish.DishPrice, ModifierOptionIDs: orderDish.ModifierOptionIDs})
 	}
 
 	return nil
@@ -220,7 +222,7 @@ func (o *OrderOutputWithoutPub) FillFromModel(order models.Order) error {
 	o.ApproximatePreparationTime = helpers.ConvertToStandardApiTime(order.ApproximatePreparationTime)
 
 	for _, orderDish := range orderDishes {
-		o.Dishes = append(o.Dishes, OrderDishOutput{Count: orderDish.Count, DishID: orderDish.DishID, DishPrice: orderDish.DishPrice})
+		o.Dishes = append(o.Dishes, OrderDishOutput{Count: orderDish.Count, DishID: orderDish.DishID, DishPrice: orderDish.DishPrice, ModifierOptionIDs: orderDish.ModifierOptionIDs})
 	}
 
 	return nil
@@ -234,10 +236,15 @@ type OrderDishInput struct {
 	// came in) without touching the pub's actual menu price. Nil means "use
 	// the pub's current menu/sale price", same as before this field existed.
 	Price *float64 `json:"price"`
+	// ModifierOptionIDs are resolved server-side (see
+	// orderservice.resolveModifierTotal) - the client only picks which
+	// options, never their price.
+	ModifierOptionIDs []int `json:"modifier_option_ids,omitempty"`
 }
 
 type OrderDishOutput struct {
-	DishID    int     `json:"dish_id"`
-	Count     int     `json:"count"`
-	DishPrice float64 `json:"dish_price"`
+	DishID            int     `json:"dish_id"`
+	Count             int     `json:"count"`
+	DishPrice         float64 `json:"dish_price"`
+	ModifierOptionIDs []int   `json:"modifier_option_ids,omitempty"`
 }
