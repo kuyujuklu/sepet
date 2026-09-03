@@ -10,18 +10,16 @@ import AuthWatcher from "./features/auth/AuthWatcher"
 import GoogleMapsLoader from "./features/GoogleMapsLoader/GoogleMapsLoader"
 import TariffPopup from "./features/company/TariffPopup"
 import CreatePubPopup from "./features/pub/CreatePubPopup"
-import UpdatePubPopup from "./features/pub/UpdatePubPopup"
-import DeletePubPopup from "./features/pub/DeletePubPopup"
 import CreateMenuPopup from "./features/pub/Menus/CreateMenuPopup"
 import UpdateMenuPopup from "./features/pub/Menus/UpdateMenuPopup"
 import DeleteMenuPopup from "./features/pub/Menus/DeleteMenuPopup"
 import CreateCategoryPopup from "./features/pub/Categories/CreateCategoryPopup"
 import UpdateCategoryPopup from "./features/pub/Categories/UpdateCategoryPopup"
 import DeleteCategoryPopup from "./features/pub/Categories/DeleteCategoryPopup"
+import BulkPricePopup from "./features/pub/Categories/BulkPricePopup"
 import CreateDishPopup from "./features/pub/Dishes/CreateDishPopup"
 import UpdateDishPopup from "./features/pub/Dishes/UpdateDishPopup"
 import DeleteDishPopup from "./features/pub/Dishes/DeleteDishPopup"
-import QrCodePopup from "./features/pub/QrCodePopup"
 
 import "./i18n"
 import NewOrdersListener from "./features/admin/Orders/NewOrdersListener"
@@ -35,7 +33,9 @@ import AddCourierPopup from "./features/admin/ShippingAndPreorder/Shipping/AddCo
 import CourierReserveOrderPopup from "./features/courier/popups/CourierReserveOrderPopup"
 import DeleteClientAccount from "./components/DeleteClientAccount/DeleteClientAccount"
 import AdministrationOrders from "./features/administration/AdministrationOrders"
-import UpdateOrderApproximateTimePopup from "./features/admin/Orders/OrderInfo/UpdateOrderApproximatePreparationTime"
+import AdministrationShipping from "./features/administration/AdministrationShipping"
+import AdministrationPubSettings from "./features/administration/AdministrationPubSettings"
+import AdministrationPush from "./features/administration/AdministrationPush"
 
 const App = () => {
   return (
@@ -52,6 +52,10 @@ const AppInner = () => {
   useEffect(() => {
     if (window.location.pathname === "/admin") {
       navigate("/admin/company")
+    } else if (window.location.pathname === "/") {
+      // No route matches bare "/" at all - it rendered nothing (blank
+      // white screen) rather than 404ing, since <Routes> just has no match.
+      navigate("/admin/auth/authentication")
     }
   }, [navigate])
   return (
@@ -66,6 +70,9 @@ const AppInner = () => {
       <Routes>
         <Route path="/admin/*" element={<AdminInner />} />
         <Route path="/administration/orders" element={<AdministrationOrders />} />
+        <Route path="/administration/shipping" element={<AdministrationShipping />} />
+        <Route path="/administration/pub-settings" element={<AdministrationPubSettings />} />
+        <Route path="/administration/push" element={<AdministrationPush />} />
         <Route path="/courier/*" element={<CourierPage />} />
       </Routes>
 
@@ -87,8 +94,6 @@ const Popups = () => {
       <PayForPubPopup />
 
       <CreatePubPopup />
-      <UpdatePubPopup />
-      <DeletePubPopup />
 
       <CreateMenuPopup />
       <UpdateMenuPopup />
@@ -97,16 +102,14 @@ const Popups = () => {
       <CreateCategoryPopup />
       <UpdateCategoryPopup />
       <DeleteCategoryPopup />
+      <BulkPricePopup />
 
       <CreateDishPopup />
       <UpdateDishPopup />
       <DeleteDishPopup />
 
-      <QrCodePopup />
-
       <DeleteDishFromOrderPopup />
       <AddDishToOrderPopup />
-      <UpdateOrderApproximateTimePopup />
 
       <CourierInfoPopup />
       <AddCourierPopup />

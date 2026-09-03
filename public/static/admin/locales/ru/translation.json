@@ -1,517 +1,663 @@
 {
-    "test": "ТЕСТ",
-    "gender": {
-        "male": "Мужской",
-        "female": "Женский"
+ "test": "ТЕСТ",
+ "gender": {
+  "male": "Мужской",
+  "female": "Женский"
+ },
+ "yes": "Да",
+ "no": "Нет",
+ "errors": {
+  "something_went_wrong": "Что-то пошло не так. Попробуйте позже.",
+  "unknown_error": "Произошла неизвестная ошибка. Попробуйте позже.",
+  "validation_error": "Ошибка валидации.",
+  "invalid_credentials": "Неверный email или пароль.",
+  "company_with_the_same_name_already_exists": "Данное имя занято",
+  "company_with_the_same_email_already_exists": "Компания с таким email уже существует.",
+  "file_is_too_large": "Файл слишком большой.",
+  "file_is_not_an_image": "Файл не является изображением.",
+  "invalid_file": "Неверный файл.",
+  "invalid_file_extension": "Неверное расширение файла.",
+  "pub_limit_exceeded": "Превышен лимит заведений. Улучшите тариф для добавления новых заведений.",
+  "courier": {
+   "courier_not_found": "Курьер не найден",
+   "courier_id_is_invalid": "ID курьера не верное"
+  },
+  "field_must_be_number": "Поле должно быть числом"
+ },
+ "client": {
+  "pub_info": {
+   "wifi_password": "Пароль от Wi-Fi",
+   "address": "Адрес",
+   "additional_info": "Дополнительная информация"
+  },
+  "errors": {
+   "unknown_order_type": "Неизвестный тип заказа",
+   "unknown_payment_type": "Неизвестный тип оплаты",
+   "table_number_is_wrong": "Неверный номер столика",
+   "town_is_required": "Город является обязательным полем",
+   "min_town_length_is_3": "Минимум 3 буквы",
+   "max_town_length_is_100": "Максимум 100 букв",
+   "full_address_is_required": "Полный адрес является обязательным полем",
+   "min_full_address_length_is_6": "Минимум 6 букв",
+   "max_full_address_length_is_100": "Максимум 100 букв",
+   "phone_is_required": "Телефон является обязательным полем",
+   "min_phone_length_is_8": "Минимум 8 цифр"
+  },
+  "basket": {
+   "headline": "Корзина",
+   "last_order": {
+    "headline": "Последний заказ",
+    "delivery": "Доставка на дом",
+    "in_place_order": "Заказ в ресторане"
+   },
+   "create_order_button": "Заказать"
+  },
+  "popups": {
+   "create_order": {
+    "headline": "Заказ",
+    "back": "Назад",
+    "next": "Далее",
+    "choose_order_type": "Выберите тип заказа",
+    "in_place_order": "Заказ в ресторане",
+    "delivery": "Доставка на дом",
+    "town": "Город",
+    "full_address": "Полный адрес",
+    "phone": "Телефон",
+    "choose_payment_type": "Выберите тип оплаты",
+    "cash_for_courier": "Наличными курьеру",
+    "card_for_courier": "Картой курьеру",
+    "table_number": "Номер столика",
+    "final_price": "Цена заказа",
+    "comments": "Комментарии",
+    "create_order_button": "Заказать"
+   }
+  }
+ },
+ "admin": {
+  "delivery_types": {
+   "own": "Собственный курьер",
+   "delivery_service": "Служба доставки",
+   "own_hint": "Заказ виден только этому заведению",
+   "delivery_service_hint": "Заказ виден всем курьерам"
+  },
+  "Save": "Сохранить",
+  "logout": "Выход",
+  "language": "Язык",
+  "images": {
+   "upload": "Загрузить",
+   "update": "Обновить",
+   "image": "фото"
+  },
+  "validation_errors": {
+   "company": {
+    "company_name": {
+     "required": "Название компании обязательно для заполнения.",
+     "min": "Название компании должно быть не менее 3 символов.",
+     "max": "Название компании должно быть не более 255 символов."
     },
+    "email": {
+     "required": "Email обязателен для заполнения.",
+     "invalid": "Email должен быть валидным."
+    },
+    "phone": {
+     "required": "Телефон обязателен для заполнения.",
+     "invalid": "Телефон должен быть валидным."
+    },
+    "password": {
+     "required": "Пароль обязателен для заполнения.",
+     "min": "Пароль должен быть не менее 8 символов.",
+     "max": "Пароль должен быть не более 255 символов."
+    },
+    "repeat_password": {
+     "not_match": "Пароли не совпадают."
+    }
+   },
+   "pub": {
+    "name": {
+     "required": "Название заведения обязательно для заполнения.",
+     "min": "Название заведения должно быть не менее 3 символов.",
+     "max": "Название заведения должно быть не более 255 символов."
+    },
+    "url_name": {
+     "required": "URL заведения обязателен для заполнения.",
+     "min": "URL заведения должен быть не менее 3 символов.",
+     "max": "URL заведения должен быть не более 255 символов.",
+     "invalid_url_name": "URL должен содержать только английские строчные буквы и цифры."
+    },
+    "wifi-password": {
+     "min": "Пароль должен быть не менее 8 символов.",
+     "max": "Пароль должен быть не более 255 символов."
+    }
+   }
+  },
+  "authentication": {
+   "headline": "Авторизуйтесь",
+   "your_email": "Ваш Email",
+   "password": "Пароль",
+   "login": "Войти в аккаунт",
+   "link_to_registration": "Нет аккаунта? Зарегистрироваться"
+  },
+  "registration": {
+   "headline": "Зарегистрироваться",
+   "role_company": "Я заведение",
+   "role_courier": "Я курьер",
+   "your_email": "Ваш Email",
+   "your_name": "Ваше имя",
+   "your_phone": "Ваше телефон",
+   "password": "Пароль",
+   "repeat_password": "Повторите пароль",
+   "registrate_button": "Создать аккаунт",
+   "link_to_authentication": "Уже есть аккаунт? Войти"
+  },
+  "company": {
+   "pubs": "Заведения",
+   "no_pubs": "У вашей компании пока нет заведений",
+   "tariff": "Тариф",
+   "tariff_basic": "Basic",
+   "tariff_pro": "Professional",
+   "tariff_business": "Business",
+   "pub": {
+    "address": "Адрес",
+    "expiration_time": "Оплачен до",
+    "expired": "Не оплачен",
+    "edit_button": "Управление",
+    "pay_button": "Оплатить"
+   }
+  },
+  "admin_panel": {
+   "main_page": {
+    "headline": "Панель администратора",
+    "sections": {
+     "geolocation": {
+      "headline": "Укажите местоположение заведения двойным кликом по карте"
+     },
+     "food_shipping": {
+      "headline": "Доставка"
+     },
+     "edit_menu": {
+      "headline": "Редактировать меню"
+     },
+     "orders": {
+      "headline": "Заказы"
+     },
+     "settings": {
+      "headline": "Настройки"
+     }
+    }
+   },
+   "orders_page": {
+    "no_orders": "У вас еще нет заказов",
+    "headline": "Заказы",
+    "active_orders": "Активных заказов",
+    "call_badge": "Обзвонить"
+   },
+   "order_page": {
+    "order": "Заказ",
+    "order_not_found": "Заказ не найден, попробуйте позже",
+    "order_statuses": {
+     "not_handled": "Новый",
+     "handled": "Обработан",
+     "preparing": "Готовится",
+     "at_courier": "У курьера",
+     "completed": "Доставлен",
+     "canceled": "Отменен"
+    },
+    "order_filters": {
+     "all": "Активные",
+     "not_handled": "Новые",
+     "handled": "Обработаны",
+     "preparing": "Готовятся",
+     "at_courier": "У курьера",
+     "completed": "Доставлены",
+     "canceled": "Отменены"
+    },
+    "order_payment_types": {
+     "cash": "Наличными",
+     "card_offline": "Картой курьеру",
+     "not_proceeded": "Не указан"
+    },
+    "order_position": {
+     "pieces_shortcut": "шт",
+     "add_dish_button": "Добавить блюдо"
+    },
+    "order_courier_info": {
+     "set_status_to_preparing_for_couriers": "Назначьте заказу статус готовится чтобы курьеры видели его",
+     "searching_for_couriers": "Ищем курьера",
+     "courier_was_found": "Курьер найден",
+     "title": "Курьер",
+     "no_courier": "Курьер не назначен",
+     "no_name": "Без имени"
+    },
+    "table_number": "Номер столика",
+    "town": "Город",
+    "full_address": "Полный адрес",
+    "main_phone": "Основной телефон",
+    "second_phone": "Дополнительный телефон",
+    "payment_type": "Способ оплаты",
+    "total_price_of_products": "Сумма товаров",
+    "price_of_shipping": "Цена доставки",
+    "final_price": "Итого",
+    "commission": "Комиссия",
+    "comments": "Комментарии",
+    "order_status_label": "Статус заказа",
+    "cancel_order": "Отменить заказ",
+    "advance_to_preparing": "Начать готовить",
+    "advance_to_courier": "Передать курьеру",
+    "advance_to_completed": "Отметить доставленным",
+    "edit_price_link": "Изменить цену",
+    "cancel_edit_button": "Отмена",
+    "customer_and_delivery": "Клиент и доставка",
+    "order_items": "Состав заказа",
+    "timeline_label": "Хронология заказа",
+    "minutes_shortcut": "мин",
+    "ready_estimate": {
+     "title": "Ожидаемая готовность",
+     "based_on_zone": "Среднее по «{{zone}}» · последние {{count}} заказов",
+     "based_on_pub": "Среднее по заведению · последние {{count}} заказов",
+     "overdue": "Обычно занимает {{minutes}} мин — уже дольше обычного"
+    },
+    "soon": {
+     "label": "Скоро",
+     "repeat_customer": "История клиента",
+     "print_receipt": "Печать чека для кухни",
+     "courier_map_title": "Курьер на карте в реальном времени",
+     "courier_map_desc": "Заменит ручной ввод времени подачи — заведению и клиенту видно одно и то же",
+     "cancel_reason": "Причина отмены заказа",
+     "item_substitute_title": "Замена товара клиенту",
+     "item_substitute_desc": "Нет в наличии → предложить замену и согласовать с клиентом (чат / пуш, на вебе смс)",
+     "commission_breakdown": "Комиссия и бесплатная доставка",
+     "on_this_screen": "Скоро на этом экране"
+    }
+   },
+   "shipping": {
+    "headline": "Доставка",
+    "commission_enabled": "Включена",
+    "commission_disabled": "Выключена",
+    "delivery_enabled": "Доставка включена",
+    "delivery_disabled": "Доставка выключена",
+    "network_managed": {
+     "title": "Зоны и цены управляются службой доставки Sepet",
+     "description": "Это заведение работает через общую сеть курьеров вашего города — зоны и цены единые для всех таких заведений. Изменить их может только администратор Sepet."
+    },
+    "soon": {
+     "scheduled_closure_title": "Плановое закрытие доставки",
+     "scheduled_closure_desc": "Разовая или праздничная пауза на выбранные даты — отдельно от общего выключателя",
+     "zone_lookup_title": "Проверка адреса по зоне",
+     "zone_lookup_desc": "Ввести адрес и увидеть, в какую зону он попадёт и с какой ценой",
+     "free_delivery_split_title": "Правила расчёта бесплатной доставки",
+     "free_delivery_split_desc": "Кто и сколько платит за бесплатную доставку — комиссия платформы, заведение, или поровну"
+    },
+    "shipping_price": {
+     "headline": "Стоимость доставки в вашем заведении",
+     "input_placeholder": "кол-во"
+    },
+    "shipping_time": {
+     "label": "Приблизительное время доставки",
+     "from": "От",
+     "to": "До",
+     "save": "Сохранить"
+    },
+    "shipping_work_hours": {
+     "label": "Часы работы доставки"
+    },
+    "shipping_delivery_type": {
+     "headline": "Способ доставки"
+    },
+    "shipping_add_commission_to_dish_prices": {
+     "headline": "Добавлять комиссию службы доставки к цене товаров"
+    },
+    "shipping_free_delivery_prices": {
+     "headline": "Бесплатная доставка в вашем заведении"
+    },
+    "shipping_map": {
+     "checkmark_headline": "Если ваше заведение имеет доставку поставьте галочку",
+     "checkmark_label": "Доставка",
+     "headline": "Выберите области в которые вы доставляете",
+     "not_selected_geolocation_warning": "Местоположение заведения ещё не указано",
+     "pick_location_hint": "Дважды кликните по карте, чтобы указать местоположение заведения",
+     "drawing_hint": "Нажимайте на карту, чтобы отметить точки области. Нужно минимум 3 точки.",
+     "zone_label": "Зона {{number}}",
+     "buttons": {
+      "select_and_delete_area": "Выбрать и удалить область",
+      "save_all": "Сохранить все",
+      "finish_area": "Завершить область",
+      "cancel_drawing": "Отменить",
+      "draw_area": "Нарисовать область"
+     }
+    },
+    "shipping_min_order_prices": {
+     "headline": "Минимальная сумма заказа"
+    }
+   }
+  },
+  "home": {
+   "orders_accepting_on": "Приём заказов включён",
+   "orders_accepting_off": "Приём заказов на паузе",
+   "not_acknowledged": "не принят уже {{minutes}} мин",
+   "taking_longer": "готовится дольше обычного",
+   "needs_attention": "Требует внимания: {{count}}",
+   "revenue_today": "Выручка сегодня",
+   "vs_yesterday": "за вчера",
+   "orders_today": "Заказов сегодня",
+   "in_progress": "{{count}} в процессе",
+   "average_check": "Средний чек",
+   "last_7_days": "за 7 дней",
+   "average_prep_time": "Среднее время готовки",
+   "revenue_7_days": "Выручка за 7 дней",
+   "recent_orders": "Последние заказы",
+   "all_orders": "Все заказы",
+   "no_orders_yet": "Заказов пока нет",
+   "order_type_delivery": "доставка",
+   "order_type_in_place": "на месте",
+   "sections": "Разделы",
+   "nav_home": "Главная",
+   "nav_menu": "Меню",
+   "nav_shipping": "Доставка",
+   "nav_orders": "Заказы",
+   "nav_settings": "Настройки",
+   "sidebar_open": "открыто",
+   "sidebar_closed": "закрыто"
+  },
+  "pub": {},
+  "categories": {
+   "add_category_button": "Добавить категорию",
+   "category_types": {
+    "sales": "Акции",
+    "asian": "Азиатская кухня",
+    "flowers": "Цветы",
+    "fast_food": "Фастфуд",
+    "breakfast": "Завтрак",
+    "grill": "Грилль",
+    "dessert": "Дессерты",
+    "pasta": "Паста",
+    "pancakes": "Блины",
+    "soup": "Супы",
+    "other": "Другое",
+    "alcohol": "Алкоголь",
+    "east_food": "Восточная кухня",
+    "flour": "Мучные блюда",
+    "home_food": "Домашняя еда",
+    "kebab": "Кебаб",
+    "salad": "Салаты",
+    "snacks": "Закуски",
+    "meat": "Мясные блюда",
+    "groceries": "Продукты"
+   },
+   "service_types": {
+    "food": "Еда",
+    "flowers": "Цветы",
+    "groceries": "Продукты"
+   },
+   "promo": {
+    "title": "Скидки и хиты",
+    "subtitle": "Все товары со скидкой или отмеченные как хит",
+    "virtual_badge": "Только в панели",
+    "discounts_count": "Скидок: {{count}}",
+    "hits_count": "Хитов: {{count}}",
+    "explainer": "Это не настоящая категория — её нет на сервере и клиенты её не видят. Здесь собраны товары из всех меню заведения; изменения сохраняются в ту категорию, где товар лежит на самом деле.",
+    "empty": "Ничего не найдено",
+    "filters": {
+     "all": "Все",
+     "discounts": "Со скидкой",
+     "hits": "Хиты"
+    }
+   }
+  },
+  "dishes": {
+   "add_dish_button": "Добавить блюдо",
+   "upper": {
+    "return_back": "Вернуться назад"
+   },
+   "dish_types": {
+    "salad": "Салат",
+    "soup": "Суп",
+    "burger": "Бургер",
+    "pizza": "Пицца",
+    "pasta": "Паста",
+    "drink": "Напиток",
+    "sushi": "Суши",
+    "other": "Другое"
+   },
+   "is_hit_badge": "Хит",
+   "not_available_badge": "Нет в наличии"
+  },
+  "pub_settings": {
+   "headline": "Настройки заведения",
+   "language_headline": "Язык интерфейса",
+   "qr_headline": "QR-код меню",
+   "cancel_button": "Отмена"
+  },
+  "modifier_groups": {
+   "nav_link": "Модификаторы блюд",
+   "back_link": "← Назад к меню",
+   "headline": "Модификаторы",
+   "description": "Группы вариантов (например «Размер» или «Соусы»), которые можно назначить на несколько блюд сразу.",
+   "add_group_button": "Добавить группу",
+   "group_name": "Название группы",
+   "options": "Варианты",
+   "option_name": "Название варианта",
+   "price_delta": "Доплата",
+   "add_option_button": "Добавить вариант",
+   "cancel_button": "Отмена",
+   "save_button": "Сохранить",
+   "edit_button": "Изменить",
+   "delete_button": "Удалить",
+   "delete_confirm": "Удалить эту группу модификаторов? Она будет снята со всех блюд.",
+   "no_options": "Нет вариантов"
+  },
+  "popups": {
+   "upgrade_tariff_popup": {
+    "header": "Изменить тариф",
+    "main_headline": "Для изменения тарифа обратитесь к администратору"
+   },
+   "pay_for_pub_popup": {
+    "header": "Оплатить заведение",
+    "main_headline": "Для оплаты обратитесь к администратору"
+   },
+   "create_pub_popup": {
+    "headline": "Добавить заведение",
+    "name": "Название заведения",
+    "url_name": "Название заведения в URL",
+    "create_button": "Добавить"
+   },
+   "update_pub_popup": {
+    "headline": "Редактировать заведение",
+    "name": "Название заведения",
+    "wifi_password": "Пароль от Wi-Fi",
+    "currency": "Валюта",
+    "favorite_color": "Предпочитаемый цвет",
+    "has_in_place_order": "Заказ внутри ресторана",
     "yes": "Да",
     "no": "Нет",
-    "errors": {
-        "something_went_wrong": "Что-то пошло не так. Попробуйте позже.",
-        "unknown_error": "Произошла неизвестная ошибка. Попробуйте позже.",
-        "validation_error": "Ошибка валидации.",
-        "invalid_credentials": "Неверный email или пароль.",
-        "company_with_the_same_name_already_exists": "Данное имя занято",
-        "company_with_the_same_email_already_exists": "Компания с таким email уже существует.",
-        "file_is_too_large": "Файл слишком большой.",
-        "file_is_not_an_image": "Файл не является изображением.",
-        "invalid_file": "Неверный файл.",
-        "invalid_file_extension": "Неверное расширение файла.",
-        "pub_limit_exceeded": "Превышен лимит заведений. Улучшите тариф для добавления новых заведений.",
-        "courier": {
-            "courier_not_found": "Курьер не найден",
-            "courier_id_is_invalid": "ID курьера не верное"
-        },
-        "field_must_be_number": "Поле должно быть числом"
+    "theme": {
+     "title": "Тема",
+     "light": "Светлая",
+     "dark": "Темная"
     },
-    "client": {
-        "pub_info": {
-            "wifi_password": "Пароль от Wi-Fi",
-            "address": "Адрес",
-            "additional_info": "Дополнительная информация"
-        },
-        "errors": {
-            "unknown_order_type": "Неизвестный тип заказа",
-            "unknown_payment_type": "Неизвестный тип оплаты",
-            "table_number_is_wrong": "Неверный номер столика",
-            "town_is_required": "Город является обязательным полем",
-            "min_town_length_is_3": "Минимум 3 буквы",
-            "max_town_length_is_100": "Максимум 100 букв",
-            "full_address_is_required": "Полный адрес является обязательным полем",
-            "min_full_address_length_is_6": "Минимум 6 букв",
-            "max_full_address_length_is_100": "Максимум 100 букв",
-            "phone_is_required": "Телефон является обязательным полем",
-            "min_phone_length_is_8": "Минимум 8 цифр"
-        },
-        "basket": {
-            "headline": "Корзина",
-            "last_order": {
-                "headline": "Последний заказ",
-                "delivery": "Доставка на дом",
-                "in_place_order": "Заказ в ресторане"
-            },
-            "create_order_button": "Заказать"
-        },
-        "popups": {
-            "create_order": {
-                "headline": "Заказ",
-                "back": "Назад",
-                "next": "Далее",
-                "choose_order_type": "Выберите тип заказа",
-                "in_place_order": "Заказ в ресторане",
-                "delivery": "Доставка на дом",
-                "town": "Город",
-                "full_address": "Полный адрес",
-                "phone": "Телефон",
-                "choose_payment_type": "Выберите тип оплаты",
-                "cash_for_courier": "Наличными курьеру",
-                "card_for_courier": "Картой курьеру",
-                "table_number": "Номер столика",
-                "final_price": "Цена заказа",
-                "comments": "Комментарии",
-                "create_order_button": "Заказать"
-            }
-        }
-    },
-    "admin": {
-        "delivery_types": {
-            "own": "Собственная",
-            "delivery_service": "Служба доставки"
-        },
-        "Save": "Сохранить",
-        "logout": "Выход",
-        "language": "Язык",
-        "images": {
-            "upload": "Загрузить",
-            "update": "Обновить",
-            "image": "фото"
-        },
-        "validation_errors": {
-            "company": {
-                "company_name": {
-                    "required": "Название компании обязательно для заполнения.",
-                    "min": "Название компании должно быть не менее 3 символов.",
-                    "max": "Название компании должно быть не более 255 символов."
-                },
-                "email": {
-                    "required": "Email обязателен для заполнения.",
-                    "invalid": "Email должен быть валидным."
-                },
-                "phone": {
-                    "required": "Телефон обязателен для заполнения.",
-                    "invalid": "Телефон должен быть валидным."
-                },
-                "password": {
-                    "required": "Пароль обязателен для заполнения.",
-                    "min": "Пароль должен быть не менее 8 символов.",
-                    "max": "Пароль должен быть не более 255 символов."
-                },
-                "repeat_password": {
-                    "not_match": "Пароли не совпадают."
-                }
-            },
-            "pub": {
-                "name": {
-                    "required": "Название заведения обязательно для заполнения.",
-                    "min": "Название заведения должно быть не менее 3 символов.",
-                    "max": "Название заведения должно быть не более 255 символов."
-                },
-                "url_name": {
-                    "required": "URL заведения обязателен для заполнения.",
-                    "min": "URL заведения должен быть не менее 3 символов.",
-                    "max": "URL заведения должен быть не более 255 символов.",
-                    "invalid_url_name": "URL должен содержать только английские строчные буквы и цифры."
-                },
-                "wifi-password": {
-                    "min": "Пароль должен быть не менее 8 символов.",
-                    "max": "Пароль должен быть не более 255 символов."
-                }
-            }
-        },
-        "authentication": {
-            "headline": "Авторизуйтесь",
-            "your_email": "Ваш Email",
-            "password": "Пароль",
-            "login": "Войти в аккаунт",
-            "link_to_registration": "Нет аккаунта? Зарегистрироваться"
-        },
-        "registration": {
-            "headline": "Зарегистрироваться",
-            "your_email": "Ваш Email",
-            "your_name": "Ваше имя",
-            "your_phone": "Ваше телефон",
-            "password": "Пароль",
-            "repeat_password": "Повторите пароль",
-            "registrate_button": "Создать аккаунт",
-            "link_to_authentication": "Уже есть аккаунт? Войти"
-        },
-        "company": {
-            "pubs": "Заведения",
-            "tariff": "Тариф",
-            "tariff_basic": "Basic",
-            "tariff_pro": "Professional",
-            "tariff_business": "Business",
-            "pub": {
-                "address": "Адрес",
-                "expiration_time": "Оплачен до",
-                "expired": "Не оплачен",
-                "edit_button": "Управление",
-                "pay_button": "Оплатить"
-            }
-        },
-        "admin_panel": {
-            "main_page": {
-                "headline": "Панель администратора",
-                "sections": {
-                    "geolocation": {
-                        "headline": "Укажите местоположение заведения двойным кликом по карте"
-                    },
-                    "food_shipping": {
-                        "headline": "Доставка"
-                    },
-                    "edit_menu": {
-                        "headline": "Редактировать меню"
-                    },
-                    "orders": {
-                        "headline": "Заказы"
-                    },
-                    "settings": {
-                        "headline": "Настройки"
-                    }
-                }
-            },
-            "orders_page": {
-                "no_orders": "У вас еще нет заказов",
-                "headline": "Заказы",
-                "active_orders": "Активных заказов"
-            },
-            "order_page": {
-                "order": "Заказ",
-                "order_not_found": "Заказ не найден, попробуйте позже",
-                "order_statuses": {
-                    "not_handled": "Новый",
-                    "handled": "Обработан",
-                    "preparing": "Готовится",
-                    "at_courier": "У курьера",
-                    "completed": "Доставлен",
-                    "canceled": "Отменен"
-                },
-                "order_filters": {
-                    "all": "Активные",
-                    "not_handled": "Новые",
-                    "handled": "Обработаны",
-                    "preparing": "Готовятся",
-                    "at_courier": "У курьера",
-                    "completed": "Доставлены",
-                    "canceled": "Отменены"
-                },
-                "order_payment_types": {
-                    "cash": "Наличными",
-                    "card_offline": "Картой курьеру",
-                    "not_proceeded": "Не указан"
-                },
-                "order_position": {
-                    "pieces_shortcut": "шт",
-                    "add_dish_button": "Добавить блюдо"
-                },
-                "order_courier_info": {
-                    "set_status_to_preparing_for_couriers": "Назначьте заказу статус готовится чтобы курьеры видели его",
-                    "searching_for_couriers": "Ищем курьера",
-                    "courier_was_found": "Курьер найден"
-                },
-                "table_number": "Номер столика",
-                "town": "Город",
-                "full_address": "Полный адрес",
-                "main_phone": "Основной телефон",
-                "second_phone": "Дополнительный телефон",
-                "payment_type": "Способ оплаты",
-                "total_price_of_products": "Сумма товаров",
-                "price_of_shipping": "Цена доставки",
-                "final_price": "Итого",
-                "comments": "Комментарии"
-            },
-            "shipping": {
-                "headline": "Доставка",
-                "shipping_price": {
-                    "headline": "Стоимость доставки в вашем заведении",
-                    "input_placeholder": "кол-во"
-                },
-                "shipping_time": {
-                    "label": "Приблизительное время доставки",
-                    "from": "От",
-                    "to": "До",
-                    "save": "Сохранить"
-                },
-                "shipping_work_hours": {
-                    "label": "Часы работы доставки"
-                },
-                "shipping_delivery_type": {
-                    "headline": "Способ доставки"
-                },
-                "shipping_add_commission_to_dish_prices": {
-                    "headline": "Добавлять комиссию службы доставки к цене товаров"
-                },
-                "shipping_free_delivery_prices": {
-                    "headline": "Бесплатная доставка в вашем заведении"
-                },
-                "shipping_map": {
-                    "checkmark_headline": "Если ваше заведение имеет доставку поставьте галочку",
-                    "checkmark_label": "Доставка",
-                    "headline": "Выберите области в которые вы доставляете",
-                    "not_selected_geolocation_warning": "Пожалуйста отметьте местоположение заведения на главной странице админской панели",
-                    "go_to_admin_panel": "Перейти к главной странице",
-                    "buttons": {
-                        "select_and_delete_area": "Выбрать и удалить область",
-                        "save_all": "Сохранить все"
-                    }
-                },
-                "shipping_min_order_prices": {
-                    "headline": "Минимальная сумма заказа"
-                }
-            }
-        },
-        "pub": {},
-        "categories": {
-            "add_category_button": "Добавить категорию",
-            "category_types": {
-                "sales": "Акции",
-                "asian": "Азиатская кухня",
-                "flowers": "Цветы",
-                "fast_food": "Фастфуд",
-                "breakfast": "Завтрак",
-                "grill": "Грилль",
-                "dessert": "Дессерты",
-                "pasta": "Паста",
-                "pancakes": "Блины",
-                "soup": "Супы",
-                "other": "Другое",
-                "alcohol": "Алкоголь",
-                "east_food": "Восточная кухня",
-                "flour": "Мучные блюда",
-                "home_food": "Домашняя еда",
-                "kebab": "Кебаб",
-                "salad": "Салаты",
-                "snacks": "Закуски",
-                "meat": "Мясные блюда",
-                "groceries": "Продукты"
-            },
-            "service_types": {
-                "food": "Еда",
-                "flowers": "Цветы",
-                "groceries": "Продукты"
-            },
-            "promo": {
-                "title": "Скидки и хиты",
-                "subtitle": "Все товары со скидкой или отмеченные как хит",
-                "virtual_badge": "Только в панели",
-                "discounts_count": "Скидок: {{count}}",
-                "hits_count": "Хитов: {{count}}",
-                "explainer": "Это не настоящая категория — её нет на сервере и клиенты её не видят. Здесь собраны товары из всех меню заведения; изменения сохраняются в ту категорию, где товар лежит на самом деле.",
-                "empty": "Ничего не найдено",
-                "filters": {
-                    "all": "Все",
-                    "discounts": "Со скидкой",
-                    "hits": "Хиты"
-                }
-            }
-        },
-        "dishes": {
-            "add_dish_button": "Добавить блюдо",
-            "upper": {
-                "return_back": "Вернуться назад"
-            },
-            "dish_types": {
-                "salad": "Салат",
-                "soup": "Суп",
-                "burger": "Бургер",
-                "pizza": "Пицца",
-                "pasta": "Паста",
-                "drink": "Напиток",
-                "sushi": "Суши",
-                "other": "Другое"
-            },
-            "is_hit_badge": "Хит",
-            "not_available_badge": "Нет в наличии"
-        },
-        "popups": {
-            "upgrade_tariff_popup": {
-                "header": "Изменить тариф",
-                "main_headline": "Для изменения тарифа обратитесь к администратору"
-            },
-            "pay_for_pub_popup": {
-                "header": "Оплатить заведение",
-                "main_headline": "Для оплаты обратитесь к администратору"
-            },
-            "create_pub_popup": {
-                "headline": "Добавить заведение",
-                "name": "Название заведения",
-                "url_name": "Название заведения в URL",
-                "create_button": "Добавить"
-            },
-            "update_pub_popup": {
-                "headline": "Редактировать заведение",
-                "name": "Название заведения",
-                "wifi_password": "Пароль от Wi-Fi",
-                "currency": "Валюта",
-                "favorite_color": "Предпочитаемый цвет",
-                "has_in_place_order": "Заказ внутри ресторана",
-                "yes": "Да",
-                "no": "Нет",
-                "theme": {
-                    "title": "Тема",
-                    "light": "Светлая",
-                    "dark": "Темная"
-                },
-                "address": "Адрес",
-                "telegram_username": "Username в телеграме",
-                "additional_info": "Дополнительная информация",
-                "save_button": "Сохранить",
-                "service_type": "Тип сервиса"
-            },
-            "delete_pub_popup": {
-                "headline": "Удалить заведение",
-                "text": "Вы уверены, что хотите удалить заведение?",
-                "warning": "После удаления нельзя будет восстановить данные.",
-                "delete_button": "Удалить"
-            },
-            "create_category_popup": {
-                "headline": "Добавить категорию",
-                "name": "Название категории",
-                "category_type": "Тип категории",
-                "text_color": "Цвет текста",
-                "visible": "Видимость",
-                "create_button": "Добавить"
-            },
-            "update_category_popup": {
-                "headline": "Редактировать категорию",
-                "name": "Название категории",
-                "category_type": "Тип категории",
-                "text_color": "Цвет текста",
-                "visible": "Видимость",
-                "save_button": "Сохранить"
-            },
-            "delete_category_popup": {
-                "headline": "Удалить категорию",
-                "text": "Вы уверены, что хотите удалить категорию?",
-                "warning": "После удаления нельзя будет восстановить данные.",
-                "delete_button": "Удалить"
-            },
-            "create_menu_popup": {
-                "headline": "Добавить меню",
-                "name": "Название меню",
-                "visible": "Видимость",
-                "create_button": "Добавить"
-            },
-            "update_menu_popup": {
-                "headline": "Редактировать меню",
-                "name": "Название меню",
-                "visible": "Видимость",
-                "save_button": "Сохранить"
-            },
-            "delete_menu_popup": {
-                "headline": "Удалить меню",
-                "text": "Вы уверены, что хотите удалить меню?",
-                "warning": "После удаления нельзя будет восстановить данные.",
-                "delete_button": "Удалить"
-            },
-            "create_dish_popup": {
-                "headline": "Добавить блюдо",
-                "name": "Название блюда",
-                "dish_type": "Тип блюда",
-                "description": "Описание",
-                "ingredients": "Ингридиенты",
-                "text_color": "Цвет текста",
-                "price": "Цена",
-                "sale_price": "Цена с учетом скидки(если скидки нет оставьте поле пустым)",
-                "visible": "Видимость",
-                "category": "Категория",
-                "create_button": "Добавить",
-                "is_hit": "Хит продаж",
-                "available": "В наличии"
-            },
-            "update_dish_popup": {
-                "headline": "Редактировать блюдо",
-                "name": "Название блюда",
-                "description": "Описание",
-                "dish_type": "Тип блюда",
-                "ingredients": "Ингридиенты",
-                "text_color": "Цвет текста",
-                "price": "Цена",
-                "visible": "Видимость",
-                "category": "Категория",
-                "save_button": "Сохранить",
-                "is_hit": "Хит продаж",
-                "available": "В наличии"
-            },
-            "delete_dish_popup": {
-                "headline": "Удалить блюдо",
-                "text": "Вы уверены, что хотите удалить блюдо?",
-                "warning": "После удаления нельзя будет восстановить данные.",
-                "delete_button": "Удалить"
-            },
-            "add_dish_to_order_popup": {
-                "headline": "Выберите блюдо, затем укажите количество",
-                "add_dish": "Добавить"
-            },
-            "delete_dish_from_order_popup": {
-                "headline": "Удалить блюдо из заказа",
-                "warning": "Вы уверены, что хотите удалить блюдо из заказа?",
-                "delete_button": "Удалить"
-            },
-            "courier_reserve_order_popup": {
-                "headline": "Вы уверены что хотите взять заказ"
-            }
-        }
-    },
-    "courier": {
-        "order_payment_types": {
-            "cash": "Наличными",
-            "card_offline": "Картой курьеру",
-            "not_proceeded": "Не указан"
-        },
-        "courier_order_types": {
-            "available": "Доступные",
-            "active": "Активные",
-            "completed": "Доставленные"
-        },
-        "courier_order": {
-            "reserve_order": "Взять заказ",
-            "set_order_to_completed": "Доставлен",
-            "set_order_to_canceled": "Отменить заказ",
-            "order": "Заказ",
-            "where": "Куда",
-            "client_name": "Имя клиента",
-            "client_main_phone": "Основной телефон клиента",
-            "client_second_phone": "Доп. телефон клиента",
-            "comments": "Комментарии",
-            "positions": "Позиции",
-            "products_price": "Цена продуктов",
-            "delivery_price": "Цена доставки",
-            "total_from_client": "Всего с клиента",
-            "pieces_shortcut": "шт",
-            "you_reserved_order": "Вы взяли заказ, отправляйтесь в ресторан чтобы забрать его",
-            "you_delivered_order": "Вы доставили заказ, посмотреть информацию о нем можно в разделе доставленные"
-        },
-        "courier_profile_inputs": {
-            "headline": "Ваши данные",
-            "name": {
-                "label": "Фамилия Имя"
-            },
-            "phone_number": {
-                "label": "Номер телефона"
-            },
-            "gender": {
-                "label": "Пол"
-            },
-            "birth_date": {
-                "label": "Дата рождения"
-            },
-            "location": {
-                "label": "Место проживаня"
-            },
-            "telegram": {
-                "label": "Telegram"
-            }
-        }
-    }
+    "address": "Адрес",
+    "telegram_username": "Username в телеграме",
+    "additional_info": "Дополнительная информация",
+    "save_button": "Сохранить",
+    "service_type": "Тип сервиса"
+   },
+   "delete_pub_popup": {
+    "headline": "Удалить заведение",
+    "text": "Вы уверены, что хотите удалить заведение?",
+    "warning": "После удаления нельзя будет восстановить данные.",
+    "delete_button": "Удалить"
+   },
+   "create_category_popup": {
+    "headline": "Добавить категорию",
+    "name": "Название категории",
+    "category_type": "Тип категории",
+    "text_color": "Цвет текста",
+    "visible": "Видимость",
+    "create_button": "Добавить"
+   },
+   "update_category_popup": {
+    "headline": "Редактировать категорию",
+    "name": "Название категории",
+    "category_type": "Тип категории",
+    "text_color": "Цвет текста",
+    "visible": "Видимость",
+    "save_button": "Сохранить"
+   },
+   "delete_category_popup": {
+    "headline": "Удалить категорию",
+    "text": "Вы уверены, что хотите удалить категорию?",
+    "warning": "После удаления нельзя будет восстановить данные.",
+    "delete_button": "Удалить"
+   },
+   "create_menu_popup": {
+    "headline": "Добавить меню",
+    "name": "Название меню",
+    "visible": "Видимость",
+    "create_button": "Добавить"
+   },
+   "update_menu_popup": {
+    "headline": "Редактировать меню",
+    "name": "Название меню",
+    "visible": "Видимость",
+    "save_button": "Сохранить"
+   },
+   "delete_menu_popup": {
+    "headline": "Удалить меню",
+    "text": "Вы уверены, что хотите удалить меню?",
+    "warning": "После удаления нельзя будет восстановить данные.",
+    "delete_button": "Удалить"
+   },
+   "create_dish_popup": {
+    "headline": "Добавить блюдо",
+    "name": "Название блюда",
+    "dish_type": "Тип блюда",
+    "description": "Описание",
+    "ingredients": "Ингридиенты",
+    "text_color": "Цвет текста",
+    "price": "Цена",
+    "sale_price": "Цена с учетом скидки(если скидки нет оставьте поле пустым)",
+    "visible": "Видимость",
+    "category": "Категория",
+    "create_button": "Добавить",
+    "is_hit": "Хит продаж",
+    "available": "В наличии",
+    "availability_schedule": "Доступно по расписанию (одинаковое время каждый день)",
+    "modifier_groups": "Модификаторы"
+   },
+   "update_dish_popup": {
+    "headline": "Редактировать блюдо",
+    "name": "Название блюда",
+    "description": "Описание",
+    "dish_type": "Тип блюда",
+    "ingredients": "Ингридиенты",
+    "text_color": "Цвет текста",
+    "price": "Цена",
+    "visible": "Видимость",
+    "category": "Категория",
+    "save_button": "Сохранить",
+    "is_hit": "Хит продаж",
+    "available": "В наличии",
+    "availability_schedule": "Доступно по расписанию (одинаковое время каждый день)",
+    "modifier_groups": "Модификаторы"
+   },
+   "delete_dish_popup": {
+    "headline": "Удалить блюдо",
+    "text": "Вы уверены, что хотите удалить блюдо?",
+    "warning": "После удаления нельзя будет восстановить данные.",
+    "delete_button": "Удалить"
+   },
+   "bulk_price_popup": {
+    "headline": "Изменить цены категории",
+    "percent": "Изменение цены, % (например 10 или -15)",
+    "description": "Применяется ко всем блюдам категории. Цена со скидкой не меняется.",
+    "apply_button": "Применить"
+   },
+   "add_dish_to_order_popup": {
+    "headline": "Выберите блюдо, затем укажите количество",
+    "add_dish": "Добавить"
+   },
+   "delete_dish_from_order_popup": {
+    "headline": "Удалить блюдо из заказа",
+    "warning": "Вы уверены, что хотите удалить блюдо из заказа?",
+    "delete_button": "Удалить"
+   },
+   "courier_reserve_order_popup": {
+    "headline": "Вы уверены что хотите взять заказ"
+   }
+  }
+ },
+ "courier": {
+  "order_payment_types": {
+   "cash": "Наличными",
+   "card_offline": "Картой курьеру",
+   "not_proceeded": "Не указан"
+  },
+  "courier_order_types": {
+   "available": "Доступные",
+   "active": "Активные",
+   "completed": "Доставленные"
+  },
+  "courier_order": {
+   "reserve_order": "Взять заказ",
+   "set_order_to_completed": "Доставлен",
+   "set_order_to_canceled": "Отменить заказ",
+   "order": "Заказ",
+   "where": "Куда",
+   "client_name": "Имя клиента",
+   "client_main_phone": "Основной телефон клиента",
+   "client_second_phone": "Доп. телефон клиента",
+   "comments": "Комментарии",
+   "positions": "Позиции",
+   "products_price": "Цена продуктов",
+   "delivery_price": "Цена доставки",
+   "total_from_client": "Всего с клиента",
+   "pieces_shortcut": "шт",
+   "you_reserved_order": "Вы взяли заказ, отправляйтесь в ресторан чтобы забрать его",
+   "you_delivered_order": "Вы доставили заказ, посмотреть информацию о нем можно в разделе доставленные",
+   "ready_banner": "Готово к выдаче — заберите заказ",
+   "ready_title": "Заказ можно забирать",
+   "ready_desc": "Ресторан отметил, что заказ готов",
+   "route_label": "Маршрут",
+   "pickup_label": "Забрано",
+   "dropoff_label": "Доставить",
+   "payment_label": "Оплата",
+   "give_to_pub": "Отдать в ресторан",
+   "your_earning": "Ваш заработок",
+   "cant_fulfill": "Не могу выполнить заказ",
+   "cancel_confirm": "Отменить заказ?",
+   "cancel_confirm_yes": "Да, отменить",
+   "cancel_confirm_no": "Нет"
+  },
+  "courier_profile_inputs": {
+   "headline": "Ваши данные",
+   "name": {
+    "label": "Фамилия Имя"
+   },
+   "phone_number": {
+    "label": "Номер телефона"
+   },
+   "gender": {
+    "label": "Пол"
+   },
+   "birth_date": {
+    "label": "Дата рождения"
+   },
+   "location": {
+    "label": "Место проживаня"
+   },
+   "telegram": {
+    "label": "Telegram"
+   }
+  },
+  "balance": {
+   "headline": "Баланс",
+   "request_payout": "Запросить выплату",
+   "history": "История",
+   "today": "Сегодня, Lei",
+   "week": "Неделя, Lei",
+   "orders_week": "Заказов, нед.",
+   "cash_on_hand": "Наличные на руках",
+   "cash_on_hand_desc": "{{count}} заказ(ов) ожидают передачи",
+   "language": "Язык интерфейса"
+  }
+ }
 }

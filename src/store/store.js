@@ -20,6 +20,7 @@ import { pub } from "../api/pub/pub";
 import { menu } from "../api/menu/menu";
 import { category } from "../api/categories/category";
 import { dish } from "../api/dish/dish";
+import { modifiers } from "../api/modifiers/modifiers";
 import { orders } from "../api/orders/orders";
 import { courier } from "../api/courier/courier";
 import { admin } from "../api/admin/admin";
@@ -46,6 +47,7 @@ export const store = configureStore({
         [menu.reducerPath]: menu.reducer,
         [category.reducerPath]: category.reducer,
         [dish.reducerPath]: dish.reducer,
+        [modifiers.reducerPath]: modifiers.reducer,
         [orders.reducerPath]: orders.reducer,
         [admin.reducerPath]: admin.reducer,
     },
@@ -58,6 +60,7 @@ export const store = configureStore({
         menu.middleware,
         category.middleware,
         dish.middleware,
+        modifiers.middleware,
         orders.middleware
     ),
 })

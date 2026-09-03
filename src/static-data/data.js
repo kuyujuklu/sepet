@@ -35,10 +35,6 @@ export const categoryTypes = {
     value: "asian",
     text: "admin.categories.category_types.asian",
   },
-  Flowers: {
-    value: "flowers",
-    text: "admin.categories.category_types.flowers",
-  },
   FastFood: {
     value: "fast_food",
     text: "admin.categories.category_types.fast_food",
@@ -105,11 +101,6 @@ export const categoryTypes = {
 
     value: "meat",
     text: "admin.categories.category_types.meat",
-  },
-  Groceries: {
-
-    value: "groceries",
-    text: "admin.categories.category_types.groceries",
   },
   Other: {
     value: "other",
