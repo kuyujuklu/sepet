@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { AppState, BackHandler, StyleSheet } from "react-native";
+import { AppState, BackHandler, Linking, StyleSheet } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import * as Notifications from "expo-notifications";
@@ -77,6 +77,28 @@ export default function App() {
     return () => sub.remove();
   }, [sendToPage]);
 
+  // A plain <a href> to Google/Apple Maps or tel: inside the web app would
+  // otherwise either dead-end (WebView has no browser chrome to escape
+  // through) or, worse, navigate the WebView itself to the Maps website -
+  // losing the courier's place in the app. Handing these off to the OS opens
+  // the real Maps/Phone app instead. Everything else (the courier web app's
+  // own pages) returns true and loads in the WebView as normal.
+  const handleShouldStartLoadWithRequest = useCallback((request) => {
+    const { url } = request;
+    const isPhoneCall = url.startsWith("tel:");
+    const isMapsLink =
+      url.startsWith("geo:") ||
+      url.includes("google.com/maps") ||
+      url.includes("maps.apple.com");
+
+    if (isPhoneCall || isMapsLink) {
+      Linking.openURL(url).catch(() => {});
+      return false;
+    }
+
+    return true;
+  }, []);
+
   const handleMessage = useCallback(
     (event) => {
       let body;
@@ -115,6 +137,7 @@ export default function App() {
           style={styles.webview}
           injectedJavaScriptBeforeContentLoaded={INJECTED_BEFORE_LOAD}
           onMessage={handleMessage}
+          onShouldStartLoadWithRequest={handleShouldStartLoadWithRequest}
           onNavigationStateChange={() => {
             // A real navigation (not postMessage) means the page reloaded -
             // it will re-run INJECTED_BEFORE_LOAD and re-mount the bridge,
