@@ -227,10 +227,37 @@ func (c *authController) RefreshToken(ctx *fiber.Ctx) error {
 		return h.SendError(ctx, jwterrors.ErrNotValidSignature, h.AUTOMATIC_STATUS_CODE)
 	}
 
-	adminRefreshToken := ctx.Cookies(("admin_refresh_token"))
-	adminClaims, valid, err := c.JwtService.ParseJwtTokenString(adminRefreshToken)
-	if err == nil && valid && adminClaims.RoleName == models.ADMIN_ROLE_NAME {
-		fmt.Println("IS ADDDDDDMIn")
+	// A superadmin who "entered" a venue (see GetPubRefreshToken) only had
+	// their regular refresh_token cookie overwritten with a company-scoped
+	// one - admin_refresh_token is a separate cookie and survives that
+	// untouched. Restoring it is opt-in (?as=admin) and NOT the ambient
+	// refresh behavior: this endpoint also backs the ordinary ambient
+	// 401-retry that fires constantly while the superadmin is legitimately
+	// browsing inside that venue's own admin panel, and that flow must keep
+	// renewing the company-scoped session it already has, not silently
+	// bounce them back to admin the moment their access token expires
+	// mid-visit. ?as=admin is the explicit "take me back to admin" action
+	// (see the impersonation banner's exit button).
+	wantsAdmin := ctx.Query("as") == "admin"
+	adminRefreshToken := ctx.Cookies("admin_refresh_token")
+	adminClaims, adminValid, adminErr := c.JwtService.ParseJwtTokenString(adminRefreshToken)
+	if wantsAdmin && adminErr == nil && adminValid && adminClaims.RoleName == models.ADMIN_ROLE_NAME {
+		accessToken, err := c.JwtService.GetAccessTokenString(
+			adminClaims.ID,
+			adminClaims.Significance,
+			adminClaims.RoleName,
+			jwtservice.STANDARD_ACCESS_LIFE_TIME)
+		if err != nil {
+			return h.SendError(ctx, servererrors.ErrInternalServerError, h.AUTOMATIC_STATUS_CODE)
+		}
+
+		return h.SendSuccess(
+			ctx,
+			fiber.Map{
+				"accesstoken": accessToken,
+				"role":        adminClaims.RoleName,
+			},
+			fiber.StatusOK)
 	}
 
 	userID := 0
