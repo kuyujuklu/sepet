@@ -25,11 +25,13 @@ export const priceBasket = ({ pub, basketDishes, pubDishes, commission }) => {
 
   // Zone-based delivery pricing is resolved server-side from lat/lng and
   // doesn't depend on whether the pub happens to be open right now.
-  // null/undefined means genuinely unresolved (an address outside every
-  // zone) - the only case with no real price to show.
-  const hasDeliveryPrice =
-    pub?.shipping_price !== null && pub?.shipping_price !== undefined;
-  const zoneDeliveryPrice = hasDeliveryPrice ? +pub.shipping_price : 0;
+  // shipping_price is a plain number field on the backend (Go float64, never
+  // actually null) - it comes back as 0 for an address outside every zone,
+  // same as a genuinely free/zero-cost zone. The real signal for "no real
+  // price to show" is shipping.available, which the server sets to false
+  // in exactly that case (only meaningful once coordinates were sent).
+  const hasDeliveryPrice = pub?.shipping?.available !== false;
+  const zoneDeliveryPrice = hasDeliveryPrice ? +pub.shipping_price || 0 : 0;
 
   const freeDeliveryThreshold = +pub?.shipping_free_delivery_price || 0;
   const isDeliveryFree =
