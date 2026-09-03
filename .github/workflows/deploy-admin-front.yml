@@ -1,0 +1,71 @@
+name: Deploy admin-front
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # There's no standalone admin-front image. The `nginx` branch's
+      # Dockerfile does `COPY admin-build/ /var/www/qrmenu/admin` and gets
+      # built/pushed as alexkalak/qr-nginx, which is the image the server
+      # actually runs (confirmed by reading that Dockerfile directly) - so
+      # deploying an admin-front change means rebuilding THAT image with a
+      # fresh admin-front build inside it, not shipping admin-front alone.
+      - name: Checkout admin-front
+        uses: actions/checkout@v4
+        with:
+          path: admin-front
+
+      - name: Checkout nginx image sources
+        uses: actions/checkout@v4
+        with:
+          ref: nginx
+          path: nginx-image
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        working-directory: admin-front
+        run: npm ci
+
+      - name: Build
+        working-directory: admin-front
+        run: npm run build
+
+      - name: Replace admin-build with fresh build
+        run: |
+          rm -rf nginx-image/admin-build
+          cp -r admin-front/build nginx-image/admin-build
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: nginx-image
+          push: true
+          tags: |
+            alexkalak/qr-nginx:latest
+            alexkalak/qr-nginx:${{ github.sha }}
+
+      # Same compose project as backend/front - service name is qrmenu-nginx.
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DEPLOY_SSH_HOST }}
+          username: ${{ secrets.DEPLOY_SSH_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            cd /var/www/qrmenu
+            docker compose pull qrmenu-nginx
+            docker compose up -d qrmenu-nginx
+            docker image prune -f
