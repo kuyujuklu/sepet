@@ -1,62 +1,54 @@
 import { ConvertQrMenuApiTimeToLocal } from "@/utils/time";
 import { useTranslation } from "react-i18next";
-import { orderStatuses } from "../../../static-data/data";
-import { getOrderColor, translateOrderStatus } from "../../../utils/order-utils";
+import { getOrderColor, getOrderColorTint, translateOrderStatus } from "../../../utils/order-utils";
 
-
-const OrderCard = ({ order, hasArrow = true }) => {
+// Matches the OrderListMobile/OrderListTablet canvas mockup: a colored left
+// border keyed to status, a status pill instead of the old full-border +
+// solid badge, price pulled forward as its own bold line.
+const OrderCard = ({ order }) => {
   const { t, i18n } = useTranslation();
+  const needsCall = order?.client_name === "delivery order from web menu";
+  const statusColor = getOrderColor(order?.status);
 
   return (
     <div
-      className="grid grid-cols-2 relative sm:grid-cols-3 justify-between items-center overflow-visible rounded-2xl gap-y-2 shadow-xl border-gray-300 border px-10 py-5"
+      className="relative rounded-2xl bg-white"
       style={{
-        maxWidth: "900px",
-        border: "solid 2px",
-        borderColor: getOrderColor(order.status),
+        border: "1px solid #e4e9ee",
+        borderLeft: `4px solid ${statusColor}`,
+        boxShadow: "0 1px 2px rgba(20,30,45,.04)",
+        padding: 16,
       }}
     >
-      <div className="font-bold">
-        {t("admin.admin_panel.order_page.order")} №{order?.id}
-      </div>
-      {order?.client_name === "delivery order from web menu" &&
-        <div className="absolute bg-red-500 text-white rounded-xl shadow-xl border-white p-1" style={{ top: -14, right: -10 }}>Обзвонить</div>
-      }
-
-      <div className="truncate overflow-visible" style={{ maxWidth: 130 }}>
-        <div className="truncate overflow-visible">{order?.client_name}</div>
-      </div>
-
-      <div className="flex justify-start sm:justify-end">
+      {needsCall && (
         <div
-          className="w-fit px-6 py rounded-md text-white"
-          style={{ background: getOrderColor(order?.status) }}
+          className="absolute text-white font-bold rounded-full"
+          style={{ top: -9, right: 14, background: statusColor, fontSize: 10.5, padding: "3px 9px" }}
+        >
+          {t("admin.admin_panel.orders_page.call_badge")}
+        </div>
+      )}
+
+      <div className="flex items-center justify-between gap-2" style={{ marginBottom: 6 }}>
+        <div style={{ fontSize: 15, fontWeight: 700 }}>
+          {t("admin.admin_panel.order_page.order")} №{order?.id}
+        </div>
+        <div
+          className="rounded-full flex-shrink-0"
+          style={{ height: 24, padding: "0 10px", fontSize: 12, fontWeight: 600, display: "flex", alignItems: "center", background: getOrderColorTint(order?.status), color: statusColor }}
         >
           {t(translateOrderStatus(order?.status))}
         </div>
       </div>
 
-      <div className="flex justify-between gap-x-4">
-        {ConvertQrMenuApiTimeToLocal(order?.created_time, i18n.language)}
+      <div className="truncate" style={{ fontSize: 13, color: "#526070", marginBottom: 10 }}>
+        {order?.client_name} · {ConvertQrMenuApiTimeToLocal(order?.created_time, i18n.language)}
       </div>
-      <div
-        className="w-fit"
-      >
+
+      <div className="num" style={{ fontSize: 16, fontWeight: 700 }}>
         {order?.total_dishes_price_without_commission?.toFixed(2)} Lei
       </div>
-      <div className="flex justify-start sm:justify-end">
-        <div className="flex justify-between gap-x-4">
-          {hasArrow && (
-            <img
-              src={"/static/admin/images/svg/arrow-right-black.svg"}
-              width={23}
-              height={23}
-              alt="right arrow"
-            />
-          )}
-        </div>
-      </div>
-    </div >
+    </div>
   );
 };
 

@@ -10,28 +10,14 @@ export const orderFilters = {
   canceled: orderStatuses.canceled,
 };
 
-const getFilterColor = (orderStatus) => {
-  switch (orderStatus) {
-    case orderFilters.notHandled:
-      return "#ef4444";
-    case orderFilters.preparing:
-      return "#ed5e21";
-    case orderFilters.atCourier:
-      return "#3b82f6";
-    case orderFilters.completed:
-      return "#059669";
-    case orderFilters.canceled:
-      return "#4a4a48";
-    default:
-      return "#000";
-  }
-};
-
+// Matches the OrderListMobile/OrderListTablet canvas mockup: rounded pills,
+// the active one filled dark (not colored per-status - that distinction
+// already lives on each order card's left border and status chip).
 const OrdersFilter = ({ ordersFilter, setOrdersFilter }) => {
   const { t } = useTranslation();
 
   return (
-    <div className="w-full grid grid-cols-3 gap-y-2 sm:flex items-center justify-center gap-x-2 sm:gap-x-5">
+    <div className="flex flex-wrap" style={{ gap: 8 }}>
       <Filter
         ordersFilter={ordersFilter}
         setOrdersFilter={setOrdersFilter}
@@ -73,19 +59,23 @@ const OrdersFilter = ({ ordersFilter, setOrdersFilter }) => {
 };
 
 const Filter = ({ ordersFilter, setOrdersFilter, selfFilter, text }) => {
-  const { t } = useTranslation();
+  const active = ordersFilter === selfFilter;
   return (
     <button
-      className={`sm:h-fit text-3xs sm:text-xs px-3 py-2 sm:py-2 rounded-lg border border-black ${
-        ordersFilter === selfFilter
-          ? "text-white border-none"
-          : "text-black border border-black"
-      }`}
       style={{
-        background:
-          ordersFilter === selfFilter
-            ? getFilterColor(ordersFilter)
-            : "transparent",
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        height: 36,
+        padding: "0 14px",
+        borderRadius: 20,
+        fontSize: 13,
+        fontWeight: 600,
+        flexShrink: 0,
+        background: active ? "#1c2733" : "transparent",
+        color: active ? "#fff" : "#526070",
+        border: active ? "none" : "1.5px solid #e4e9ee",
+        cursor: "pointer",
       }}
       onClick={() => setOrdersFilter(selfFilter)}
     >

@@ -27,6 +27,24 @@ export const formatDate = (date) => {
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 }
 
+// "08:30" -> 510 (minutes since midnight). Used for the dish availability
+// window, same minutes-since-midnight convention the backend already uses
+// for shipping work hours.
+export const hhmmToMinutes = (hhmm) => {
+  if (!hhmm) return 0;
+
+  const [hours, minutes] = hhmm.split(":").map(Number);
+  return (hours || 0) * 60 + (minutes || 0);
+};
+
+// 510 -> "08:30"
+export const minutesToHhmm = (minutes) => {
+  const clamped = Math.max(0, Math.min(1439, minutes || 0));
+  const hours = Math.floor(clamped / 60);
+  const mins = clamped % 60;
+  return `${String(hours).padStart(2, "0")}:${String(mins).padStart(2, "0")}`;
+};
+
 export const ConvertQrMenuApiTimeToLocal = (time, lang) => {
   const locale = lang === "ro" ? "ro-RO" : "ru-RU";
   const date = GetUtcDateFromApiTime(time);

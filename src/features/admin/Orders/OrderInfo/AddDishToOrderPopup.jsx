@@ -78,8 +78,18 @@ const AddDishToOrderPopup = () => {
       return;
     }
 
-    const newDishes = popupState?.currentDishes ? [...popupState.currentDishes] : [];
-
+    // currentDishes entries are {dish_id, count, dish_price} (the read
+    // shape) - update-dishes only understands `price`, so this maps that
+    // over for every existing line. Without it, adding a dish would silently
+    // reset every other line's price back to the pub's *current* menu price
+    // instead of what the order was actually placed at.
+    const newDishes = popupState?.currentDishes
+      ? popupState.currentDishes.map((item) => ({
+          dish_id: item.dish_id,
+          count: item.count,
+          price: item.dish_price,
+        }))
+      : [];
 
     const index = newDishes.findIndex((item) => item.dish_id === selectedDishID)
     if(index === -1) {
@@ -88,6 +98,7 @@ const AddDishToOrderPopup = () => {
         newDishes[index] = {
             dish_id: newDishes[index].dish_id,
             count: newDishes[index].count + intCount,
+            price: newDishes[index].price,
         }
     }
 

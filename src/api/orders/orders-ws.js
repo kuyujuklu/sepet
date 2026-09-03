@@ -98,7 +98,22 @@ const configureSocket = async (companyID, pubID) => {
   }
 
   // socket = new WebSocket(`ws://${document.location.host}/ws/orders/company/${companyID}/pub/${pubID}`);
-  socket = new WebSocket(`${process.env.NODE_ENV === "production" ? "wss" : "ws"}://${process.env.API_SERV ?? window.location.host}/ws/orders/company/${companyID}/pub/${pubID}?access_token=${accesstoken}`);
+  // Connects directly to the real backend rather than through the local
+  // proxy - webpack-dev-server's proxying (both the package.json "proxy"
+  // string and a manual setupProxy.js) only forwards the http 'upgrade'
+  // event for a path that has already seen a plain HTTP request first, so a
+  // WS-only path like this one hangs forever going through it (confirmed:
+  // the handshake never opens, errors, or closes). Going direct is fine
+  // here specifically because auth travels in the access_token query param,
+  // not a cookie - there's no CORS-credentials wildcard-origin conflict the
+  // way there was for the cookie-based refresh-token fetch.
+  // wss only for a real remote host - a local plain-http backend (e.g.
+  // localhost:9999 during local dev) has no TLS to speak wss over.
+  const wsScheme =
+    process.env.REACT_APP_API_SERV && !process.env.REACT_APP_API_SERV.startsWith("localhost")
+      ? "wss"
+      : "ws";
+  socket = new WebSocket(`${wsScheme}://${process.env.REACT_APP_API_SERV ?? window.location.host}/ws/orders/company/${companyID}/pub/${pubID}?access_token=${accesstoken}`);
   setConnection({ state: SOCKET_IS_CONNECTING_STATE, error: null })
   isSocketConnecting = true;
 

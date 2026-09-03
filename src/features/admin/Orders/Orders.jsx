@@ -1,26 +1,26 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import { selectOrders } from "./ordersSlice";
 import OrderCard from "./OrderCard";
 import { GetUtcDateFromApiTime } from "@/utils/time";
-import { NavLink, useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { NavLink, useParams } from "react-router-dom";
 import { orderStatuses } from "../../../static-data/data";
 import { useTranslation } from "react-i18next";
 import OrdersFilter, { orderFilters } from "./OrdersFilter";
+import usePageTitle from "@/hooks/usePageTitle";
+import PageHeader from "@/components/design/PageHeader";
 
 const Orders = () => {
     const { t } = useTranslation();
+    usePageTitle(t("admin.admin_panel.orders_page.headline"));
     const orders = useSelector(selectOrders);
+    const pubID = useParams().pubID;
 
-    
-    const navigate = useNavigate()
-
-    const setOrdersFilter = (value) => {
-        navigate(null, {state: {ordersFilter: value}})
-    }
-
-    const {state} = useLocation()
-    const ordersFilter = state?.ordersFilter ?? orderFilters.all
+    // Local UI state, not a navigation step - switching filters used to go
+    // through navigate(null, {state}), which pushed a new history entry per
+    // click, so the back button walked through every filter you'd ever
+    // clicked before it would actually leave the page.
+    const [ordersFilter, setOrdersFilter] = useState(orderFilters.all);
 
 
     const sortedOrders = useMemo(() => {
@@ -57,39 +57,33 @@ const Orders = () => {
     }, [orders]);
 
     return (
-        <div
-            className="flex flex-col gap-3 justify-center items-center m-auto"
-            style={{ maxWidth: 900 }}
-        >
-            <h1 className="text-center text-gray-800 text-xl font-bold mt-2">
-                {t("admin.admin_panel.orders_page.headline")}
-            </h1>
+        <div className="mx-auto w-full max-w-[620px] lg:max-w-[1080px] flex flex-col gap-4" style={{ padding: "16px 8px 40px" }}>
+            <PageHeader title={t("admin.admin_panel.orders_page.headline")} backTo={`/admin/pub/${pubID}`} />
 
-            <OrdersFilter
-                ordersFilter={ordersFilter ?? orderFilters.all}
-                setOrdersFilter={setOrdersFilter}
-            />
+            <div className="flex items-center justify-between flex-wrap gap-3">
+                <OrdersFilter
+                    ordersFilter={ordersFilter ?? orderFilters.all}
+                    setOrdersFilter={setOrdersFilter}
+                />
+                <div style={{ fontSize: 13, color: "#526070" }}>
+                    {t("admin.admin_panel.orders_page.active_orders")}:{" "}
+                    <span style={{ fontWeight: 700, color: "#1c2733" }}>{notCompletedOrders}</span>
+                </div>
+            </div>
 
             {(!sortedOrders || sortedOrders?.length === 0) && (
-                <span className="font-bold text-lg">
+                <div style={{ fontSize: 14, color: "#94a3b0" }}>
                     {t("admin.admin_panel.orders_page.no_orders")}
-                </span>
+                </div>
             )}
-            {sortedOrders && (
-                <>
-                    {t("admin.admin_panel.orders_page.active_orders")}:{" "}
-                    {notCompletedOrders}
-                    {sortedOrders.map((item) => (
-                        <NavLink
-                            key={item.id}
-                            to={`/admin/pub/${item.pub_id}/order/${item.id}`}
-                            className="cursor-pointer w-full block"
-                        >
-                            <OrderCard order={item} />
-                        </NavLink>
-                    ))}
-                </>
-            )}
+
+            <div className="grid grid-cols-1 lg:grid-cols-3" style={{ gap: 14 }}>
+                {sortedOrders?.map((item) => (
+                    <NavLink key={item.id} to={`/admin/pub/${item.pub_id}/order/${item.id}`}>
+                        <OrderCard order={item} />
+                    </NavLink>
+                ))}
+            </div>
         </div>
     );
 };

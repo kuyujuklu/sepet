@@ -1,5 +1,4 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { selectDeletePubPopupState } from "../../pub/pubSlice";
 
 const initialState = {
   orders: null,
@@ -23,12 +22,6 @@ const initialState = {
     orderID: null,
     currentDishes: null,
   },
-  updateOrderApproximateTimePopup: {
-    opened: false,
-    pubID: null,
-    companyID: null,
-    orderID: null,
-  }
 };
 
 export const ordersSlice = createSlice({
@@ -97,12 +90,6 @@ export const ordersSlice = createSlice({
       state.addDishToOrderPopupPopupState.currentDishes = action.payload?.currentDishes;
       state.addDishToOrderPopupPopupState.pubUrlName = action.payload?.pubUrlName;
     },
-    setUpdateOrderApproximateTimePopup(state, action) {
-      state.updateOrderApproximateTimePopup.opened = action.payload?.opened;
-      state.updateOrderApproximateTimePopup.pubID = action.payload?.pubID;
-      state.updateOrderApproximateTimePopup.companyID = action.payload?.companyID;
-      state.updateOrderApproximateTimePopup.orderID = action.payload?.orderID;
-    },
   },
 });
 
@@ -113,7 +100,6 @@ export const {
   setOrdersPreloader,
   setDeleteFromOrderDishPopupState,
   setAddDishToOrderPopup,
-  setUpdateOrderApproximateTimePopup
 } = ordersSlice.actions;
 
 export const selectOrders = (state) => state.orders.orders;
@@ -121,6 +107,5 @@ export const selectOrdersPreloader = (state) => state.orders.ordersPreloader;
 export const selectDeleteDishFromOrderPopupState = (state) =>
   state.orders.deleteDishPopupState;
 export const selectAddDishToOrderPopup = (state) => state.orders.addDishToOrderPopupPopupState
-export const selectUpdateOrderApproximateTimePopup = (state) => state.orders.updateOrderApproximateTimePopup
 
 export default ordersSlice.reducer;

@@ -4,7 +4,7 @@ import { authenticationBasedQuery } from "../auth/authBasedQuery";
 export const orders = createApi({
   reducerPath: "ordersQuery",
   baseQuery: authenticationBasedQuery,
-  tagTypes: ["Orders"],
+  tagTypes: ["Orders", "StatusEvents"],
   endpoints: (builder) => ({
     // getOrders: builder.query({
     //     query: ({ companyID, pubID }) => ({
@@ -18,14 +18,26 @@ export const orders = createApi({
         url: `/api/company/${companyID}/pubs/${pubID}/orders/${orderID}/update-status?status=${status}`,
         method: "PUT",
       }),
-      invalidatesTags: ["Orders"],
+      invalidatesTags: (result, error, { orderID }) => [
+        "Orders",
+        { type: "StatusEvents", id: orderID },
+      ],
     }),
-    updateOrderDeliveryPrice: builder.mutation({
-      query: ({ companyID, pubID, orderID, price }) => ({
-        url: `/api/company/${companyID}/pubs/${pubID}/orders/${orderID}/update-delivery-price?price=${price}`,
-        method: "PUT",
+    getOrderStatusEvents: builder.query({
+      query: ({ companyID, pubID, orderID }) => ({
+        url: `/api/company/${companyID}/pubs/${pubID}/orders/${orderID}/status-events`,
+        method: "GET",
       }),
-      invalidatesTags: ["Orders"],
+      providesTags: (result, error, { orderID }) => [
+        { type: "StatusEvents", id: orderID },
+      ],
+    }),
+    getEstimatedPreparingMinutes: builder.query({
+      query: ({ companyID, pubID, shapeID }) => ({
+        url: `/api/company/${companyID}/pubs/${pubID}/orders/estimated-preparing-minutes${shapeID ? `?shape_id=${shapeID}` : ""
+          }`,
+        method: "GET",
+      }),
     }),
     updateOrderDishes: builder.mutation({
       query: ({ companyID, pubID, orderID, dishes }) => ({
@@ -37,33 +49,12 @@ export const orders = createApi({
       }),
       invalidatesTags: ["Orders"],
     }),
-    updatePrepared: builder.mutation({
-      query: ({ companyID, pubID, orderID, prepared }) => ({
-        url: `/api/company/${companyID}/pubs/${pubID}/orders/${orderID}/update-prepared`,
-        method: "PUT",
-        body: {
-          prepared
-        },
-      }),
-      invalidatesTags: ["Orders"],
-    }),
-    updateApproximatePreparationTime: builder.mutation({
-      query: ({ companyID, pubID, orderID, time }) => ({
-        url: `/api/company/${companyID}/pubs/${pubID}/orders/${orderID}/update-approximate-preparation-time`,
-        method: "PUT",
-        body: {
-          approximate_preparation_time: time
-        },
-      }),
-      invalidatesTags: ["Orders"],
-    }),
   }),
 });
 
 export const {
   useUpdateOrderStatusMutation,
   useUpdateOrderDishesMutation,
-  useUpdateOrderDeliveryPriceMutation,
-  useUpdatePreparedMutation,
-  useUpdateApproximatePreparationTimeMutation
+  useGetOrderStatusEventsQuery,
+  useGetEstimatedPreparingMinutesQuery,
 } = orders;
