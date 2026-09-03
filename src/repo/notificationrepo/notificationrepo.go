@@ -14,6 +14,7 @@ import (
 type NotificationRepo interface {
 	GetNotificationSubscription(phone string) (models.NotificationSubscription, error)
 	GetAllSubscriptions() ([]models.NotificationSubscription, error)
+	GetSubscriptionsByClientIDs(clientIDs []int) ([]models.NotificationSubscription, error)
 	CreateSubscriptionSubscription(phone, token, lang string) (models.NotificationSubscription, error)
 	UpdateNotificationSubscriptionToken(phone, token, lang string) (models.NotificationSubscription, error)
 }
@@ -95,6 +96,23 @@ func (r *notificationRepo) UpdateNotificationSubscriptionToken(phone, token, lan
 func (r *notificationRepo) GetAllSubscriptions() ([]models.NotificationSubscription, error) {
 	subs := make([]models.NotificationSubscription, 0)
 	resp := r.Database.Find(&subs)
+	if resp.Error != nil {
+		return nil, notificationerrors.ErrUnableToGetNotification
+	}
+	return subs, nil
+}
+
+// GetSubscriptionsByClientIDs is GetAllSubscriptions narrowed to a specific
+// set of clients - used when a caller already knows which clients it cares
+// about (e.g. a push campaign targeting one venue's customers) and would
+// otherwise pull every subscription in the system just to filter almost all
+// of it back out in Go.
+func (r *notificationRepo) GetSubscriptionsByClientIDs(clientIDs []int) ([]models.NotificationSubscription, error) {
+	subs := make([]models.NotificationSubscription, 0)
+	if len(clientIDs) == 0 {
+		return subs, nil
+	}
+	resp := r.Database.Where("client_id IN ?", clientIDs).Find(&subs)
 	if resp.Error != nil {
 		return nil, notificationerrors.ErrUnableToGetNotification
 	}

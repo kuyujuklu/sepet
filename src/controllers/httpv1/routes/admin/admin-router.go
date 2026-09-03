@@ -8,6 +8,7 @@ import (
 	"github.com/alexkalak/qrmenu/src/services/notificationservice"
 	"github.com/alexkalak/qrmenu/src/services/orderservice"
 	"github.com/alexkalak/qrmenu/src/services/pubservice"
+	"github.com/alexkalak/qrmenu/src/services/pushcampaignservice"
 	"github.com/alexkalak/qrmenu/src/services/shippingcopypresetservice"
 	"github.com/alexkalak/qrmenu/src/services/telegramservice"
 	"github.com/gofiber/fiber/v2"
@@ -22,6 +23,7 @@ type adminController struct {
 	NotificationService       notificationservice.NotificationService
 	TelegramService           telegramservice.TelegramService
 	ShippingCopyPresetService shippingcopypresetservice.ShippingCopyPresetService
+	PushCampaignService       pushcampaignservice.PushCampaignService
 }
 
 func New() *adminController {
@@ -40,6 +42,7 @@ func New() *adminController {
 
 		TelegramService:           tservice,
 		ShippingCopyPresetService: shippingcopypresetservice.New(),
+		PushCampaignService:       pushcampaignservice.New(),
 	}
 }
 
@@ -67,4 +70,9 @@ func (c *adminController) Router(router fiber.Router) {
 	router.Put("/shipping-copy-presets/:presetID<int>", c.UpdateShippingCopyPreset)
 	router.Post("/shipping-copy-presets/:presetID<int>/mark-applied", c.MarkShippingCopyPresetApplied)
 	router.Delete("/shipping-copy-presets/:presetID<int>", c.DeleteShippingCopyPreset)
+
+	router.Get("/push-campaigns", c.GetAllPushCampaigns)
+	router.Post("/push-campaigns", c.CreatePushCampaign)
+	router.Get("/push-campaigns/audience-preview", c.PreviewPushCampaignAudience)
+	router.Post("/push-campaigns/test-send", c.TestSendPushCampaign)
 }

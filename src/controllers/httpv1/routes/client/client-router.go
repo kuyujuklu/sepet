@@ -13,6 +13,7 @@ import (
 	"github.com/alexkalak/qrmenu/src/services/orderservice"
 	"github.com/alexkalak/qrmenu/src/services/osrmservice"
 	"github.com/alexkalak/qrmenu/src/services/pubservice"
+	"github.com/alexkalak/qrmenu/src/services/pushcampaignservice"
 	"github.com/alexkalak/qrmenu/src/services/roleservice"
 	"github.com/gofiber/fiber/v2"
 )
@@ -28,6 +29,7 @@ type clientController struct {
 	RoleService                       roleservice.RoleService
 	OrderService                      orderservice.OrderService
 	DistanceService                   osrmservice.OsrmService
+	PushCampaignService               pushcampaignservice.PushCampaignService
 	ClientApplicationNewestVersion    string
 	ClientApplicationMinActiveVersion string
 }
@@ -44,6 +46,7 @@ func New() *clientController {
 		OrderService:                      orderservice.New(),
 		DistanceService:                   osrmservice.New(),
 		NotificationSevice:                notificationservice.New(),
+		PushCampaignService:               pushcampaignservice.New(),
 		ClientApplicationMinActiveVersion: os.Getenv("APPLICATION_MIN_ACTIVE_VERSION"),
 		ClientApplicationNewestVersion:    os.Getenv("APPLICATION_NEWEST_VERSION"),
 	}
@@ -80,4 +83,6 @@ func (c *clientController) AuthorizedRouter(router fiber.Router) {
 	router.Post("/orders", c.CreateOrder)
 	router.Post("/orders/:orderID<int>/rate", c.RateOrder)
 	router.Get("/orders", c.GetAllOrdersForClient)
+
+	router.Post("/push-campaigns/:campaignID<int>/opened", c.MarkPushCampaignOpened)
 }

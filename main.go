@@ -12,6 +12,7 @@ import (
 	"github.com/alexkalak/qrmenu/src/logs"
 	"github.com/alexkalak/qrmenu/src/models"
 	"github.com/alexkalak/qrmenu/src/repo"
+	"github.com/alexkalak/qrmenu/src/services/pushcampaignservice"
 	"github.com/alexkalak/qrmenu/src/services/telegramservice"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -32,6 +33,7 @@ func main() {
 	configure()
 	initiatePostgresDB()
 	configureTelegram()
+	startPushCampaignBackgroundLoops()
 
 	// create app
 	app := createApp()
@@ -77,6 +79,17 @@ func configureTelegram() {
 	if err != nil {
 		panic(err)
 	}
+}
+
+// First at-boot background loops in this codebase - every prior periodic
+// job (wsutils.SendPing) is spawned per-connection, not once at startup.
+// Scheduler fires campaigns whose scheduled_at has arrived; ReceiptPoller
+// exchanges Expo send tickets for real delivery receipts (the vendored SDK
+// has no receipt method of its own, see pushcampaignservice).
+func startPushCampaignBackgroundLoops() {
+	service := pushcampaignservice.New()
+	go service.RunScheduler()
+	go service.RunReceiptPoller()
 }
 
 func configureLogs() {
