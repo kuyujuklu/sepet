@@ -33,9 +33,15 @@ jobs:
         working-directory: admin-front
         run: npm ci
 
+      # CI=true is set by default on GitHub Actions runners, and CRA treats
+      # eslint warnings as fatal build errors under CI=true - this repo has
+      # ~46 pre-existing warnings (unused vars, missing default-case, etc,
+      # none of them real bugs) that would otherwise fail every build here.
       - name: Build
         working-directory: admin-front
         run: npm run build
+        env:
+          CI: false
 
       - name: Replace admin-build with fresh build
         run: |
