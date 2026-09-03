@@ -2,11 +2,6 @@ name: Deploy front
 
 on:
   workflow_dispatch:
-    inputs:
-      image_tag:
-        description: "Docker image tag to build and deploy"
-        required: false
-        default: "latest"
 
 jobs:
   deploy:
@@ -26,10 +21,12 @@ jobs:
         with:
           context: .
           push: true
-          tags: alexkalak/qr-front:${{ inputs.image_tag }}
+          tags: |
+            alexkalak/qr-front:latest
+            alexkalak/qr-front:${{ github.sha }}
 
-      # Same caveat as backend's deploy.yml: deploy-front.sh needs writing
-      # once the server's actual container setup has been inspected.
+      # Same compose project as backend's workflow - service name is
+      # qrmenu-frontend.
       - name: Deploy over SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -37,4 +34,7 @@ jobs:
           username: ${{ secrets.DEPLOY_SSH_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           script: |
-            bash /opt/qrmenu/deploy-front.sh alexkalak/qr-front:${{ inputs.image_tag }}
+            cd /var/www/qrmenu
+            docker compose pull qrmenu-frontend
+            docker compose up -d qrmenu-frontend
+            docker image prune -f
