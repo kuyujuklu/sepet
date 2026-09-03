@@ -70,3 +70,62 @@ purely a client-side gap in using it.
   ironic timing, since that note is literally about enabling exactly this
   for future fixes. `front`'s half of this fix ships immediately via the
   CI/CD deploy workflow instead.
+
+## 2026-09-04 (same day, later) - real root cause: a second, backend bug
+
+User reported the free-delivery display bug again, but this time **inside**
+a zone with a price the admin had genuinely set - not the outside-zone case
+above at all. Traced to `backend/src/services/pubservice/pubsservice.go`:
+`GetShippingPricesForPubAvailableForPoint` (feeds the app/front display) and
+`GetDeliveryPriceForLatLng` (feeds real order pricing, via
+`orderservice.go`'s `GetRealDeliveryPricesForOrder`) both matched the
+point's zone (`shape_id`) correctly, then looked its price up with
+`for shapeID, shapePrice := range pubShippingPrices { if shapeID == ... }` -
+a loop that leaves `price` at its Go zero-value (`0`) both when the zone
+generally has no price recorded (`ShippingPricesJSON` never saved for that
+`shape_id`) and when it genuinely has a saved price of `0`. Those two cases
+are indistinguishable that way, and the zone still reads as `isAvailable`,
+so a zone whose price was never saved silently priced as free - for the
+*display* (this bug report) and, worse, for *real orders* too.
+
+How a zone ends up with no saved price despite looking configured in the
+admin: `admin-front`'s shipping tab has two independent save actions -
+`Map.jsx`'s "Сохранить все" persists `ShapesJSON` (drawing a new zone),
+`DeliveryPriceInput.jsx`'s own save button persists `ShippingPricesJSON`
+separately. Saving the first without the second leaves a zone that is
+fully "available" with no price ever written for it.
+
+### Fix (`backend` only, not yet committed/deployed - see repo note below)
+
+Both functions now use a two-value map lookup (`price, hasPrice :=
+pubShippingPrices[shapeID]`) and treat `!hasPrice` as "not available",
+same as a point outside every zone:
+- `GetShippingPricesForPubAvailableForPoint` returns `(false, 0, 0, nil)` -
+  same shape as the existing out-of-zone case, so `pub.go`'s caller (which
+  turns any *error* return into a hard failure of the whole pub-info
+  response) is untouched; this still just flips `shipping.available` to
+  `false`, which the app-side fix above already renders correctly.
+- `GetDeliveryPriceForLatLng` returns `puberrors.ErrLocationNotInDeliveryZone`
+  - reusing the existing out-of-zone error, already mapped to HTTP 400 and
+  already handled by order creation/preview as a hard reject.
+
+An explicitly-saved price of `0` (admin wants genuinely free delivery in
+that zone) is unaffected - that's a present map key, not an absent one.
+
+### Backend gaps
+
+None new - this closes a gap, doesn't create one. Worth a follow-up in
+`admin-front` at some point: nothing currently warns an admin that a
+newly-drawn zone has no price yet, so the two-step save is easy to miss
+silently again. Not done now - out of scope for this bug fix.
+
+### Status
+
+Fixed, compiles (`go build ./...`), committed (`03a9210`) and pushed to
+`backend` on both remotes (`origin` = kuyujuklu/sepet.git, `alexkalak-origin`
+= alexkalak/qrmenu - the one `deploy-backend.yml`'s Docker Hub/SSH secrets
+actually live on) per explicit user instruction. Not deployed - that
+workflow is `workflow_dispatch`-only, so it still needs a manual "Deploy
+backend" run from the Actions tab on `alexkalak/qrmenu`. Since this is a
+pure backend fix, it does **not** need an app rebuild to take effect once
+deployed - unlike the outside-zone half of this bug above.
