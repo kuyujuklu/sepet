@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"mime/multipart"
+	"strconv"
 	"strings"
 
 	"github.com/alexkalak/qrmenu/src/controllers/httpv1/input/entities"
@@ -13,6 +14,7 @@ import (
 	"github.com/alexkalak/qrmenu/src/helpers"
 	"github.com/alexkalak/qrmenu/src/helpers/wshelpers"
 	"github.com/alexkalak/qrmenu/src/models"
+	"github.com/alexkalak/qrmenu/src/repo/couriernotificationrepo"
 	"github.com/alexkalak/qrmenu/src/repo/courierrepo"
 	"github.com/alexkalak/qrmenu/src/repo/orderrepo"
 	"github.com/alexkalak/qrmenu/src/repo/pubsrepo"
@@ -20,6 +22,7 @@ import (
 	"github.com/alexkalak/qrmenu/src/services/orderservice"
 	"github.com/alexkalak/qrmenu/src/services/telegramservice"
 	"github.com/gofiber/contrib/websocket"
+	expo "github.com/oliveroneill/exponent-server-sdk-golang/sdk"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -32,7 +35,7 @@ type CourierService interface {
 	CreateCourier(email string, password string) (models.Courier, error)
 	UpdateCourier(courierID int, courier models.Courier) (models.Courier, error)
 	DeleteCourier(courierID int) error
-	GetAllAvailableOrdersForDelivery() ([]models.Order, error)
+	GetAllAvailableOrdersForDelivery(courierID int) ([]models.Order, error)
 	GetAllCourierOrders(courierID int) ([]models.Order, error)
 	AddToCourierBalance(courierID int, amount float64) (float64, error)
 
@@ -45,6 +48,11 @@ type CourierService interface {
 	SetOrderStatusToCanceled(courierID int, orderID int) error
 	AddConnectionToCourierConnections(courierID int, conn *websocket.Conn) error
 	RemoveConnectionFromCourierConnections(courierID int, conn *websocket.Conn) error
+
+	SubscribeToNotifications(courierID int, token, lang string) error
+	SendActiveOrderUpdateForAllCouriersPush(order models.Order) error
+
+	GetCourierOrderStatusEvents(courierID int, orderID int) ([]models.OrderStatusEvent, error)
 }
 
 type courierService struct {
@@ -54,6 +62,7 @@ type courierService struct {
 	OrderService                orderservice.OrderService
 	CourierRepo                 courierrepo.CourierRepo
 	OrderRepo                   orderrepo.OrderRepo
+	CourierNotificationRepo     couriernotificationrepo.CourierNotificationRepo
 	WebSocketCourierConnections wshelpers.ConnectionsForID
 }
 
@@ -65,11 +74,12 @@ func New() CourierService {
 	}
 
 	singleton = &courierService{
-		PubsRepo:     pubsrepo.New(),
-		CourierRepo:  courierrepo.New(),
-		OrderService: orderservice.New(),
-		OrderRepo:    orderrepo.New(),
-		TelegramRepo: telegramrepo.New(),
+		PubsRepo:                pubsrepo.New(),
+		CourierRepo:             courierrepo.New(),
+		OrderService:            orderservice.New(),
+		OrderRepo:               orderrepo.New(),
+		TelegramRepo:            telegramrepo.New(),
+		CourierNotificationRepo: couriernotificationrepo.New(),
 		WebSocketCourierConnections: wshelpers.ConnectionsForID{
 			Connections: map[int]wshelpers.ConnectionsSet{},
 		},
@@ -86,10 +96,31 @@ func (s *courierService) GetAllCouriers() ([]models.Courier, error) {
 	return s.CourierRepo.GetAllCouriers()
 }
 
-func (s *courierService) GetAllAvailableOrdersForDelivery() ([]models.Order, error) {
+func (s *courierService) GetAllAvailableOrdersForDelivery(courierID int) ([]models.Order, error) {
 	allOrders, err := s.OrderRepo.GetAllOrdersWithPreparingStatus()
 	if err != nil {
 		return nil, err
+	}
+
+	// Own-delivery pubs restrict reservation to their own assigned
+	// couriers (see ReserveOrder) - without this check, a courier saw
+	// every such pub's orders as a live "Взять заказ" button that would
+	// always 403, since nothing here reflected that restriction.
+	pubCouriersCache := map[int]map[int]bool{}
+	isPubsCourier := func(pubID int) (bool, error) {
+		if allowed, ok := pubCouriersCache[pubID]; ok {
+			return allowed[courierID], nil
+		}
+		pub, err := s.PubsRepo.GetPubById(pubID)
+		if err != nil {
+			return false, err
+		}
+		allowed := map[int]bool{}
+		for _, courier := range pub.Couriers {
+			allowed[int(courier.ID)] = true
+		}
+		pubCouriersCache[pubID] = allowed
+		return allowed[courierID], nil
 	}
 
 	availableOrders := []models.Order{}
@@ -97,6 +128,17 @@ func (s *courierService) GetAllAvailableOrdersForDelivery() ([]models.Order, err
 		if order.OrderCourierInfo.IsReserved {
 			continue
 		}
+
+		if order.Pub.Shipping.DeliveryType == models.DELIVERY_TYPE_OWN {
+			allowed, err := isPubsCourier(order.PubID)
+			if err != nil {
+				continue
+			}
+			if !allowed {
+				continue
+			}
+		}
+
 		availableOrders = append(availableOrders, order)
 	}
 
@@ -138,9 +180,14 @@ func (s *courierService) UpdateOrderCallback(order models.Order, prevOrder model
 	if order.Status == models.PREPARING_ORDER_STATUS && prevOrder.Status != models.PREPARING_ORDER_STATUS && !order.OrderCourierInfo.IsReserved && pub.Shipping.DeliveryType == models.DELIVERY_TYPE_DELIVERY_SERVICE {
 		fmt.Println("sending order for couriers in telegram")
 		s.SendActiveOrderUpdateForAllCouriersTelegram(order)
+
+		err := s.SendActiveOrderUpdateForAllCouriersPush(order)
+		if err != nil {
+			fmt.Println("ERROR SENDING PUSH FOR COURIERS ", err)
+		}
 	}
 
-	s.SendActiveOrderUpdateForAllCouriersWebSocket(order)
+	s.SendActiveOrderUpdateForAllCouriersWebSocket(order, pub)
 }
 
 func (s *courierService) Login(email string, password string) (models.Courier, error) {
@@ -350,6 +397,16 @@ func (s *courierService) ReserveOrder(courierID int, orderID int) error {
 		return err
 	}
 
+	// A courier reserving an order means it's now theirs to deliver - reflect
+	// that in the order's own status (not just courier_info.is_reserved) so
+	// the admin panel's OrderTimeline and any future client-facing tracking
+	// actually shows "courier en route" instead of the order looking stuck
+	// at "preparing" until it jumps straight to completed.
+	err = s.OrderService.UpdateOrderStatus(orderID, models.AT_COURIER_ORDER_STATUS)
+	if err != nil {
+		return err
+	}
+
 	order.OrderCourierInfo = updatedCourierInfo
 	fmt.Println("adding debit")
 	debit, err := s.AddOrderCourierDebitToCourier(courierID, order)
@@ -416,6 +473,19 @@ func (s *courierService) SetOrderStatusToCanceled(courierID int, orderID int) er
 	return nil
 }
 
+func (s *courierService) GetCourierOrderStatusEvents(courierID int, orderID int) ([]models.OrderStatusEvent, error) {
+	order, err := s.OrderService.GetOrderByID(orderID)
+	if err != nil {
+		return nil, err
+	}
+
+	if order.OrderCourierInfo.ReserverCourierID != courierID {
+		return nil, couriererrors.ErrNotCouriersOrder
+	}
+
+	return s.OrderService.GetOrderStatusEvents(orderID)
+}
+
 func (s *courierService) RemoveConnectionFromCourierConnections(courierID int, conn *websocket.Conn) error {
 	s.WebSocketCourierConnections.Mu.Lock()
 	s.WebSocketCourierConnections.Connections[courierID].Remove(conn)
@@ -423,9 +493,27 @@ func (s *courierService) RemoveConnectionFromCourierConnections(courierID int, c
 	return nil
 }
 
-func (s *courierService) SendActiveOrderUpdateForAllCouriersWebSocket(order models.Order) error {
+func (s *courierService) SendActiveOrderUpdateForAllCouriersWebSocket(order models.Order, pub models.Pub) error {
+	// Same eligibility rule as GetAllAvailableOrdersForDelivery/ReserveOrder -
+	// an own-delivery pub's order only ever goes live for its own assigned
+	// couriers, so a courier who isn't one of them never sees it appear in
+	// their list mid-session either (not just on initial connect). `pub`
+	// comes from the caller (UpdateOrderCallback already fetched it) rather
+	// than order.Pub, which isn't reliably preloaded across every code path
+	// that can reach here.
+	restrictToPubCouriers := pub.Shipping.DeliveryType == models.DELIVERY_TYPE_OWN
+	allowedCourierIDs := map[int]bool{}
+	if restrictToPubCouriers {
+		for _, courier := range pub.Couriers {
+			allowedCourierIDs[int(courier.ID)] = true
+		}
+	}
+
 	conns := wshelpers.ConnectionsSet{}
-	for _, value := range s.WebSocketCourierConnections.Connections {
+	for courierID, value := range s.WebSocketCourierConnections.Connections {
+		if restrictToPubCouriers && !allowedCourierIDs[courierID] {
+			continue
+		}
 		for conn := range value {
 			conns[conn] = nil
 		}
@@ -468,6 +556,66 @@ func (s *courierService) SendActiveOrderUpdateForAllCouriersTelegram(order model
 			fmt.Println("ERROR SENDING TELEGRAM FOR COURIER ", err)
 		}
 	}
+	return nil
+}
+
+func (s *courierService) SubscribeToNotifications(courierID int, token, lang string) error {
+	_, err := s.CourierNotificationRepo.GetByCourierID(courierID)
+	if err == nil {
+		_, err = s.CourierNotificationRepo.UpdateToken(courierID, token, lang)
+		return err
+	}
+
+	_, err = s.CourierNotificationRepo.Create(courierID, token, lang)
+	return err
+}
+
+func (s *courierService) SendActiveOrderUpdateForAllCouriersPush(order models.Order) error {
+	subs, err := s.CourierNotificationRepo.GetAll()
+	if err != nil {
+		return err
+	}
+
+	pushClient := expo.NewPushClient(nil)
+
+	titleRu := "Новый заказ"
+	titleRo := "Comandă nouă"
+	bodyRu := fmt.Sprintf("%s, %s", order.Pub.Name, order.Town+" "+order.FullAddress)
+	bodyRo := bodyRu
+
+	data := map[string]string{
+		"orderID": strconv.Itoa(int(order.ID)),
+		"screen":  "orders",
+	}
+
+	for _, sub := range subs {
+		pushToken, err := expo.NewExponentPushToken(sub.ExpoNotificationToken)
+		if err != nil {
+			continue
+		}
+
+		title := titleRu
+		body := bodyRu
+		if sub.Lang == models.NOTIFICATION_LANG_RO {
+			title = titleRo
+			body = bodyRo
+		}
+
+		response, err := pushClient.Publish(&expo.PushMessage{
+			To:       []expo.ExponentPushToken{pushToken},
+			Title:    title,
+			Body:     body,
+			Sound:    "default",
+			Priority: expo.DefaultPriority,
+			Data:     data,
+		})
+		if err != nil {
+			fmt.Println("ERROR SENDING PUSH FOR COURIER ", sub.CourierID, err)
+			continue
+		}
+		fmt.Println("courier push response: ", helpers.ConvertToJSON(response))
+	}
+
 	return nil
 }
 

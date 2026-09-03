@@ -63,7 +63,7 @@ func (c *couriersController) ConnectToOrdersForCourier(conn *websocket.Conn) {
 	go wsutils.ReadConnMessages(conn, message, closed)
 	go wsutils.SendPing(conn, gotPong, closed)
 
-	availableForDeliveryOrders, err := c.CourierService.GetAllAvailableOrdersForDelivery()
+	availableForDeliveryOrders, err := c.CourierService.GetAllAvailableOrdersForDelivery(courierID)
 	if err != nil {
 		return
 	}

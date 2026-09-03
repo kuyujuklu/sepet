@@ -9,8 +9,13 @@ import (
 )
 
 type CreateCourierInput struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Email    string `json:"email" validate:"required,email" example:"courier@example.com"`
+	Password string `json:"password" validate:"required,min=8" example:"securepassword"`
+}
+
+type CourierNotificationSubscriptionInput struct {
+	Token string `json:"token" validate:"required" example:"ExpoNotification[xxxxx]"`
+	Lang  string `json:"lang" example:"ru"`
 }
 
 type UpdateCourierInput struct {
