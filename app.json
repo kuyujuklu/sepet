@@ -45,6 +45,12 @@
         "projectId": "4157c782-3e7e-415c-8e42-da015bba9d15"
       }
     },
-    "owner": "alex_kalak"
+    "owner": "alex_kalak",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/4157c782-3e7e-415c-8e42-da015bba9d15"
+    }
   }
 }
