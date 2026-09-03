@@ -7,8 +7,22 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      # There's no standalone admin-front image. The `nginx` branch's
+      # Dockerfile does `COPY admin-build/ /var/www/qrmenu/admin` and gets
+      # built/pushed as alexkalak/qr-nginx, which is the image the server
+      # actually runs (confirmed by reading that Dockerfile directly) - so
+      # deploying an admin-front change means rebuilding THAT image with a
+      # fresh admin-front build inside it, not shipping admin-front alone.
+      - name: Checkout admin-front
         uses: actions/checkout@v4
+        with:
+          path: admin-front
+
+      - name: Checkout nginx image sources
+        uses: actions/checkout@v4
+        with:
+          ref: nginx
+          path: nginx-image
 
       - name: Set up Node
         uses: actions/setup-node@v4
@@ -16,26 +30,42 @@ jobs:
           node-version: 18
 
       - name: Install dependencies
+        working-directory: admin-front
         run: npm ci
 
       - name: Build
+        working-directory: admin-front
         run: npm run build
 
-      - name: Set up SSH
+      - name: Replace admin-build with fresh build
         run: |
-          mkdir -p ~/.ssh
-          printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H "${{ secrets.DEPLOY_SSH_HOST }}" >> ~/.ssh/known_hosts
+          rm -rf nginx-image/admin-build
+          cp -r admin-front/build nginx-image/admin-build
 
-      # There's no Dockerfile for admin-front - nginx.conf on the `nginx`
-      # branch reads its build straight off disk (root /var/www/qrmenu/,
-      # alias /var/www/qrmenu/admin/static), so this ships the build
-      # directly instead of a container. The exact target path below is a
-      # best-effort read of nginx.conf, NOT confirmed against the live
-      # server yet - check it matches before relying on this.
-      - name: Rsync build to server
-        run: |
-          rsync -avz --delete \
-            -e "ssh -i ~/.ssh/deploy_key -o UserKnownHostsFile=~/.ssh/known_hosts" \
-            build/ "${{ secrets.DEPLOY_SSH_USER }}@${{ secrets.DEPLOY_SSH_HOST }}:/var/www/qrmenu/admin/"
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: nginx-image
+          push: true
+          tags: |
+            alexkalak/qr-nginx:latest
+            alexkalak/qr-nginx:${{ github.sha }}
+
+      # Same compose project as backend/front - service name is qrmenu-nginx.
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DEPLOY_SSH_HOST }}
+          username: ${{ secrets.DEPLOY_SSH_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            cd /var/www/qrmenu
+            docker compose pull qrmenu-nginx
+            docker compose up -d qrmenu-nginx
+            docker image prune -f
