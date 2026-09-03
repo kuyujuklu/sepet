@@ -6,7 +6,7 @@ import BlackSpinner from "../../../../components/loaders/BlackSpinner";
 import Select from "../../../../components/Inputs/Select";
 import { fixedCacheKeys } from "../../../../api/fixedCacheKeys";
 
-const DeliveryTypeInput = ({ companyID, pubID, deliveryType }) => {
+const DeliveryTypeInput = ({ companyID, pubID, deliveryType, onSaved }) => {
   const { t } = useTranslation();
   const [localDeliveryType, setLocalDeliveryType] = useState(deliveryTypes.Own);
 
@@ -23,28 +23,36 @@ const DeliveryTypeInput = ({ companyID, pubID, deliveryType }) => {
   const saveDeliveryType = (value) => {
     if(!value) return;
 
-    updateDeliveryType({companyID, pubID, deliveryType: value})
+    updateDeliveryType({companyID, pubID, deliveryType: value}).finally(() => {
+      onSaved?.();
+    })
   }
 
   return (
-    <div className="flex items-center gap-2">
-      {" "}
-      <Select
-        selectClassName={"text-xs sm:text-sm"}
-        value={localDeliveryType}
-        values={[
-          {
-            text: t("admin.delivery_types.own"),
-            value: deliveryTypes.own,
-          },
-          {
-            text: t("admin.delivery_types.delivery_service"),
-            value: deliveryTypes.deliveryService,
-          },
-        ]}
-        setValue={saveDeliveryType}
-      />
-      {isLoading && <BlackSpinner />}
+    <div className="flex flex-col gap-1">
+      <div className="flex items-center gap-2">
+        <Select
+          selectClassName={"text-xs sm:text-sm"}
+          value={localDeliveryType}
+          values={[
+            {
+              text: t("admin.delivery_types.own"),
+              value: deliveryTypes.own,
+            },
+            {
+              text: t("admin.delivery_types.delivery_service"),
+              value: deliveryTypes.deliveryService,
+            },
+          ]}
+          setValue={saveDeliveryType}
+        />
+        {isLoading && <BlackSpinner />}
+      </div>
+      <span className="text-xs text-gray-400">
+        {localDeliveryType === deliveryTypes.deliveryService
+          ? t("admin.delivery_types.delivery_service_hint")
+          : t("admin.delivery_types.own_hint")}
+      </span>
     </div>
   );
 };

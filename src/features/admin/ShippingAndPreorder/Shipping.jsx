@@ -1,17 +1,14 @@
 import { useTranslation } from "react-i18next";
 import Inputs from "./Shipping/Inputs";
+import usePageTitle from "@/hooks/usePageTitle";
 
 const Shipping = ({ pub }) => {
     const { t } = useTranslation();
+    usePageTitle(t("admin.admin_panel.shipping.headline"));
     return (
-        <>
-            <h1 className="text-center text-gray-800 text-xl font-bold mt-2">
-                {t("admin.admin_panel.shipping.headline")}
-            </h1>
-            <div className="m-auto">
-                <Inputs pub={pub} />
-            </div>
-        </>
+        <div className="m-auto">
+            <Inputs pub={pub} />
+        </div>
     );
 };
 

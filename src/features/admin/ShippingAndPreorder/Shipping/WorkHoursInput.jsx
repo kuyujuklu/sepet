@@ -1,4 +1,3 @@
-import { Button } from "@mui/material";
 import { useEffect, useState, useMemo, useCallback } from "react";
 import BlackSpinner from "@/components/loaders/BlackSpinner";
 import { fixedCacheKeys } from "@/api/fixedCacheKeys";
@@ -123,7 +122,9 @@ const WorkHoursForWeekInput = ({ pubID, companyID, workHours }) => {
   }, [monday, tuesday, wednesday, thursday, friday, saturday, sunday, hasChanges, setShippingTime, companyID, pubID]);
 
   return <>
-    {t("admin.admin_panel.shipping.shipping_work_hours.label")}
+    <div className="text-[12px] font-semibold tracking-wide uppercase text-muted-2 mb-1">
+      {t("admin.admin_panel.shipping.shipping_work_hours.label")}
+    </div>
     <div>
       <WorkHoursInput
         day={"Понедeл"}
@@ -171,25 +172,15 @@ const WorkHoursForWeekInput = ({ pubID, companyID, workHours }) => {
 
     {
       hasChanges &&
-      <Button
-        variant="contained"
-        sx={{
-          marginTop: "10px",
-          color: "white",
-          bgcolor: "#3b82f6",
-          fontSize: ".7rem",
-          fontWeight: "medium",
-          padding: ".2rem 1rem",
-          borderRadius: "10px",
-          width: "fit-content%",
-          ":hover": {
-            bgcolor: "#2563eb",
-          },
-        }}
-        onClick={saveInputs}
-      >
-        <span>{isLoading ? <BlackSpinner /> : t("admin.admin_panel.shipping.shipping_time.save")}</span>
-      </Button>
+      (isLoading ? <BlackSpinner /> : (
+        <button
+          className="text-[12.5px] font-semibold mt-2"
+          style={{ color: "#2D7DD2" }}
+          onClick={saveInputs}
+        >
+          {t("admin.admin_panel.shipping.shipping_time.save")}
+        </button>
+      ))
     }
   </>
 }
@@ -236,29 +227,29 @@ const WorkHoursInput = ({ day, shipping_start, shipping_end, setHours }) => {
 
 
   return (
-    <div style={{}} className="font-medium text-lg mb-2 flex items-center gap-8 flex-wrap">
-      <div>
-        <span class="">{day}</span>
+    <div className="mb-2.5 flex items-center gap-6 flex-wrap">
+      <div style={{ minWidth: 96 }}>
+        <div className="text-[12.5px] text-muted">{day}</div>
         <div
+          className="text-[14px] font-semibold text-ink tabular-nums"
           style={{
             display: "flex",
-            justifyContent: "center",
             alignItems: "center",
             flexWrap: "wrap",
           }}
         >
-          <output style={{}} id="output">
+          <output>
             {startRoundedHours < 10 ? "0" + startRoundedHours : startRoundedHours}:
             {startRoundedMinutes < 10 ? "0" + startRoundedMinutes : startRoundedMinutes}
           </output>
           {" "}-{" "}
-          <output style={{}} id="output">
+          <output>
             {endRoundedHours < 10 ? "0" + endRoundedHours : endRoundedHours}:
             {endRoundedMinutes < 10 ? "0" + endRoundedMinutes : endRoundedMinutes}
           </output>
         </div>
       </div>
-      <div style={{ flex: 1 }} className="gap-2 flex flex-col items-center ml-8">
+      <div style={{ flex: 1 }} className="gap-2 flex flex-col items-center ml-2">
         <Range
           values={values}
           step={STEP}
@@ -296,7 +287,7 @@ const renderTrack = (values, MIN, MAX) => ({ props, children }) => (
         borderRadius: "4px",
         background: getTrackBackground({
           values: values,
-          colors: ["#ccc", "#548BF4", "#ccc"],
+          colors: ["#ccc", "#2D7DD2", "#ccc"],
           min: MIN,
           max: MAX,
         }),
@@ -329,7 +320,7 @@ const renderThumb = ({ props, isDragged }) => (
         height: "16px",
         width: "5px",
         backgroundColor: isDragged
-          ? "#548BF4"
+          ? "#2D7DD2"
           : "#CCC",
       }}
     />

@@ -1,5 +1,4 @@
 import { useSetShippingTimeMutation } from "@/api/pub/pub";
-import { Button } from "@mui/material";
 import { useEffect, useState } from "react";
 import BlackSpinner from "@/components/loaders/BlackSpinner";
 import { fixedCacheKeys } from "@/api/fixedCacheKeys";
@@ -28,44 +27,39 @@ const TimeInput = ({pubID, companyID, shipping_time_from, shipping_time_to}) => 
     }
 
     return (
-        <div>
-            <div className="font-medium text-lg">{t("admin.admin_panel.shipping.shipping_time.label")}</div>
-            <div className="gap-2 flex items-center">
-                <span>{t("admin.admin_panel.shipping.shipping_time.from")}</span>
+        <div className="flex flex-col gap-2.5">
+            <div className="text-[12px] font-semibold tracking-wide uppercase text-muted-2">
+                {t("admin.admin_panel.shipping.shipping_time.label")}
+            </div>
+            <div className="gap-2 flex items-center flex-wrap">
+                <span className="text-[13.5px] text-muted">{t("admin.admin_panel.shipping.shipping_time.from")}</span>
                 <input
                 value={from}
                 onChange={(e) => setFrom(e.target.value)}
                     placeholder="min"
-                    style={{ width: 50, height: 20 }}
-                    className="px-2 py-2 border border-gray-400 shadow-2xl rounded-md text-gray-600"
-                ></input>{i18n.language === "ru" ? "мин" : "min"}
-                <span>- {t("admin.admin_panel.shipping.shipping_time.to")}</span>
+                    style={{ width: 56, height: 32, borderColor: "#cfe0f5", borderWidth: 1.5 }}
+                    className="px-2 rounded-lg text-[13.5px] font-semibold text-ink"
+                ></input>
+                <span className="text-[13px] text-muted">{i18n.language === "ru" ? "мин" : "min"}</span>
+                <span className="text-[13.5px] text-muted">{t("admin.admin_panel.shipping.shipping_time.to")}</span>
                 <input
                 value={to}
                 onChange={(e) => setTo(e.target.value)}
                     placeholder="min"
-                    style={{ width: 50, height: 20 }}
-                    className="px-2 py-2 border border-gray-400 shadow-2xl rounded-md text-gray-600"
-                ></input>{i18n.language === "ru" ? "мин" : "min"}
-                { (from && to && (from !== shipping_time_from || to !== shipping_time_to)) && 
-                  <Button
-                          variant="contained"
-                          sx={{
-                              color: "white",
-                              bgcolor: "#3b82f6",
-                              fontSize: ".7rem",
-                              fontWeight: "medium",
-                              padding: ".2rem 1rem",
-                              borderRadius: "10px",
-                              width: "fit-content%",
-                              ":hover": {
-                                  bgcolor: "#2563eb",
-                              },
-                          }}
-                          onClick={saveInputs}
-                      >
-                          <span>{isLoading ?  <BlackSpinner /> : t("admin.admin_panel.shipping.shipping_time.save") }</span>
-                      </Button>
+                    style={{ width: 56, height: 32, borderColor: "#cfe0f5", borderWidth: 1.5 }}
+                    className="px-2 rounded-lg text-[13.5px] font-semibold text-ink"
+                ></input>
+                <span className="text-[13px] text-muted">{i18n.language === "ru" ? "мин" : "min"}</span>
+                { (from && to && (from !== shipping_time_from || to !== shipping_time_to)) &&
+                  (isLoading ? <BlackSpinner /> : (
+                    <button
+                      className="text-[12.5px] font-semibold"
+                      style={{ color: "#2D7DD2" }}
+                      onClick={saveInputs}
+                    >
+                      {t("admin.admin_panel.shipping.shipping_time.save")}
+                    </button>
+                  ))
                 }
             </div>
         </div>

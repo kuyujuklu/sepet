@@ -69,9 +69,22 @@ const MinOrderPriceInput = ({ companyID, pubID, minOrderPrices, shapes }) => {
   };
 
   return (
-    <div className="grid grid-cols-3 w-fit gap-x-10 gap-y-5">
-      {shapeIDs.map((shapeID) => (
-        <div className="flex gap-2" key={shapeID}>
+    <div className="grid grid-cols-1 sm:grid-cols-3 w-full gap-x-8 gap-y-4">
+      {shapeIDs.map((shapeID, index) => (
+        <div className="flex items-center gap-2" key={shapeID}>
+          <span
+            className="inline-block rounded-full flex-shrink-0"
+            style={{
+              width: 12,
+              height: 12,
+              backgroundColor: shapeColors[shapeID] || "#9ca3af",
+            }}
+          />
+          <span className="text-xs text-gray-500 whitespace-nowrap">
+            {t("admin.admin_panel.shipping.shipping_map.zone_label", {
+              number: index + 1,
+            })}
+          </span>
           <input
             value={localPrices[shapeID] ?? ""}
             onChange={(e) => setLocalPrice(shapeID, e.target.value)}
@@ -80,13 +93,13 @@ const MinOrderPriceInput = ({ companyID, pubID, minOrderPrices, shapes }) => {
             )}
             style={{
               width: 70,
-              height: 20,
-              color: shapeColors[shapeID],
-              borderColor: shapeColors[shapeID],
+              height: 28,
+              borderColor: shapeColors[shapeID] || "#d1d5db",
+              borderWidth: 2,
             }}
-            className="py-2 px-2 border shadow-2xl rounded-md"
+            className="py-1 px-2 border shadow-sm rounded-md font-medium text-gray-800"
           />{" "}
-          <span className="mr-3">Lei</span>
+          <span className="text-sm text-gray-600">Lei</span>
         </div>
       ))}
       {pricesHasChanged && (
