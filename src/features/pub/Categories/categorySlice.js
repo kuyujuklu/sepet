@@ -24,6 +24,14 @@ const initialState = {
         menuID: null,
         categoryID: null,
     },
+    bulkPricePopup: {
+        opened: false,
+        companyID: null,
+        pubID: null,
+        menuID: null,
+        categoryID: null,
+        categoryName: null,
+    },
 };
 
 const categorySlice = createSlice({
@@ -87,6 +95,25 @@ const categorySlice = createSlice({
             state.deletePopup.categoryID = null;
         },
 
+        openBulkPricePopup(state, action) {
+            if (!action.payload.companyID || !action.payload.pubID || !action.payload.menuID || !action.payload.categoryID) {
+                return;
+            }
+            state.bulkPricePopup.companyID = action.payload.companyID;
+            state.bulkPricePopup.pubID = action.payload.pubID;
+            state.bulkPricePopup.menuID = action.payload.menuID;
+            state.bulkPricePopup.categoryID = action.payload.categoryID;
+            state.bulkPricePopup.categoryName = action.payload.categoryName ?? null;
+            state.bulkPricePopup.opened = true;
+        },
+        closeBulkPricePopup(state) {
+            state.bulkPricePopup.opened = false;
+            state.bulkPricePopup.companyID = null;
+            state.bulkPricePopup.pubID = null;
+            state.bulkPricePopup.menuID = null;
+            state.bulkPricePopup.categoryID = null;
+            state.bulkPricePopup.categoryName = null;
+        },
     },
 });
 
@@ -94,7 +121,8 @@ export const selectCategoryID = (state) => state.categorySlice.menuID;
 export const selectCreateCategoryPopupState = (state) => state.categorySlice.createPopup;
 export const selectUpdateCategoryPopupState = (state) => state.categorySlice.updatePopup;
 export const selectDeleteCategoryPopupState = (state) => state.categorySlice.deletePopup;
+export const selectBulkPricePopupState = (state) => state.categorySlice.bulkPricePopup;
 
-export const { openCreateCategoryPopup, closeCreateCategoryPopup, openUpdateCategoryPopup, closeUpdateCategoryPopup, openDeleteCategoryPopup, closeDeleteCategoryPopup, setCategoryID } = categorySlice.actions;
+export const { openCreateCategoryPopup, closeCreateCategoryPopup, openUpdateCategoryPopup, closeUpdateCategoryPopup, openDeleteCategoryPopup, closeDeleteCategoryPopup, openBulkPricePopup, closeBulkPricePopup, setCategoryID } = categorySlice.actions;
 
 export default categorySlice.reducer;

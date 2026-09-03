@@ -146,7 +146,10 @@ const Dish = ({ dish, menuID, categoryID, showMoveTools = true }) => {
                             {t("admin.dishes.is_hit_badge")}
                         </span>
                     )}
-                    {dish.available === false && (
+                    {/* Covers both reasons a dish can't be ordered right
+                        now: the manual stop-list toggle, and being outside
+                        its availability schedule window. */}
+                    {dish.is_available_now === false && (
                         <span className="rounded-full bg-red-600 text-white text-xs font-medium py-1 px-2">
                             {t("admin.dishes.not_available_badge")}
                         </span>

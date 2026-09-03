@@ -20,6 +20,9 @@ export const dish = createApi({
                     text_color: data.textColor,
                     is_hit: data.isHit,
                     available: data.available,
+                    availability_start: data.availabilityStart,
+                    availability_end: data.availabilityEnd,
+                    modifier_group_ids: data.modifierGroupIds,
                 },
                 headers: {
                     "Content-Type": "application/json",
@@ -41,12 +44,26 @@ export const dish = createApi({
                     text_color: data.textColor,
                     is_hit: data.isHit,
                     available: data.available,
+                    availability_start: data.availabilityStart,
+                    availability_end: data.availabilityEnd,
+                    modifier_group_ids: data.modifierGroupIds,
                 },
                 headers: {
                     "Content-Type": "application/json",
                 },
             }),
             invalidatesTags: ["Dish", "Pub"],
+        }),
+        bulkUpdateDishPrices: builder.mutation({
+            query: ({ companyID, pubID, menuID, categoryID, percent }) => ({
+                url: `/api/company/${companyID}/pubs/${pubID}/menus/${menuID}/categories/${categoryID}/dishes/bulk-price`,
+                method: "PATCH",
+                body: { percent },
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }),
+            invalidatesTags: ["Dish"],
         }),
         deleteDish: builder.mutation({
             query: ({ companyID, pubID, menuID, categoryID, dishID }) => ({
@@ -127,4 +144,5 @@ export const {
     useUploadDishImageMutation,
     useMoveDishLeftMutation,
     useMoveDishRightMutation,
+    useBulkUpdateDishPricesMutation,
 } = dish;

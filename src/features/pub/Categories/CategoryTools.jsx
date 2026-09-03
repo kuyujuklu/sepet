@@ -2,7 +2,7 @@
 import { useContext } from "react";
 import { ThemeContext } from "../PubPage";
 import { useDispatch, useSelector } from "react-redux";
-import { openDeleteCategoryPopup, openUpdateCategoryPopup } from "./categorySlice";
+import { openBulkPricePopup, openDeleteCategoryPopup, openUpdateCategoryPopup } from "./categorySlice";
 import { selectPubID } from "../pubSlice";
 import { selectCompanyID } from "../../company/companySlice";
 import { selectMenuID } from "../Menus/menuSlice";
@@ -28,6 +28,10 @@ const CategoryTools = ({category}) => {
 
     const handleDeleteClick = () => {
         dispatch(openDeleteCategoryPopup({companyID, pubID, menuID, categoryID: category.id}))
+    }
+
+    const handleBulkPriceClick = () => {
+        dispatch(openBulkPricePopup({companyID, pubID, menuID, categoryID: category.id, categoryName: category.name}))
     }
 
     const handleMoveTopClick = () => {
@@ -70,6 +74,14 @@ const CategoryTools = ({category}) => {
                 width={20}
                 height={20}
             />
+            <span
+                onClick={handleBulkPriceClick}
+                className="cursor-pointer font-bold text-sm select-none"
+                style={{ width: 20, height: 20, lineHeight: "20px", textAlign: "center" }}
+                title="Bulk price"
+            >
+                %
+            </span>
             <img
                 onClick={handleMoveTopClick}
                 className="cursor-pointer"

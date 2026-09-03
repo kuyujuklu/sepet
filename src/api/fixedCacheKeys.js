@@ -48,6 +48,7 @@ export const fixedCacheKeys = {
         move_dish_left: 'dishes.move_dish_left',
         move_dish_right: 'dishes.move_dish_right',
         upload_dish_image: 'dishes.upload_dish_image',
+        bulk_update_dish_prices: 'dishes.bulk_update_dish_prices',
     },
     auth: {
         registrate: 'auth.registrate',
