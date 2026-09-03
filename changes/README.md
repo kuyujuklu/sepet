@@ -6,6 +6,20 @@ the work without re-reading the whole codebase.
 
 Newest first.
 
+- [2026-09-03 — Add expo-updates (EAS Update / OTA)](2026-09-03-expo-updates-ota.md)
+  — wired up OTA capability in both `app` and `courier-app` (`runtimeVersion`/`updates`
+  in `app.json`, `channel` per build profile in `eas.json`). Capability only — no update
+  published, no native build triggered, so it does nothing until the next build of
+  each app. Also documents an `eas update:configure` side effect that duplicated
+  unrelated `app.json` arrays and had to be cleaned up by hand.
+- [2026-09-03 — Push campaigns: tap-to-navigate, dish popup, opened tracking, external links](2026-09-03-push-campaign-deep-links.md)
+  — `NotificationHandler.jsx` now actually acts on a tapped push's `data` instead of
+  ignoring it: pub/order/bare-screen navigate via the existing
+  `resolveDestinationFromFields`, a new dish case fetches the pub via `usePubInfo` and
+  opens the global `DishImagePopup` once it resolves, external URLs open via
+  `Linking.openURL`, and `campaignID` (new on the backend payload - it was missing
+  entirely) fires a fire-and-forget "opened" call. Not build-verified beyond a full
+  `expo export` bundle compile.
 - [2026-09-03 — Track push receive/open as regular analytics events](2026-09-03-push-receive-open-tracking.md)
   — Firebase Console's "Messaging" report will never show Received/Impressions/Open
   for this app (structural: pushes go through Expo's relay, not Firebase's own
