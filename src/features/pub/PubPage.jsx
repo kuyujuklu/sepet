@@ -2,7 +2,6 @@ import { Route, Routes, useParams } from "react-router-dom";
 import { useGetPubQuery } from "../../api/pub/pub";
 import { createContext, useEffect, useMemo, useState } from "react";
 import { useGetCompanyQuery } from "../../api/company/company";
-import PubPageHeader from "./PubPageHeader";
 import PubPageUpper from "./PubPageUpper";
 import PubPageMain from "./PubPageMain";
 import { useDispatch } from "react-redux";
@@ -11,9 +10,11 @@ import { setCompanyID } from "../company/companySlice";
 import Categories from "./Categories/Categories";
 import Dishes from "./Dishes/Dishes";
 import PromoDishes from "./Dishes/PromoDishes";
+import ModifierGroups from "./ModifierGroups/ModifierGroups";
 import { PROMO_CATEGORY_ID } from "./Categories/promoCategory";
 import { errorKeys, setReceivingError } from "../errorHandlers/errorHandlerSlice";
 import { useTranslation } from "react-i18next";
+import usePageTitle from "@/hooks/usePageTitle";
 
 export const ThemeContext = createContext({
     theme: "light",
@@ -26,7 +27,8 @@ export const PubColorContext = createContext({
 });
 
 const PubPage = () => {
-    const {i18n} = useTranslation()
+    const {t, i18n} = useTranslation()
+    usePageTitle(t("admin.admin_panel.main_page.sections.edit_menu.headline"))
 
     //setting contexts
     const [theme, setTheme] = useState({
@@ -139,6 +141,7 @@ const PubPage = () => {
                                     path="/menu/:menuID/category/:categoryID"
                                     element={<Dishes />}
                                 />
+                                <Route path="/modifiers" element={<ModifierGroups />} />
                                 {/* The frontend-only category. No menu or
                                     category id in the path because there is no
                                     row behind it - it spans the whole pub */}
