@@ -48,7 +48,7 @@ const Header = () => {
         style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 24, padding: "16px 16px" }}
       >
         <a href="/" style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <Image src="/images/png/bird.png" width={32} height={32} alt="Sepet" />
+          <Image src="/images/png/qr-logo-32x32.png" width={32} height={32} alt="Sepet" />
           <span style={{ display: "flex", flexDirection: "column", lineHeight: 1.1 }}>
             <span style={{ fontSize: 19, fontWeight: 800, color: "#1c2733", letterSpacing: "-0.01em" }}>
               sepet<span style={{ color: "#2D7DD2" }}>.md</span>
