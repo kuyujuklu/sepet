@@ -1,0 +1,41 @@
+name: Deploy admin-front
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "${{ secrets.DEPLOY_SSH_HOST }}" >> ~/.ssh/known_hosts
+
+      # There's no Dockerfile for admin-front - nginx.conf on the `nginx`
+      # branch reads its build straight off disk (root /var/www/qrmenu/,
+      # alias /var/www/qrmenu/admin/static), so this ships the build
+      # directly instead of a container. The exact target path below is a
+      # best-effort read of nginx.conf, NOT confirmed against the live
+      # server yet - check it matches before relying on this.
+      - name: Rsync build to server
+        run: |
+          rsync -avz --delete \
+            -e "ssh -i ~/.ssh/deploy_key -o UserKnownHostsFile=~/.ssh/known_hosts" \
+            build/ "${{ secrets.DEPLOY_SSH_USER }}@${{ secrets.DEPLOY_SSH_HOST }}:/var/www/qrmenu/admin/"
