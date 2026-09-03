@@ -436,18 +436,17 @@ func (s *pubsService) GetShippingPricesForPubAvailableForPoint(pub models.Pub, p
 	if !pub.Shipping.Available || !isAvailable {
 		return false, 0, 0, nil
 	}
-	var price float64 = 0
-	var freeDeliveryPrice float64 = 0
-	for shapeID, shapePrice := range pubShippingPrices {
-		if shapeID == nearestShape.ShapeID {
-			price = shapePrice
-		}
+
+	// A matched zone with no price ever saved for it (ShippingPricesJSON has
+	// no entry for this shape_id, as opposed to an entry of 0) used to fall
+	// through with price left at its zero-value default - silently offering
+	// free delivery inside a zone the pub never actually priced. Treat it as
+	// not available, same as a point outside every zone.
+	price, hasPrice := pubShippingPrices[nearestShape.ShapeID]
+	if !hasPrice {
+		return false, 0, 0, nil
 	}
-	for shapeID, shapeFreeDeliveryPrice := range pubShippingFreeDeliveryPrices {
-		if shapeID == nearestShape.ShapeID {
-			freeDeliveryPrice = shapeFreeDeliveryPrice
-		}
-	}
+	freeDeliveryPrice := pubShippingFreeDeliveryPrices[nearestShape.ShapeID]
 
 	return true, price, freeDeliveryPrice, nil
 }
@@ -489,20 +488,16 @@ func (s *pubsService) GetDeliveryPriceForLatLng(pub models.Pub, lat float64, lng
 	}
 
 	shapeID := nearestShape.ShapeID
-	var price float64 = 0
-	var freeDeliveryPrice float64 = 0
 
-	for id, shapePrice := range pubShippingPrices {
-		if id == nearestShape.ShapeID {
-			price = shapePrice
-		}
+	// Same fix as GetShippingPricesForPubAvailableForPoint: a matched zone
+	// with no price ever saved for it (map key absent, not present-as-0) is
+	// a misconfigured zone, not a free one - reject the same as out-of-zone
+	// rather than silently pricing the order at 0.
+	price, hasPrice := pubShippingPrices[shapeID]
+	if !hasPrice {
+		return 0, 0, "", puberrors.ErrLocationNotInDeliveryZone
 	}
-
-	for id, shapeFreeDeliveryPrice := range pubShippingFreeDeliveryPrices {
-		if id == nearestShape.ShapeID {
-			freeDeliveryPrice = shapeFreeDeliveryPrice
-		}
-	}
+	freeDeliveryPrice := pubShippingFreeDeliveryPrices[shapeID]
 
 	return price, freeDeliveryPrice, shapeID, nil
 }
