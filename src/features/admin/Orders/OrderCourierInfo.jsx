@@ -1,99 +1,67 @@
-import { ConvertQrMenuApiTimeToLocal } from "@/utils/time";
 import { useTranslation } from "react-i18next";
 import { orderStatuses } from "../../../static-data/data";
-import {
-  getOrderColor,
-  translateOrderStatus,
-} from "../../../utils/order-utils";
+import { Card, SectionLabel } from "@/components/design/Card";
 import CourierCard from "../../courier/CourierCard";
-import {
-  useGetCourierByIDQuery,
-  useGetCourierQuery,
-} from "../../../api/courier/courier";
-import { useEffect } from "react";
+import CourierAvatar from "../../courier/CourierAvatar";
+import { useGetCourierByIDQuery } from "../../../api/courier/courier";
+import { ClockIcon, PhoneIcon } from "./OrderInfo/icons";
 
+// Sits right above the status/timeline section on the order-detail screen -
+// same spot the old design had it - restyled to the Card/SectionLabel
+// vocabulary the rest of this page already uses.
 const OrderCourierInfo = ({ order }) => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
 
   const hasCourier =
     order?.courier_info?.is_reserved && order?.courier_info.reserver_courier_id;
 
-  const {
-    data: courierData,
-    error: courierError,
-    isLoading: isCourierLoading,
-  } = useGetCourierByIDQuery(
+  const { data: courierData } = useGetCourierByIDQuery(
     { courierID: order?.courier_info?.reserver_courier_id },
     { skip: !hasCourier }
   );
 
+  const notYetVisibleToCouriers =
+    order?.status === orderStatuses.notHandled || order?.status === orderStatuses.handled;
+
   return (
-    <div
-      className="gap-y-3 justify-between gap-x-10 rounded-2xl shadow-xl border-gray-300 border px-10 py-5"
-      style={{
-        maxWidth: "900px",
-        border: "solid 2px",
-        borderColor: getOrderColor(order.status),
-      }}
-    >
-      <div className="flex gap-x-20 font-bold">
-        {order?.status === orderStatuses.notHandled && (
-          <div>
-            {t("admin.admin_panel.order_page.order_courier_info.set_status_to_preparing_for_couriers")}
+    <Card>
+      <SectionLabel>{t("admin.admin_panel.order_page.order_courier_info.title")}</SectionLabel>
+
+      {hasCourier ? (
+        <div className="flex items-center gap-3">
+          <CourierAvatar courier={courierData?.courier} />
+          <div className="flex-grow min-w-0">
+            <div className="text-[12px] text-muted">
+              {t("admin.admin_panel.order_page.order_courier_info.courier_was_found")}
+            </div>
+            <CourierCard courier={courierData?.courier} />
+            {courierData?.courier?.phone_number && (
+              <a
+                href={`tel:${courierData.courier.phone_number}`}
+                className="flex items-center gap-1.5 text-[12.5px] text-muted mt-0.5 hover:text-ink"
+              >
+                <PhoneIcon width={13} height={13} className="flex-shrink-0" />
+                {courierData.courier.phone_number}
+              </a>
+            )}
           </div>
-        )}
-        {order?.status === orderStatuses.preparing && (
-          <>
-            {!hasCourier && (
-              <div >{t("admin.admin_panel.order_page.order_courier_info.searching_for_couriers")}...</div>
-            )}
-            {hasCourier && (
-              <div className="flex gap-6 items-center w-full">
-                <div>{t("admin.admin_panel.order_page.order_courier_info.courier_was_found")}:</div>
-                <div className="flex-1">
-                  <CourierCard courier={courierData?.courier} />
-                </div>
-              </div>
-            )}
-          </>
-        )}
-        {order?.status === orderStatuses.atCourier && (
-          <>
-            {!hasCourier && (
-              <div>
-                {t("admin.admin_panel.order_page.order_courier_info.set_status_to_preparing_for_couriers")}
-              </div>
-            )}
-            {hasCourier && (
-              <div className="flex gap-6 items-center w-full">
-                <div>{t("admin.admin_panel.order_page.order_courier_info.courier_was_found")}:</div>
-                <div className="flex-1">
-                  <CourierCard courier={courierData?.courier} />
-                </div>
-              </div>
-            )}
-          </>
-        )}
-        {(order?.status === orderStatuses.completed || order?.status === orderStatuses.canceled) && (
-          <>
-            {!hasCourier && (
-              <div>
-                Courier not found
-              </div>
-            )}
-            {hasCourier && (
-              <div className="flex gap-6 items-center w-full">
-                <div>{t("admin.admin_panel.order_page.order_courier_info.courier_was_found")}:</div>
-                <div className="flex-1">
-                  <CourierCard courier={courierData?.courier} />
-                </div>
-              </div>
-            )}
-          </>
-        )}
-      </div>
-      <div className="flex-col sm:flex-row flex gap-x-10 gap-y-3"></div>
-    </div>
+        </div>
+      ) : notYetVisibleToCouriers ? (
+        <div className="flex items-center gap-2.5 text-[13.5px] text-muted">
+          <ClockIcon width={16} height={16} className="flex-shrink-0 text-muted-2" />
+          {t("admin.admin_panel.order_page.order_courier_info.set_status_to_preparing_for_couriers")}
+        </div>
+      ) : order?.status === orderStatuses.preparing ? (
+        <div className="flex items-center gap-2.5 text-[13.5px] text-muted">
+          <ClockIcon width={16} height={16} className="flex-shrink-0 text-muted-2 animate-pulse" />
+          {t("admin.admin_panel.order_page.order_courier_info.searching_for_couriers")}...
+        </div>
+      ) : (
+        <div className="text-[13.5px] text-muted-2">
+          {t("admin.admin_panel.order_page.order_courier_info.no_courier")}
+        </div>
+      )}
+    </Card>
   );
 };
 

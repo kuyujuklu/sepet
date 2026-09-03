@@ -1,5 +1,4 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { selectDeletePubPopupState } from "../../pub/pubSlice";
 
 const initialState = {
   courierOrders: null,

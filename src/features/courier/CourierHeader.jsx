@@ -1,65 +1,48 @@
-import React from "react";
-import { useTranslation } from "react-i18next";
-import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import SwitchLang from "../company/SwitchLang";
-import LogoutButton from "../company/LogoutButton";
+import { NavLink } from "react-router-dom";
 
+// Persistent identity bar shown at the root of every non-detail courier
+// screen (Orders list, Profile) - avatar initial, name + id, balance pill.
+// Language/logout used to live here; both moved into CourierProfile's
+// settings block, matching the same header-decluttering already applied to
+// the admin side (Header.jsx/Sidebar.jsx) earlier this session.
 const CourierHeader = ({ courierID, courierName, balance }) => {
-  const { t } = useTranslation();
-  const location = useLocation();
-  const navigate = useNavigate();
-
   const parsedBalance = isNaN(+balance) ? 0 : +balance;
-
-  const balanceColor =
-    parsedBalance > 0
-      ? "#10b981"
-      : parsedBalance < 0
-      ? "rgb(220 38 38)"
-      : "#1f2937";
+  const balanceColor = parsedBalance >= 0 ? "#1a9e6b" : "#e0483a";
+  const balanceTint = parsedBalance >= 0 ? "rgba(26,158,107,.1)" : "rgba(224,72,58,.1)";
+  const initial = courierName?.trim()?.[0]?.toUpperCase() || "?";
 
   return (
-    <nav className="bg-white shadow-lg mb-8 rounded-xl pb-2 sm:pb-0">
-      <div className="max-w-6xl mx-auto px-4">
-        <div className="flex flex-col sm:flex-row items-center justify-between">
-          <div className="flex space-x-7">
-            <div className="pb-2 px-2 flex flex-col w-full items-center">
-              <h1 className="text-2xl flex justify-center items-center gap-5 text-gray-800 mt-4">
-                <NavLink to="/courier/profile">
-                  <div style={{ width: 35, height: 35 }}>
-                    <img
-                      src="/static/admin/images/svg/home-black.svg"
-                      alt="lkajsdf"
-                    />
-                  </div>
-                </NavLink>
-                <div>
-                  <span className="font-bold">
-                    {courierName || "No name"} - ID {courierID}
-                  </span>{" "}
-                </div>
-              </h1>
-
-              <div>
-                <span className="font-bold">Баланс: </span>
-                <span style={{ color: balanceColor }} className="font-bold">
-                  {parsedBalance > 0 ? "+" : ""}
-                  {parsedBalance.toFixed(2)}
-                  {" "}Lei
-                </span>{" "}
-              </div>
-            </div>
+    <div className="w-full px-4 pt-4">
+      <NavLink to="/courier/profile" className="block">
+        <div
+          className="flex items-center gap-3 bg-white rounded-2xl mx-auto"
+          style={{
+            maxWidth: 560,
+            border: "1px solid #e4e9ee",
+            boxShadow: "0 1px 2px rgba(20,30,45,.04)",
+            padding: "14px 16px",
+          }}
+        >
+          <div
+            className="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center font-bold text-[14px]"
+            style={{ background: "#e8f1fb", color: "#2D7DD2" }}
+          >
+            {initial}
           </div>
-
-          <div className=" flex justify-start space-x-3">
-            <div className="w-fit flex justify-start items-center gap-4">
-              <SwitchLang />
-              <LogoutButton />
-            </div>
+          <div className="min-w-0 flex-grow">
+            <div className="font-bold text-[14.5px] text-ink truncate">{courierName || "No name"}</div>
+            <div className="text-[11.5px] text-muted-2">Курьер · ID {courierID}</div>
+          </div>
+          <div
+            className="flex-shrink-0 flex items-center h-7 px-3 rounded-full font-bold text-[13px] num"
+            style={{ background: balanceTint, color: balanceColor }}
+          >
+            {parsedBalance > 0 ? "+" : ""}
+            {parsedBalance.toFixed(2)} Lei
           </div>
         </div>
-      </div>
-    </nav>
+      </NavLink>
+    </div>
   );
 };
 

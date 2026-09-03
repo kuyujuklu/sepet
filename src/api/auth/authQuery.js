@@ -18,6 +18,16 @@ export const auth = createApi({
             }),
             invalidatesTags: ['Company'],
         }),
+        registrateCourier: builder.query({
+            query: ({data}) => ({
+                url: `/courier/register`,
+                method: 'POST',
+                body: data,
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }),
+        }),
         authenticate: builder.query({
             query: ({data}) => ({
                 url: `/auth/login`,
@@ -42,4 +52,4 @@ export const auth = createApi({
     }),
 })
 
-export const { useLazyRegistrateQuery, useLazyAuthenticateQuery, useLazyLogoutQuery } = auth;
+export const { useLazyRegistrateQuery, useLazyRegistrateCourierQuery, useLazyAuthenticateQuery, useLazyLogoutQuery } = auth;

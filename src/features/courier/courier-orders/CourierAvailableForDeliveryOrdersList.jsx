@@ -25,9 +25,9 @@ const CourierAvailableForDeliveryOrdersList = ({ courierID }) => {
     <div className=" w-full flex flex-col items-center gap-y-5">
       {availableOrders.map((order) => (
         <CourierOrderCard
+          key={order.id}
           courierID={courierID}
           order={order}
-          isAvailableForReservation={true}
           courierOrdersFilter={courierOrderFilters.available}
         />
       ))}

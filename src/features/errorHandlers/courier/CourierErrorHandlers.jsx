@@ -13,7 +13,7 @@ const CourierErrorHandlers = () => {
     const [, {error: updateCourierError }] = useUpdateCourierMutation({fixedCacheKey: fixedCacheKeys.courier.update_courier_info})
     const [, {error: reserveOrderError }] = useReserveOrderMutation({fixedCacheKey: fixedCacheKeys.courier.reserve_order})
     const [, {error: setOrderToCompleted }] = useSetOrderStatusToCompletedMutation({fixedCacheKey: fixedCacheKeys.courier.set_order_to_completed})
-    const [, {error: setOrderToCanceled }] = useSetOrderStatusToCanceledMutation+({fixedCacheKey: fixedCacheKeys.courier.set_order_to_canceled})
+    const [, {error: setOrderToCanceled }] = useSetOrderStatusToCanceledMutation({fixedCacheKey: fixedCacheKeys.courier.set_order_to_canceled})
     const getCourierInfoError = useSelector(selectReceivingError(errorKeys.get_courier_info))
 
     useEffect(() => {

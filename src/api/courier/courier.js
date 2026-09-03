@@ -71,8 +71,24 @@ export const courier = createApi({
                 }),
                 invalidatesTags: ["Orders"],
         }),
+        subscribeToNotifications: builder.mutation({
+            query: ({ courierID, token, lang }) => ({
+                url: `/api/courier/${courierID}/notifications/subscribe`,
+                method: "POST",
+                body: { token, lang },
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }),
+        }),
+        getCourierOrderStatusEvents: builder.query({
+            query: ({ courierID, orderID }) => ({
+                url: `/api/courier/${courierID}/orders/${orderID}/status-events`,
+                method: "GET",
+            }),
+        }),
     }),
-    
+
 })
 
-export const { useGetCourierQuery, useGetCourierByIDQuery, useLazyGetCourierByIDQuery , useLazyGetCourierQuery, useUpdateCourierMutation, useUploadCourierImageMutation, useReserveOrderMutation, useSetOrderStatusToCanceledMutation, useSetOrderStatusToCompletedMutation} = courier;
+export const { useGetCourierQuery, useGetCourierByIDQuery, useLazyGetCourierByIDQuery , useLazyGetCourierQuery, useUpdateCourierMutation, useUploadCourierImageMutation, useReserveOrderMutation, useSetOrderStatusToCanceledMutation, useSetOrderStatusToCompletedMutation, useSubscribeToNotificationsMutation, useGetCourierOrderStatusEventsQuery} = courier;

@@ -1,500 +1,151 @@
 import { ConvertQrMenuApiTimeToLocal } from "@/utils/time";
 import { useTranslation } from "react-i18next";
-import {
-  orderPaymentTypes,
-  orderStatuses,
-  orderTypes,
-} from "../../../static-data/data";
-import {
-  useReserveOrderMutation,
-  useSetOrderStatusToCanceledMutation,
-  useSetOrderStatusToCompletedMutation,
-} from "../../../api/courier/courier";
-import { fixedCacheKeys } from "../../../api/fixedCacheKeys";
-import { Button } from "@mui/material";
-import { courierOrderFilters } from "./CourierOrdersFilter";
-import { useEffect, useMemo } from "react";
-import { useGetFullPubInfoQuery } from "../../../api/pub/pub";
+import { useNavigate } from "react-router-dom";
+import { orderPaymentTypes } from "../../../static-data/data";
 import { useDispatch } from "react-redux";
 import { setCourierReserveOrderPopup } from "./courierOrdersSlice";
-import {
-  getOrderColor,
-  translateOrderStatus,
-} from "../../../utils/order-utils";
-import { pushAlert } from "../../alerts/alertSlice";
+import { getOrderColor, getOrderColorTint, translateOrderStatus } from "../../../utils/order-utils";
+import { useGetFullPubInfoQuery } from "../../../api/pub/pub";
+import { getShownDishes, getCourierOrderMoney } from "./courierOrderMoney";
+import { courierOrderFilters } from "./CourierOrdersFilter";
+import { CashIcon, CardIcon, ClockIcon, CourierMapIcon, PhoneIcon } from "../icons";
+
+const mapsUrl = (lat, lng) => `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
 
 const CourierOrderCard = ({ courierID, order, courierOrdersFilter }) => {
   const dispatch = useDispatch();
-  const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
+  const { t } = useTranslation();
 
-  const {
-    data: pub,
-    error: pubError,
-    isLoading: isPubLoading,
-  } = useGetFullPubInfoQuery(
-    { pubUrlName: order.pub.url_name },
-    { skip: !order.pub.url_name }
+  const { data: pub } = useGetFullPubInfoQuery(
+    { pubUrlName: order?.pub?.url_name },
+    { skip: !order?.pub?.url_name }
   );
 
-  useEffect(() => {
-    console.log("PUB DATA:", pub);
-  }, [pub]);
+  const isActive = courierOrdersFilter === courierOrderFilters.active;
+  const isCompleted = courierOrdersFilter === courierOrderFilters.completed;
+  const isAvailable = courierOrdersFilter === courierOrderFilters.available;
 
-  const shownDishesArray = useMemo(() => {
-    if (!pub?.dishes) return [];
-    if (!order?.dishes) return [];
-
-    const pubDishesMap = new Map();
-    for (const dish of pub?.dishes) {
-      pubDishesMap.set(dish.id, dish);
-    }
-
-    //[{order_dish, pub_dish}]
-    const shownDishesArray = [];
-    for (const order_dish_info of order.dishes) {
-      if (!pubDishesMap.get(order_dish_info.dish_id)) {
-        console.log("dish undefined: ", order_dish_info.id);
-        continue;
-      }
-
-      shownDishesArray.push({
-        order_dish: order_dish_info,
-        pub_dish: pubDishesMap.get(order_dish_info.dish_id),
-      });
-    }
-    return shownDishesArray;
-  }, [order.dishes, pub?.dishes]);
-
-  const productsPrice = useMemo(() => {
-    if (!shownDishesArray) return 0;
-
-    return shownDishesArray.reduce(
-      (acc, dishObject) =>
-        acc + dishObject.order_dish.count * dishObject.order_dish.dish_price,
-      0
-    );
-  }, [shownDishesArray]);
-
-  const totalFromClient = order.delivery_price + productsPrice ?? 0;
-  const productsPriceWithoutCommission =
-    order.total_dishes_price_without_commission;
-  const moneyLeftFromClient = totalFromClient - productsPriceWithoutCommission;
-  const courierRewardWithBonus = -order?.courier_info?.courier_debit;
-
-  const [setToCompletedQuery, { isSetToCompletedQueryLoading }] =
-    useSetOrderStatusToCompletedMutation({
-      fixedCacheKey: fixedCacheKeys.courier.set_order_to_completed,
-    });
-
-  const [setToCanceledQuery, { isSetToCanceledQueryLoading }] =
-    useSetOrderStatusToCanceledMutation({
-      fixedCacheKey: fixedCacheKeys.courier.set_order_to_canceled,
-    });
+  const shownDishes = getShownDishes(order, pub?.dishes);
+  const { courierReward } = getCourierOrderMoney(order, shownDishes);
 
   const reserveOrder = () => {
-    if (!courierID || !order?.id) {
-      return;
-    }
-
-    dispatch(
-      setCourierReserveOrderPopup({
-        opened: true,
-        courierID: courierID,
-        orderID: order.id,
-      })
-    );
-  };
-  const setToCompleted = () => {
-    if (!courierID || !order?.id) {
-      return;
-    }
-
-    setToCompletedQuery({ courierID, orderID: order.id });
-
-    dispatch(
-      pushAlert({
-        message: t("courier.courier_order.you_delivered_order"),
-        type: "success",
-        delay: 3000,
-      })
-    );
+    if (!courierID || !order?.id) return;
+    dispatch(setCourierReserveOrderPopup({ opened: true, courierID, orderID: order.id }));
   };
 
-  const setToCanceled = () => {
-    if (!courierID || !order?.id) {
-      return;
-    }
-
-    setToCanceledQuery({ courierID, orderID: order.id });
+  const openDetail = () => {
+    if (!isActive) return;
+    navigate(`/courier/orders/${order.id}`);
   };
-
-  const isAvailableForReservation =
-    order?.courier_info?.is_reserved === false &&
-    order?.courier_info?.reserver_courier_id === 0;
-  const isAvailableForCompletion =
-    order?.courier_info?.reserver_courier_id === courierID &&
-    order?.status !== orderStatuses.completed &&
-    order?.status !== orderStatuses.canceled;
-  const isAvailableForSetToCanceled =
-    order?.courier_info?.reserver_courier_id === courierID &&
-    order?.status !== orderStatuses.completed &&
-    order?.status !== orderStatuses.canceled;
 
   return (
     <div
-      className="w-full rounded-2xl shadow-x border px-4 py-4 text-2xs"
+      onClick={openDetail}
+      className="w-full rounded-2xl overflow-hidden"
       style={{
-        maxWidth: "900px",
-        border: "solid 2px",
-        borderColor:
-          courierOrdersFilter === courierOrderFilters.active
-            ? "#059669"
-            : courierOrdersFilter === courierOrderFilters.available
-              ? "#ed5e21"
-              : "black",
+        maxWidth: 560,
+        border: "1px solid #e4e9ee",
+        boxShadow: "0 1px 2px rgba(20,30,45,.04)",
+        cursor: isActive ? "pointer" : "default",
       }}
     >
-      <div className="grid gap-y-3 items-center gap-x-2 grid-cols-3">
-        <div className="font-bold">
-          {t("courier.courier_order.order")} №{order?.id}
-        </div>
-        <div className="">
-          {ConvertQrMenuApiTimeToLocal(order?.created_time, i18n.language)}
-        </div>
-
+      {isActive && order?.prepared && (
         <div
-          className="flex items-center justify-center rounded-md text-white"
-          style={{ background: getOrderColor(order?.status) }}
+          className="flex items-center gap-2 px-4 py-2 text-[12.5px] font-bold text-white"
+          style={{ background: "#f2994a" }}
         >
-          <div style={{ width: 13, aspectRatio: 1 }}>
-            <img
-              style={{ width: "100%", height: "100%" }}
-              src="/static/admin/images/svg/sand-clock-colored.svg"
-              alt="sand-clock"
-            />
-          </div>
-          <span>{t(translateOrderStatus(order?.status))}</span>
-
+          <ClockIcon width={14} height={14} />
+          {t("courier.courier_order.ready_banner")}
         </div>
+      )}
 
-        <div className="grid col-span-3 grid-cols-6 gap-y-1 gap-x-2">
-          <span className="font-bold col-span-2">{order?.pub_name}: </span>{" "}
-          <span className="font-light text-left col-span-4">
-            <a
-              class="text-blue-600"
-              target="_blank"
-              href={`http://maps.google.com/?q=${order?.pub?.lat + "," + order?.pub?.lng
-                }`}
-            >
-              {order?.pub?.address}
-            </a>
+      <div className="bg-white flex flex-col gap-3 px-4 py-4">
+        <div className="flex items-center justify-between gap-2">
+          <span className="font-bold text-[14.5px] text-ink">
+            {t("courier.courier_order.order")} №{order?.id}
           </span>
-          <div className="col-span-6 grid grid-cols-6">
-            <div className="col-span-2"></div>
-            <hr className="col-span-2" />
-            <div className="col-span-2"></div>
-          </div>
-          <div className="col-span-2 flex gap-2 justify-start">
-            <img
-              style={{ width: 18, height: 18 }}
-              src="/static/admin/images/svg/location-black.svg"
-              alt="location"
-            />
-            <span className="font-bold">Куда: </span>
-          </div>
-          <span className="font-light break-words col-span-4">
-            <a
-              class="text-blue-600"
-              target="_blank"
-              href={`http://maps.google.com/?q=${order.lat + "," + order.lng}`}
-            >
-              {order?.town + " " + order?.full_address}
-            </a>
-          </span>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <div style={{ width: 25 }}>
-            <img
-              style={{ width: "100%", height: "100%" }}
-              src="/static/admin/images/svg/distance-colored.svg"
-              alt="distance"
-            />
-          </div>
-          <div className="font-bold">
-            {(order?.courier_info?.distance / 1000).toFixed(1) || "unknown"} km
-          </div>
-        </div>
-        <div className="flex items-center gap-2 ">
-          <div style={{ width: 25 }}>
-            <img
-              style={{ width: "100%", height: "100%" }}
-              src="/static/admin/images/svg/card-colored.svg"
-              alt="card"
-            />
-          </div>
-          {order?.payment_type === orderPaymentTypes.cash && (
-            <span className="font-bold">
-              {t("courier.order_payment_types.cash")}
+          {isAvailable ? (
+            <span className="text-[12px] text-muted-2 num">
+              {ConvertQrMenuApiTimeToLocal(order?.created_time)}
             </span>
+          ) : (
+            <div
+              className="flex items-center gap-1.5 h-[22px] px-2.5 rounded-full text-[11.5px] font-semibold"
+              style={{ background: getOrderColorTint(order?.status), color: getOrderColor(order?.status) }}
+            >
+              <span style={{ width: 5, height: 5, borderRadius: "50%", background: getOrderColor(order?.status) }} />
+              {t(translateOrderStatus(order?.status))}
+            </div>
           )}
-          {order?.payment_type === orderPaymentTypes.cardOffline && (
-            <span className="font-bold">
-              {t("courier.order_payment_types.card_offline")}
-            </span>
-          )}
-          {order?.payment_type !== orderPaymentTypes.cardOffline &&
-            order?.payment_type !== orderPaymentTypes.cash && (
-              <span className="font-bold">
-                {t("courier.order_payment_types.not_proceeded")}
-              </span>
-            )}
         </div>
-        <div className="flex items-center gap-2 justify-center">
-          <div style={{ width: 25 }}>
-            <img
-              style={{ width: "100%", height: "100%" }}
-              src="/static/admin/images/svg/salary-colored.svg"
-              alt="salary"
-            />
+
+        <div className="text-[13px] text-muted">
+          {order?.pub_name}, {order?.pub?.address}
+        </div>
+
+        {isAvailable && (
+          <a
+            href={mapsUrl(order?.lat, order?.lng)}
+            onClick={(e) => e.stopPropagation()}
+            className="flex items-center gap-1.5 text-[12.5px] font-medium"
+            style={{ color: "#2D7DD2" }}
+          >
+            <CourierMapIcon width={14} height={14} />
+            {order?.town} {order?.full_address}
+          </a>
+        )}
+
+        <hr style={{ border: "none", borderTop: "1px solid #e4e9ee" }} />
+
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1.5 text-[12.5px] text-muted">
+            <CourierMapIcon width={15} height={15} />
+            <span className="num">{((order?.courier_info?.distance ?? 0) / 1000).toFixed(1)} км</span>
           </div>
-          <span className="font-bold flex flex-col">
-            {/* {order?.courier_info?.courier_debit < 0 && (
-              <>
-              <span>
-              бонус {(-order?.courier_info?.courier_debit)?.toFixed(2)}
-              </span>
-              <span>
-              наличными{" "}
-                  {(
-                    order?.courier_info?.courier_reward +
-                    order?.courier_info?.courier_debit
-                    )?.toFixed(2)}
-                    </span>
-                    </>
-                    )} */}
-            <>
-              <span>
-                Заработок
-                <div>
-                  {order?.courier_info?.courier_reward?.toFixed(2)} Lei
-                </div>
-              </span>
-            </>
+          <span className="font-bold text-[15px] num" style={{ color: "#1a9e6b" }}>
+            +{courierReward.toFixed(2)} Lei
           </span>
         </div>
-        {order.pub.phone_number && (
-          <div className="flex items-center gap-2 justify-start col-span-3">
-            <span className="font-bold">
-              {t("courier.courier_order.client_second_phone")}:
-            </span>{" "}
-            <span>{order.pub.phone_number}</span>
-          </div>
+
+        {(isActive || isCompleted) && (
+          <>
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[13.5px] font-medium text-ink">{order?.client_name}</span>
+              {order?.main_phone_number && (
+                <a
+                  href={`tel:${order.main_phone_number}`}
+                  onClick={(e) => e.stopPropagation()}
+                  className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center"
+                  style={{ background: "#e8f1fb", color: "#2D7DD2" }}
+                >
+                  <PhoneIcon width={14} height={14} />
+                </a>
+              )}
+            </div>
+            <div className="flex items-center gap-1.5 h-6 px-2.5 rounded-full text-[11.5px] font-semibold w-fit" style={{ background: "#f2f4f6", color: "#526070" }}>
+              {order?.payment_type === orderPaymentTypes.cash ? <CashIcon width={12} height={12} /> : <CardIcon width={12} height={12} />}
+              {order?.payment_type === orderPaymentTypes.cash
+                ? t("courier.order_payment_types.cash")
+                : order?.payment_type === orderPaymentTypes.cardOffline
+                  ? t("courier.order_payment_types.card_offline")
+                  : t("courier.order_payment_types.not_proceeded")}
+            </div>
+          </>
         )}
 
-        {(courierOrdersFilter === courierOrderFilters.completed ||
-          courierOrdersFilter === courierOrderFilters.active) && (
-            <>
-              <div className="flex items-center gap-2 justify-start col-span-3">
-                <span className="font-bold">
-                  {t("courier.courier_order.client_name")}:
-                </span>
-                <span>{order.client_name}</span>
-              </div>
-              <div className="flex items-center gap-2 justify-start col-span-3">
-                <span className="font-bold">
-                  {t("courier.courier_order.client_main_phone")}:
-                </span>
-                <span>{order.main_phone_number}</span>
-              </div>
-              {order.second_phone_number && (
-                <div className="flex items-center gap-2 justify-start col-span-3">
-                  <span className="font-bold">
-                    {t("courier.courier_order.client_second_phone")}:
-                  </span>{" "}
-                  <span>{order.second_phone_number}</span>
-                </div>
-              )}
-              {order.comments && (
-                <div className="flex items-center gap-2 justify-start col-span-3">
-                  <span className="font-bold">
-                    {t("courier.courier_order.comments")}:
-                  </span>{" "}
-                  <span>{order.comments}</span>
-                </div>
-              )}
-              {shownDishesArray && (
-                <>
-                  <div className="flex items-center gap-2 justify-start col-span-3">
-                    <span className="font-bold">
-                      {t("courier.courier_order.positions")}:
-                    </span>{" "}
-                  </div>
-                  <ol className="text-xs w-full col-span-3">
-                    {shownDishesArray.map((dishObject, index) => (
-                      <li>
-                        <span className="font-bold">{index + 1}.</span>{" "}
-                        {dishObject.pub_dish.name} - {dishObject.order_dish.count}
-                        {t("courier.courier_order.pieces_shortcut")}.{" "}
-                        {/* {(dishObject.order_dish.dish_price *
-                        dishObject.order_dish.count).toFixed(2)} {" "} Lei */}
-                      </li>
-                    ))}
-                  </ol>
-                  <div className="col-span-3 ml-3 flex flex-col">
-                    {/* <div>
-                    <span className="font-bold">{t("courier.courier_order.products_price")}:</span> {productsPrice.toFixed(2)} Lei
-                  </div> */}
-                    {/* <div>
-                    <span className="font-bold">{t("courier.courier_order.delivery_price")}:</span> {order.delivery_price.toFixed(2)} Lei
-                    </div> */}
-                    <div>
-                      <span className="font-bold">{t("Отдать в ресторан")}:</span>{" "}
-                      {productsPriceWithoutCommission?.toFixed(2)} Lei
-                    </div>
-                    <div>
-                      <span className="font-bold">
-                        {t("courier.courier_order.total_from_client")}:
-                      </span>{" "}
-                      {totalFromClient.toFixed(2)} Lei
-                    </div>
-                    {/* <div>
-                    <span className="font-bold">
-                      Оставить у себя:
-                    </span>
-                      {moneyLeftFromClient?.toFixed(2)}
-                    Lei
-                  </div> */}
-                    <div>
-                      <span className="font-bold">
-                        {courierRewardWithBonus > 0 ? "Бонус на баланс" : "Комиссия с баланса"}{": "}
-                      </span>{" "}
-                      {courierRewardWithBonus?.toFixed(2)} Lei
-                    </div>
-                  </div>
-                </>
-              )}
-            </>
-          )}
-
-        {isAvailableForReservation && (
-          <Button
-            className="col-span-3"
-            disabled={!isAvailableForReservation}
-            variant="contained"
-            sx={{
-              color: "white",
-              bgcolor: isAvailableForReservation ? "#3b82f6" : "gray",
-              fontSize: ".6rem",
-              fontWeight: "medium",
-              padding: ".4rem 1rem",
-              borderRadius: "10px",
-              width: "100%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: " center",
-              gap: ".6rem",
-              ":hover": {
-                bgcolor: isAvailableForReservation ? "#2563eb" : "gray",
-              },
+        {isAvailable && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              reserveOrder();
             }}
-            onClick={reserveOrder}
+            className="w-full h-11 rounded-xl text-white font-bold text-[13.5px]"
+            style={{ background: "#2D7DD2" }}
           >
-            {" "}
-            <div style={{ width: 20 }}>
-              <img
-                style={{ width: "100%", height: "100%" }}
-                src="/static/admin/images/svg/tap-colored.svg"
-                alt="salary"
-              />
-            </div>
-            <span>{t("courier.courier_order.reserve_order")}</span>
-          </Button>
+            {t("courier.courier_order.reserve_order")}
+          </button>
         )}
-
-        {(order?.status === orderStatuses.preparing && order?.prepared) &&
-          <div className="col-span-3 font-bold text-lg text-center animate-pulse">
-            Ресторан отметил что заказ можно забрать
-          </div>}
-        {
-          (order?.status === orderStatuses.preparing) && order.approximate_preparation_time && (
-            <div className="flex items-center gap-2 justify-start col-span-3">
-              <div className="col-span-3 flex items-center font-bold text-lg text-center gap-2">
-                {t("Приехать к")}:
-                <span>{ConvertQrMenuApiTimeToLocal(order.approximate_preparation_time)}</span>
-              </div>
-            </div>
-          )
-        }
-
-        {isAvailableForCompletion && (
-          <Button
-            className="col-span-3"
-            disabled={!isAvailableForCompletion}
-            variant="contained"
-            sx={{
-              color: "white",
-              bgcolor: isAvailableForCompletion ? "#059669" : "gray",
-              fontSize: ".6rem",
-              fontWeight: "medium",
-              padding: ".4rem 1rem",
-              borderRadius: "10px",
-              width: "100%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: " center",
-              gap: ".6rem",
-              ":hover": {
-                bgcolor: isAvailableForCompletion ? "#059682" : "gray",
-              },
-            }}
-            onClick={setToCompleted}
-          >
-            {" "}
-            <div style={{ width: 20 }}>
-              <img
-                style={{ width: "100%", height: "100%" }}
-                src="/static/admin/images/svg/tap-colored.svg"
-                alt="salary"
-              />
-            </div>
-            <span>{t("courier.courier_order.set_order_to_completed")}</span>
-          </Button>
-        )}
-        {/* {isAvailableForSetToCanceled && (
-          <Button
-            className="col-span-3"
-            disabled={!isAvailableForSetToCanceled}
-            variant="contained"
-            sx={{
-              color: "white",
-              bgcolor: isAvailableForSetToCanceled ? "#5c5c5c" : "gray",
-              fontSize: ".6rem",
-              fontWeight: "medium",
-              padding: ".4rem 1rem",
-              borderRadius: "10px",
-              width: "100%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: " center",
-              gap: ".6rem",
-              ":hover": {
-                bgcolor: isAvailableForSetToCanceled ? "#5c5c5e" : "gray",
-              },
-            }}
-            onClick={setToCanceled}
-          >
-            {" "}
-            <div style={{ width: 20 }}>
-              <img
-                style={{ width: "100%", height: "100%" }}
-                src="/static/admin/images/svg/tap-colored.svg"
-                alt="salary"
-              />
-            </div>
-            <span>{t("courier.courier_order.set_order_to_canceled")}</span>
-          </Button>
-        )} */}
       </div>
     </div>
   );

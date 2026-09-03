@@ -1,12 +1,12 @@
-import { useState } from "react"
 import CourierAvailableForDeliveryOrdersList from "./CourierAvailableForDeliveryOrdersList"
 import CourierActiveOrders from "./CourierActiveOrders"
 import CourierCompletedOrders from "./CourierCompletedOrders"
 
 import CourierOrdersFilter, {courierOrderFilters} from "./CourierOrdersFilter"
-import { useLocation, useNavigate } from "react-router-dom"
+import { Route, Routes, useLocation, useNavigate } from "react-router-dom"
+import CourierOrderDetailPage from "./CourierOrderDetailPage"
 
-const CourierOrdersPage = ({courierID}) => {
+const CourierOrdersList = ({courierID}) => {
   const navigate = useNavigate()
 
   const {state} = useLocation()
@@ -35,6 +35,15 @@ const CourierOrdersPage = ({courierID}) => {
           <CourierCompletedOrders courierID={courierID} />
       }
     </div>
+  )
+}
+
+const CourierOrdersPage = ({courierID}) => {
+  return (
+    <Routes>
+      <Route path="/" element={<CourierOrdersList courierID={courierID} />} />
+      <Route path="/:orderID" element={<CourierOrderDetailPage courierID={courierID} />} />
+    </Routes>
   )
 }
 

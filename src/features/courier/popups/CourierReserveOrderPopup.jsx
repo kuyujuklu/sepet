@@ -25,7 +25,7 @@ const CourierReserveOrderPopup = () => {
     dispatch(closeCourierReserveOrderPopup());
   }, [dispatch]);
 
-  const [reserveOrderQuery, { isReserveOrderQueryLoading }] =
+  const [reserveOrderQuery, { isLoading: isReserveOrderQueryLoading }] =
     useReserveOrderMutation({
       fixedCacheKey: fixedCacheKeys.courier.reserve_order,
     });
@@ -38,20 +38,27 @@ const CourierReserveOrderPopup = () => {
     reserveOrderQuery({
       courierID: popupState.courierID,
       orderID: popupState.orderID,
-    });
+    })
+      .unwrap()
+      .then(() => {
+        dispatch(pushAlert({
+            message: t("courier.courier_order.you_reserved_order"),
+            type: "success",
+            delay: 3000,
+        }))
 
-    dispatch(pushAlert({
-        message: t("courier.courier_order.you_reserved_order"),
-        type: "success",
-        delay: 3000,
-    }))
-
-    navigate("/courier/orders", {state: {ordersFilter: courierOrderFilters.active}})
-    
-    closePopup()
+        navigate("/courier/orders", {state: {ordersFilter: courierOrderFilters.active}})
+        closePopup()
+      })
+      .catch(() => {
+        // Real failure (order already taken, not eligible, etc.) - stays on
+        // the popup so the courier can back out; CourierErrorHandlers.jsx
+        // already surfaces the actual error message globally.
+      })
   };
 
-  const isAvailableForReservation = popupState.courierID && popupState.orderID;
+  const isAvailableForReservation =
+    popupState.courierID && popupState.orderID && !isReserveOrderQueryLoading;
 
   return (
     <Popup opened={popupState.opened} closeCallback={closePopup}>

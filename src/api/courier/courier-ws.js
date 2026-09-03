@@ -98,7 +98,17 @@ const configureSocket = async (courierID) => {
   }
 
   // socket = new WebSocket(`ws://${document.location.host}/ws/orders/company/${companyID}/pub/${pubID}`);
-  socket = new WebSocket(`${process.env.NODE_ENV === "production" ? "wss" : "ws"}://${process.env.API_SERV ?? window.location.host}/ws/courier/${courierID}?access_token=${accesstoken}`);
+  // See orders-ws.js for why this connects directly to the backend instead
+  // of through the local proxy (the proxy never forwards a WS-only path's
+  // 'upgrade' event, and auth here travels in the query param, not a
+  // cookie, so there's no CORS reason to route it through the proxy anyway).
+  // wss only for a real remote host - a local plain-http backend (e.g.
+  // localhost:9999 during local dev) has no TLS to speak wss over.
+  const wsScheme =
+    process.env.REACT_APP_API_SERV && !process.env.REACT_APP_API_SERV.startsWith("localhost")
+      ? "wss"
+      : "ws";
+  socket = new WebSocket(`${wsScheme}://${process.env.REACT_APP_API_SERV ?? window.location.host}/ws/courier/${courierID}?access_token=${accesstoken}`);
   setConnection({state: SOCKET_IS_CONNECTING_STATE, error: null})
   isSocketConnecting = true;
 
