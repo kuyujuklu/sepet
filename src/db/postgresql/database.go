@@ -51,9 +51,15 @@ func InitializeDatabase() *gorm.DB {
 		&models.TelegramSuperUserChat{},
 		&models.TelegramSuperUser{},
 		&models.NotificationSubscription{},
+		&models.CourierNotificationSubscription{},
 		&models.Courier{},
 		&models.PhoneValidationSession{},
 		&models.ShippingCopyPreset{},
+		&models.OrderStatusEvent{},
+		&models.ModifierGroup{},
+		&models.ModifierOption{},
+		&models.PushCampaign{},
+		&models.PushCampaignRecipient{},
 	)
 	return db
 }

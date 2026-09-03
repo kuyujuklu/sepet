@@ -7,6 +7,8 @@ import (
 	"github.com/alexkalak/qrmenu/src/repo/courierrepo"
 	"github.com/alexkalak/qrmenu/src/repo/dishesrepo"
 	"github.com/alexkalak/qrmenu/src/repo/menurepo"
+	"github.com/alexkalak/qrmenu/src/repo/modifiergrouprepo"
+	"github.com/alexkalak/qrmenu/src/repo/orderstatuseventrepo"
 	"github.com/alexkalak/qrmenu/src/repo/pubsrepo"
 	"github.com/alexkalak/qrmenu/src/repo/shippingcopypresetrepo"
 )
@@ -41,6 +43,14 @@ func Configure() error {
 	}
 
 	if err := shippingcopypresetrepo.Configure(); err != nil {
+		return err
+	}
+
+	if err := orderstatuseventrepo.Configure(); err != nil {
+		return err
+	}
+
+	if err := modifiergrouprepo.Configure(); err != nil {
 		return err
 	}
 

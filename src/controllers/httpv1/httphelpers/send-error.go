@@ -17,6 +17,7 @@ import (
 	"github.com/alexkalak/qrmenu/src/errors/ordererrors"
 	"github.com/alexkalak/qrmenu/src/errors/oserrors"
 	"github.com/alexkalak/qrmenu/src/errors/puberrors"
+	"github.com/alexkalak/qrmenu/src/errors/pushcampaignerrors"
 	"github.com/alexkalak/qrmenu/src/errors/roleerrors"
 	"github.com/alexkalak/qrmenu/src/errors/servererrors"
 	"github.com/alexkalak/qrmenu/src/errors/shippingcopypreseterrors"
@@ -42,18 +43,19 @@ var errors = map[error]int{
 	companyerrors.ErrUnableToDeleteCompany:                fiber.StatusInternalServerError,
 
 	//Pub errors
-	puberrors.ErrPubNotFound:             fiber.StatusNotFound,
-	puberrors.ErrPubURLNameAlreadyExists: fiber.StatusConflict,
-	puberrors.ErrUnableToGetPub:          fiber.StatusInternalServerError,
-	puberrors.ErrUnableToCreatePub:       fiber.StatusInternalServerError,
-	puberrors.ErrUnableToUpdatePub:       fiber.StatusInternalServerError,
-	puberrors.ErrUnableToDeletePub:       fiber.StatusInternalServerError,
-	puberrors.ErrUnableToCreateQrCode:    fiber.StatusInternalServerError,
-	puberrors.ErrPubHasBadCompanyID:      fiber.StatusForbidden,
-	puberrors.ErrPubHasNoLogo:            fiber.StatusNotFound,
-	puberrors.ErrPubHasNoBG:              fiber.StatusNotFound,
-	puberrors.ErrPubShippingIsInvalid:    fiber.StatusInternalServerError,
-	puberrors.ErrPubPreorderIsInvalid:    fiber.StatusInternalServerError,
+	puberrors.ErrPubNotFound:               fiber.StatusNotFound,
+	puberrors.ErrPubURLNameAlreadyExists:   fiber.StatusConflict,
+	puberrors.ErrUnableToGetPub:            fiber.StatusInternalServerError,
+	puberrors.ErrUnableToCreatePub:         fiber.StatusInternalServerError,
+	puberrors.ErrUnableToUpdatePub:         fiber.StatusInternalServerError,
+	puberrors.ErrUnableToDeletePub:         fiber.StatusInternalServerError,
+	puberrors.ErrUnableToCreateQrCode:      fiber.StatusInternalServerError,
+	puberrors.ErrPubHasBadCompanyID:        fiber.StatusForbidden,
+	puberrors.ErrPubHasNoLogo:              fiber.StatusNotFound,
+	puberrors.ErrPubHasNoBG:                fiber.StatusNotFound,
+	puberrors.ErrPubShippingIsInvalid:      fiber.StatusInternalServerError,
+	puberrors.ErrPubPreorderIsInvalid:      fiber.StatusInternalServerError,
+	puberrors.ErrLocationNotInDeliveryZone: fiber.StatusBadRequest,
 
 	//Menu errors
 	menuerrors.ErrNotPubsMenu:              fiber.StatusForbidden,
@@ -167,6 +169,18 @@ var errors = map[error]int{
 	shippingcopypreseterrors.ErrUnableToCreateShippingCopyPreset: fiber.StatusInternalServerError,
 	shippingcopypreseterrors.ErrUnableToUpdateShippingCopyPreset: fiber.StatusInternalServerError,
 	shippingcopypreseterrors.ErrUnableToDeleteShippingCopyPreset: fiber.StatusInternalServerError,
+
+	// pushcampaignerrors
+	pushcampaignerrors.ErrPushCampaignNotFound:       fiber.StatusNotFound,
+	pushcampaignerrors.ErrUnableToGetPushCampaign:    fiber.StatusInternalServerError,
+	pushcampaignerrors.ErrUnableToCreatePushCampaign: fiber.StatusInternalServerError,
+	pushcampaignerrors.ErrUnableToUpdatePushCampaign: fiber.StatusInternalServerError,
+	pushcampaignerrors.ErrUnknownDeepLinkType:        fiber.StatusBadRequest,
+	pushcampaignerrors.ErrUnknownAudienceType:        fiber.StatusBadRequest,
+	pushcampaignerrors.ErrPushCampaignAlreadySent:    fiber.StatusConflict,
+	pushcampaignerrors.ErrNoRecipientsForAudience:    fiber.StatusBadRequest,
+	pushcampaignerrors.ErrTestRecipientNotSubscribed: fiber.StatusNotFound,
+	pushcampaignerrors.ErrInvalidScheduledTime:       fiber.StatusBadRequest,
 }
 
 func SendError(ctx *fiber.Ctx, err error, statusCode int) error {

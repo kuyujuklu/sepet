@@ -3,3 +3,6 @@ clientfiles
 logs.log
 
 Makefile
+
+qrmenu-backend.exe
+run.log
