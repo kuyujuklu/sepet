@@ -7,6 +7,7 @@ import { requireAuthentication, setAuthenticated } from '../auth/authSlice'
 import WhiteSpinner from '../../components/loaders/WhiteSpinner'
 import { errorKeys, setReceivingError } from '../errorHandlers/errorHandlerSlice'
 import { useNavigate } from 'react-router-dom'
+import { clearSuperAdminImpersonation } from '@/utils/superAdminImpersonation'
 
 const LogoutButton = () => {
     const {t} = useTranslation()
@@ -24,6 +25,7 @@ const LogoutButton = () => {
 
     useEffect(() => {
         if (!data?.ok) return;
+        clearSuperAdminImpersonation()
         window.location.pathname = "/"
     }, [data, dispatch])
 

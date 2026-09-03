@@ -6,25 +6,27 @@ import {
 } from "../errorHandlers/errorHandlerSlice";
 import { useGetCompanyQuery } from "../../api/company/company";
 import Header from "./Header";
+import Sidebar from "./Sidebar";
+import SuperAdminImpersonationBanner from "./SuperAdminImpersonationBanner";
 import BlackSpinner from "../../components/loaders/BlackSpinner";
-import { Route, Routes, useParams } from "react-router-dom";
-import Sections from "./Sections";
+import { Route, Routes, useParams, useLocation } from "react-router-dom";
+import Home from "./Home/Home";
 import { setCompanyID } from "../company/companySlice";
 import Shipping from "./ShippingAndPreorder/Shipping";
 import { setShipping } from "./ShippingAndPreorder/Shipping/shippingSlice";
-import { pub, useGetPubQuery, useGetShippingQuery } from "../../api/pub/pub";
+import { useGetPubQuery, useGetShippingQuery } from "../../api/pub/pub";
 import { setPubID } from "../pub/pubSlice";
 import OrdersPreloader from "./Orders/OrdersPreloader";
 import Orders from "./Orders/Orders";
 import OrderInfoPage from "./Orders/OrderInfo/OrderInfoPage";
 import PubPage from "../pub/PubPage";
+import PubSettings from "./PubSettings/PubSettings";
 import { setOrdersPreloader } from "./Orders/ordersSlice";
-import Navbar from "../../components/Errors/Navbar/Navbar";
-import SwitchLang from "../company/SwitchLang";
-import LogoutButton from "../company/LogoutButton";
+import { setLastUsedPubID } from "@/utils/lastUsedPub";
 
 const AdminPanel = () => {
     const dispatch = useDispatch();
+    const location = useLocation();
 
     //SETTING COMPANY DATA
     const { data: companyData, error: companyError } = useGetCompanyQuery();
@@ -55,6 +57,12 @@ const AdminPanel = () => {
         if (!pubID) return;
         dispatch(setPubID(pubID));
     }, [dispatch, pubID]);
+
+    // Feeds CompanyPage's "reopen whichever pub was used last" redirect.
+    useEffect(() => {
+        if (!companyData?.company?.id || !pubID) return;
+        setLastUsedPubID(companyData.company.id, pubID);
+    }, [companyData?.company?.id, pubID]);
 
     useEffect(() => {
         if (!error) return;
@@ -104,64 +112,85 @@ const AdminPanel = () => {
 
     return (
         <>
+            <SuperAdminImpersonationBanner />
             {!pubData && (
                 <div style={{width: "100vw",height: "100vh"}} className="absolute flex justify-center items-center">
                     <BlackSpinner />
                 </div>
             )}
             {pubData?.pub && (
-                <>
-                    <nav className="bg-white shadow-lg mb-8 rounded-xl pb-2 sm:pb-0">
-                        <div className="max-w-6xl mx-auto px-4">
-                            <div className="flex flex-col sm:flex-row items-center justify-between">
-                                <div className="flex space-x-7">
-                                    <div className="pb-2 px-2">
-                                        <Header pubID={pubID} name={pubData?.pub?.name} />
-                                    </div>
-                                    {/* <!-- Primary Navbar items --> */}
-                                </div>
-                                {/* <!-- Secondary Navbar items --> */}
-                                <div className=" flex justify-start space-x-3">
-                                    <div className="w-fit flex justify-start items-center gap-4">
-                                        <SwitchLang />
-                                        <LogoutButton />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </nav>
-                    <div className="pb-20">
-                        <OrdersPreloader
-                            companyID={companyData.company.id}
+                <div className="lg:flex lg:gap-5 lg:items-start">
+                    {/* Persistent left nav on wide screens - replaces the
+                        mobile top bar below, per the approved canvas shell */}
+                    <div className="hidden lg:block" style={{ paddingTop: 20 }}>
+                        <Sidebar
+                            pub={pubData.pub}
                             pubID={pubID}
+                            companyID={companyData?.company?.id}
                         />
-                        <Routes>
-                            <Route
-                                path="/"
-                                element={<Sections pub={pubData.pub} />}
-                            />
-                            <Route
-                                path="/shipping"
-                                element={<Shipping pub={pubData.pub} />}
-                            />
-                            <Route
-                                path="/orders"
-                                element={<Orders pub={pubData.pub} />}
-                            />
-                            <Route
-                                path="/order/:orderID/*"
-                                element={
-                                    <OrderInfoPage
-                                        pubUrlName={pubData?.pub.url_name}
-                                        pubDishes={pubData.dishes}
-                                    />
-                                }
-                            />
-                            <Route path="/edit_menu/*" element={<PubPage />} />
-                        </Routes>
-                        <Sections />
                     </div>
-                </>
+
+                    <div className="flex-1 min-w-0">
+                        {/* The pub-switcher header only makes sense on Home -
+                            every other mobile screen supplies its own back-
+                            chevron PageHeader instead (matches the sidebar,
+                            which is the only persistent chrome on desktop). */}
+                        {(location.pathname === `/admin/pub/${pubID}` || location.pathname === `/admin/pub/${pubID}/`) && (
+                            <nav className="lg:hidden mb-6">
+                                <Header
+                                    pubID={pubID}
+                                    name={pubData?.pub?.name}
+                                    address={pubData?.pub?.address}
+                                    companyID={companyData?.company?.id}
+                                />
+                            </nav>
+                        )}
+                        <div className="pb-20 lg:pt-5">
+                            <OrdersPreloader
+                                companyID={companyData.company.id}
+                                pubID={pubID}
+                            />
+                            <Routes>
+                                <Route
+                                    path="/"
+                                    element={
+                                        <Home
+                                            pub={pubData.pub}
+                                            companyID={companyData.company.id}
+                                        />
+                                    }
+                                />
+                                <Route
+                                    path="/shipping"
+                                    element={<Shipping pub={pubData.pub} />}
+                                />
+                                <Route
+                                    path="/orders"
+                                    element={<Orders pub={pubData.pub} />}
+                                />
+                                <Route
+                                    path="/order/:orderID/*"
+                                    element={
+                                        <OrderInfoPage
+                                            pubUrlName={pubData?.pub.url_name}
+                                            pubDishes={pubData.dishes}
+                                        />
+                                    }
+                                />
+                                <Route path="/edit_menu/*" element={<PubPage />} />
+                                <Route
+                                    path="/settings"
+                                    element={
+                                        <PubSettings
+                                            pub={pubData.pub}
+                                            companyID={companyData.company.id}
+                                        />
+                                    }
+                                />
+                            </Routes>
+                        </div>
+                    </div>
+                </div>
             )}
         </>
     );
