@@ -6,6 +6,12 @@ the work without re-reading the whole codebase.
 
 Newest first.
 
+- [2026-09-04 — Fix: delivery showed as free for addresses outside the delivery zone](2026-09-04-fix-free-delivery-outside-zone.md)
+  — `isAvailableForDelivery` only checked work hours, never the server's
+  `shipping.available` zone flag; `getDeliveryPrice()` returned the raw
+  (never-actually-null) `shipping_price` with no availability check either.
+  Needs a new native build to reach real users - can't ship via OTA since
+  expo-updates isn't in the currently-live builds yet.
 - [2026-09-03 — Add expo-updates (EAS Update / OTA)](2026-09-03-expo-updates-ota.md)
   — wired up OTA capability in both `app` and `courier-app` (`runtimeVersion`/`updates`
   in `app.json`, `channel` per build profile in `eas.json`). Capability only — no update

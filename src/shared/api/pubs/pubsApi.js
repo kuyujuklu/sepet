@@ -134,8 +134,13 @@ export const pubsApi = createApi({
         let pubWorkHours = getPubWorkHours(response?.pub)
         response.pub.isOpen = pubWorkHours.isDeliveryAvailable;
         // Only meaningful when coordinates were sent: the server then answers
-        // with shipping.available = false for a point outside every shape
-        response.pub.isAvailableForDelivery = pubWorkHours.isAvailableForDelivery;
+        // with shipping.available = false for a point outside every shape.
+        // isAvailableForDelivery used to reflect work hours alone, so an
+        // out-of-zone address at an otherwise-open pub read as available -
+        // basket/checkout screens gate on this flag, not on shipping.available
+        // directly, so it has to fold the zone check in too.
+        response.pub.isAvailableForDelivery =
+          pubWorkHours.isAvailableForDelivery && response.pub.shipping?.available !== false;
         response.pub.shipping.shipping_work_start = pubWorkHours.shippingWorkStart;
         response.pub.shipping.shipping_work_end = pubWorkHours.shippingWorkEnd;
         return response;

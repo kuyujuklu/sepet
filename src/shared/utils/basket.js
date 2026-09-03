@@ -49,9 +49,17 @@ export const getBasketItemPrice = (item, pub) => {
 };
 
 // `nearbyPub` is the entry of get-nearby-pubs: the delivery price and the
-// free-delivery threshold live there, not on the pub of pub-info.
+// free-delivery threshold live there, not on the pub of pub-info. Also
+// called with a pub-info pub directly (BasketPage) - unlike the nearby-pubs
+// list (which never includes a pub outside its own delivery zone in the
+// first place), a pub-info pub can be out of zone for the client's current
+// address, which the server signals with shipping.available === false
+// rather than a null/missing shipping_price (that field is just 0 there,
+// same as a genuinely free zone) - null here matches this file's existing
+// "nothing to show" convention (see getAmountLeftForFreeDelivery).
 export const getDeliveryPrice = (nearbyPub, itemsPrice) => {
   if (!nearbyPub) return null;
+  if (nearbyPub.shipping?.available === false) return null;
 
   const freeFrom = +nearbyPub.shipping_free_delivery_price;
 
