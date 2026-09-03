@@ -102,12 +102,14 @@ const configureSocket = async (courierID) => {
   // of through the local proxy (the proxy never forwards a WS-only path's
   // 'upgrade' event, and auth here travels in the query param, not a
   // cookie, so there's no CORS reason to route it through the proxy anyway).
-  // wss only for a real remote host - a local plain-http backend (e.g.
-  // localhost:9999 during local dev) has no TLS to speak wss over.
+  // wss by default - see orders-ws.js for why (same fix, same bug: this
+  // used to default to ws whenever REACT_APP_API_SERV was unset, not just
+  // when it was localhost, which browsers block as mixed content on an
+  // HTTPS page).
   const wsScheme =
-    process.env.REACT_APP_API_SERV && !process.env.REACT_APP_API_SERV.startsWith("localhost")
-      ? "wss"
-      : "ws";
+    process.env.REACT_APP_API_SERV && process.env.REACT_APP_API_SERV.startsWith("localhost")
+      ? "ws"
+      : "wss";
   socket = new WebSocket(`${wsScheme}://${process.env.REACT_APP_API_SERV ?? window.location.host}/ws/courier/${courierID}?access_token=${accesstoken}`);
   setConnection({state: SOCKET_IS_CONNECTING_STATE, error: null})
   isSocketConnecting = true;

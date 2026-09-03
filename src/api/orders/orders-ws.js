@@ -107,12 +107,19 @@ const configureSocket = async (companyID, pubID) => {
   // here specifically because auth travels in the access_token query param,
   // not a cookie - there's no CORS-credentials wildcard-origin conflict the
   // way there was for the cookie-based refresh-token fetch.
-  // wss only for a real remote host - a local plain-http backend (e.g.
-  // localhost:9999 during local dev) has no TLS to speak wss over.
+  // wss by default (unset REACT_APP_API_SERV means "talk to window.location.host",
+  // which in every real deployment is the real HTTPS domain) - ws only when
+  // explicitly pointed at a local plain-http backend (e.g. localhost:9999
+  // during local dev), which has no TLS to speak wss over. The previous
+  // `X && !X.startsWith("localhost") ? wss : ws` version defaulted to ws
+  // whenever the var was unset at all, not just when it was localhost -
+  // browsers block that as mixed content on an HTTPS page (confirmed live:
+  // sepet.md/admin's order feed silently failed for every pub because of
+  // this once REACT_APP_API_SERV stopped being set at build time).
   const wsScheme =
-    process.env.REACT_APP_API_SERV && !process.env.REACT_APP_API_SERV.startsWith("localhost")
-      ? "wss"
-      : "ws";
+    process.env.REACT_APP_API_SERV && process.env.REACT_APP_API_SERV.startsWith("localhost")
+      ? "ws"
+      : "wss";
   socket = new WebSocket(`${wsScheme}://${process.env.REACT_APP_API_SERV ?? window.location.host}/ws/orders/company/${companyID}/pub/${pubID}?access_token=${accesstoken}`);
   setConnection({ state: SOCKET_IS_CONNECTING_STATE, error: null })
   isSocketConnecting = true;
