@@ -1,7 +1,5 @@
 "use client";
 import { useEffect, useState } from "react";
-import Input from "../../components/Inputs/Input";
-import { Button } from "@mui/material";
 import {
     ValidatePassword,
     validateCompanyEmail,
@@ -19,9 +17,13 @@ import { errorKeys, setReceivingError } from "../errorHandlers/errorHandlerSlice
 import { convertRespError } from "../../api/resperrors/convertRespError";
 import { appErrors } from "../../errors/errors";
 import Header from "./Header";
+import AuthField from "./AuthField";
+import { MailIcon, LockIcon } from "./icons";
+import usePageTitle from "@/hooks/usePageTitle";
 
 const Authentication = () => {
     const { t } = useTranslation();
+    usePageTitle(t("admin.authentication.headline"));
 
     const navigate = useNavigate();
     const [authenticateQuery, { data, error, isLoading }] =
@@ -38,15 +40,14 @@ const Authentication = () => {
                 dispatch(setRequireAuthenticationToFalse())
                 dispatch(company.util.resetApiState());
                 dispatch(auth.util.resetApiState());
-                navigate(data?.role === "company" ? "/admin/company/" : 
-                        data?.role === "admin" ? "/administration/orders" : 
+                navigate(data?.role === "company" ? "/admin/company/" :
+                        data?.role === "admin" ? "/administration/orders" :
                         "/courier");
             }
         })()
     }, [data, dispatch, navigate]);
 
     useEffect(() => {
-        console.log("AUTH ERROR: ", error)
         if (!error) return;
         let newError = {...error};
 
@@ -70,86 +71,68 @@ const Authentication = () => {
     };
 
     return (
-        <div className="flex flex-col items-center w-full h-full m-auto py-2 sm:py-5 gap-5">
-            <Header />
-            <div
-                style={{
-                    minHeight: "600px",
-                    maxWidth: "500px",
-                    borderRadius: "40px",
-                }}
-                className="flex flex-col gap-y-4 p-2 sm:p-10 w-full m-auto shadow-2xl"
-            >
-                <h1 className="text-xl sm:text-2xl font-bold text-gray-700">
-                    {t("admin.authentication.headline")}
-                </h1>
-                <div className="flex flex-col gap-6">
-                    <div>
-                        <div className="text-sm font-medium">
-                            {t("admin.authentication.your_email")}
-                        </div>
-                        <Input
-                            type={"email"}
+        <div className="min-h-screen w-full flex items-center justify-center px-4 py-10" style={{ background: "#f5f7fa" }}>
+            <div className="w-full flex flex-col items-center gap-6" style={{ maxWidth: 400 }}>
+                <Header />
+
+                <div
+                    className="w-full bg-white rounded-2xl border"
+                    style={{ borderColor: "#e4e9ee", boxShadow: "0 1px 2px rgba(20,30,45,.04)", padding: "30px 26px" }}
+                >
+                    <h1 className="text-[21px] font-bold text-ink text-center mb-6">
+                        {t("admin.authentication.headline")}
+                    </h1>
+                    {/* Browsers' password managers key off an actual <form> to
+                        both offer saving credentials and (the part that was
+                        missing) autofill them on a later visit - the div-only
+                        version before this could be saved sometimes but almost
+                        never got recognized and refilled automatically. */}
+                    <form
+                        className="flex flex-col gap-4"
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            handleButtonClick();
+                        }}
+                    >
+                        <AuthField
+                            label={t("admin.authentication.your_email")}
+                            icon={MailIcon}
+                            type="email"
+                            name="email"
+                            autoComplete="username"
                             value={email}
                             setValue={setEmail}
-                            style={{
-                                marginTop: "10px",
-                                minHeight: "40px",
-                                fontSize: "16px",
-                                maxWidth: "600px",
-                            }}
                             validators={[validateCompanyEmail]}
                         />
-                    </div>
-                    <div>
-                        <div className="text-sm font-medium">
-                            {t("admin.authentication.password")}
-                        </div>
-                        <Input
+                        <AuthField
+                            label={t("admin.authentication.password")}
+                            icon={LockIcon}
                             type="password"
+                            name="password"
+                            autoComplete="current-password"
                             value={password}
                             setValue={setPassword}
-                            style={{
-                                marginTop: "10px",
-                                minHeight: "40px",
-                                fontSize: "16px",
-                                maxWidth: "600px",
-                            }}
                             validators={[ValidatePassword]}
                         />
-                    </div>
 
-                    <div className="flex justify-center">
-                        <Button
-                            variant="contained"
-                            sx={{
-                                color: "white",
-                                bgcolor: "rgb(31 41 55)",
-                                fontSize: ".7rem",
-                                fontWeight: "medium",
-                                padding: ".7rem 1rem",
-                                borderRadius: "10px",
-                                width: "90%",
-                                ":hover": {
-                                    bgcolor: "rgb(17 24 39)",
-                                },
-                            }}
-                            onClick={handleButtonClick}
+                        <button
+                            type="submit"
+                            disabled={isLoading}
+                            className="w-full h-12 rounded-xl text-white text-[15px] font-semibold flex items-center justify-center gap-2 disabled:opacity-60 mt-2"
+                            style={{ background: "#2D7DD2" }}
                         >
-                            {isLoading ? (
-                                <WhiteSpinner />
-                            ) : (
-                                t("admin.authentication.login")
-                            )}
-                        </Button>
-                    </div>
+                            {isLoading ? <WhiteSpinner width={20} height={20} /> : t("admin.authentication.login")}
+                        </button>
+                    </form>
+
+                    <NavLink
+                        to="/admin/auth/registration"
+                        className="mt-5 pt-5 block text-center text-[13.5px] font-semibold"
+                        style={{ borderTop: "1px solid #f0f2f5", color: "#2D7DD2" }}
+                    >
+                        {t("admin.authentication.link_to_registration")}
+                    </NavLink>
                 </div>
-                <NavLink
-                    to="/admin/auth/registration"
-                    className="mt-4 text-center text-sm text-gray-600 cursor-pointer"
-                >
-                    {t("admin.authentication.link_to_registration")}
-                </NavLink>
             </div>
         </div>
     );

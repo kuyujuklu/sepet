@@ -9,7 +9,7 @@ import { useTranslation } from "react-i18next"
 
 //validators is an array of functions that return a string error is value is not valid
 //validationDependencies is an array of values from what depends validation(example: for repeatPassword input it will be [password])
-const Input = ({type, value, setValue, style, validators, validationDependencies, disabled}) => {
+const Input = ({type, value, setValue, style, validators, validationDependencies, disabled, name, autoComplete}) => {
     const {t} = useTranslation()
     const [error, setError] = useState("")
 
@@ -62,8 +62,10 @@ const Input = ({type, value, setValue, style, validators, validationDependencies
 
     return (
         <div>
-            <input 
+            <input
                 type={type}
+                name={name}
+                autoComplete={autoComplete}
                 className={`${inputStyle.input}`}
                 style={style}
                 value={value}

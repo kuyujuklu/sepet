@@ -1,7 +1,5 @@
 "use client";
 import { useEffect, useState } from "react";
-import Input from "../../components/Inputs/Input";
-import { Button } from "@mui/material";
 import {
   ValidateCompany,
   ValidatePassword,
@@ -11,7 +9,7 @@ import {
   validateCompayPhone,
 } from "../../validation/validateCompany";
 import PhoneNumberInput from "../../components/Inputs/PhoneNumberInput";
-import { useLazyRegistrateQuery } from "../../api/auth/authQuery";
+import { useLazyRegistrateQuery, useLazyRegistrateCourierQuery } from "../../api/auth/authQuery";
 import { setaccesstoken } from "../../api/auth/authBasedQuery";
 import WhiteSpinner from "../../components/loaders/WhiteSpinner";
 import { useDispatch } from "react-redux";
@@ -27,12 +25,34 @@ import {
 import { appErrors } from "../../errors/errors";
 import { convertRespError } from "../../api/resperrors/convertRespError";
 import Header from "./Header";
+import AuthField from "./AuthField";
+import { MailIcon, LockIcon, UserIcon } from "./icons";
 import { tariffs } from "../../static-data/data";
+import usePageTitle from "@/hooks/usePageTitle";
+
+const roles = {
+  company: "company",
+  courier: "courier",
+};
+
+const phoneInputStyle = {
+  width: "100%",
+  height: 46,
+  borderRadius: 12,
+  border: "1.5px solid #e4e9ee",
+  fontSize: 14.5,
+  paddingLeft: 48,
+  color: "#1c2733",
+};
 
 const Registration = () => {
   const { t } = useTranslation();
+  usePageTitle(t("admin.registration.headline"));
+  const [role, setRole] = useState(roles.company);
   const [registrateQuery, { data, error, isLoading }] =
     useLazyRegistrateQuery();
+  const [registrateCourierQuery, { data: courierData, error: courierError, isLoading: isCourierLoading }] =
+    useLazyRegistrateCourierQuery();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -48,20 +68,32 @@ const Registration = () => {
     ? tariffs[urlParams.get("tariff")]
     : tariffs.basic;
 
-  useEffect(() => {
-    if (data?.ok && data?.accesstoken) {
-      setaccesstoken(data.accesstoken);
-      dispatch(setAuthenticated(true));
-      dispatch(setRequireAuthenticationToFalse());
-      dispatch(company.util.resetApiState());
-      dispatch(auth.util.resetApiState());
-      navigate("/admin/company");
-    }
-  }, [data, dispatch, navigate]);
+  const finishRegistration = (accessToken, destination) => {
+    setaccesstoken(accessToken);
+    dispatch(setAuthenticated(true));
+    dispatch(setRequireAuthenticationToFalse());
+    dispatch(company.util.resetApiState());
+    dispatch(auth.util.resetApiState());
+    navigate(destination);
+  };
 
   useEffect(() => {
-    if (!error) return;
-    let newError = { ...error };
+    if (data?.ok && data?.accesstoken) {
+      finishRegistration(data.accesstoken, "/admin/company");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data]);
+
+  useEffect(() => {
+    if (courierData?.ok && courierData?.accesstoken) {
+      finishRegistration(courierData.accesstoken, "/courier");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [courierData]);
+
+  useEffect(() => {
+    if (!error && !courierError) return;
+    let newError = { ...(error ?? courierError) };
 
     if (newError.status === 400 && newError.data.validationErrors) {
       newError.text = appErrors.validationError;
@@ -73,10 +105,21 @@ const Registration = () => {
       setReceivingError({ errorKey: errorKeys.registration, error: newError })
     );
     setAuthenticated(false);
-  }, [error, dispatch]);
+  }, [error, courierError, dispatch]);
 
   const handleButtonClick = () => {
     setValidateAll(true);
+
+    if (role === roles.courier) {
+      const emailError = validateCompanyEmail(email);
+      const passwordError = ValidatePassword(password);
+      const repeatError = ValidateRepeatPassword(repeatPassword, password);
+      if (emailError || passwordError || repeatError) return;
+
+      registrateCourierQuery({ data: { email, password } });
+      return;
+    }
+
     let validationErrors = ValidateCompany({
       email,
       password,
@@ -108,139 +151,127 @@ const Registration = () => {
   };
 
   const [validateAll, setValidateAll] = useState(false);
+  const isLoadingAny = isLoading || isCourierLoading;
 
   return (
-    <div className="flex flex-col items-center w-full h-full py-2 sm:py-5 gap-5">
-      <Header />
-      <div
-        style={{
-          minHeight: "600px",
-          maxWidth: "500px",
-          borderRadius: "40px",
-        }}
-        className="flex flex-col gap-y-4 p-2 sm:p-10 w-full m-auto shadow-2xl"
-      >
-        <h1 className="text-2xl font-bold text-gray-700">
-          {t("admin.registration.headline")}
-        </h1>
-        <div className="flex flex-col gap-2 sm:gap-6">
-          <div>
-            <div className="text-sm font-medium">
-              {t("admin.registration.your_name")}
-            </div>
-            <Input
-              value={name}
-              setValue={setName}
-              style={{
-                marginTop: "10px",
-                minHeight: "40px",
-                fontSize: "16px",
-                maxWidth: "600px",
-              }}
-              validators={[validateCompanyName]}
-              validationDependencies={{ requireValidation: validateAll }}
-            />
-          </div>
-          <div>
-            <div className="text-sm font-medium">
-              {t("admin.registration.your_phone")}
-            </div>
+    <div className="min-h-screen w-full flex items-center justify-center px-4 py-10" style={{ background: "#f5f7fa" }}>
+      <div className="w-full flex flex-col items-center gap-6" style={{ maxWidth: 400 }}>
+        <Header />
 
-            <PhoneNumberInput
-              value={phone}
-              setValue={setPhone}
+        <div
+          className="w-full bg-white rounded-2xl border"
+          style={{ borderColor: "#e4e9ee", boxShadow: "0 1px 2px rgba(20,30,45,.04)", padding: "30px 26px" }}
+        >
+          <h1 className="text-[21px] font-bold text-ink text-center mb-6">
+            {t("admin.registration.headline")}
+          </h1>
+
+          {/* Company vs courier - two different signup shapes sharing this
+              one form: a courier only ever needs email+password here, the
+              rest of their profile is filled in later on their own page. */}
+          <div className="flex p-1 rounded-xl mb-5" style={{ background: "#f2f4f6" }}>
+            <button
+              type="button"
+              onClick={() => setRole(roles.company)}
+              className="flex-1 h-9 rounded-lg text-[13px] font-semibold"
               style={{
-                marginTop: "10px",
-                minHeight: "40px",
-                fontSize: "16px",
-                maxWidth: "600px",
+                background: role === roles.company ? "#1c2733" : "transparent",
+                color: role === roles.company ? "#fff" : "#526070",
               }}
-              validators={[validateCompayPhone]}
-              validationDependencies={{ requireValidation: validateAll }}
-            />
+            >
+              {t("admin.registration.role_company")}
+            </button>
+            <button
+              type="button"
+              onClick={() => setRole(roles.courier)}
+              className="flex-1 h-9 rounded-lg text-[13px] font-semibold"
+              style={{
+                background: role === roles.courier ? "#1c2733" : "transparent",
+                color: role === roles.courier ? "#fff" : "#526070",
+              }}
+            >
+              {t("admin.registration.role_courier")}
+            </button>
           </div>
-          <div>
-            <div className="text-sm font-medium">
-              {t("admin.registration.your_email")}
-            </div>
-            <Input
-              type={"email"}
+
+          <form
+            className="flex flex-col gap-4"
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleButtonClick();
+            }}
+          >
+            {role === roles.company && (
+              <>
+                <AuthField
+                  label={t("admin.registration.your_name")}
+                  icon={UserIcon}
+                  value={name}
+                  setValue={setName}
+                  validators={[validateCompanyName]}
+                  validationDependencies={{ requireValidation: validateAll }}
+                />
+                <div>
+                  <div className="text-[13px] font-medium text-ink mb-1.5">
+                    {t("admin.registration.your_phone")}
+                  </div>
+                  <PhoneNumberInput
+                    value={phone}
+                    setValue={setPhone}
+                    style={phoneInputStyle}
+                    validators={[validateCompayPhone]}
+                    validationDependencies={{ requireValidation: validateAll }}
+                  />
+                </div>
+              </>
+            )}
+
+            <AuthField
+              label={t("admin.registration.your_email")}
+              icon={MailIcon}
+              type="email"
               value={email}
               setValue={setEmail}
-              style={{
-                marginTop: "10px",
-                minHeight: "40px",
-                fontSize: "16px",
-                maxWidth: "600px",
-              }}
               validators={[validateCompanyEmail]}
               validationDependencies={{ requireValidation: validateAll }}
             />
-          </div>
-          <div>
-            <div className="text-sm font-medium">
-              {t("admin.registration.password")}
-            </div>
-            <Input
+            <AuthField
+              label={t("admin.registration.password")}
+              icon={LockIcon}
               type="password"
               value={password}
               setValue={setPassword}
-              style={{
-                marginTop: "10px",
-                minHeight: "40px",
-                fontSize: "16px",
-                maxWidth: "600px",
-              }}
               validators={[ValidatePassword]}
               validationDependencies={{ requireValidation: validateAll }}
             />
-          </div>
-          <div>
-            <div className="text-sm font-medium">
-              {t("admin.registration.repeat_password")}
-            </div>
-            <Input
+            <AuthField
+              label={t("admin.registration.repeat_password")}
+              icon={LockIcon}
               type="password"
               value={repeatPassword}
               setValue={setRepeatPassword}
-              style={{
-                marginTop: "10px",
-                minHeight: "40px",
-                fontSize: "16px",
-                maxWidth: "600px",
-              }}
               validators={[(value) => ValidateRepeatPassword(value, password)]}
               validationDependencies={{ requireValidation: true, password }}
             />
-          </div>
 
-          <div className="flex justify-center mt-2">
-            <Button
-              variant="contained"
-              sx={{
-                color: "white",
-                bgcolor: "rgb(31 41 55)",
-                fontSize: ".7rem",
-                fontWeight: "medium",
-                padding: ".7rem 1rem",
-                borderRadius: "10px",
-                width: "90%",
-                ":hover": {
-                  bgcolor: "rgb(17 24 39)",
-                },
-              }}
-              onClick={handleButtonClick}
+            <button
+              type="submit"
+              disabled={isLoadingAny}
+              className="w-full h-12 rounded-xl text-white text-[15px] font-semibold flex items-center justify-center gap-2 disabled:opacity-60 mt-2"
+              style={{ background: "#2D7DD2" }}
             >
-              {isLoading ? (
-                <WhiteSpinner />
+              {isLoadingAny ? (
+                <WhiteSpinner width={20} height={20} />
               ) : (
                 t("admin.registration.registrate_button")
               )}
-            </Button>
-          </div>
+            </button>
+          </form>
+
           <NavLink
             to="/admin/auth/authentication"
-            className="mt-4 text-sm text-center text-gray-600 cursor-pointer"
+            className="mt-5 pt-5 block text-center text-[13.5px] font-semibold"
+            style={{ borderTop: "1px solid #f0f2f5", color: "#2D7DD2" }}
           >
             {t("admin.registration.link_to_authentication")}
           </NavLink>
