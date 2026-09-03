@@ -2,11 +2,6 @@ name: Deploy backend
 
 on:
   workflow_dispatch:
-    inputs:
-      image_tag:
-        description: "Docker image tag to build and deploy"
-        required: false
-        default: "latest"
 
 jobs:
   deploy:
@@ -21,19 +16,24 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      # docker-compose.yml on the server references alexkalak/qr-back with
+      # no explicit tag (implicit :latest), so that's what actually gets
+      # deployed - the sha tag is just for traceability/rollback reference.
       - name: Build and push image
         uses: docker/build-push-action@v6
         with:
           context: .
           push: true
-          tags: alexkalak/qr-back:${{ inputs.image_tag }}
+          tags: |
+            alexkalak/qr-back:latest
+            alexkalak/qr-back:${{ github.sha }}
 
-      # deploy-backend.sh does not exist on the server yet - it needs to be
-      # written once we can see how the container is actually run today
-      # (docker ps / docker inspect on the box), so this step will fail
-      # until then. Shape should be: docker pull <image>, stop/rm the old
-      # container, docker run with the same flags (ports/env/volumes) the
-      # existing one uses, pointed at the new image.
+      # Compose project lives at /var/www/qrmenu/ on the server (confirmed
+      # via docker inspect's com.docker.compose.project.working_dir label -
+      # docker-compose.yml there, prod .env sits alongside it). Service name
+      # is qrmenu-api. `restart: always` in the compose file only restarts
+      # on crash/daemon-restart with the SAME image already attached to the
+      # container, so pull+up is required to actually pick up the new one.
       - name: Deploy over SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -41,4 +41,7 @@ jobs:
           username: ${{ secrets.DEPLOY_SSH_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           script: |
-            bash /opt/qrmenu/deploy-backend.sh alexkalak/qr-back:${{ inputs.image_tag }}
+            cd /var/www/qrmenu
+            docker compose pull qrmenu-api
+            docker compose up -d qrmenu-api
+            docker image prune -f
