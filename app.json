@@ -27,10 +27,10 @@
       "associatedDomains": [
         "applinks:sepet.md"
       ],
-      "buildNumber": "13"
+      "buildNumber": "14"
     },
     "android": {
-      "versionCode": 75,
+      "versionCode": 76,
       "edgeToEdgeEnabled": true,
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
