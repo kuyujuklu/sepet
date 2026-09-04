@@ -35,6 +35,7 @@ const BasketCreateOrderButton = ({
   currency,
   isPubOpen,
   isAvailableForDelivery,
+  isApproximateLocation = false,
   // From orders/preview: false when something is on the stop list or the
   // basket is under the pub's minimum. The server refuses such an order with
   // a 400, so the button must not pretend otherwise.
@@ -96,6 +97,22 @@ const BasketCreateOrderButton = ({
           title: t("basket_page.pub_is_closed_error"),
         }),
       );
+      return;
+    }
+
+    // Same reasoning as CreateOrder.jsx's own guard: an unconfirmed, GPS-only
+    // point is what let a delivery-zone edge case price as free instead of
+    // unavailable, so checkout - starting here, not just at the final submit
+    // button - requires the explicit map-confirmed address first.
+    if (isApproximateLocation) {
+      dispatch(
+        pushAlert({
+          status: alertStatuses.warning,
+          delay: 3000,
+          title: t("create_order_page.additional_data.approximate_location"),
+        }),
+      );
+      navigator.navigate("SelectGeolocationPage");
       return;
     }
 

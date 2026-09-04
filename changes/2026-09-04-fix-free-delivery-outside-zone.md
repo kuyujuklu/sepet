@@ -129,3 +129,65 @@ workflow is `workflow_dispatch`-only, so it still needs a manual "Deploy
 backend" run from the Actions tab on `alexkalak/qrmenu`. Since this is a
 pure backend fix, it does **not** need an app rebuild to take effect once
 deployed - unlike the outside-zone half of this bug above.
+
+## 2026-09-04 (same day, even later) - require a confirmed address before checkout
+
+User asked to port the website's address-picking behavior into this app.
+Comparing the two: `sepet.md` (`front/app/shared-components/LocationPicker/`)
+never has an unconfirmed-location state at all - it removed its old
+pick-a-city fallback outright, per the client's own call, specifically so
+every address the site handles carries a precise, deliberately-placed
+coordinate. This app already has the equivalent machinery
+(`SelectGeolocation.jsx`'s drag-the-map-not-the-pin picker,
+`SelectGeolocationInputs.jsx`'s reverse-geocoded town/street fields - both
+pre-existing, not new here) and even the right Redux modeling
+(`geolocationSlice.js`'s `isApproximate` flag, `setApproximateGeolocation`
+vs `setGeolocation`, with a comment already saying *"Checkout has to ask for
+the real one"*) - it just was not actually enforced anywhere. An approximate
+point (silent device GPS, shown on the home feed as "Определено по
+геолокации", never run through the map picker) fed pricing exactly the same
+as a confirmed one; `CreateOrder.jsx` only ever showed a small, skippable
+"approximate location" caption next to the submit button. This is the same
+class of imprecision behind the free-delivery-at-a-zone-edge report above -
+closing it here is the systemic fix, not just today's specific case.
+
+### Fix
+
+Both checkout entry points now block on `isApproximate` (reusing
+`selectIsApproximateGeolocation`, unchanged) the same way they already block
+on a closed pub or an unavailable zone - alert + redirect to
+`SelectGeolocationPage`, no order attempted:
+- `widgets/Basket/BasketCreateOrderButton.jsx` - new `isApproximateLocation`
+  prop, checked in the tap handler right after the existing
+  `isPubOpen`/`isAvailableForDelivery` guard.
+- `pages/Basket/BasketPage.jsx` - reads `selectIsApproximateGeolocation`,
+  passes it down.
+- `widgets/Orders/CreateOrder/CreateOrder.jsx` - `sendData()` already had the
+  selector (for the caption) but never branched on it; added right after the
+  existing "no coordinates at all" guard, same shape. Belt-and-suspenders
+  with the basket-level check above - this screen is also reachable from
+  repeat-order, so it needs its own gate rather than trusting the caller.
+
+Reused `create_order_page.additional_data.approximate_location` for both
+new alerts instead of adding a translation key - same underlying fact
+("we don't actually know where this goes yet"), now surfaced as a hard stop
+instead of a caption.
+
+### Backend gaps
+
+None - purely a client-side gate on data the app already had.
+
+### Known limits / follow-ups
+
+- Not verified on-device (standing constraint) - verified via
+  `expo export --platform ios`.
+- Only the two order-submission entry points are gated. Browsing/adding to
+  basket on an approximate location is still allowed (matches this app's own
+  existing `setApproximateGeolocation` comment - "so that the product
+  screens can be shown right away"), unlike the website, which never has an
+  unconfirmed state at all. Gating earlier too is a bigger UX change than
+  asked for here; revisit if approximate-location pricing keeps surfacing
+  bugs even with this fix in place.
+- Needs a new native build to reach real users, same as every other change
+  in this file - can't ship via OTA yet (expo-updates isn't in the
+  currently-live builds).

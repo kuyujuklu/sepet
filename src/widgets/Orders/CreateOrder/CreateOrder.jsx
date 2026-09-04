@@ -405,6 +405,23 @@ const CreateOrder = ({
       return;
     }
 
+    // An approximate point (silent device GPS, never confirmed through the
+    // map picker) is exactly what let a delivery-zone edge case price as
+    // free instead of unavailable - the website never has this state at all
+    // (removed its own coarse fallback outright), so an order here must go
+    // through the same explicit confirm step before it can be priced/placed.
+    if (isApproximateLocation) {
+      dispatch(
+        pushAlert({
+          status: alertStatuses.error,
+          delay: 3000,
+          title: t("create_order_page.additional_data.approximate_location"),
+        }),
+      );
+      navigator.navigate("SelectGeolocationPage");
+      return;
+    }
+
     const dishes = dishIDs.map((dishID) => ({
       dishID,
       count: basket[dishID].count,

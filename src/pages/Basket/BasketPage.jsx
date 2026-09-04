@@ -18,7 +18,10 @@ import {
   selectBasket,
   selectBasketPubID,
 } from "../../features/store/basket/basketSlice";
-import { selectGeolocation } from "../../features/store/geolocation/geolocationSlice";
+import {
+  selectGeolocation,
+  selectIsApproximateGeolocation,
+} from "../../features/store/geolocation/geolocationSlice";
 import { selectClient } from "../../features/store/auth/authSlice";
 import {
   getBasketCount,
@@ -116,6 +119,7 @@ const BasketPage = () => {
   const basket = useSelector(selectBasket);
   const pubID = useSelector(selectBasketPubID);
   const location = useSelector(selectGeolocation);
+  const isApproximateLocation = useSelector(selectIsApproximateGeolocation);
   const client = useSelector(selectClient);
 
   // Asked for with the current coordinates, so the response already carries
@@ -341,6 +345,7 @@ const BasketPage = () => {
                 currency={currency}
                 isAvailableForDelivery={isAvailableForDelivery}
                 isPubOpen={isPubOpen}
+                isApproximateLocation={isApproximateLocation}
                 canBeOrdered={canBeOrdered}
                 hasUnavailableDishes={hasUnavailableDishes}
                 leftForMinOrder={leftForMinOrder}
