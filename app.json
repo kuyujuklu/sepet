@@ -30,7 +30,7 @@
       "buildNumber": "13"
     },
     "android": {
-      "versionCode": 74,
+      "versionCode": 75,
       "edgeToEdgeEnabled": true,
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
