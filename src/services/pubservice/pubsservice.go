@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"mime/multipart"
+	"sort"
 	"time"
 
 	"github.com/alexkalak/qrmenu/src/errors/companyerrors"
@@ -63,6 +64,14 @@ type PubService interface {
 
 	GetPubsWithShippingAvailableForPoint(point models.Vertex) ([]models.Pub, []float64, []float64, error)
 	GetShippingPricesForPubAvailableForPoint(pub models.Pub, point models.Vertex) (bool, float64, float64, error)
+
+	// GetAvailableTopDishes is the cross-restaurant home-feed row: dishes
+	// from every pub that delivers to `point`, section-filtered, ranked by
+	// order count (filter "top") or restricted to discounted dishes (filter
+	// "discount"), closed pubs sunk to the end, one pub's dishes never
+	// filling the whole page (round-robin interleaved), paginated with
+	// limit/offset.
+	GetAvailableTopDishes(point models.Vertex, section string, filter string, limit int, offset int) ([]TopDish, error)
 
 	// Couriers
 	AddCourierToPub(pubID, courierID int) error
@@ -588,4 +597,162 @@ func (s *pubsService) SetPubAddCommissionToDishPrices(pubID int, addCommission b
 	fmt.Println("al;ksdjfl;aksjdfl;asf")
 
 	return s.PubsRepo.SetPubAddCommissionToDishPrices(pubID, addCommission)
+}
+
+const (
+	TOP_DISHES_FILTER_TOP      = "top"
+	TOP_DISHES_FILTER_DISCOUNT = "discount"
+)
+
+// TopDish is one row of the cross-restaurant home feed: a dish plus the pub
+// it belongs to, with that pub's current open/closed state already resolved
+// (the client-side equivalent, app/front's getPubWorkHours, mirrors this
+// same per-day-then-single-pair fallback so the two never disagree).
+type TopDish struct {
+	Dish   models.Dish
+	Pub    models.Pub
+	IsOpen bool
+}
+
+// isPubOpenNow mirrors app/src/shared/utils/pub.js's getPubWorkHours /
+// front's identical copy: per-day work hours win when a real one is
+// configured for today, otherwise the single start/end pair, and a pub with
+// neither configured (both fields left at their zero value) counts as open.
+func isPubOpenNow(shipping models.Shipping, now time.Time) bool {
+	minutesNow := now.Hour()*60 + now.Minute()
+	dayIndex := (int(now.Weekday()) + 6) % 7 // Monday = 0, like the client
+
+	week, err := shipping.GetWorkHoursForWeek()
+	if err == nil && len(week) == 7 {
+		day := week[dayIndex]
+		if day.Start != day.End || day.End != 0 {
+			return isInsideWorkTime(minutesNow, day.Start, day.End)
+		}
+	}
+
+	start, end := shipping.ShippingStartWorkTime, shipping.ShippingEndWorkTime
+	if start == end {
+		return true
+	}
+	return isInsideWorkTime(minutesNow, start, end)
+}
+
+func isInsideWorkTime(minutesNow, start, end int) bool {
+	if start <= end {
+		return minutesNow >= start && minutesNow < end
+	}
+	// Past midnight, e.g. 22:00 - 02:00
+	return minutesNow >= start || minutesNow < end
+}
+
+func (s *pubsService) GetAvailableTopDishes(point models.Vertex, section string, filter string, limit int, offset int) ([]TopDish, error) {
+	if filter == "" {
+		filter = TOP_DISHES_FILTER_TOP
+	}
+	if limit <= 0 {
+		limit = 8
+	}
+
+	pubs, _, _, err := s.GetPubsWithShippingAvailableForPoint(point)
+	if err != nil {
+		return nil, err
+	}
+
+	var orderCounts map[int]int
+	if filter == TOP_DISHES_FILTER_TOP {
+		orderCounts, err = s.PubsRepo.GetDishOrderCounts()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	now := time.Now()
+
+	type pubBucket struct {
+		pub    models.Pub
+		isOpen bool
+		dishes []models.Dish
+	}
+	buckets := make([]pubBucket, 0, len(pubs))
+
+	for _, pub := range pubs {
+		if section != "" && pub.PubType != section {
+			continue
+		}
+
+		dishes, err := s.PubsRepo.GetAllDishesForPub(int(pub.ID))
+		if err != nil {
+			return nil, err
+		}
+
+		matched := make([]models.Dish, 0, len(dishes))
+		for _, dish := range dishes {
+			if !dish.Visible {
+				continue
+			}
+			if filter == TOP_DISHES_FILTER_DISCOUNT && !(dish.SalePrice > 0 && dish.SalePrice < dish.Price) {
+				continue
+			}
+			matched = append(matched, dish)
+		}
+		if len(matched) == 0 {
+			continue
+		}
+
+		if filter == TOP_DISHES_FILTER_TOP {
+			sort.SliceStable(matched, func(i, j int) bool {
+				countI, countJ := orderCounts[int(matched[i].ID)], orderCounts[int(matched[j].ID)]
+				if countI != countJ {
+					return countI > countJ
+				}
+				if matched[i].IsHit != matched[j].IsHit {
+					return matched[i].IsHit
+				}
+				return matched[i].Place < matched[j].Place
+			})
+		} else {
+			sort.SliceStable(matched, func(i, j int) bool {
+				return (matched[i].Price - matched[i].SalePrice) > (matched[j].Price - matched[j].SalePrice)
+			})
+		}
+
+		buckets = append(buckets, pubBucket{pub: pub, isOpen: isPubOpenNow(pub.Shipping, now), dishes: matched})
+	}
+
+	// Open pubs first, closed ones sunk to the end - stable, so pubs within
+	// each group keep whatever order GetPubsWithShippingAvailableForPoint
+	// gave them.
+	sort.SliceStable(buckets, func(i, j int) bool {
+		return buckets[i].isOpen && !buckets[j].isOpen
+	})
+
+	// Round-robin across pubs so one large menu can't fill the whole row -
+	// same reasoning as front/app's own doc comments for this endpoint.
+	interleaved := make([]TopDish, 0, limit+offset)
+	for i := 0; ; i++ {
+		addedAny := false
+		for b := range buckets {
+			if i >= len(buckets[b].dishes) {
+				continue
+			}
+			addedAny = true
+			interleaved = append(interleaved, TopDish{
+				Dish:   buckets[b].dishes[i],
+				Pub:    buckets[b].pub,
+				IsOpen: buckets[b].isOpen,
+			})
+		}
+		if !addedAny {
+			break
+		}
+	}
+
+	if offset >= len(interleaved) {
+		return []TopDish{}, nil
+	}
+	end := offset + limit
+	if end > len(interleaved) {
+		end = len(interleaved)
+	}
+	return interleaved[offset:end], nil
 }

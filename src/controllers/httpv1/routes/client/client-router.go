@@ -72,6 +72,7 @@ func (c *clientController) UnauthorizedRouter(router fiber.Router) {
 	router.Post("/notifications/subscribe", c.SubscribeToNotification)
 	router.Get("/get-available-pubs", c.GetAvailableForShippingPubs)
 	router.Get("/get-available-categories", c.GetAvailableForShippingPubCategories)
+	router.Get("/get-available-top-dishes", c.GetAvailableTopDishes)
 }
 
 func (c *clientController) AuthorizedRouter(router fiber.Router) {

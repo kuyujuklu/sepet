@@ -37,6 +37,11 @@ type UpdatePubInput struct {
 	TelegramUsername string `json:"telegram_username" validate:"" example:"@my_username"`
 	HasInPlaceOrder  bool   `json:"has_in_place_order" validate:"" example:"true"`
 	Location         string `json:"location"`
+	// food / flowers / groceries - admin-front's PubSettings.jsx already
+	// sends this (has for a while), there was just no model field or output
+	// wired up to receive/return it. Persisted on the pre-existing but
+	// previously-dead models.Pub.PubType column.
+	ServiceType string `json:"service_type" example:"food"`
 
 	CurrencyID int `json:"currency_id" example:"22"`
 	CompanyID  int `json:"company_id" example:"1"`
@@ -55,6 +60,7 @@ func (p *UpdatePubInput) ConvertToModel(companyID int, pubID int) models.Pub {
 		AdditionalInfo:   p.AdditionalInfo,
 		TelegramUsername: telegramUsernameWithoutAtSign,
 		HasInPlaceOrder:  p.HasInPlaceOrder,
+		PubType:          p.ServiceType,
 	}
 
 	pub.ID = uint(p.CompanyID)
@@ -86,6 +92,21 @@ type PubOutput struct {
 	HasInPlaceOrder  bool            `json:"has_in_place_order"`
 	Couriers         []CourierOutput `json:"couriers"`
 	Rating           float64         `json:"rating"`
+	// Section is the canonical field (matches admin-front's PubSettings.jsx
+	// read side and front's sections.js); ServiceTypes is the same value as
+	// a single-item array for callers that read that name instead - both
+	// map to the one models.Pub.PubType column, there is no second concept.
+	Section      string   `json:"section" example:"food"`
+	ServiceTypes []string `json:"service_types"`
+}
+
+// sectionToServiceTypes mirrors a pub's single service-type value into the
+// array shape some callers read instead of `section`.
+func sectionToServiceTypes(section string) []string {
+	if section == "" {
+		return []string{}
+	}
+	return []string{section}
 }
 
 func (p *PubOutput) FillFromModel(pub models.Pub) error {
@@ -122,6 +143,8 @@ func (p *PubOutput) FillFromModel(pub models.Pub) error {
 	p.TelegramUserName = pub.TelegramUsername
 	p.HasInPlaceOrder = pub.HasInPlaceOrder
 	p.Rating = pub.Rating
+	p.Section = pub.PubType
+	p.ServiceTypes = sectionToServiceTypes(pub.PubType)
 
 	for _, courier := range pub.Couriers {
 		courierOutput := CourierOutput{}
@@ -171,6 +194,8 @@ func (p *PubWithDishesAndDistanceOutput) FillFromModel(pub models.Pub, distance 
 	p.Lat = pub.Lat
 	p.Lng = pub.Lng
 	p.Rating = pub.Rating
+	p.Section = pub.PubType
+	p.ServiceTypes = sectionToServiceTypes(pub.PubType)
 
 	p.Dishes = make([]DishOutput, 0, len(dishes))
 

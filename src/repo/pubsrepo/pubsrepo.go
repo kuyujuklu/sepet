@@ -48,6 +48,11 @@ const (
 )
 
 type PubsRepo interface {
+	// GetDishOrderCounts is how many times each dish has ever been ordered,
+	// keyed by dish id - dishes live in an order's DishesJSON blob rather
+	// than a relational table, so this unnests it in SQL instead of pulling
+	// every order into Go to count. Used to rank the "top dishes" feed.
+	GetDishOrderCounts() (map[int]int, error)
 	GetAllPubs() ([]models.Pub, error)
 	GetAllMenusForPub(pubID int) ([]models.Menu, error)
 	GetAllCategoriesForPub(pubID int) ([]models.Category, error)
@@ -780,6 +785,32 @@ func (r *pubsRepo) GetPreorderInfo(pubID int) (models.PreorderInfo, error) {
 	}
 
 	return pub.PreorderInfo, nil
+}
+
+func (r *pubsRepo) GetDishOrderCounts() (map[int]int, error) {
+	type dishCountRow struct {
+		DishID int
+		Cnt    int
+	}
+	var rows []dishCountRow
+
+	result := r.Database.Raw(`
+		SELECT (elem->>'dish_id')::int AS dish_id, COUNT(*) AS cnt
+		FROM orders, jsonb_array_elements(orders.dishes_json::jsonb) AS elem
+		WHERE orders.deleted_at IS NULL
+			AND orders.dishes_json IS NOT NULL
+			AND orders.dishes_json != ''
+		GROUP BY dish_id
+	`).Scan(&rows)
+	if result.Error != nil {
+		return nil, puberrors.ErrUnableToGetPub
+	}
+
+	counts := make(map[int]int, len(rows))
+	for _, row := range rows {
+		counts[row.DishID] = row.Cnt
+	}
+	return counts, nil
 }
 
 func (r *pubsRepo) GetPubsWithAvailableShipping() ([]models.Pub, error) {
