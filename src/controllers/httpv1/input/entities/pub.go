@@ -100,13 +100,29 @@ type PubOutput struct {
 	ServiceTypes []string `json:"service_types"`
 }
 
+// defaultPubSection mirrors admin-front's defaultServiceType ("food") and
+// pubservice.DEFAULT_PUB_SECTION - every pub predates the service_type
+// column, so an unset PubType means food, not "no section". Needed here too:
+// admin-front's edit form falls back to the default with `pub.section ??
+// defaultServiceType`, and `??` does not trigger on an empty string, only on
+// null/undefined - returning "" would show the dropdown as unset instead of
+// defaulting to Food for every pub that hasn't been re-saved yet.
+const defaultPubSection = "food"
+
 // sectionToServiceTypes mirrors a pub's single service-type value into the
 // array shape some callers read instead of `section`.
 func sectionToServiceTypes(section string) []string {
-	if section == "" {
-		return []string{}
-	}
 	return []string{section}
+}
+
+// resolvePubSection applies the same empty-means-food fallback everywhere a
+// pub's section is read from PubType, so admin-front, front and app all see
+// one consistent value instead of each guessing their own default.
+func resolvePubSection(pubType string) string {
+	if pubType == "" {
+		return defaultPubSection
+	}
+	return pubType
 }
 
 func (p *PubOutput) FillFromModel(pub models.Pub) error {
@@ -143,8 +159,8 @@ func (p *PubOutput) FillFromModel(pub models.Pub) error {
 	p.TelegramUserName = pub.TelegramUsername
 	p.HasInPlaceOrder = pub.HasInPlaceOrder
 	p.Rating = pub.Rating
-	p.Section = pub.PubType
-	p.ServiceTypes = sectionToServiceTypes(pub.PubType)
+	p.Section = resolvePubSection(pub.PubType)
+	p.ServiceTypes = sectionToServiceTypes(p.Section)
 
 	for _, courier := range pub.Couriers {
 		courierOutput := CourierOutput{}
@@ -194,8 +210,8 @@ func (p *PubWithDishesAndDistanceOutput) FillFromModel(pub models.Pub, distance 
 	p.Lat = pub.Lat
 	p.Lng = pub.Lng
 	p.Rating = pub.Rating
-	p.Section = pub.PubType
-	p.ServiceTypes = sectionToServiceTypes(pub.PubType)
+	p.Section = resolvePubSection(pub.PubType)
+	p.ServiceTypes = sectionToServiceTypes(p.Section)
 
 	p.Dishes = make([]DishOutput, 0, len(dishes))
 

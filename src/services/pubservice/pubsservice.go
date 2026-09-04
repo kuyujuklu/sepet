@@ -602,6 +602,12 @@ func (s *pubsService) SetPubAddCommissionToDishPrices(pubID int, addCommission b
 const (
 	TOP_DISHES_FILTER_TOP      = "top"
 	TOP_DISHES_FILTER_DISCOUNT = "discount"
+
+	// DEFAULT_PUB_SECTION mirrors admin-front's defaultServiceType ("food") -
+	// every pub predates the service_type column, so an unset PubType is a
+	// food pub, not "no section". front/app already apply this same fallback
+	// client-side when grouping the plain pub list into tabs.
+	DEFAULT_PUB_SECTION = "food"
 )
 
 // TopDish is one row of the cross-restaurant home feed: a dish plus the pub
@@ -676,7 +682,11 @@ func (s *pubsService) GetAvailableTopDishes(point models.Vertex, section string,
 	buckets := make([]pubBucket, 0, len(pubs))
 
 	for _, pub := range pubs {
-		if section != "" && pub.PubType != section {
+		pubSection := pub.PubType
+		if pubSection == "" {
+			pubSection = DEFAULT_PUB_SECTION
+		}
+		if section != "" && pubSection != section {
 			continue
 		}
 
