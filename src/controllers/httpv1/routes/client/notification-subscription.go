@@ -52,7 +52,7 @@ func (c *clientController) SubscribeToNotification(ctx *fiber.Ctx) error {
 		input.Lang = models.NOTIFICATION_LANG_RU
 	}
 
-	notificationSub, err := c.NotificationSevice.Subscribe(input.Phone, input.Token, input.Lang)
+	notificationSub, err := c.NotificationSevice.Subscribe(input.Phone, input.DeviceID, input.Token, input.Lang)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}

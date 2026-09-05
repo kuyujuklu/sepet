@@ -20,7 +20,7 @@ type NotificaitonText struct {
 }
 
 type NotificationService interface {
-	Subscribe(phone, token, lang string) (models.NotificationSubscription, error)
+	Subscribe(phone, deviceID, token, lang string) (models.NotificationSubscription, error)
 	SendToAllClients(title NotificaitonText, body NotificaitonText) error
 	SendNotification(clientID int, title NotificaitonText, body NotificaitonText, data map[string]string) error
 	SendNotificationLinkedToOrderInfoPage(clientID int, title NotificaitonText, body NotificaitonText, orderID int) error
@@ -68,7 +68,55 @@ func (s *notificationService) recordSend(clientID int, pushToken expo.ExponentPu
 	return strconv.Itoa(int(recipient.ID))
 }
 
-func (s *notificationService) Subscribe(phone, token, lang string) (models.NotificationSubscription, error) {
+// Subscribe registers a push token for whatever the app currently knows -
+// which may be nothing but the device itself. `phone` is empty for a client
+// who hasn't logged in yet (or an app build old enough to not send
+// deviceID at all falls through to the original phone-only path below).
+// `deviceID` is a UUID the app generates once and persists locally, stable
+// across logins/logouts on that install - the anchor that lets a device's
+// row get upgraded with a real ClientID once they do log in, rather than
+// the login creating a second, duplicate row.
+func (s *notificationService) Subscribe(phone, deviceID, token, lang string) (models.NotificationSubscription, error) {
+	var clientID int
+	if phone != "" {
+		client, err := s.ClientRepo.GetClientByPhoneNumber(phone)
+		if err != nil {
+			return models.NotificationSubscription{}, err
+		}
+		clientID = int(client.ID)
+	}
+
+	if deviceID != "" {
+		existing, err := s.NotificationRepo.GetSubscriptionByDeviceID(deviceID)
+		if err == nil {
+			// Never regress a row that's already linked to a real client
+			// back to anonymous just because this particular call didn't
+			// have a phone (e.g. a logged-out app re-subscribing on the
+			// same device) - only ever add information, never drop it.
+			effectiveClientID := existing.ClientID
+			if clientID != 0 {
+				effectiveClientID = clientID
+			}
+			if updateErr := s.NotificationRepo.UpdateSubscriptionByID(existing.ID, effectiveClientID, token, lang); updateErr != nil {
+				return models.NotificationSubscription{}, updateErr
+			}
+			existing.ClientID = effectiveClientID
+			existing.ExpoNotificationToken = token
+			existing.Lang = lang
+			return existing, nil
+		}
+		if err != notificationerrors.ErrNotificationNotFound {
+			return models.NotificationSubscription{}, err
+		}
+		return s.NotificationRepo.CreateSubscriptionWithDevice(clientID, deviceID, token, lang)
+	}
+
+	if phone == "" {
+		return models.NotificationSubscription{}, notificationerrors.ErrNoIdentifierProvided
+	}
+
+	// No deviceID sent at all - a build from before this existed. Original
+	// phone-only behavior, unchanged.
 	_, err := s.NotificationRepo.GetNotificationSubscription(phone)
 	// notificationSub exists
 	if err == nil {
@@ -91,20 +139,21 @@ func (s *notificationService) SendToAllClients(title NotificaitonText, body Noti
 		return err
 	}
 
-	clientIDsSet := make(map[int]void, 0)
+	// Keyed by the subscription row's own id, not ClientID: an anonymous
+	// device (ClientID 0 - see the model comment) would otherwise dedupe
+	// against every *other* anonymous device as if they were all "the same
+	// client already sent to", and a client logged in on two devices would
+	// lose the second one the same way. A row's id is always unique.
+	seenSubscriptionIDs := make(map[uint]void, 0)
 
 	pushClient := expo.NewPushClient(nil)
 
 	for _, notificationSub := range subscriptions {
-		_, exist := clientIDsSet[notificationSub.ClientID]
+		_, exist := seenSubscriptionIDs[notificationSub.ID]
 		if exist {
-			fmt.Println("EXIST", notificationSub.ClientID)
 			continue
-		} else {
-			fmt.Println("Not Exist", notificationSub.ClientID)
 		}
-
-		clientIDsSet[notificationSub.ClientID] = void{}
+		seenSubscriptionIDs[notificationSub.ID] = void{}
 
 		pushToken, err := expo.NewExponentPushToken(notificationSub.ExpoNotificationToken)
 		if err != nil {

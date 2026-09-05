@@ -18,6 +18,12 @@ type NotificationRepo interface {
 	CreateSubscriptionSubscription(phone, token, lang string) (models.NotificationSubscription, error)
 	UpdateNotificationSubscriptionToken(phone, token, lang string) (models.NotificationSubscription, error)
 	DeleteSubscriptionByToken(token string) error
+
+	// Device-keyed subscription, for a client that may not exist yet
+	// (clientID 0) - see the model's comment.
+	GetSubscriptionByDeviceID(deviceID string) (models.NotificationSubscription, error)
+	CreateSubscriptionWithDevice(clientID int, deviceID, token, lang string) (models.NotificationSubscription, error)
+	UpdateSubscriptionByID(id uint, clientID int, token, lang string) error
 }
 
 type notificationRepo struct {
@@ -94,6 +100,51 @@ func (r *notificationRepo) UpdateNotificationSubscriptionToken(phone, token, lan
 
 	return notificationSub, nil
 }
+func (r *notificationRepo) GetSubscriptionByDeviceID(deviceID string) (models.NotificationSubscription, error) {
+	var sub models.NotificationSubscription
+	resp := r.Database.First(&sub, "device_id = ? AND device_id != ''", deviceID)
+	if resp.Error != nil {
+		if errors.Is(resp.Error, gorm.ErrRecordNotFound) {
+			return models.NotificationSubscription{}, notificationerrors.ErrNotificationNotFound
+		}
+		return models.NotificationSubscription{}, notificationerrors.ErrUnableToGetNotification
+	}
+	return sub, nil
+}
+
+func (r *notificationRepo) CreateSubscriptionWithDevice(clientID int, deviceID, token, lang string) (models.NotificationSubscription, error) {
+	sub := models.NotificationSubscription{
+		ExpoNotificationToken: token,
+		ClientID:              clientID,
+		DeviceID:              deviceID,
+		Lang:                  lang,
+	}
+	resp := r.Database.Create(&sub)
+	if resp.Error != nil {
+		return models.NotificationSubscription{}, notificationerrors.ErrUnableToCreateNotification
+	}
+	return sub, nil
+}
+
+// UpdateSubscriptionByID re-points an existing device-keyed row at whatever
+// the current subscribe call actually knows - clientID 0 leaves it
+// unlinked, a real one links (or re-confirms) it to that client. This is
+// also how an anonymous row gets upgraded the moment its device's owner
+// logs in: same row, same DeviceID, ClientID filled in - not a second row.
+func (r *notificationRepo) UpdateSubscriptionByID(id uint, clientID int, token, lang string) error {
+	resp := r.Database.Model(&models.NotificationSubscription{}).
+		Where("id = ?", id).
+		Updates(map[string]interface{}{
+			"client_id":               clientID,
+			"expo_notification_token": token,
+			"lang":                    lang,
+		})
+	if resp.Error != nil {
+		return notificationerrors.ErrUnableToUpdateNotification
+	}
+	return nil
+}
+
 // DeleteSubscriptionByToken soft-deletes every subscription row still
 // carrying this exact token - called when Expo's delivery receipt reports
 // DeviceNotRegistered, so a churned install stops being sent to (and

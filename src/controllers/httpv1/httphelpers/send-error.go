@@ -138,6 +138,7 @@ var errors = map[error]int{
 
 	//notificationerror
 	notificationerrors.ErrNotificationNotFound:       fiber.StatusNotFound,
+	notificationerrors.ErrNoIdentifierProvided:       fiber.StatusBadRequest,
 	notificationerrors.ErrUnableToCreateNotification: fiber.StatusInternalServerError,
 	notificationerrors.ErrUnableToGetNotification:    fiber.StatusInternalServerError,
 	notificationerrors.ErrUnableToUpdateNotification: fiber.StatusInternalServerError,
