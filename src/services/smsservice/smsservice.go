@@ -56,9 +56,16 @@ func New() SmsService {
 			Password:  "f93b09c6f905d51c2772578fbf820021",
 			ServiceID: "VA4642ab28116637fab0c8ea0d2cbab01c",
 		},
-		InfoBipAuthToken:     os.Getenv("API_INFO_BIP_AUTH_TOKEN"),
-		InfoBipApplicationID: os.Getenv("API_INFO_BIP_APPLICATION_ID"),
-		InfoBipMessageID:     os.Getenv("API_INFO_BIP_MESSAGE_ID"),
+		// Container-internal names, not the host .env names - docker-compose.yml
+		// maps API_INFO_BIP_* (the host/.env side) to these without the API_
+		// prefix for the qrmenu-api service's own environment. Confirmed live
+		// 2026-09-05: reading the API_-prefixed names here silently produced
+		// an empty token, which InfoBip's 2FA endpoint reports as
+		// "Invalid login details" (401) - not obviously "empty credential" -
+		// while the exact same request with the real token succeeds.
+		InfoBipAuthToken:     os.Getenv("INFO_BIP_AUTH_TOKEN"),
+		InfoBipApplicationID: os.Getenv("INFO_BIP_APPLICATION_ID"),
+		InfoBipMessageID:     os.Getenv("INFO_BIP_MESSAGE_ID"),
 	}
 }
 
