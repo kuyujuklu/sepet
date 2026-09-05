@@ -12,7 +12,11 @@ import { appendNotificationToHistory } from '../../../shared/utils/pushNotificat
 import { events, track } from '../../../shared/analytics/analytics';
 import { resolveDestinationFromFields } from '../../../shared/utils/deepLink';
 import { usePubInfo } from '../../../shared/hooks/usePubInfo';
-import { useMarkPushCampaignOpenedMutation } from '../../../shared/api/notifications-api/notificationsApi';
+import {
+  useMarkPushCampaignOpenedMutation,
+  useMarkNotificationReceivedMutation,
+  useMarkNotificationOpenedMutation,
+} from '../../../shared/api/notifications-api/notificationsApi';
 import { getDishPrices, getDishImagePath, isDishAvailable } from '../../../shared/utils/dish';
 import { openDishImagePopup } from '../dishes/dishesSlice';
 import { Screens } from '../../../app/navigation/screens';
@@ -104,6 +108,14 @@ export default function NotificationHandler() {
   const responseListener = useRef();
 
   const [markPushCampaignOpened] = useMarkPushCampaignOpenedMutation();
+  // Generic counterpart of the mutation above, addressed by the push's own
+  // recipient-row id instead of a campaign id - present on every individual
+  // order/status push the backend sends (and on campaign pushes sent after
+  // this existed). This is the real, server-confirmed "the device actually
+  // saw this" signal - stronger than Expo's own delivery receipt, which only
+  // confirms hand-off to APNs/FCM.
+  const [markNotificationReceived] = useMarkNotificationReceivedMutation();
+  const [markNotificationOpened] = useMarkNotificationOpenedMutation();
 
   // A tapped push whose deep link is a dish (data.path === "DishInfo") can't
   // resolve through resolveDestinationFromFields like the other cases below -
@@ -160,6 +172,9 @@ export default function NotificationHandler() {
     // campaign system. Fire-and-forget: nothing below depends on it.
     if (data.campaignID) {
       markPushCampaignOpened({ campaignID: data.campaignID });
+    }
+    if (data.deliveryID) {
+      markNotificationOpened({ deliveryID: data.deliveryID });
     }
 
     // Set by the push campaign's "external link" deep link - deliberately a
@@ -224,6 +239,11 @@ export default function NotificationHandler() {
       setNotification(notification);
       appendNotificationToHistory(dispatch, notification);
       trackPushReceived(notification);
+
+      const deliveryID = notification?.request?.content?.data?.deliveryID;
+      if (deliveryID) {
+        markNotificationReceived({ deliveryID });
+      }
     });
 
     // Tapping a notification while the app is running (foreground or

@@ -6,6 +6,9 @@ the work without re-reading the whole codebase.
 
 Newest first.
 
+- [2026-09-05 — Report real push delivery/open back to the backend, not just analytics](2026-09-05-notification-delivery-reporting.md)
+  — app now POSTs received/opened against a push's `deliveryID` (the backend's new
+  per-send tracking row), a real server-confirmed signal beyond Expo's own receipt.
 - [2026-09-05 — Fix: stringified registration error stored and sent as the push token](2026-09-05-fix-push-token-error-string-bug.md)
   — a failed `registerForPushNotificationsAsync()` call had its stringified error
   saved as the push token and subscribed as-is; real cause of a campaign's 94% send

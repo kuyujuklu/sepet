@@ -21,7 +21,30 @@ export const notificationsApi = createApi({
         method: "POST",
       }),
     }),
+
+    // Generic counterpart of the two above, addressed by the push's own
+    // recipient-row id (`data.deliveryID`) instead of a campaign id - every
+    // individual order/status push carries one; a campaign push does too if
+    // it went out after this was added. "Received" has no campaign-specific
+    // equivalent above because campaign sends never carried a per-recipient
+    // id in Data before this existed.
+    markNotificationReceived: builder.mutation({
+      query: ({ deliveryID }) => ({
+        url: `/api/client/notifications/${deliveryID}/received`,
+        method: "POST",
+      }),
+    }),
+    markNotificationOpened: builder.mutation({
+      query: ({ deliveryID }) => ({
+        url: `/api/client/notifications/${deliveryID}/opened`,
+        method: "POST",
+      }),
+    }),
   }),
 });
 
-export const { useMarkPushCampaignOpenedMutation } = notificationsApi;
+export const {
+  useMarkPushCampaignOpenedMutation,
+  useMarkNotificationReceivedMutation,
+  useMarkNotificationOpenedMutation,
+} = notificationsApi;
