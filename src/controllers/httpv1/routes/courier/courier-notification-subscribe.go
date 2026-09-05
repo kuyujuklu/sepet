@@ -1,6 +1,7 @@
 package courier
 
 import (
+	"errors"
 	"strconv"
 
 	h "github.com/alexkalak/qrmenu/src/controllers/httpv1/httphelpers"
@@ -9,6 +10,7 @@ import (
 	"github.com/alexkalak/qrmenu/src/errors/httperrors"
 	"github.com/alexkalak/qrmenu/src/models"
 	"github.com/gofiber/fiber/v2"
+	expo "github.com/oliveroneill/exponent-server-sdk-golang/sdk"
 )
 
 type SubscribeToNotificationsOutput struct {
@@ -48,6 +50,13 @@ func (c *courierController) SubscribeToNotifications(ctx *fiber.Ctx) error {
 	}
 	if len(validationErrors) > 0 {
 		return h.SendValidationErrors(ctx, validationErrors)
+	}
+
+	// Same defense as the client endpoint: reject anything that isn't a real
+	// Expo token shape (e.g. a stringified error from a failed token fetch)
+	// before it ever lands in the subscriptions table.
+	if _, err := expo.NewExponentPushToken(input.Token); err != nil {
+		return h.SendError(ctx, errors.New("invalid expo push token"), h.AUTOMATIC_STATUS_CODE)
 	}
 
 	if input.Lang != models.NOTIFICATION_LANG_RO {

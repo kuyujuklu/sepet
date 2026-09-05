@@ -156,9 +156,9 @@ func (s *notificationService) SendNotification(clientID int, title NotificaitonT
 	response, err := pushClient.Publish(
 		&expo.PushMessage{
 			To:       []expo.ExponentPushToken{pushToken},
-			Body:     notificationTitleString,
+			Title:    notificationTitleString,
+			Body:     notificationBodyString,
 			Sound:    "default",
-			Title:    notificationBodyString,
 			Priority: expo.DefaultPriority,
 			Data:     data,
 		},
@@ -205,8 +205,8 @@ func (s *notificationService) SendNotificationWithToken(token string, lang strin
 	response, err := pushClient.Publish(
 		&expo.PushMessage{
 			To:       []expo.ExponentPushToken{pushToken},
-			Title:    notificationBodyString,
-			Body:     notificationTitleString,
+			Title:    notificationTitleString,
+			Body:     notificationBodyString,
 			Sound:    "default",
 			Priority: expo.DefaultPriority,
 		},
