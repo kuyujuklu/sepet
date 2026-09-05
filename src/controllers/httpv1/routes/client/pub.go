@@ -38,26 +38,7 @@ func (c *clientController) GetPubInfoByUrlName(ctx *fiber.Ctx) error {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
 	}
 
-	lat := ctx.Query("lat")
-	lng := ctx.Query("lng")
-	fmt.Println("Lat: ", lat)
-	fmt.Println("Lng: ", lng)
-
-	if lat != "" && lat != "0" && lng != "" && lng != "0" {
-		fmt.Println("HELLO ?? ", lat, lng)
-		latFloat, err := strconv.ParseFloat(lat, 32)
-		if err != nil {
-			return h.SendError(ctx, errors.New("invalid lat"), h.AUTOMATIC_STATUS_CODE)
-		}
-		lngFloat, err := strconv.ParseFloat(lng, 32)
-		if err != nil {
-			return h.SendError(ctx, errors.New("invalid lng"), h.AUTOMATIC_STATUS_CODE)
-		}
-
-		return c.getPubInfoWithShippingPricesForPoint(ctx, pub, models.Vertex{Lat: latFloat, Lng: lngFloat})
-	}
-
-	return c.getPubInfo(ctx, pub)
+	return c.getPubInfoRespectingCoords(ctx, pub)
 }
 
 // @Summary      Get all pub info
@@ -76,6 +57,35 @@ func (c *clientController) GetPubInfoByID(ctx *fiber.Ctx) error {
 	pub, err := c.PubService.GetPubById(pubID)
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	return c.getPubInfoRespectingCoords(ctx, pub)
+}
+
+// getPubInfoRespectingCoords is the shared body of both pub-info routes: with
+// a real lat/lng it answers with the point-computed shipping_price/
+// shipping_free_delivery_price (getPubInfoWithShippingPricesForPoint),
+// otherwise the plain pub-level shipping config (getPubInfo). Before this was
+// pulled out, GetPubInfoByID never even looked at ctx.Query("lat"/"lng") and
+// always took the plain path - the basket/checkout screens fetch pub info by
+// ID, so shipping_price came back as a bare Go zero-value on every request,
+// which the client reads as `+undefined || 0` and shows as free delivery
+// regardless of the real zone price.
+func (c *clientController) getPubInfoRespectingCoords(ctx *fiber.Ctx, pub models.Pub) error {
+	lat := ctx.Query("lat")
+	lng := ctx.Query("lng")
+
+	if lat != "" && lat != "0" && lng != "" && lng != "0" {
+		latFloat, err := strconv.ParseFloat(lat, 32)
+		if err != nil {
+			return h.SendError(ctx, errors.New("invalid lat"), h.AUTOMATIC_STATUS_CODE)
+		}
+		lngFloat, err := strconv.ParseFloat(lng, 32)
+		if err != nil {
+			return h.SendError(ctx, errors.New("invalid lng"), h.AUTOMATIC_STATUS_CODE)
+		}
+
+		return c.getPubInfoWithShippingPricesForPoint(ctx, pub, models.Vertex{Lat: latFloat, Lng: lngFloat})
 	}
 
 	return c.getPubInfo(ctx, pub)
