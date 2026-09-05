@@ -82,6 +82,9 @@ export const admin = createApi({
                 body: input,
             }),
         }),
+        getSubscriberStats: builder.query({
+            query: () => `/api/admin/push-campaigns/subscriber-stats`,
+        }),
     }),
 
 })
@@ -101,4 +104,5 @@ export const {
     useCreatePushCampaignMutation,
     useLazyGetPushCampaignAudiencePreviewQuery,
     useTestSendPushCampaignMutation,
+    useGetSubscriberStatsQuery,
 } = admin;

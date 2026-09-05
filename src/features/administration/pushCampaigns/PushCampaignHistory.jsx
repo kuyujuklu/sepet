@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useGetAllPushCampaignsQuery } from "@/api/admin/admin";
+import { useGetAllPushCampaignsQuery, useGetSubscriberStatsQuery } from "@/api/admin/admin";
 import { ConvertQrMenuApiTimeToLocal } from "@/utils/time";
 import { RepeatIcon } from "./icons";
 
@@ -28,6 +28,7 @@ const AUDIENCE_LABELS = {
 
 const openRate = (c) => (c.sent_count > 0 ? Math.round((c.opened_count / c.sent_count) * 100) : 0);
 const deliveredRate = (c) => (c.sent_count > 0 ? Math.round((c.delivered_count / c.sent_count) * 100) : 0);
+const receivedRate = (c) => (c.sent_count > 0 ? Math.round((c.received_count / c.sent_count) * 100) : 0);
 
 const shortTitle = (title) => (title?.length > 14 ? title.slice(0, 13) + "…" : title);
 
@@ -81,6 +82,7 @@ const CampaignRow = ({ campaign, onRepeat }) => {
         <div className="flex items-center">
           <FunnelStep num={campaign.recipient_count} label="Отправлено" percent={100} color="#94a3b0" />
           <FunnelStep num={campaign.delivered_count} label={`Доставлено · ${deliveredRate(campaign)}%`} percent={deliveredRate(campaign)} color="#2D7DD2" />
+          <FunnelStep num={campaign.received_count} label={`Получено · ${receivedRate(campaign)}%`} percent={receivedRate(campaign)} color="#f59e0b" />
           <FunnelStep num={campaign.opened_count} label={`Открыто · ${openRate(campaign)}%`} percent={openRate(campaign)} color="#1a9e6b" />
           <button
             type="button"
@@ -111,6 +113,8 @@ const PushCampaignHistory = () => {
   });
   const campaigns = useMemo(() => data?.campaigns ?? [], [data]);
 
+  const { data: subscriberStats } = useGetSubscriberStatsQuery();
+
   const chartCampaigns = useMemo(
     () =>
       campaigns
@@ -123,6 +127,33 @@ const PushCampaignHistory = () => {
 
   return (
     <div className="flex flex-col" style={{ gap: 14 }}>
+      {subscriberStats && (
+        <div
+          className="bg-white rounded-2xl flex items-center"
+          style={{ border: "1px solid #e4e9ee", boxShadow: "0 1px 2px rgba(20,30,45,.04)", padding: "14px 18px", gap: 22 }}
+        >
+          <div>
+            <div style={{ fontSize: 22, fontWeight: 700, color: "#1c2733" }}>
+              {subscriberStats.total_subscribers.toLocaleString("ru-RU")}
+            </div>
+            <div style={{ fontSize: 11.5, color: "#94a3b0" }}>Активных подписчиков</div>
+          </div>
+          <div style={{ width: 1, alignSelf: "stretch", background: "#f0f2f5" }} />
+          <div>
+            <div style={{ fontSize: 15, fontWeight: 600, color: "#1c2733" }}>
+              {subscriberStats.linked_count.toLocaleString("ru-RU")}
+            </div>
+            <div style={{ fontSize: 11.5, color: "#94a3b0" }}>С аккаунтом</div>
+          </div>
+          <div>
+            <div style={{ fontSize: 15, fontWeight: 600, color: "#1c2733" }}>
+              {subscriberStats.anonymous_count.toLocaleString("ru-RU")}
+            </div>
+            <div style={{ fontSize: 11.5, color: "#94a3b0" }}>Без входа в аккаунт</div>
+          </div>
+        </div>
+      )}
+
       <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: ".02em", textTransform: "uppercase", color: "#94a3b0", padding: "0 4px" }}>
         История рассылок
       </div>
