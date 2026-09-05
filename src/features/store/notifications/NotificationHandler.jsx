@@ -167,15 +167,17 @@ export default function NotificationHandler() {
     const data = tappedNotification?.request?.content?.data;
     if (!data) return;
 
-    // Drives the "opened" column in the superadmin's send history - present
-    // on every push a campaign sent (regardless of deep link type), absent
-    // on the order-status pushes the backend already sends outside the
-    // campaign system. Fire-and-forget: nothing below depends on it.
-    if (data.campaignID) {
-      markPushCampaignOpened({ campaignID: data.campaignID });
-    }
+    // Drives the "opened" column in the superadmin's send history. Prefer
+    // deliveryID when both are present (every push sent after it existed
+    // carries it, campaign or not) - firing both fire-and-forget mutations
+    // for the same underlying recipient row is a real race (two concurrent
+    // requests can each read "not opened yet" before either one writes),
+    // which would double-count the open. campaignID alone is the fallback
+    // for a campaign push sent before deliveryID existed.
     if (data.deliveryID) {
       markNotificationOpened({ deliveryID: data.deliveryID });
+    } else if (data.campaignID) {
+      markPushCampaignOpened({ campaignID: data.campaignID });
     }
 
     // Set by the push campaign's "external link" deep link - deliberately a
