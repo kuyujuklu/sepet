@@ -6,6 +6,9 @@ the work without re-reading the whole codebase.
 
 Newest first.
 
+- [2026-09-05 — Clear error message when the SMS/OTP provider is down](2026-09-05-sms-service-error-message.md)
+  — backend's "unable to send sms" (Twilio suspended/out of quota) was falling through
+  to the generic unknown_error key; now shows a real "try again later or contact support" message.
 - [2026-09-05 — Fix: campaign pushes could double-count "opened"](2026-09-05-fix-opened-tracking-double-count.md)
   — now that campaigns carry deliveryID too, prefer it over campaignID so the two
   opened-tracking calls don't both fire for the same tap.

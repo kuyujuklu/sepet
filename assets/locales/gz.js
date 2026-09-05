@@ -2,6 +2,8 @@ export default {
   errors: {
     something_went_wrong: "Naşey sa gitti diil dooru?",
     unknown_error: "Dııl belli  yannışık",
+    sms_service_unavailable:
+      "Kod ile SMS gitmedi. Sora deneyin ya da destaya yazın",
     order_below_minimum: "Sımarlamanın sayısı bu erin en küçüündän aşaa",
     unauthorized: "Neavtorizovan",
     client_with_the_same_phone_already_exists: "Kullanan bu nomeri var",

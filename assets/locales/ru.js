@@ -2,6 +2,8 @@ export default {
   errors: {
     something_went_wrong: "Что-то пошло не так",
     unknown_error: "Неизвестная ошибка",
+    sms_service_unavailable:
+      "Не получилось отправить SMS с кодом. Попробуйте позже или обратитесь в поддержку",
     order_below_minimum: "Сумма заказа меньше минимальной для этого заведения",
     unauthorized: "Неавторизован",
     client_with_the_same_phone_already_exists:

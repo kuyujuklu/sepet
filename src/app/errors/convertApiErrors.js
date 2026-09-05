@@ -28,6 +28,11 @@ const respErrors = {
 
   "invalid phone validation session number":
     appErrors.invalid_session_validation_number,
+
+  // SMS/OTP provider (Twilio) rejected the send or is out of quota/suspended -
+  // was falling through to unknown_error, which reads like our own bug
+  // rather than "the SMS provider is having a moment, try again".
+  "unable to send sms": appErrors.smsServiceUnavailable,
 };
 
 export const convertRespError = (error) => {

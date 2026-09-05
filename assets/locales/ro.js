@@ -2,6 +2,8 @@ export default {
   errors: {
     something_went_wrong: "Ceva nu a mers bine",
     unknown_error: "Eroare necunoscută",
+    sms_service_unavailable:
+      "Nu am putut trimite SMS-ul cu codul. Încercați mai târziu sau contactați suportul",
     order_below_minimum: "Suma comenzii este sub minimul acestei unități",
     unauthorized: "Neautorizat",
     client_with_the_same_phone_already_exists:

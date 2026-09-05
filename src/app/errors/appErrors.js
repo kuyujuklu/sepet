@@ -9,6 +9,11 @@ export const appErrors = {
   client_not_found: "errors.client_not_found",
   invalidPassword: "errors.invalid_password",
 
+  // SMS/OTP provider down or out of quota (backend: smserrors.ErrUnableToSendSms) -
+  // used to fall through to unknown_error, which reads to the client like our own
+  // bug rather than "try again in a bit".
+  smsServiceUnavailable: "errors.sms_service_unavailable",
+
   //validation
   validationError: "errors.validation_error",
   fieldIsRequired: "errors.field_is_required",
