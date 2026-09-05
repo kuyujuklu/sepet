@@ -23,7 +23,7 @@ type ClientRepo interface {
 	GetAllClients() ([]models.Client, error)
 	GetAllPhoneValidationSessionsForPhone(phone string) ([]models.PhoneValidationSession, error)
 	GetAvailablePhoneValidationSessionsForPhone(phone string) ([]models.PhoneValidationSession, error)
-	CreatePhoneValidationSession(phone string, name string, hashedPassword string, code string, pinID string) (models.PhoneValidationSession, error)
+	CreatePhoneValidationSession(phone string, name string, hashedPassword string, code string, pinID string, provider string) (models.PhoneValidationSession, error)
 	ChangePassword(phone string, hashedPassword string) error
 	DeleteClient(id int) error
 }
@@ -130,13 +130,14 @@ func (r *clientRepo) ChangePassword(phone string, hashedPassword string) error {
 	return nil
 }
 
-func (r *clientRepo) CreatePhoneValidationSession(phone string, name string, hashedPassword string, code string, pinID string) (models.PhoneValidationSession, error) {
+func (r *clientRepo) CreatePhoneValidationSession(phone string, name string, hashedPassword string, code string, pinID string, provider string) (models.PhoneValidationSession, error) {
 	session := models.PhoneValidationSession{
 		Name:           name,
 		Phone:          phone,
 		HashedPassword: hashedPassword,
 		Number:         code,
 		PinID:          pinID,
+		Provider:       provider,
 	}
 
 	resp := r.Database.Create(&session)

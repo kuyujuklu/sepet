@@ -73,13 +73,13 @@ func (c *clientService) GenerateClientRegistrationSession(phone string, name str
 		return models.PhoneValidationSession{}, time.Now(), errors.New("hashing error")
 	}
 
-	pinID, err := c.SmsService.CreateVerificationSession("+373" + phone)
-	fmt.Println("Created pin id: ", pinID)
+	pinID, provider, err := c.SmsService.CreateVerificationSession("+373" + phone)
+	fmt.Println("Created pin id: ", pinID, "via", provider)
 	if err != nil {
 		return models.PhoneValidationSession{}, time.Now(), err
 	}
 
-	session, err := c.ClientRepo.CreatePhoneValidationSession(phone, name, string(hashedPassword), strconv.Itoa(c.generateCode()), pinID)
+	session, err := c.ClientRepo.CreatePhoneValidationSession(phone, name, string(hashedPassword), strconv.Itoa(c.generateCode()), pinID, provider)
 	if err != nil {
 		return models.PhoneValidationSession{}, time.Now(), err
 	}
@@ -107,12 +107,12 @@ func (c *clientService) GenerateClientChangePasswordSession(phone string) (model
 		return models.PhoneValidationSession{}, time.Now(), clienterrors.ErrTooManySessions
 	}
 
-	pinID, err := c.SmsService.CreateVerificationSession("+373" + phone)
+	pinID, provider, err := c.SmsService.CreateVerificationSession("+373" + phone)
 	if err != nil {
 		return models.PhoneValidationSession{}, time.Now(), err
 	}
 
-	session, err := c.ClientRepo.CreatePhoneValidationSession(phone, "", "", strconv.Itoa(c.generateCode()), pinID)
+	session, err := c.ClientRepo.CreatePhoneValidationSession(phone, "", "", strconv.Itoa(c.generateCode()), pinID, provider)
 	if err != nil {
 		return models.PhoneValidationSession{}, time.Now(), err
 	}
@@ -142,7 +142,7 @@ func (c *clientService) CheckPhoneValidationNumberCorrectness(phone string, code
 		}
 	}
 
-	err = c.SmsService.CheckVerificationCode(sessionWithMaxID.PinID, "+373"+sessionWithMaxID.Phone, code)
+	err = c.SmsService.CheckVerificationCode(sessionWithMaxID.PinID, "+373"+sessionWithMaxID.Phone, code, sessionWithMaxID.Provider)
 	if err != nil {
 		return models.PhoneValidationSession{}, err
 	}
@@ -168,7 +168,7 @@ func (c *clientService) CheckPhoneValidationNumberCorrectnessWithNewCodeGenerati
 		}
 	}
 
-	err = c.SmsService.CheckVerificationCode(sessionWithMaxID.PinID, "+373"+phone, code)
+	err = c.SmsService.CheckVerificationCode(sessionWithMaxID.PinID, "+373"+phone, code, sessionWithMaxID.Provider)
 	if err != nil {
 		return models.PhoneValidationSession{}, err
 	}
@@ -176,7 +176,7 @@ func (c *clientService) CheckPhoneValidationNumberCorrectnessWithNewCodeGenerati
 	newCode := "change-password-" + strconv.Itoa(c.generateCode())
 	fmt.Println("newCOde: ", newCode)
 
-	session, err := c.ClientRepo.CreatePhoneValidationSession(phone, "", "", newCode, "")
+	session, err := c.ClientRepo.CreatePhoneValidationSession(phone, "", "", newCode, "", "")
 	if err != nil {
 		return models.PhoneValidationSession{}, err
 	}
