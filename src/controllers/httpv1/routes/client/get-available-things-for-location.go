@@ -8,8 +8,39 @@ import (
 	"github.com/alexkalak/qrmenu/src/controllers/httpv1/input/entities"
 	"github.com/alexkalak/qrmenu/src/errors/clienterrors"
 	"github.com/alexkalak/qrmenu/src/models"
+	"github.com/alexkalak/qrmenu/src/services/pubservice"
 	"github.com/gofiber/fiber/v2"
 )
+
+// pubSection resolves a pub's effective section the same way entities.PubOutput
+// does - an unset PubType (every pub predates the service_type column) is food,
+// not "no section".
+func pubSection(pub models.Pub) string {
+	if pub.PubType == "" {
+		return pubservice.DEFAULT_PUB_SECTION
+	}
+	return pub.PubType
+}
+
+// filterPubsBySection keeps shippingPrices/shippingFreeDeliveryPrices aligned
+// with pubs - they are parallel slices indexed the same as pubs, not fields on
+// it, so a plain slice filter on pubs alone would desync them.
+func filterPubsBySection(pubs []models.Pub, shippingPrices []float64, shippingFreeDeliveryPrices []float64, section string) ([]models.Pub, []float64, []float64) {
+	filteredPubs := make([]models.Pub, 0, len(pubs))
+	filteredPrices := make([]float64, 0, len(pubs))
+	filteredFreeDeliveryPrices := make([]float64, 0, len(pubs))
+
+	for i, pub := range pubs {
+		if pubSection(pub) != section {
+			continue
+		}
+		filteredPubs = append(filteredPubs, pub)
+		filteredPrices = append(filteredPrices, shippingPrices[i])
+		filteredFreeDeliveryPrices = append(filteredFreeDeliveryPrices, shippingFreeDeliveryPrices[i])
+	}
+
+	return filteredPubs, filteredPrices, filteredFreeDeliveryPrices
+}
 
 type GetAvailablePubsOutput struct {
 	Ok   bool                 `json:"ok" example:"true"`
@@ -38,6 +69,10 @@ func (c *clientController) GetAvailableForShippingPubs(ctx *fiber.Ctx) error {
 	pubs, shippingPrices, shippingFreeDeliveryPrices, err := c.PubService.GetPubsWithShippingAvailableForPoint(models.Vertex{Lat: lat, Lng: lng})
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	if section := ctx.Query("section"); section != "" {
+		pubs, shippingPrices, shippingFreeDeliveryPrices = filterPubsBySection(pubs, shippingPrices, shippingFreeDeliveryPrices, section)
 	}
 
 	distances, err := c.DistanceService.GetDistanceToPubs(lat, lng, pubs)
@@ -110,6 +145,16 @@ func (c *clientController) GetAvailableForShippingPubCategories(ctx *fiber.Ctx) 
 	pubs, _, _, err := c.PubService.GetPubsWithShippingAvailableForPoint(models.Vertex{Lat: lat, Lng: lng})
 	if err != nil {
 		return h.SendError(ctx, err, h.AUTOMATIC_STATUS_CODE)
+	}
+
+	if section := ctx.Query("section"); section != "" {
+		filtered := make([]models.Pub, 0, len(pubs))
+		for _, pub := range pubs {
+			if pubSection(pub) == section {
+				filtered = append(filtered, pub)
+			}
+		}
+		pubs = filtered
 	}
 
 	if len(pubs) == 0 {
