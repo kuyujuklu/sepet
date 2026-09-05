@@ -30,10 +30,14 @@ const FreeDeliveryPriceInput = ({
     [shapes]
   );
 
+  // 0/unset both mean "no free-delivery threshold configured" (see
+  // getAmountLeftForFreeDelivery on the client) - shown as an empty field
+  // with a "Недоступно" placeholder rather than a literal "0", which reads
+  // like a real (if odd) price instead of "not offered".
   const savedPrices = useMemo(() => {
     const prices = {};
     shapeIDs.forEach((shapeID) => {
-      prices[shapeID] = deliveryPrices?.[shapeID] ?? "";
+      prices[shapeID] = deliveryPrices?.[shapeID] || "";
     });
     return prices;
   }, [deliveryPrices, shapeIDs]);
@@ -93,7 +97,7 @@ const FreeDeliveryPriceInput = ({
             value={localDeliveryPrices[shape_id] ?? ""}
             onChange={(e) => setLocalPrice(shape_id, e.target.value)}
             placeholder={t(
-              "admin.admin_panel.shipping.shipping_price.input_placeholder"
+              "admin.admin_panel.shipping.shipping_free_delivery_prices.input_placeholder"
             )}
             style={{
               width: 70,

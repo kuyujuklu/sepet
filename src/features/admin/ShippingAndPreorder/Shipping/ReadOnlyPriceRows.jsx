@@ -4,7 +4,10 @@ import { useTranslation } from "react-i18next";
 // pub whose delivery is network-managed (see Inputs.jsx) - same shapes-
 // driven zone order/coloring so it lines up with the editable version a
 // superadmin sees, just no input/save affordances.
-const ReadOnlyPriceRows = ({ prices, shapes, unit = "Lei" }) => {
+// `zeroValueLabel` overrides the display for a 0/unset price - only pass it
+// where 0 actually means "not offered" (the free-delivery threshold), not for
+// the base delivery price, where 0 is a real, if unusual, price.
+const ReadOnlyPriceRows = ({ prices, shapes, unit = "Lei", zeroValueLabel }) => {
   const { t } = useTranslation();
 
   const shapeIDs = (shapes ?? []).map((shape) => shape.shape_id);
@@ -25,7 +28,11 @@ const ReadOnlyPriceRows = ({ prices, shapes, unit = "Lei" }) => {
             {t("admin.admin_panel.shipping.shipping_map.zone_label", { number: index + 1 })}
           </span>
           <span className="ml-auto text-[13.5px] font-semibold text-ink tabular-nums">
-            {prices?.[shapeID] ?? 0} {unit}
+            {prices?.[shapeID] ? (
+              <>{prices[shapeID]} {unit}</>
+            ) : (
+              zeroValueLabel ?? `0 ${unit}`
+            )}
           </span>
         </div>
       ))}

@@ -306,7 +306,8 @@
      "headline": "Adăuga comision pentru serviciul de livrare la prețul mărfurilor"
     },
     "shipping_free_delivery_prices": {
-     "headline": "Livrare gratuită la sediul dvs"
+     "headline": "Livrare gratuită la sediul dvs",
+     "input_placeholder": "Indisponibil"
     },
     "shipping_map": {
      "checkmark_headline": "Dacă unitatea dvs. oferă servicii de livrare, bifați această opțiune",

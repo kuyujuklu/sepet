@@ -150,6 +150,7 @@ const Inputs = ({ pub }) => {
                 <ReadOnlyPriceRows
                   prices={shipping?.shipping_free_delivery_prices}
                   shapes={shipping?.shapes}
+                  zeroValueLabel={t("admin.admin_panel.shipping.shipping_free_delivery_prices.input_placeholder")}
                 />
               </LockedCard>
             ) : (
