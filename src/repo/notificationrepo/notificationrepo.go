@@ -13,6 +13,12 @@ import (
 
 type NotificationRepo interface {
 	GetNotificationSubscription(phone string) (models.NotificationSubscription, error)
+	// GetSubscriptionsByPhone is GetNotificationSubscription without the
+	// `.First()` - a client can have more than one live subscription now
+	// (one per device, since subscribing no longer requires login - see the
+	// model comment), so a caller that means to reach the client, not "a"
+	// device of theirs, needs all of them.
+	GetSubscriptionsByPhone(phone string) ([]models.NotificationSubscription, error)
 	GetAllSubscriptions() ([]models.NotificationSubscription, error)
 	GetSubscriptionsByClientIDs(clientIDs []int) ([]models.NotificationSubscription, error)
 	CreateSubscriptionSubscription(phone, token, lang string) (models.NotificationSubscription, error)
@@ -62,6 +68,24 @@ func (r *notificationRepo) GetNotificationSubscription(phone string) (models.Not
 	}
 
 	return notificationSub, nil
+}
+
+func (r *notificationRepo) GetSubscriptionsByPhone(phone string) ([]models.NotificationSubscription, error) {
+	client, err := r.ClientRepo.GetClientByPhoneNumber(phone)
+	if err != nil {
+		return nil, err
+	}
+
+	subs := make([]models.NotificationSubscription, 0)
+	resp := r.Database.Find(&subs, "client_id = ?", client.ID)
+	if resp.Error != nil {
+		return nil, notificationerrors.ErrUnableToGetNotification
+	}
+	if len(subs) == 0 {
+		return nil, notificationerrors.ErrNotificationNotFound
+	}
+
+	return subs, nil
 }
 
 func (r *notificationRepo) CreateSubscriptionSubscription(phone, token, lang string) (models.NotificationSubscription, error) {

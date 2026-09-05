@@ -195,67 +195,58 @@ func (s *notificationService) SendToAllClients(title NotificaitonText, body Noti
 	return nil
 }
 
-func (s *notificationService) SendNotification(clientID int, title NotificaitonText, body NotificaitonText, data map[string]string) error {
-	client, err := s.ClientRepo.GetClientByID(clientID)
+// sendToSubscription is one recipient's worth of the two-phase
+// create-pending/send/finalize dance SendNotification uses - pulled out so
+// it can run once per device instead of just the single one
+// GetNotificationSubscription used to arbitrarily pick.
+func (s *notificationService) sendToSubscription(pushClient *expo.PushClient, sub models.NotificationSubscription, title NotificaitonText, body NotificaitonText, data map[string]string) error {
+	pushToken, err := expo.NewExponentPushToken(sub.ExpoNotificationToken)
 	if err != nil {
 		return err
 	}
 
-	notificationSub, err := s.NotificationRepo.GetNotificationSubscription(client.Phone)
-	if err != nil {
-		return err
+	titleString := title.Ru
+	if sub.Lang == models.NOTIFICATION_LANG_RO {
+		titleString = title.Ro
+	}
+	bodyString := body.Ru
+	if sub.Lang == models.NOTIFICATION_LANG_RO {
+		bodyString = body.Ro
 	}
 
-	pushToken, err := expo.NewExponentPushToken(notificationSub.ExpoNotificationToken)
-	if err != nil {
-		return err
-	}
-
-	fmt.Println("not", notificationSub)
-	fmt.Println("pus", pushToken)
-
-	pushClient := expo.NewPushClient(nil)
-
-	notificationTitleString := title.Ru
-	if notificationSub.Lang == models.NOTIFICATION_LANG_RO {
-		notificationTitleString = title.Ro
-	}
-
-	notificationBodyString := body.Ru
-	if notificationSub.Lang == models.NOTIFICATION_LANG_RO {
-		notificationBodyString = body.Ro
+	// A fresh copy per subscription - this runs once per device for the
+	// same client, and each device's push needs its own deliveryID, not
+	// whichever one a previous iteration happened to set.
+	messageData := make(map[string]string, len(data)+1)
+	for k, v := range data {
+		messageData[k] = v
 	}
 
 	// The recipient row has to exist before the send so its id can ride
 	// along inside Data - that's what lets the app report received/opened
 	// against this exact notification (see CreatePendingIndividualSend).
 	// Best-effort: a tracking failure here still lets the actual push go out.
-	pending, pendingErr := s.PushCampaignService.CreatePendingIndividualSend(clientID)
+	pending, pendingErr := s.PushCampaignService.CreatePendingIndividualSend(sub.ClientID)
 	if pendingErr != nil {
 		fmt.Println("notificationservice: failed to create pending delivery record:", pendingErr)
 	} else {
-		if data == nil {
-			data = map[string]string{}
-		}
-		data["deliveryID"] = strconv.Itoa(int(pending.ID))
+		messageData["deliveryID"] = strconv.Itoa(int(pending.ID))
 	}
 
-	// Publish message
 	response, err := pushClient.Publish(
 		&expo.PushMessage{
 			To:       []expo.ExponentPushToken{pushToken},
-			Title:    notificationTitleString,
-			Body:     notificationBodyString,
+			Title:    titleString,
+			Body:     bodyString,
 			Sound:    "default",
 			Priority: expo.DefaultPriority,
-			Data:     data,
+			Data:     messageData,
 		},
 	)
 	if err != nil {
 		fmt.Println("nil in publishing notification: ", err)
 		if pendingErr == nil {
-			finalizeErr := s.PushCampaignService.FinalizeIndividualSend(pending.ID, string(pushToken), "", models.PUSH_CAMPAIGN_RECIPIENT_STATUS_FAILED)
-			if finalizeErr != nil {
+			if finalizeErr := s.PushCampaignService.FinalizeIndividualSend(pending.ID, string(pushToken), "", models.PUSH_CAMPAIGN_RECIPIENT_STATUS_FAILED); finalizeErr != nil {
 				fmt.Println("notificationservice: failed to finalize failed delivery record:", finalizeErr)
 			}
 		}
@@ -273,8 +264,43 @@ func (s *notificationService) SendNotification(clientID int, title NotificaitonT
 	}
 
 	fmt.Println("push response: ", helpers.ConvertToJSON(response))
-
 	return nil
+}
+
+// SendNotification reaches every device the client is subscribed on, not
+// just one. GetNotificationSubscription's plain `.First()` lookup used to be
+// harmless because logging in on a new device overwrote the client's one
+// existing row in place - but since notification subscriptions can now be
+// registered before login (device-keyed, see the model comment), the same
+// client can genuinely have more than one *separate* row (one per device)
+// at once, and `.First()` would silently only ever reach whichever one
+// happens to sort first, e.g. an old phone that's no longer the one in the
+// person's hand.
+func (s *notificationService) SendNotification(clientID int, title NotificaitonText, body NotificaitonText, data map[string]string) error {
+	subs, err := s.NotificationRepo.GetSubscriptionsByClientIDs([]int{clientID})
+	if err != nil {
+		return err
+	}
+	if len(subs) == 0 {
+		return notificationerrors.ErrNotificationNotFound
+	}
+
+	pushClient := expo.NewPushClient(nil)
+
+	var lastErr error
+	sentToAny := false
+	for _, sub := range subs {
+		if sendErr := s.sendToSubscription(pushClient, sub, title, body, data); sendErr != nil {
+			lastErr = sendErr
+			continue
+		}
+		sentToAny = true
+	}
+
+	if sentToAny {
+		return nil
+	}
+	return lastErr
 }
 
 func (s *notificationService) SendNotificationLinkedToOrderInfoPage(clientID int, title NotificaitonText, body NotificaitonText, orderID int) error {

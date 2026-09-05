@@ -438,15 +438,17 @@ func (s *pushCampaignService) SendCampaignNow(campaignID int) error {
 	return err
 }
 
+// SendTest reaches every device that phone is subscribed on - a single
+// `.First()` lookup used to be enough back when logging in on a new device
+// overwrote the one existing row, but subscriptions are device-keyed now
+// (see the model comment), so the phone testing this could easily have more
+// than one live subscription (e.g. an old phone that's still technically
+// logged in, and the new one actually in hand) and a test send should prove
+// out the copy/deep-link on whichever device the admin is actually holding.
 func (s *pushCampaignService) SendTest(input TestSendInput) error {
-	sub, err := s.NotificationRepo.GetNotificationSubscription(input.Phone)
+	subs, err := s.NotificationRepo.GetSubscriptionsByPhone(input.Phone)
 	if err != nil {
 		return pushcampaignerrors.ErrTestRecipientNotSubscribed
-	}
-
-	title, body := input.TitleRu, input.BodyRu
-	if sub.Lang == models.NOTIFICATION_LANG_RO {
-		title, body = input.TitleRo, input.BodyRo
 	}
 
 	data := buildPushData(models.PushCampaign{
@@ -459,15 +461,34 @@ func (s *pushCampaignService) SendTest(input TestSendInput) error {
 	})
 
 	pushClient := expo.NewPushClient(nil)
-	_, err = pushClient.Publish(&expo.PushMessage{
-		To:       []expo.ExponentPushToken{expo.ExponentPushToken(sub.ExpoNotificationToken)},
-		Title:    title,
-		Body:     body,
-		Sound:    "default",
-		Priority: expo.DefaultPriority,
-		Data:     data,
-	})
-	return err
+
+	var lastErr error
+	sentToAny := false
+	for _, sub := range subs {
+		title, body := input.TitleRu, input.BodyRu
+		if sub.Lang == models.NOTIFICATION_LANG_RO {
+			title, body = input.TitleRo, input.BodyRo
+		}
+
+		_, sendErr := pushClient.Publish(&expo.PushMessage{
+			To:       []expo.ExponentPushToken{expo.ExponentPushToken(sub.ExpoNotificationToken)},
+			Title:    title,
+			Body:     body,
+			Sound:    "default",
+			Priority: expo.DefaultPriority,
+			Data:     data,
+		})
+		if sendErr != nil {
+			lastErr = sendErr
+			continue
+		}
+		sentToAny = true
+	}
+
+	if sentToAny {
+		return nil
+	}
+	return lastErr
 }
 
 func (s *pushCampaignService) MarkOpened(campaignID, clientID int) error {
