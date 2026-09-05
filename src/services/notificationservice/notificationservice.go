@@ -3,12 +3,14 @@ package notificationservice
 import (
 	"fmt"
 	"os"
+	"strconv"
 
 	"github.com/alexkalak/qrmenu/src/errors/notificationerrors"
 	"github.com/alexkalak/qrmenu/src/helpers"
 	"github.com/alexkalak/qrmenu/src/models"
 	"github.com/alexkalak/qrmenu/src/repo/clientrepo"
 	"github.com/alexkalak/qrmenu/src/repo/notificationrepo"
+	"github.com/alexkalak/qrmenu/src/services/pushcampaignservice"
 	expo "github.com/oliveroneill/exponent-server-sdk-golang/sdk"
 )
 
@@ -28,6 +30,7 @@ type NotificationService interface {
 type notificationService struct {
 	NotificationRepo         notificationrepo.NotificationRepo
 	ClientRepo               clientrepo.ClientRepo
+	PushCampaignService      pushcampaignservice.PushCampaignService
 	ApplicationPath          string
 	ApplicationPathParam     string
 	ApplicationOrderPagePath string
@@ -38,11 +41,31 @@ func New() NotificationService {
 	return &notificationService{
 		NotificationRepo:         notificationrepo.New(),
 		ClientRepo:               clientrepo.New(),
+		PushCampaignService:      pushcampaignservice.New(),
 		ApplicationPath:          os.Getenv("APPLICATION_EXPO_PATH"),
 		ApplicationPathParam:     os.Getenv("APPLICATION_PATH_PARAM"),
 		ApplicationOrderPagePath: os.Getenv("APPLICATION_ORDER_PAGE_PATH"),
 		ApplicationOrderIDParam:  os.Getenv("APPLICATION_ORDER_ID_PARAM"),
 	}
+}
+
+// recordSend saves this individual send as a PushCampaignRecipient row (see
+// that model's comment) and returns the recipient id to fold into the
+// message's Data map, so the client can report received/opened against it
+// and RunReceiptPoller can check a real delivery receipt the same way it
+// already does for campaign sends. Never fails the caller - losing this
+// tracking row is not worth losing the push itself over.
+func (s *notificationService) recordSend(clientID int, pushToken expo.ExponentPushToken, response expo.PushResponse) string {
+	status := models.PUSH_CAMPAIGN_RECIPIENT_STATUS_SENT
+	if response.Status != expo.SuccessStatus {
+		status = models.PUSH_CAMPAIGN_RECIPIENT_STATUS_FAILED
+	}
+	recipient, err := s.PushCampaignService.RecordIndividualSend(clientID, string(pushToken), response.ID, status)
+	if err != nil {
+		fmt.Println("notificationservice: failed to record send for delivery tracking:", err)
+		return ""
+	}
+	return strconv.Itoa(int(recipient.ID))
 }
 
 func (s *notificationService) Subscribe(phone, token, lang string) (models.NotificationSubscription, error) {
@@ -116,6 +139,7 @@ func (s *notificationService) SendToAllClients(title NotificaitonText, body Noti
 			continue
 		}
 
+		s.recordSend(notificationSub.ClientID, pushToken, response)
 	}
 
 	return nil
@@ -152,6 +176,20 @@ func (s *notificationService) SendNotification(clientID int, title NotificaitonT
 		notificationBodyString = body.Ro
 	}
 
+	// The recipient row has to exist before the send so its id can ride
+	// along inside Data - that's what lets the app report received/opened
+	// against this exact notification (see CreatePendingIndividualSend).
+	// Best-effort: a tracking failure here still lets the actual push go out.
+	pending, pendingErr := s.PushCampaignService.CreatePendingIndividualSend(clientID)
+	if pendingErr != nil {
+		fmt.Println("notificationservice: failed to create pending delivery record:", pendingErr)
+	} else {
+		if data == nil {
+			data = map[string]string{}
+		}
+		data["deliveryID"] = strconv.Itoa(int(pending.ID))
+	}
+
 	// Publish message
 	response, err := pushClient.Publish(
 		&expo.PushMessage{
@@ -165,7 +203,23 @@ func (s *notificationService) SendNotification(clientID int, title NotificaitonT
 	)
 	if err != nil {
 		fmt.Println("nil in publishing notification: ", err)
+		if pendingErr == nil {
+			finalizeErr := s.PushCampaignService.FinalizeIndividualSend(pending.ID, string(pushToken), "", models.PUSH_CAMPAIGN_RECIPIENT_STATUS_FAILED)
+			if finalizeErr != nil {
+				fmt.Println("notificationservice: failed to finalize failed delivery record:", finalizeErr)
+			}
+		}
 		return err
+	}
+
+	if pendingErr == nil {
+		status := models.PUSH_CAMPAIGN_RECIPIENT_STATUS_SENT
+		if response.Status != expo.SuccessStatus {
+			status = models.PUSH_CAMPAIGN_RECIPIENT_STATUS_FAILED
+		}
+		if finalizeErr := s.PushCampaignService.FinalizeIndividualSend(pending.ID, string(pushToken), response.ID, status); finalizeErr != nil {
+			fmt.Println("notificationservice: failed to finalize delivery record:", finalizeErr)
+		}
 	}
 
 	fmt.Println("push response: ", helpers.ConvertToJSON(response))

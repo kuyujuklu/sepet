@@ -17,6 +17,7 @@ type NotificationRepo interface {
 	GetSubscriptionsByClientIDs(clientIDs []int) ([]models.NotificationSubscription, error)
 	CreateSubscriptionSubscription(phone, token, lang string) (models.NotificationSubscription, error)
 	UpdateNotificationSubscriptionToken(phone, token, lang string) (models.NotificationSubscription, error)
+	DeleteSubscriptionByToken(token string) error
 }
 
 type notificationRepo struct {
@@ -93,6 +94,18 @@ func (r *notificationRepo) UpdateNotificationSubscriptionToken(phone, token, lan
 
 	return notificationSub, nil
 }
+// DeleteSubscriptionByToken soft-deletes every subscription row still
+// carrying this exact token - called when Expo's delivery receipt reports
+// DeviceNotRegistered, so a churned install stops being sent to (and
+// re-counted as a failure) on every future send.
+func (r *notificationRepo) DeleteSubscriptionByToken(token string) error {
+	resp := r.Database.Where("expo_notification_token = ?", token).Delete(&models.NotificationSubscription{})
+	if resp.Error != nil {
+		return notificationerrors.ErrUnableToUpdateNotification
+	}
+	return nil
+}
+
 func (r *notificationRepo) GetAllSubscriptions() ([]models.NotificationSubscription, error) {
 	subs := make([]models.NotificationSubscription, 0)
 	resp := r.Database.Find(&subs)

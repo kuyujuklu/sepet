@@ -78,6 +78,7 @@ type PushCampaign struct {
 	FailedCount    int
 	DeliveredCount int
 	OpenedCount    int
+	ReceivedCount  int
 
 	CreatedAt time.Time
 	UpdatedAt time.Time
@@ -91,11 +92,15 @@ const (
 	PUSH_CAMPAIGN_RECIPIENT_STATUS_UNDELIVERED = "undelivered"
 )
 
-// One row per client a campaign was actually sent to. TicketID is Expo's
-// immediate send-time ticket id (PushResponse.ID) - the receipt poller
-// later exchanges it for a real delivery receipt (see pushcampaignservice's
+// One row per client a push was actually sent to - a campaign blast or a
+// single order/status notification alike (PushCampaignID is 0 for the
+// latter; campaign ids start at 1, so 0 is a safe "not a campaign"
+// sentinel with no schema change needed). TicketID is Expo's immediate
+// send-time ticket id (PushResponse.ID) - the receipt poller later
+// exchanges it for a real delivery receipt (see pushcampaignservice's
 // RunReceiptPoller), since the vendored Expo SDK has no receipt-fetching
-// method of its own.
+// method of its own. This is the one place either kind of push gets
+// tracked, so a single poller/prune pass covers both.
 type PushCampaignRecipient struct {
 	ID uint `gorm:"primaryKey"`
 
@@ -107,7 +112,12 @@ type PushCampaignRecipient struct {
 	Status   string
 
 	DeliveryCheckedAt *time.Time
-	OpenedAt          *time.Time
+	// ReceivedAt is set by the app itself (POST .../received) the moment its
+	// notification listener actually sees the push - a stronger signal than
+	// Expo's delivery receipt, which only confirms hand-off to APNs/FCM, not
+	// that the device did anything with it.
+	ReceivedAt *time.Time
+	OpenedAt   *time.Time
 
 	CreatedAt time.Time
 	UpdatedAt time.Time

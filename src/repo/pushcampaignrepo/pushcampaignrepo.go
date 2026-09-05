@@ -20,8 +20,13 @@ type PushCampaignRepo interface {
 	IncrementOpenedCount(campaignID uint) error
 
 	CreateRecipients(recipients []models.PushCampaignRecipient) error
+	CreateRecipient(recipient models.PushCampaignRecipient) (models.PushCampaignRecipient, error)
+	UpdateRecipientTicket(id uint, expoToken, ticketID, status string) error
+	GetRecipientByID(id int) (models.PushCampaignRecipient, error)
 	GetRecipientForCampaignAndClient(campaignID, clientID int) (models.PushCampaignRecipient, error)
 	MarkRecipientOpened(id uint, openedAt time.Time) error
+	MarkRecipientReceived(id uint, receivedAt time.Time) error
+	IncrementReceivedCount(campaignID uint) error
 	UpdateRecipientDeliveryStatus(id uint, status string, checkedAt time.Time) error
 	GetRecipientsPendingReceiptCheck(readyBefore time.Time, expireAfter time.Time, limit int) ([]models.PushCampaignRecipient, error)
 
@@ -125,6 +130,40 @@ func (r *pushCampaignRepo) CreateRecipients(recipients []models.PushCampaignReci
 	return nil
 }
 
+func (r *pushCampaignRepo) CreateRecipient(recipient models.PushCampaignRecipient) (models.PushCampaignRecipient, error) {
+	result := r.Database.Create(&recipient)
+	if result.Error != nil {
+		return models.PushCampaignRecipient{}, pushcampaignerrors.ErrUnableToCreatePushCampaign
+	}
+	return recipient, nil
+}
+
+func (r *pushCampaignRepo) UpdateRecipientTicket(id uint, expoToken, ticketID, status string) error {
+	result := r.Database.Model(&models.PushCampaignRecipient{}).
+		Where("id = ?", id).
+		Updates(map[string]interface{}{
+			"expo_token": expoToken,
+			"ticket_id":  ticketID,
+			"status":     status,
+		})
+	if result.Error != nil {
+		return pushcampaignerrors.ErrUnableToUpdatePushCampaign
+	}
+	return nil
+}
+
+func (r *pushCampaignRepo) GetRecipientByID(id int) (models.PushCampaignRecipient, error) {
+	var recipient models.PushCampaignRecipient
+	result := r.Database.First(&recipient, "id = ?", id)
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return models.PushCampaignRecipient{}, pushcampaignerrors.ErrPushCampaignNotFound
+		}
+		return models.PushCampaignRecipient{}, pushcampaignerrors.ErrUnableToGetPushCampaign
+	}
+	return recipient, nil
+}
+
 func (r *pushCampaignRepo) GetRecipientForCampaignAndClient(campaignID, clientID int) (models.PushCampaignRecipient, error) {
 	var recipient models.PushCampaignRecipient
 	result := r.Database.First(&recipient, "push_campaign_id = ? AND client_id = ?", campaignID, clientID)
@@ -141,6 +180,26 @@ func (r *pushCampaignRepo) MarkRecipientOpened(id uint, openedAt time.Time) erro
 	result := r.Database.Model(&models.PushCampaignRecipient{}).
 		Where("id = ?", id).
 		UpdateColumn("opened_at", openedAt)
+	if result.Error != nil {
+		return pushcampaignerrors.ErrUnableToUpdatePushCampaign
+	}
+	return nil
+}
+
+func (r *pushCampaignRepo) MarkRecipientReceived(id uint, receivedAt time.Time) error {
+	result := r.Database.Model(&models.PushCampaignRecipient{}).
+		Where("id = ?", id).
+		UpdateColumn("received_at", receivedAt)
+	if result.Error != nil {
+		return pushcampaignerrors.ErrUnableToUpdatePushCampaign
+	}
+	return nil
+}
+
+func (r *pushCampaignRepo) IncrementReceivedCount(campaignID uint) error {
+	result := r.Database.Model(&models.PushCampaign{}).
+		Where("id = ?", campaignID).
+		UpdateColumn("received_count", gorm.Expr("received_count + 1"))
 	if result.Error != nil {
 		return pushcampaignerrors.ErrUnableToUpdatePushCampaign
 	}

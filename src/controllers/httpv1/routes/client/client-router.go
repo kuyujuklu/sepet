@@ -86,4 +86,6 @@ func (c *clientController) AuthorizedRouter(router fiber.Router) {
 	router.Get("/orders", c.GetAllOrdersForClient)
 
 	router.Post("/push-campaigns/:campaignID<int>/opened", c.MarkPushCampaignOpened)
+	router.Post("/notifications/:deliveryID<int>/received", c.MarkNotificationReceived)
+	router.Post("/notifications/:deliveryID<int>/opened", c.MarkNotificationOpened)
 }

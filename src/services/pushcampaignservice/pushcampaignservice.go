@@ -73,6 +73,17 @@ type PushCampaignService interface {
 	SendCampaignNow(campaignID int) error
 	MarkOpened(campaignID, clientID int) error
 
+	// RecordIndividualSend and the two Mark*ByRecipient methods below track
+	// one-off pushes (order/status notifications) through the exact same
+	// recipient table and receipt poller a campaign blast uses, addressed by
+	// the recipient row's own id rather than a (campaignID, clientID) pair -
+	// works the same whether PushCampaignID is a real campaign or 0.
+	RecordIndividualSend(clientID int, expoToken, ticketID, status string) (models.PushCampaignRecipient, error)
+	CreatePendingIndividualSend(clientID int) (models.PushCampaignRecipient, error)
+	FinalizeIndividualSend(recipientID uint, expoToken, ticketID, status string) error
+	MarkReceivedByRecipient(recipientID, clientID int) error
+	MarkOpenedByRecipient(recipientID, clientID int) error
+
 	// Long-running - each is meant to be started once with `go`, from
 	// main.go. Neither existed as a pattern in this codebase before this
 	// feature; the only prior periodic loop (wsutils.SendPing) is spawned
@@ -455,6 +466,79 @@ func (s *pushCampaignService) MarkOpened(campaignID, clientID int) error {
 	return s.Repo.IncrementOpenedCount(recipient.PushCampaignID)
 }
 
+// RecordIndividualSend gives a one-off push the same tracking row a campaign
+// recipient gets (PushCampaignID 0 - see the model comment) after the fact -
+// for callers with no data payload to correlate a later received/opened
+// report against, so there's no need to know the row's id before sending.
+func (s *pushCampaignService) RecordIndividualSend(clientID int, expoToken, ticketID, status string) (models.PushCampaignRecipient, error) {
+	return s.Repo.CreateRecipient(models.PushCampaignRecipient{
+		PushCampaignID: 0,
+		ClientID:       clientID,
+		ExpoToken:      expoToken,
+		TicketID:       ticketID,
+		Status:         status,
+	})
+}
+
+// CreatePendingIndividualSend/FinalizeIndividualSend split the same tracking
+// row across the send: a caller that wants recipient.ID inside the push's own
+// Data (so the client can report received/opened against a specific
+// notification, not just "some push from this client") needs that id before
+// Expo is ever called, but the ticket/status it also needs to record only
+// exist after. Create the row first with a pending status, read its id into
+// the payload, send, then fill in what the send actually produced.
+func (s *pushCampaignService) CreatePendingIndividualSend(clientID int) (models.PushCampaignRecipient, error) {
+	return s.Repo.CreateRecipient(models.PushCampaignRecipient{
+		PushCampaignID: 0,
+		ClientID:       clientID,
+		Status:         models.PUSH_CAMPAIGN_RECIPIENT_STATUS_PENDING,
+	})
+}
+
+func (s *pushCampaignService) FinalizeIndividualSend(recipientID uint, expoToken, ticketID, status string) error {
+	return s.Repo.UpdateRecipientTicket(recipientID, expoToken, ticketID, status)
+}
+
+func (s *pushCampaignService) MarkReceivedByRecipient(recipientID, clientID int) error {
+	recipient, err := s.Repo.GetRecipientByID(recipientID)
+	if err != nil {
+		return err
+	}
+	if recipient.ClientID != clientID {
+		return pushcampaignerrors.ErrPushCampaignNotFound
+	}
+	if recipient.ReceivedAt != nil {
+		return nil // the received listener can fire more than once for one push
+	}
+	if err := s.Repo.MarkRecipientReceived(recipient.ID, time.Now()); err != nil {
+		return err
+	}
+	if recipient.PushCampaignID == 0 {
+		return nil
+	}
+	return s.Repo.IncrementReceivedCount(recipient.PushCampaignID)
+}
+
+func (s *pushCampaignService) MarkOpenedByRecipient(recipientID, clientID int) error {
+	recipient, err := s.Repo.GetRecipientByID(recipientID)
+	if err != nil {
+		return err
+	}
+	if recipient.ClientID != clientID {
+		return pushcampaignerrors.ErrPushCampaignNotFound
+	}
+	if recipient.OpenedAt != nil {
+		return nil
+	}
+	if err := s.Repo.MarkRecipientOpened(recipient.ID, time.Now()); err != nil {
+		return err
+	}
+	if recipient.PushCampaignID == 0 {
+		return nil
+	}
+	return s.Repo.IncrementOpenedCount(recipient.PushCampaignID)
+}
+
 func (s *pushCampaignService) RunScheduler() {
 	ticker := time.NewTicker(1 * time.Minute)
 	for range ticker.C {
@@ -564,6 +648,16 @@ func (s *pushCampaignService) checkPendingReceipts() {
 			status := models.PUSH_CAMPAIGN_RECIPIENT_STATUS_DELIVERED
 			if receipt.Status != expo.SuccessStatus {
 				status = models.PUSH_CAMPAIGN_RECIPIENT_STATUS_UNDELIVERED
+				// DeviceNotRegistered means Apple/Google told Expo the
+				// install is gone for good (uninstalled, token revoked) -
+				// Expo's own guidance is to stop sending to it. Left
+				// unpruned, the exact same dead token fails this same way
+				// on every future send/campaign, forever.
+				if errorCode, _ := receipt.Details["error"].(string); errorCode == "DeviceNotRegistered" {
+					if err := s.NotificationRepo.DeleteSubscriptionByToken(recipient.ExpoToken); err != nil {
+						fmt.Println("push campaign: failed to prune DeviceNotRegistered token:", err)
+					}
+				}
 			} else {
 				deliveredDeltaByCampaign[recipient.PushCampaignID]++
 			}
