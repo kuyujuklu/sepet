@@ -18,10 +18,14 @@ import (
 
 // infobipBaseURL is this account's assigned InfoBip subdomain - InfoBip
 // hands out a dedicated one per account rather than a shared hostname, and
-// it doesn't change, so it isn't worth its own env var. Confirmed live
-// (2026-09-05): GET /account/1/balance on this host with the stored
-// API_INFO_BIP_AUTH_TOKEN returns 200.
-const infobipBaseURL = "https://d9lgz8.api.infobip.com"
+// it doesn't change, so it isn't worth its own env var. The original
+// account (d9lgz8) was deleted 2026-09-05 and replaced with a fresh one on
+// this subdomain - confirmed live: token valid, a new 2FA application and
+// message template were created against it (see backend git history for
+// the applicationId/messageId now in .env). That account's balance was
+// $0.00 at creation time - the wiring works, but nothing will actually
+// send until it's funded in InfoBip's dashboard.
+const infobipBaseURL = "https://2yndlw.api.infobip.com"
 
 type SmsService interface {
 	// CreateVerificationSession tries Twilio first and only falls back to
@@ -201,6 +205,16 @@ func (s *smsService) createInfobipVerification(phone string) (string, error) {
 	}
 	if parsed.PinID == "" {
 		return "", errors.New("no pinId in InfoBip response")
+	}
+	// InfoBip returns 200 with a real pinId even when it never actually sent
+	// anything - confirmed live against a $0-balance account: smsStatus
+	// comes back "MESSAGE_NOT_SENT", not an HTTP error. Treating that as
+	// success would hand the caller a pinId for a code that was never
+	// delivered - the same silent-failure shape the whole fallback exists
+	// to avoid.
+	if parsed.SmsStatus != "MESSAGE_SENT" {
+		fmt.Println("smsservice: InfoBip accepted the request but did not send it, smsStatus:", parsed.SmsStatus)
+		return "", smserrors.ErrUnableToSendSms
 	}
 
 	fmt.Println("smsservice: InfoBip pin created:", string(respBody))
