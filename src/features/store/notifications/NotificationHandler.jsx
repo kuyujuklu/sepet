@@ -5,6 +5,7 @@ import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
 import { useNavigation } from '@react-navigation/native';
 import { subscribeNotificationTokenOnServer } from '../../../shared/api/notifications-api/subscribe-token';
+import { getOrCreateDeviceId } from '../../../shared/utils/deviceId';
 import { useDispatch, useSelector } from 'react-redux';
 import { selectClient } from '../auth/authSlice';
 import { useTranslation } from 'react-i18next';
@@ -267,12 +268,20 @@ export default function NotificationHandler() {
     };
   }, []);
 
+  // Deliberately not gated on `client`: someone who never logs in can still
+  // be sent a push (a re-engagement/promo campaign, say), so the token gets
+  // registered as soon as it exists - deviceId (persisted locally,
+  // independent of login) is what the backend uses to find this same row
+  // again and attach the real client to it once/if they do log in, instead
+  // of that login creating a second, duplicate row.
   useEffect(() => {
-    if (!client || !expoPushToken || !i18n.language) {
-      return
+    if (!expoPushToken || !i18n.language) {
+      return;
     }
 
-    subscribeNotificationTokenOnServer(client.phone, expoPushToken, i18n.language)
+    getOrCreateDeviceId().then((deviceId) => {
+      subscribeNotificationTokenOnServer(client?.phone, deviceId, expoPushToken, i18n.language);
+    });
   }, [client, expoPushToken, i18n.language])
 
   return (<></>

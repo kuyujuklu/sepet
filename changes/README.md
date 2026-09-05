@@ -6,6 +6,9 @@ the work without re-reading the whole codebase.
 
 Newest first.
 
+- [2026-09-05 — Register push token before login, not just after](2026-09-05-push-subscribe-before-login.md)
+  — subscribe no longer requires `client`; a persisted per-install device id lets the
+  backend link an anonymous subscription to a real client later instead of duplicating it.
 - [2026-09-05 — Report real push delivery/open back to the backend, not just analytics](2026-09-05-notification-delivery-reporting.md)
   — app now POSTs received/opened against a push's `deliveryID` (the backend's new
   per-send tracking row), a real server-confirmed signal beyond Expo's own receipt.

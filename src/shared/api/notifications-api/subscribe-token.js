@@ -7,12 +7,13 @@ import Constants from "expo-constants";
 
 export const subscribeNotificationTokenOnServer = async (
   phone,
+  deviceId,
   token,
   lang,
 ) => {
   console.log("phone: ", phone, " TOKEN: ", token);
 
-  const requestBody = JSON.stringify({ phone, token, lang });
+  const requestBody = JSON.stringify({ phone, device_id: deviceId, token, lang });
   const subscribeResponse = await fetch(
     ENV.API_HTTP_URL + "/api/client/notifications/subscribe",
     {
