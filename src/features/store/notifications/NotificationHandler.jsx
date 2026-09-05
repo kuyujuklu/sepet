@@ -207,7 +207,18 @@ export default function NotificationHandler() {
   useEffect(() => {
     registerForPushNotificationsAsync()
       .then(token => setExpoPushToken(token ?? ''))
-      .catch((error) => setExpoPushToken(`${error}`));
+      // Never store the error itself as the "token" - registerForPushNotificationsAsync
+      // rejecting here (permission request throwing, Android's FCM
+      // TOO_MANY_REGISTRATIONS, ...) used to end up as the literal string
+      // "Error: ..." going out through subscribeNotificationTokenOnServer below,
+      // which the backend stored verbatim as if it were a real push token. Every
+      // future send to that "subscription" fails at Expo (not even a delivery
+      // failure - Expo rejects the shape outright), which is most of why a past
+      // campaign's send success rate looked so low.
+      .catch((error) => {
+        console.log(error);
+        setExpoPushToken('');
+      });
 
     notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
       setNotification(notification);

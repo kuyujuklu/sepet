@@ -6,6 +6,10 @@ the work without re-reading the whole codebase.
 
 Newest first.
 
+- [2026-09-05 — Fix: stringified registration error stored and sent as the push token](2026-09-05-fix-push-token-error-string-bug.md)
+  — a failed `registerForPushNotificationsAsync()` call had its stringified error
+  saved as the push token and subscribed as-is; real cause of a campaign's 94% send
+  failure rate, not organic churn or a measurement gap.
 - [2026-09-04 — Fix: delivery showed as free for addresses outside the delivery zone](2026-09-04-fix-free-delivery-outside-zone.md)
   — `isAvailableForDelivery` only checked work hours, never the server's
   `shipping.available` zone flag; `getDeliveryPrice()` returned the raw
