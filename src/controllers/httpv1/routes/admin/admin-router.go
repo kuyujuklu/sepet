@@ -75,4 +75,5 @@ func (c *adminController) Router(router fiber.Router) {
 	router.Post("/push-campaigns", c.CreatePushCampaign)
 	router.Get("/push-campaigns/audience-preview", c.PreviewPushCampaignAudience)
 	router.Post("/push-campaigns/test-send", c.TestSendPushCampaign)
+	router.Get("/push-campaigns/subscriber-stats", c.GetSubscriberStats)
 }

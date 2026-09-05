@@ -25,6 +25,7 @@ type NotificationService interface {
 	SendNotification(clientID int, title NotificaitonText, body NotificaitonText, data map[string]string) error
 	SendNotificationLinkedToOrderInfoPage(clientID int, title NotificaitonText, body NotificaitonText, orderID int) error
 	SendNotificationWithToken(token string, lang string, title NotificaitonText, body NotificaitonText) error
+	GetSubscriberStats() (linked int, anonymous int, err error)
 }
 
 type notificationService struct {
@@ -281,6 +282,10 @@ func (s *notificationService) SendNotificationLinkedToOrderInfoPage(clientID int
 	data["url"] = fmt.Sprintf("%s?%s=%s&%s=%d", s.ApplicationPath, s.ApplicationPathParam, s.ApplicationOrderPagePath, s.ApplicationOrderIDParam, orderID)
 	fmt.Println("data: ", data)
 	return s.SendNotification(clientID, title, body, data)
+}
+
+func (s *notificationService) GetSubscriberStats() (int, int, error) {
+	return s.NotificationRepo.CountSubscribers()
 }
 
 func (s *notificationService) SendNotificationWithToken(token string, lang string, title NotificaitonText, body NotificaitonText) error {

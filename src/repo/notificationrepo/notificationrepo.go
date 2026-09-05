@@ -24,6 +24,14 @@ type NotificationRepo interface {
 	GetSubscriptionByDeviceID(deviceID string) (models.NotificationSubscription, error)
 	CreateSubscriptionWithDevice(clientID int, deviceID, token, lang string) (models.NotificationSubscription, error)
 	UpdateSubscriptionByID(id uint, clientID int, token, lang string) error
+
+	// CountSubscribers splits live (non-deleted) subscriptions into linked
+	// (a real client behind them, counted once each even if that client
+	// somehow has more than one row) vs anonymous (clientID 0, one row per
+	// device - see the model comment) - for the superadmin's subscriber
+	// count. A raw `count(distinct client_id)` over everything would
+	// undercount, since every anonymous row shares clientID 0.
+	CountSubscribers() (linked int, anonymous int, err error)
 }
 
 type notificationRepo struct {
@@ -143,6 +151,25 @@ func (r *notificationRepo) UpdateSubscriptionByID(id uint, clientID int, token, 
 		return notificationerrors.ErrUnableToUpdateNotification
 	}
 	return nil
+}
+
+func (r *notificationRepo) CountSubscribers() (int, int, error) {
+	var linked int64
+	if err := r.Database.Model(&models.NotificationSubscription{}).
+		Where("client_id != 0").
+		Distinct("client_id").
+		Count(&linked).Error; err != nil {
+		return 0, 0, notificationerrors.ErrUnableToGetNotification
+	}
+
+	var anonymous int64
+	if err := r.Database.Model(&models.NotificationSubscription{}).
+		Where("client_id = 0").
+		Count(&anonymous).Error; err != nil {
+		return 0, 0, notificationerrors.ErrUnableToGetNotification
+	}
+
+	return int(linked), int(anonymous), nil
 }
 
 // DeleteSubscriptionByToken soft-deletes every subscription row still

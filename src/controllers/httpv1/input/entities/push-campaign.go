@@ -124,7 +124,12 @@ type PushCampaignOutput struct {
 	SentCount      int `json:"sent_count"`
 	FailedCount    int `json:"failed_count"`
 	DeliveredCount int `json:"delivered_count"`
-	OpenedCount    int `json:"opened_count"`
+	// ReceivedCount only ever grows for a campaign sent after deliveryID
+	// started riding in the push's own Data - see the app-side note on
+	// 2026-09-05's push work. Campaigns sent before that stay 0 here even
+	// though they were opened/delivered fine.
+	ReceivedCount int `json:"received_count"`
+	OpenedCount   int `json:"opened_count"`
 
 	CreatedAtUTC string `json:"created_at_utc"`
 }
@@ -163,6 +168,7 @@ func (o *PushCampaignOutput) FillFromModel(m models.PushCampaign) {
 	o.SentCount = m.SentCount
 	o.FailedCount = m.FailedCount
 	o.DeliveredCount = m.DeliveredCount
+	o.ReceivedCount = m.ReceivedCount
 	o.OpenedCount = m.OpenedCount
 
 	o.CreatedAtUTC = helpers.ConvertToStandardApiTime(m.CreatedAt)

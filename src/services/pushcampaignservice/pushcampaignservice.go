@@ -352,12 +352,42 @@ func (s *pushCampaignService) SendCampaignNow(campaignID int) error {
 		}
 		subBatch := subs[i:end]
 
+		// One pending recipient row per subscriber, created *before* sending -
+		// its id has to exist so it can ride along inside that subscriber's
+		// own push as `deliveryID` (same two-phase reasoning as
+		// notificationservice.SendNotification). A batch that fails to even
+		// create its rows can't be sent with tracking, so it's counted
+		// failed and skipped rather than sent untracked.
+		pendingRecipients := make([]models.PushCampaignRecipient, len(subBatch))
+		for j, sub := range subBatch {
+			pendingRecipients[j] = models.PushCampaignRecipient{
+				PushCampaignID: campaign.ID,
+				ClientID:       sub.ClientID,
+				ExpoToken:      sub.ExpoNotificationToken,
+				Status:         models.PUSH_CAMPAIGN_RECIPIENT_STATUS_PENDING,
+			}
+		}
+		if err := s.Repo.CreateRecipients(pendingRecipients); err != nil {
+			fmt.Println("push campaign: failed to create pending recipient batch:", err)
+			failedCount += len(subBatch)
+			campaign.FailedCount = failedCount
+			campaign, _ = s.Repo.Update(campaign)
+			continue
+		}
+
 		messages := make([]expo.PushMessage, 0, len(subBatch))
-		for _, sub := range subBatch {
+		for j, sub := range subBatch {
 			title, body := campaign.TitleRu, campaign.BodyRu
 			if sub.Lang == models.NOTIFICATION_LANG_RO {
 				title, body = campaign.TitleRo, campaign.BodyRo
 			}
+
+			messageData := make(map[string]string, len(data)+1)
+			for k, v := range data {
+				messageData[k] = v
+			}
+			messageData["deliveryID"] = strconv.Itoa(int(pendingRecipients[j].ID))
+
 			messages = append(messages, expo.PushMessage{
 				To:         []expo.ExponentPushToken{expo.ExponentPushToken(sub.ExpoNotificationToken)},
 				Title:      title,
@@ -365,25 +395,21 @@ func (s *pushCampaignService) SendCampaignNow(campaignID int) error {
 				Sound:      "default",
 				Priority:   priority,
 				TTLSeconds: ttlSeconds,
-				Data:       data,
+				Data:       messageData,
 			})
 		}
 
-		recipients := make([]models.PushCampaignRecipient, 0, len(subBatch))
 		responses, err := pushClient.PublishMultiple(messages)
 		if err != nil {
 			// The whole batch failed to even reach Expo (network error,
 			// malformed token before Expo's own per-message validation) -
-			// record every recipient in this batch as failed and move on;
+			// finalize every recipient in this batch as failed and move on;
 			// a batch failing does not stop the rest of the campaign.
-			for _, sub := range subBatch {
-				recipients = append(recipients, models.PushCampaignRecipient{
-					PushCampaignID: campaign.ID,
-					ClientID:       sub.ClientID,
-					ExpoToken:      sub.ExpoNotificationToken,
-					Status:         models.PUSH_CAMPAIGN_RECIPIENT_STATUS_FAILED,
-				})
+			for j := range subBatch {
 				failedCount++
+				if updateErr := s.Repo.UpdateRecipientTicket(pendingRecipients[j].ID, pendingRecipients[j].ExpoToken, "", models.PUSH_CAMPAIGN_RECIPIENT_STATUS_FAILED); updateErr != nil {
+					fmt.Println("push campaign: failed to finalize failed recipient:", updateErr)
+				}
 			}
 		} else {
 			for j, resp := range responses {
@@ -394,18 +420,10 @@ func (s *pushCampaignService) SendCampaignNow(campaignID int) error {
 				} else {
 					sentCount++
 				}
-				recipients = append(recipients, models.PushCampaignRecipient{
-					PushCampaignID: campaign.ID,
-					ClientID:       subBatch[j].ClientID,
-					ExpoToken:      subBatch[j].ExpoNotificationToken,
-					TicketID:       resp.ID,
-					Status:         status,
-				})
+				if updateErr := s.Repo.UpdateRecipientTicket(pendingRecipients[j].ID, pendingRecipients[j].ExpoToken, resp.ID, status); updateErr != nil {
+					fmt.Println("push campaign: failed to finalize recipient:", updateErr)
+				}
 			}
-		}
-
-		if err := s.Repo.CreateRecipients(recipients); err != nil {
-			fmt.Println("push campaign: failed to save recipient batch:", err)
 		}
 
 		campaign.SentCount = sentCount
